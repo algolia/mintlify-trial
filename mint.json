@@ -55,14 +55,20 @@
   ],
   "navigation": [
     {
-      "group": "Get started",
+      "group": "Guides",
       "pages": [
-        "launchpad/get-started",
-        "launchpad/import-data",
-        "launchpad/design-results",
-        "launchpad/searchable-attributes",
-        "launchpad/relevancy",
-        "launchpad/implement-search"
+        "usertesting",
+        {
+          "group": "Get started",
+          "pages": [
+            "launchpad/get-started",
+            "launchpad/import-data",
+            "launchpad/design-results",
+            "launchpad/searchable-attributes",
+            "launchpad/relevancy",
+            "launchpad/implement-search"
+          ]
+        }
       ]
     },
     {
