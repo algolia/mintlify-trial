@@ -1,0 +1,468 @@
+---
+title: 'Imorting Data'
+sidebarTitle: 'Import Your Data'
+description: 'Create your first index and add records to make searchable in the next steps.'
+icon: "upload"
+iconType: "thin"
+---
+Welcome to the guide for pushing data to Algolia! In this section, you'll learn how to seamlessly create an index and ingest your data using either the Algolia API client or one of our powerful integrations. We'll walk you through the steps to select the most suitable method for your needs, whether you prefer direct API interactions or leveraging a ready-made integration with popular platforms. By the end of this guide, you'll be equipped with the knowledge and tools to successfully set up your index and import your data, ensuring your application is ready to deliver fast and relevant search results to your users.
+
+# Using an API Client
+If you choose to use the API Client, you'll be guided through two straightforward steps to get started with Algolia. First, you'll install the API client for your preferred programming language. Next, you'll add our sample record dataset to your index, giving you a quick and practical introduction to managing your data with Algolia. By the end of this walkthrough, you'll have a functional search index ready to power your application's search capabilities.
+
+
+## Install API Client
+Install our API client using your CLI:
+<CodeGroup>
+    ```dotnet .Net
+    dotnet add package Algolia.Search
+    dotnet add package Newtonsoft.Json
+    ```
+    ```go Go
+    go get github.com/algolia/algoliasearch-client-go/v3
+    ```
+    ```java Java
+    <dependency>
+        <groupId>com.algolia</groupId>
+        <artifactId>algoliasearch-core</artifactId>
+        <version>3.16.5</version>
+    </dependency>
+    <dependency>
+        <groupId>com.algolia</groupId>
+        <artifactId>algoliasearch-apache</artifactId>
+        <version>3.16.5</version>
+    </dependency>
+    ```
+    ``` bash Javascript
+    npm install algoliasearch
+    ```
+    ``` kotlin Kotlin
+    // Install the Kotlin API client by adding the following dependencies to your build.gradle.kts file:
+    dependencies {
+    // for Gradle verrsion 6.0 and higher
+    implementation("com.algolia:algoliasearch-client-kotlin:2.0.0")
+
+    // Chose one of the following HTTP clients
+    // For JVM
+    implementation("io.ktor:ktor-client-apache:2.0.1")
+    implementation("io.ktor:ktor-client-java:2.0.1")
+    implementation("io.ktor:ktor-client-jetty:2.0.1")
+    // For JVM/Android
+    implementation("io.ktor:ktor-client-okhttp:2.0.1")
+    implementation("io.ktor:ktor-client-android:2.0.1")
+    implementation("io.ktor:ktor-client-cio:2.0.1")
+    }
+
+    // For serializing and deserializing your records, add the following plugin to your build.gradle.kts file:
+    plugins {
+    kotlin("plugin.serialization") version "1.6.21"
+    }
+    ```
+    ``` php PHP
+    composer require algolia/algoliasearch-client-php
+    ```
+    ``` python Python
+    python -m pip install --upgrade algoliasearch
+    ```
+    ``` bash Ruby
+    gem install algolia
+
+    # With Bundler, add a gem to your Gemfile
+    bundle add algolia
+    ```
+    ``` scala Scala
+    <dependency>
+        <groupId>com.algolia</groupId>
+        <artifactId>algoliasearch-scala_2.11</artifactId>
+        <version>[1,)</version>
+    </dependency>
+    ```
+    ``` swift Swift
+    // Go to File > Add Packages. In the search, enter the URL to the GitHub repository of the API client:
+    https://github.com/algolia/algoliasearch-client-swift
+    // Select the package algoliasearch-client-swift and click Copy Dependency.
+
+    //If you have a Package.swift file, add the repository as a dependency:
+    // swift-tools-version: 5.10
+    // The swift-tools-version declares the minimum version of Swift required to build this package.
+
+    import PackageDescription
+
+    let package = Package(
+    name: "Integration",
+    platforms: [
+        .macOS(.v11)
+    ],
+    dependencies: [
+        .package(
+        url: "https://github.com/algolia/algoliasearch-client-swift",
+        from: "8.0.0"
+        ),
+        .package(url: "https://github.com/SwiftyJSON/SwiftyJSON.git", from: "4.0.0"),
+    ],
+    targets: [
+        // Targets are the basic building blocks of a package, defining a module or a test suite.
+        // Targets can depend on other targets in this package and products from dependencies.
+        .executableTarget(
+        name: "Integration",
+        dependencies: [
+            .product(
+            name:"AlgoliaSearchClient",
+            package: "algoliasearch-client-swift"
+            ),
+            .product(name:"SwiftyJSON", package: "SwiftyJSON")
+        ]),
+    ]
+    )
+    ```
+    ``` python Django
+    pip install --upgrade 'algoliasearch-django>=3.0,<4.0'
+    ```
+    ```bash Laravel
+    composer require "algolia/scout-extended:^2.0"
+
+    // Publish the Scout configuration
+    php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"
+    ```
+    ``` bash Rails
+    gem install algoliasearch-rails
+
+    # With Bundler, add the following gem to your Gemfile:
+    gem "algoliasearch-rails"
+
+    # Then run the following in your Shell:
+    bundle install
+    ```
+    ``` bash Symfony
+    composer require algolia/search-bundle
+    ```
+</CodeGroup>
+
+## Add records to index
+
+Fetch your data from your [database, file or elsewhere](https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-with-the-api/?client=go&utm_medium=page_link&utm_source=dashboard#fetch-your-data) and add it to your index for search.
+
+We've added a sample function to fetch a sample movie data set to get your started.
+
+<CodeGroup>
+    ```dotnet .Net
+    namespace dotnet;
+
+    using System.Net.Http;
+    using Algolia.Search.Clients;
+    using Newtonsoft.Json;
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // read json file from url
+            var url = "https://dashboard.algolia.com/sample_datasets/movie.json";
+            var client = new HttpClient();
+            var response = client.GetAsync(url).Result;
+            var content = response.Content.ReadAsStringAsync().Result;
+
+            // parse json
+            var movies = JsonConvert.DeserializeObject<List<dynamic>>(content);
+
+            // initiate client and index
+            SearchClient algoliaClient = new("YOUR_APPLICATION_ID", "YOUR_WRITE_API_KEY");
+            SearchIndex index = algoliaClient.InitIndex("YOUR_INDEX_NAME");
+
+            try
+            {
+                index.SaveObjects(movies, autoGenerateObjectId: true);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+    }
+    ```
+    ``` go Go
+    package main
+
+    import (
+    "encoding/json"
+    "fmt"
+    "net/http"
+    "github.com/algolia/algoliasearch-client-go/v3/algolia/opt"
+    "github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+    )
+
+    func main() {
+    // read json file
+    url := "https://dashboard.algolia.com/sample_datasets/movie.json"
+    response, err := http.Get(url)
+
+    if err != nil {
+        fmt.Println("Could not open url")
+        return
+    }
+
+    defer response.Body.Close()
+
+    // parse json file to Movie struct
+    var movies []map[string]interface{}
+    err = json.NewDecoder(response.Body).Decode(&movies)
+
+    if err != nil {
+        fmt.Println("Could not decode body")
+        return
+    }
+
+    // initiate client
+    client := search.NewClient("YOUR_APPLICATION_ID", "YOU_WRITE_API_KEY")
+    index := client.InitIndex("YOUR_INDEX_NAME")
+
+    // push data to algolia
+    result, err := index.SaveObjects(movies, opt.AutoGenerateObjectIDIfNotExist(true))
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+
+    result.Wait()
+
+    fmt.Println("Done!")
+    }
+    ```
+    ``` java Java
+    package com.mycompany.app;
+
+    import java.io.InputStream;
+    import java.net.URI;
+    import java.net.URL;
+    import java.util.List;
+
+    import com.algolia.search.*;
+    import com.fasterxml.jackson.core.type.TypeReference;
+    import com.fasterxml.jackson.databind.JsonNode;
+    import com.fasterxml.jackson.databind.ObjectMapper;
+
+    public class App {
+        public static void main(String[] args) throws Exception {
+            URL url = new URI("https://dashboard.algolia.com/sample_datasets/movie.json").toURL();
+
+            InputStream stream = url.openStream();
+            ObjectMapper mapper = new ObjectMapper();
+
+            List<JsonNode> result = mapper.readValue(stream, new TypeReference<List<JsonNode>>() {});
+            stream.close();
+
+            SearchClient client = DefaultSearchClient.create("YOUR_APPLICATION_ID", "YOUR_WRITE_API_KEY");
+
+            SearchIndex<JsonNode> index = client.initIndex("YOUR_INDEX_NAME", JsonNode.class);
+
+            index.saveObjects(result, true);
+        }
+    }
+    ```
+    ``` javascript Javascript
+    const algoliasearch = require('algoliasearch')
+
+    fetch("https://dashboard.algolia.com/sample_datasets/movie.json")
+    .then((data) => data.json())
+    .then((records) => {
+        const client = algoliasearch(
+        "YOUR_APPLICATION_ID",
+        "YOUR_WRITE_API_KEY"
+        );
+
+        const index = client.initIndex("YOUR_INDEX_NAME");
+
+        index.saveObjects(records, { autoGenerateObjectIDIfNotExist: true });
+    })
+    .catch((error) => {
+        console.error(error);
+    });
+    ```
+    ``` kotlin Kotlin
+    package org.example
+
+    import com.algolia.search.client.ClientSearch
+    import com.algolia.search.model.APIKey
+    import com.algolia.search.model.ApplicationID
+    import com.algolia.search.model.IndexName
+    import kotlinx.serialization.json.Json
+    import kotlinx.serialization.json.JsonObject
+    import kotlinx.serialization.builtins.ListSerializer
+    import java.net.URI
+
+    suspend fun main() {
+        val url = URI.create("https://dashboard.algolia.com/sample_datasets/movie.json")
+        val json = url.toURL().readText()
+        val records: List<JsonObject> = Json.decodeFromString(ListSerializer(JsonObject.serializer()), json)
+
+        val client = ClientSearch(
+            applicationID = ApplicationID("YOUR_APPLICATION_ID"),
+            apiKey = APIKey("YOUR_WRITE_API_KEY")
+        )
+
+        val index = client.initIndex(IndexName("YOUR_INDEX_NAME"))
+
+        try {
+            index.saveObjects(JsonObject.serializer(), records)
+        } catch(e: Exception) {
+            println(e.message)
+        }
+    }
+    ```
+    ``` php PHP
+    <?php
+    require(__DIR__."/vendor/autoload.php");
+
+    use Algolia\AlgoliaSearch\SearchClient;
+
+    $url = "https://dashboard.algolia.com/sample_datasets/movie.json";
+    $response = file_get_contents($url);
+    $records = json_decode($response, true);
+
+    $client = SearchClient::create("YOUR_APPLICATION_ID", "YOUR_WRITE_API_KEY");
+    $index = $client->initIndex("YOUR_INDEX_NAME");
+
+    $index->saveObjects($records, [ 'autoGenerateObjectIDIfNotExist' => true ]);
+    ```
+    ``` python Python
+    from algoliasearch.search_client import SearchClient
+    import json
+    import logging
+    import requests
+
+    url = "https://dashboard.algolia.com/sample_datasets/movie.json"
+    records = requests.get(url).json()
+
+    # Connect and authenticate with your Algolia app
+    client = SearchClient.create('YOUR_APPLICATION_ID', 'YOUR_WRITE_API_KEY')
+
+    # Create a new index. An index stores the data that you want to make searchable in Algolia.
+    index = client.init_index('YOUR_INDEX_NAME')
+
+    try:
+    index.save_objects(records, {
+        # set autoGenerateObjectIDIfNotExist to false if your records contain an ObjectID
+        'autoGenerateObjectIDIfNotExist': True
+    })
+    except Exception as e:
+    logging.error(str(e))
+    ```
+    ``` ruby Ruby
+    require 'uri'
+    require 'algolia'
+
+    uri = URI('https://dashboard.algolia.com/sample_datasets/movie.json')
+    response = Net::HTTP.get_response(uri)
+
+    parsed_json = JSON.parse(response.body)
+
+    client = Algolia::Search::Client.create('YOUR_APPLICATION_ID', 'YOUR_WRITE_API_KEY')
+
+    index = client.init_index('YOUR_INDEX_NAME')
+    index.save_objects(parsed_json, auto_generate_object_id_if_not_exist: true)
+    ```
+    ``` scala Scala
+    import algolia.AlgoliaClient
+    import algolia.AlgoliaDsl._
+    import org.json4s.native.JsonMethods._
+    import scala.io.Source
+
+    object Main {
+        def main(args: Array[String]): Unit = {
+            val url = "https://dashboard.algolia.com/sample_datasets/movie.json"
+            val result = Source.fromURL(url).mkString
+
+            val nodes = parse(result)
+
+            implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+
+            val client = new AlgoliaClient("YOUR_APPLICATION_ID", "YOUR_WRITE_API_KEY")
+            try {
+                client.execute {
+                    index into "YOUR_INDEX_NAME" objects nodes.children
+                }
+            } catch {
+                case e: Throwable => println("Exception message: " + e.toString);
+            }
+        }
+    }
+    ```
+    ``` swift Swift
+    import Foundation
+    import AlgoliaSearchClient
+    import SwiftyJSON
+
+    let url = URL(string: "https://dashboard.algolia.com/sample_datasets/movie.json")!
+    let jsonData = try Data(contentsOf: url)
+    let movies = try! JSON(data: jsonData)
+    // Connect and authenticate with your Algolia app
+    let client = SearchClient(appID: "YOUR_APPLICATION_ID", apiKey: "YOUR_WRITE_API_KEY")
+
+    // Create a new index. An index stores the data that you want to make searchable in Algolia.
+    let index = client.index(withName: "YOUR_INDEX_NAME")
+    do {
+        try index.saveObjects(movies.arrayValue, autoGeneratingObjectID: true)
+    } catch {
+        print(error.localizedDescription)
+    }
+    ```
+    ``` php Django
+    #To INSTALLED_APPS array add algoliasearch_django and to settings.py file add this object:
+    ALGOLIA = {
+    'APPLICATION_ID': 'YOUR_APPLICATION_ID',
+    'API_KEY': 'YOUR_WRITE_API_KEY'
+    }
+
+    #Create an index.py inside each application that contains the models you want to index. Inside this file, call algoliasearch.register() for each of the models you want to index:
+    import algoliasearch_django as algoliasearch
+
+    from .models import YourModel
+
+    algoliasearch.register(YourModel)
+    ```
+    ``` php Laravel
+    // Inside your .env file:
+    ALGOLIA_APP_ID="YOUR_APPLICATION_ID"
+    ALGOLIA_API_KEY="YOUR_WRITE_API_KEY"
+
+    // Add the Laravel\Scout\Searchable trait to the model you would like to make searchable. This trait registers a model observer to keep the model in sync with Algolia:
+    <?php
+    namespace App;
+
+    use Laravel\Scout\Searchable;
+    use Illuminate\Database\Eloquent\Model;
+
+    class Article extends Model
+    {
+    use Searchable;
+    }
+
+    //When setting up Scout Extended, you probably have existing data that you would like to import. There is a scout:import Artisan command to import data:
+    php artisan scout:import
+    ```
+    ``` ruby Rails
+    #Create a new file config/initializers/algoliasearch.rb to configure the gem. You must then setup your Algolia credentials with your application ID and API key.
+    AlgoliaSearch.configuration = {
+    application_id: 'YOUR_APPLICATION_ID'
+    api_key: 'YOUR_WRITE_API_KEY'
+    }
+
+    #Add the AlgoliaSearch module and algoliasearch block to each model you would like indexed.
+    class Contact < ActiveRecord::Base
+    include AlgoliaSearch
+
+    algoliasearch do
+        # Use all default configuration
+    end
+    end
+
+    #Run the following command to index all models including with the AlgoliaSearch module in your app.
+    rake algoliasearch:reindex
+    ```
+</CodeGroup>
+This method fully replaces an existing record. If there's an error saving one of your records, none of them will be added to your index. <a href="https://www.algolia.com/doc/api-reference/api-methods/save-objects/?client=go&utm_medium=page_link&utm_source=dashboard" target="_blank">Learn more about the Save Objects method.</a>
+
+<Note>To get access to your own Application ID & API Keys, go to <a href="https://dashboard.algolia.com/account/api-keys/all" target="_blank">API Keys</a> page with Algolia. Alternatively, you can interact with the Algolia CLI to get your information.</Note>
+
+# Using Integrations
+If you prefer to use one of our integrations, this guide will help you seamlessly connect Algolia with your existing platform, whether it's Shopify, WordPress, Firebase, or another supported service. You'll learn how to effortlessly set up the integration, configure your index, and sync your data, enabling Algolia's powerful search capabilities within your application. By following these steps, you'll quickly enhance your platform with fast, relevant search results, providing an improved user experience without needing extensive custom development.
