@@ -117,236 +117,255 @@ You can use the data to improve the relevance of your search results and gain in
 
 1. Copy the pixel code and paste it into the **Algolia web pixels** area in the **Code** section provided by Shopify.
 
-   ```jsjs
-    // Add Algolia Insights cdn
-    const ALGOLIA_INSIGHTS_SRC =
-      'https://cdn.jsdelivr.net/npm/search-insights@2.16.3/dist/search-insights.min.js';
-    !function(e,a,t,n,s,i,c){e.AlgoliaAnalyticsObject=s,e[s]=e[s]||function(){
-    (e[s].queue=e[s].queue||[]).push(arguments)},e[s].version=(n.match(/@([^\/]+)\/?/) || [])[1],i=a.createElement(t),c=a.getElementsByTagName(t)[0],
-    i.async=1,i.src=n,c.parentNode.insertBefore(i,c)
-    }(window,document,"script",ALGOLIA_INSIGHTS_SRC,"aa");
+   ```js js
+   // Add Algolia Insights cdn
+   const ALGOLIA_INSIGHTS_SRC =
+     "https://cdn.jsdelivr.net/npm/search-insights@2.16.3/dist/search-insights.min.js";
+   !(function (e, a, t, n, s, i, c) {
+     (e.AlgoliaAnalyticsObject = s),
+       (e[s] =
+         e[s] ||
+         function () {
+           (e[s].queue = e[s].queue || []).push(arguments);
+         }),
+       (e[s].version = (n.match(/@([^\/]+)\/?/) || [])[1]),
+       (i = a.createElement(t)),
+       (c = a.getElementsByTagName(t)[0]),
+       (i.async = 1),
+       (i.src = n),
+       c.parentNode.insertBefore(i, c);
+   })(window, document, "script", ALGOLIA_INSIGHTS_SRC, "aa");
 
-    // Enrich line items with queryID
-    const enrichLineItemsWithQueryID = (items, purchases) =>
-      items.map(item => {
-        const purchaseItem = purchases.find(purchase =>
-          purchase.objectIDs.includes(item.variant.id)
-        );
-        if (purchaseItem) {
-          return {
-            ...item,
-            variant: {
-              ...item.variant,
-              queryID: purchaseItem.queryID,
-            },
-          };
-        }
-        return item;
-      });
+   // Enrich line items with queryID
+   const enrichLineItemsWithQueryID = (items, purchases) =>
+     items.map((item) => {
+       const purchaseItem = purchases.find((purchase) =>
+         purchase.objectIDs.includes(item.variant.id),
+       );
+       if (purchaseItem) {
+         return {
+           ...item,
+           variant: {
+             ...item.variant,
+             queryID: purchaseItem.queryID,
+           },
+         };
+       }
+       return item;
+     });
 
-    // Filter items with and without queryID
-    const filterItemsWithQueryID = enrichedItems =>
-      enrichedItems.filter(item => !!item.variant.queryID);
-    const filterItemsWithoutQueryID = enrichedItems =>
-      enrichedItems.filter(item => !item.variant.queryID);
+   // Filter items with and without queryID
+   const filterItemsWithQueryID = (enrichedItems) =>
+     enrichedItems.filter((item) => !!item.variant.queryID);
+   const filterItemsWithoutQueryID = (enrichedItems) =>
+     enrichedItems.filter((item) => !item.variant.queryID);
 
-    // Function to create random user token if one isn't found
-    function createRandomUserToken() {
-      return Array.from(Array(20), () =>
-        Math.floor(Math.random() * 36).toString(36)
-      ).join('');
-    }
+   // Function to create random user token if one isn't found
+   function createRandomUserToken() {
+     return Array.from(Array(20), () =>
+       Math.floor(Math.random() * 36).toString(36),
+     ).join("");
+   }
 
-    // Constant Storage keys
-    const CONFIG_STORAGE_KEY = 'algolia_config';
-    const ANALYTICS_STORAGE_KEY = 'algolia_analytics_options';
-    const CLICK_STORAGE_KEY = 'algolia_analytics_clicked_objects';
-    const PURCHASE_STORAGE_KEY = 'algolia_analytics_purchase_objects';
+   // Constant Storage keys
+   const CONFIG_STORAGE_KEY = "algolia_config";
+   const ANALYTICS_STORAGE_KEY = "algolia_analytics_options";
+   const CLICK_STORAGE_KEY = "algolia_analytics_clicked_objects";
+   const PURCHASE_STORAGE_KEY = "algolia_analytics_purchase_objects";
 
-    analytics.subscribe('product_added_to_cart', async event => {
-      try {
-        // Get all stored data from the Shopping session
-        const analyticsData = await browser.localStorage.getItem(
-          ANALYTICS_STORAGE_KEY
-        );
-        const analyticsOptions = analyticsData ? JSON.parse(analyticsData) : {};
+   analytics.subscribe("product_added_to_cart", async (event) => {
+     try {
+       // Get all stored data from the Shopping session
+       const analyticsData = await browser.localStorage.getItem(
+         ANALYTICS_STORAGE_KEY,
+       );
+       const analyticsOptions = analyticsData ? JSON.parse(analyticsData) : {};
 
-        const config = await browser.localStorage.getItem(CONFIG_STORAGE_KEY);
-        const algoliaConfig = JSON.parse(config);
-        const { app_id, search_api_key, index_name, user_token } = algoliaConfig;
+       const config = await browser.localStorage.getItem(CONFIG_STORAGE_KEY);
+       const algoliaConfig = JSON.parse(config);
+       const { app_id, search_api_key, index_name, user_token } = algoliaConfig;
 
-        const clickedObjects = await browser.localStorage.getItem(
-          CLICK_STORAGE_KEY
-        );
-        const previousClickItems = clickedObjects ? JSON.parse(clickedObjects) : [];
+       const clickedObjects =
+         await browser.localStorage.getItem(CLICK_STORAGE_KEY);
+       const previousClickItems = clickedObjects
+         ? JSON.parse(clickedObjects)
+         : [];
 
-        const cartLine = event.data.cartLine;
-        const variant = cartLine.merchandise;
-        const product = variant.product;
-        const cartLineCostCurrency = cartLine.cost.totalAmount.currencyCode;
+       const cartLine = event.data.cartLine;
+       const variant = cartLine.merchandise;
+       const product = variant.product;
+       const cartLineCostCurrency = cartLine.cost.totalAmount.currencyCode;
 
-        let selectedRecord = previousClickItems.find(record =>
-          record.objectIDs.includes(variant.id)
-        );
-        let algoliaInsightMethod = 'addedToCartObjectIDsAfterSearch';
+       let selectedRecord = previousClickItems.find((record) =>
+         record.objectIDs.includes(variant.id),
+       );
+       let algoliaInsightMethod = "addedToCartObjectIDsAfterSearch";
 
-        // Look for the parent (product) if the variant is not found.
-        if (!selectedRecord) {
-          const productIdClicked = previousClickItems.find(
-            record => record.productId == product.id
-          );
+       // Look for the parent (product) if the variant is not found.
+       if (!selectedRecord) {
+         const productIdClicked = previousClickItems.find(
+           (record) => record.productId == product.id,
+         );
 
-          // Reassign the objectIDs to the variant id if the parent is found.
-          if (productIdClicked) {
-            productIdClicked.objectIDs = [variant.id];
-            selectedRecord = productIdClicked;
-          }
-        }
+         // Reassign the objectIDs to the variant id if the parent is found.
+         if (productIdClicked) {
+           productIdClicked.objectIDs = [variant.id];
+           selectedRecord = productIdClicked;
+         }
+       }
 
-        // If the variant is not found we send what we have
-        if (!selectedRecord) {
-          algoliaInsightMethod = 'addedToCartObjectIDs';
-          selectedRecord = {
-            index: index_name,
-            objectIDs: [variant.id],
-          };
-        }
+       // If the variant is not found we send what we have
+       if (!selectedRecord) {
+         algoliaInsightMethod = "addedToCartObjectIDs";
+         selectedRecord = {
+           index: index_name,
+           objectIDs: [variant.id],
+         };
+       }
 
-        selectedRecord.currency = cartLineCostCurrency;
-        selectedRecord.eventName = 'Add To Cart';
+       selectedRecord.currency = cartLineCostCurrency;
+       selectedRecord.eventName = "Add To Cart";
 
-        aa('init', {
-          appId: app_id,
-          apiKey: search_api_key,
-          partial: true,
-          userToken: user_token || createRandomUserToken(),
-          ...analyticsOptions,
-        });
-        aa('addAlgoliaAgent', 'Shopify Web Pixels');
+       aa("init", {
+         appId: app_id,
+         apiKey: search_api_key,
+         partial: true,
+         userToken: user_token || createRandomUserToken(),
+         ...analyticsOptions,
+       });
+       aa("addAlgoliaAgent", "Shopify Web Pixels");
 
-        delete selectedRecord.positions;
-        aa(algoliaInsightMethod, selectedRecord);
+       delete selectedRecord.positions;
+       aa(algoliaInsightMethod, selectedRecord);
 
-        // Remove the item from local storage
-        const updatedClickItems = previousClickItems.filter(
-          item => !item.objectIDs.includes(variant.id)
-        );
+       // Remove the item from local storage
+       const updatedClickItems = previousClickItems.filter(
+         (item) => !item.objectIDs.includes(variant.id),
+       );
 
-        await browser.localStorage.setItem(
-          CLICK_STORAGE_KEY,
-          JSON.stringify(updatedClickItems)
-        );
+       await browser.localStorage.setItem(
+         CLICK_STORAGE_KEY,
+         JSON.stringify(updatedClickItems),
+       );
 
-        // Add clicked event to the purchase cookie
-        const purchaseStorage = await browser.localStorage.getItem(
-          PURCHASE_STORAGE_KEY
-        );
-        const purchaseObjects = purchaseStorage ? JSON.parse(purchaseStorage) : [];
-        purchaseObjects.push(selectedRecord);
-        await browser.localStorage.setItem(
-          PURCHASE_STORAGE_KEY,
-          JSON.stringify(purchaseObjects)
-        );
-      } catch (error) {
-        console.error(error);
-      }
-    });
+       // Add clicked event to the purchase cookie
+       const purchaseStorage =
+         await browser.localStorage.getItem(PURCHASE_STORAGE_KEY);
+       const purchaseObjects = purchaseStorage
+         ? JSON.parse(purchaseStorage)
+         : [];
+       purchaseObjects.push(selectedRecord);
+       await browser.localStorage.setItem(
+         PURCHASE_STORAGE_KEY,
+         JSON.stringify(purchaseObjects),
+       );
+     } catch (error) {
+       console.error(error);
+     }
+   });
 
-    analytics.subscribe('checkout_completed', async event => {
-      try {
-        // Get all stored data from the Shopping session
-        const analyticsData = await browser.localStorage.getItem(
-          ANALYTICS_STORAGE_KEY
-        );
-        const analyticsOptions = analyticsData ? JSON.parse(analyticsData) : {};
+   analytics.subscribe("checkout_completed", async (event) => {
+     try {
+       // Get all stored data from the Shopping session
+       const analyticsData = await browser.localStorage.getItem(
+         ANALYTICS_STORAGE_KEY,
+       );
+       const analyticsOptions = analyticsData ? JSON.parse(analyticsData) : {};
 
-        const config = await browser.localStorage.getItem(CONFIG_STORAGE_KEY);
-        const algoliaConfig = JSON.parse(config);
-        const { app_id, search_api_key, index_name, user_token } = algoliaConfig;
+       const config = await browser.localStorage.getItem(CONFIG_STORAGE_KEY);
+       const algoliaConfig = JSON.parse(config);
+       const { app_id, search_api_key, index_name, user_token } = algoliaConfig;
 
-        const purchaseDataStorage = await browser.localStorage.getItem(
-          PURCHASE_STORAGE_KEY
-        );
-        const purchaseData = purchaseDataStorage ? JSON.parse(purchaseDataStorage) : [];
+       const purchaseDataStorage =
+         await browser.localStorage.getItem(PURCHASE_STORAGE_KEY);
+       const purchaseData = purchaseDataStorage
+         ? JSON.parse(purchaseDataStorage)
+         : [];
 
-        const lineItems = event.data.checkout.lineItems;
+       const lineItems = event.data.checkout.lineItems;
 
-        // Combine the purchase data with the line items
-        // Filter out the line items that don't have a queryID and the ones that do
-        const allEnrichedPurchaseObjects = enrichLineItemsWithQueryID(
-          lineItems,
-          purchaseData
-        );
-        const purchaseObjectWithQueryID = filterItemsWithQueryID(
-          allEnrichedPurchaseObjects
-        );
-        const purchaseObjectsWithOutQueryID = filterItemsWithoutQueryID(
-          allEnrichedPurchaseObjects
-        );
+       // Combine the purchase data with the line items
+       // Filter out the line items that don't have a queryID and the ones that do
+       const allEnrichedPurchaseObjects = enrichLineItemsWithQueryID(
+         lineItems,
+         purchaseData,
+       );
+       const purchaseObjectWithQueryID = filterItemsWithQueryID(
+         allEnrichedPurchaseObjects,
+       );
+       const purchaseObjectsWithOutQueryID = filterItemsWithoutQueryID(
+         allEnrichedPurchaseObjects,
+       );
 
-        aa('init', {
-          appId: app_id,
-          apiKey: search_api_key,
-          partial: true,
-          userToken: user_token || createRandomUserToken(),
-          ...analyticsOptions,
-        });
-        aa('addAlgoliaAgent', 'Shopify Web Pixels');
+       aa("init", {
+         appId: app_id,
+         apiKey: search_api_key,
+         partial: true,
+         userToken: user_token || createRandomUserToken(),
+         ...analyticsOptions,
+       });
+       aa("addAlgoliaAgent", "Shopify Web Pixels");
 
-        // Add all the items purchased objects with query IDs
-        if (purchaseObjectWithQueryID.length > 0) {
-          const purchasedObjectIDsAfterSearch = {
-            eventName: 'Checkout Completed',
-            index: index_name,
-            objectIDs: purchaseObjectWithQueryID.map(item => item.variant.id),
-            objectData: purchaseObjectWithQueryID.map(item => ({
-              queryID: item.variant.queryID,
-              price: item.variant.price.amount,
-              discount: item.discountAllocations[0] ? item.discountAllocations[0].amount.amount : 0,
-              quantity: item.quantity,
-            })),
-            value: event.data.checkout.subtotalPrice.amount,
-            currency: event.data.checkout.subtotalPrice.currencyCode,
-          };
+       // Add all the items purchased objects with query IDs
+       if (purchaseObjectWithQueryID.length > 0) {
+         const purchasedObjectIDsAfterSearch = {
+           eventName: "Checkout Completed",
+           index: index_name,
+           objectIDs: purchaseObjectWithQueryID.map((item) => item.variant.id),
+           objectData: purchaseObjectWithQueryID.map((item) => ({
+             queryID: item.variant.queryID,
+             price: item.variant.price.amount,
+             discount: item.discountAllocations[0]
+               ? item.discountAllocations[0].amount.amount
+               : 0,
+             quantity: item.quantity,
+           })),
+           value: event.data.checkout.subtotalPrice.amount,
+           currency: event.data.checkout.subtotalPrice.currencyCode,
+         };
 
-          aa('purchasedObjectIDsAfterSearch', {
-            ...purchasedObjectIDsAfterSearch,
-          });
-        }
+         aa("purchasedObjectIDsAfterSearch", {
+           ...purchasedObjectIDsAfterSearch,
+         });
+       }
 
-        if (purchaseObjectsWithOutQueryID.length > 0) {
-          const purchasedObjectIDs = {
-            eventName: 'Checkout Completed',
-            index: index_name,
-            objectIDs: purchaseObjectsWithOutQueryID.map(item => item.variant.id),
-            objectData: purchaseObjectsWithOutQueryID.map(item => ({
-              price: item.variant.price.amount,
-              discount: item.discountAllocations[0] ? item.discountAllocations[0].amount.amount : 0,
-              quantity: item.quantity,
-            })),
-            value: event.data.checkout.subtotalPrice.amount,
-            currency: event.data.checkout.subtotalPrice.currencyCode,
-          };
+       if (purchaseObjectsWithOutQueryID.length > 0) {
+         const purchasedObjectIDs = {
+           eventName: "Checkout Completed",
+           index: index_name,
+           objectIDs: purchaseObjectsWithOutQueryID.map(
+             (item) => item.variant.id,
+           ),
+           objectData: purchaseObjectsWithOutQueryID.map((item) => ({
+             price: item.variant.price.amount,
+             discount: item.discountAllocations[0]
+               ? item.discountAllocations[0].amount.amount
+               : 0,
+             quantity: item.quantity,
+           })),
+           value: event.data.checkout.subtotalPrice.amount,
+           currency: event.data.checkout.subtotalPrice.currencyCode,
+         };
 
-          aa('purchasedObjectIDs', {
-            ...purchasedObjectIDs,
-          });
-        }
+         aa("purchasedObjectIDs", {
+           ...purchasedObjectIDs,
+         });
+       }
 
-        // Clear the purchase data from the storage
-        const updatePurchaseItems = purchaseData.filter(
-          purchase =>
-            !lineItems.some(item => item.variant.id === purchase.objectIDs[0])
-        );
+       // Clear the purchase data from the storage
+       const updatePurchaseItems = purchaseData.filter(
+         (purchase) =>
+           !lineItems.some((item) => item.variant.id === purchase.objectIDs[0]),
+       );
 
-        await browser.localStorage.setItem(
-          PURCHASE_STORAGE_KEY,
-          JSON.stringify(updatePurchaseItems)
-        );
-      } catch (error) {
-        console.error(error);
-      }
-    });
+       await browser.localStorage.setItem(
+         PURCHASE_STORAGE_KEY,
+         JSON.stringify(updatePurchaseItems),
+       );
+     } catch (error) {
+       console.error(error);
+     }
+   });
    ```
 
 1. Click **Save**, then **Connect**.

@@ -46,7 +46,7 @@ Metafields are grouped under these keys:
 
 The following example shows how the Algolia configuration settings are stored in the Shop metafields.
 
-```jsonjson
+```json json
 {
    "id": 22262894166073,
    "namespace": "algolia_search",
@@ -93,7 +93,7 @@ You can't update metafields in the Shopify admin.
 
 1. Open the **Layouts** folder and open the `theme.liquid` file. Locate the line for including `algolia_config.js`.
 
-   ```liquidliquid
+   ```liquid liquid
    <!-- Algolia head -->
    {{ 'algolia_config.js' | asset_url | script_tag }}
    ```
@@ -102,7 +102,7 @@ You can't update metafields in the Shopify admin.
 
 1. Replace this line with:
 
-   ```liquidliquid
+   ```liquid liquid
    <!-- Algolia head -->
    {% render 'algolia_config' %}
    ```
@@ -117,7 +117,7 @@ You can't update metafields in the Shopify admin.
 
 1. Paste the following code into the new snippet.
 
-   ```liquidliquid
+   ```liquid liquid
    <script>
       window.algoliaShopify = window.algoliaShopify || {};
       {% if shop.metafields.algolia_search.algolia_config %}

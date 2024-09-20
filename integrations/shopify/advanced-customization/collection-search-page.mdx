@@ -114,23 +114,30 @@ To create a more accessible interface to merchandise your categories, we advise 
 
    Add a [custom hook](/integration/shopify/building-search-ui/frontend-custom-events/#add-custom-hooks) to your Shopify theme to update the search filter using the [`beforeInstantSearchFiltersString`](/integration/shopify/building-search-ui/frontend-custom-events/#beforeinstantsearchfiltersstring) hook:
 
-   ```jsjs
-   document.addEventListener('algolia.hooks.initialize', function() {
-     algoliaShopify.hooks.registerHook('beforeInstantSearchFiltersString', function(defaultFilter) {
-       if (defaultFilter && defaultFilter.includes("collection_ids")) {
-         const collectionIDFilterRegex = /collection_ids:"\w+"/g;
-         const matches = window.location.pathname.match(/\/collections\/([^/]+)/i);
-         const collectionHandle = (matches && matches.length === 2) ? matches[1] : null;
-
-         if (collectionHandle) {
-           return defaultFilter.replace(
-             collectionIDFilterRegex, "collections:" + collectionHandle
+   ```js js
+   document.addEventListener("algolia.hooks.initialize", function () {
+     algoliaShopify.hooks.registerHook(
+       "beforeInstantSearchFiltersString",
+       function (defaultFilter) {
+         if (defaultFilter && defaultFilter.includes("collection_ids")) {
+           const collectionIDFilterRegex = /collection_ids:"\w+"/g;
+           const matches = window.location.pathname.match(
+             /\/collections\/([^/]+)/i,
            );
-         }
-       }
+           const collectionHandle =
+             matches && matches.length === 2 ? matches[1] : null;
 
-       return defaultFilter;
-     });
+           if (collectionHandle) {
+             return defaultFilter.replace(
+               collectionIDFilterRegex,
+               "collections:" + collectionHandle,
+             );
+           }
+         }
+
+         return defaultFilter;
+       },
+     );
    });
    ```
 

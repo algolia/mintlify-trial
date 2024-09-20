@@ -63,13 +63,13 @@ Decode a JSON-encoded string.
 
 Transform this string:
 
-```txttxt
+```txt txt
 "[{\"value\":2.0,\"unit\":\"oz\"},{\"value\":3.0,\"unit\":\"oz\"}]"
 ```
 
 Into this record:
 
-```jsonjson
+```json json
 [
   { "value": 2.0, "unit": "oz" },
   { "value": 3.0, "unit": "oz" }
@@ -83,19 +83,19 @@ which itself is also a (nested) JSON object.
 
 For example, a record with three metafields `colors.main`, `colors.secondary`, and `contact.partner`:
 
-```jsoncjsonc
+```jsonc jsonc
 {
   "title": "Awesome dress",
   // ... Other attributes
   "meta": {
     "colors": {
       "main": "white",
-      "secondary": "gold"
+      "secondary": "gold",
     },
     "contact": {
-      "partner": "sellonlineshop.co"
-    }
-  }
+      "partner": "sellonlineshop.co",
+    },
+  },
 }
 ```
 

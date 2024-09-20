@@ -24,63 +24,69 @@ This example shows how to display on-sale products in a separate list (in additi
 
 You can achieve this by creating a [source](/ui-libraries/autocomplete/core-concepts/sources/) that searches into your product index, and applies a filter to only include items where the `named_tags.onSale` attribute is true.
 
-```jsjs
+```js js
 document.addEventListener("algolia.hooks.initialize", function () {
   // Add the custom plugin to the Autocomplete.
-  algoliaShopify.hooks.registerHook("beforeAutocompleteOptions", function (options) {
-    const { searchClient } = window.algoliaShopify;
-    const { getAlgoliaResults } = window.algoliaShopify.externals;
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteOptions",
+    function (options) {
+      const { searchClient } = window.algoliaShopify;
+      const { getAlgoliaResults } = window.algoliaShopify.externals;
 
-    const saleItemsPlugin = {
-      name: 'custom-sale-items-plugin',
-      getSources({ query }) {
-        return [
-          {
-            sourceId: "saleItems",
-            getItems() {
-              return getAlgoliaResults({
-                searchClient,
-                queries: [{
-                  indexName: "shopify_products",
-                  query,
-                  params: {
-                    filters: "named_tags.onSale:true"
-                  }
-                }]
-              })
-            },
-            templates: {
-              header({ html, state }) {
-                return html`
-                  <div class="aa-SourceHeader">
+      const saleItemsPlugin = {
+        name: "custom-sale-items-plugin",
+        getSources({ query }) {
+          return [
+            {
+              sourceId: "saleItems",
+              getItems() {
+                return getAlgoliaResults({
+                  searchClient,
+                  queries: [
+                    {
+                      indexName: "shopify_products",
+                      query,
+                      params: {
+                        filters: "named_tags.onSale:true",
+                      },
+                    },
+                  ],
+                });
+              },
+              templates: {
+                header({ html, state }) {
+                  return html` <div class="aa-SourceHeader">
                     <span class="aa-SourceHeaderTitle">Sale Items</span>
                     <div class="aa-SourceHeaderLine" />
                   </div>`;
+                },
+                item({ item, components, html }) {
+                  return html`${item.title}`;
+                },
               },
-              item({ item, components, html }) {
-                return html`${item.title}`;
-              }
-            }
-          },
-        ];
-      },
-    };
-    options.plugins.push(saleItemsPlugin);
+            },
+          ];
+        },
+      };
+      options.plugins.push(saleItemsPlugin);
 
-    return options;
-  });
+      return options;
+    },
+  );
 
   // Add the output of the custom plugin to the autocomplate layout.
-  algoliaShopify.hooks.registerHook("beforeAutocompleteMainTemplate", function (_defaultTemplate, templateOptions, elements, displaySuggestions) {
-    const { html } = templateOptions;
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteMainTemplate",
+    function (_defaultTemplate, templateOptions, elements, displaySuggestions) {
+      const { html } = templateOptions;
 
-    // Add the custom plugin output to the Autocomplete template by referencing
-    // the custom plugin sourceId - `saleItems`.
-    return html`
-      <div class="aa-PanelLayout aa-Panel--scrollable">
-        <div class="aa-PanelSections">
-          <div class="aa-PanelSection--left">
-            ${displaySuggestions &&
+      // Add the custom plugin output to the Autocomplete template by referencing
+      // the custom plugin sourceId - `saleItems`.
+      return html`
+        <div class="aa-PanelLayout aa-Panel--scrollable">
+          <div class="aa-PanelSections">
+            <div class="aa-PanelSection--left">
+              ${displaySuggestions &&
               html`
                 <div class="aa-SourceHeader">
                   <span class="aa-SourceHeaderTitle"
@@ -90,16 +96,16 @@ document.addEventListener("algolia.hooks.initialize", function () {
                 </div>
                 ${elements.querySuggestionsPlugin}
               `}
-            ${elements.collections} ${elements.articles} ${elements.pages}
-            ${elements.redirectUrlPlugin}
-          </div>
-          <div class="aa-PanelSection--right">
-            ${elements.saleItems}
-            ${elements.products}
+              ${elements.collections} ${elements.articles} ${elements.pages}
+              ${elements.redirectUrlPlugin}
+            </div>
+            <div class="aa-PanelSection--right">
+              ${elements.saleItems} ${elements.products}
+            </div>
           </div>
         </div>
-      </div>
-    `;
-  });
+      `;
+    },
+  );
 });
 ```

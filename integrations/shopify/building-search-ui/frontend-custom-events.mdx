@@ -47,7 +47,7 @@ The next step is to include this new JavaScript file in the theme:
 1. Scroll to the bottom of the `theme.liquid` file and add the following just before the `</body>` tag.
    Replace `NEW_FILE` with the filename of the JavaScript file with your custom hook:
 
-   ```htmlhtml
+   ```html html
    +    <script src="{{ 'NEW_FILE.js' | asset_url }}" defer="defer"></script>
      </body>
    </html>
@@ -64,9 +64,14 @@ and call the `algoliaShopify.hooks.registerHook` function.
 
 For example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteOptions', function (options) { /* */ });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteOptions",
+    function (options) {
+      /* */
+    },
+  );
 });
 ```
 
@@ -108,13 +113,16 @@ Sets [parameters](/ui-libraries/autocomplete/api-reference/autocomplete-js/autoc
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteOptions', function(options) {
-    // Change the placeholder text of the autocomplete menu
-    options.placeholder = "Search Our Products";
-    return options;
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteOptions",
+    function (options) {
+      // Change the placeholder text of the autocomplete menu
+      options.placeholder = "Search Our Products";
+      return options;
+    },
+  );
 });
 ```
 
@@ -124,12 +132,15 @@ Adds [filter parameter](/api-reference/api-parameters/filters/) to the autocompl
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteFiltersString', function(_defaultFilter) {
-    // Don't return the default filter and return a custom filter
-    return 'price > 17';
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteFiltersString",
+    function (_defaultFilter) {
+      // Don't return the default filter and return a custom filter
+      return "price > 17";
+    },
+  );
 });
 ```
 
@@ -140,18 +151,21 @@ of the [`createRedirectUrlPlugin`](/ui-libraries/autocomplete/api-reference/auto
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteRedirectUrlOptions', function(options) {
-    // Change the default template for rendering redirect items
-    return {
-      templates: {
-        item({ html, state }) {
-          return html`<a className="myCustomClass">${state.query}</a>`;
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteRedirectUrlOptions",
+    function (options) {
+      // Change the default template for rendering redirect items
+      return {
+        templates: {
+          item({ html, state }) {
+            return html`<a className="myCustomClass">${state.query}</a>`;
+          },
         },
-      },
-    };
-  });
+      };
+    },
+  );
 });
 ```
 
@@ -170,16 +184,18 @@ The `elements` object has the following properties:
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteMainTemplate', function(_defaultTemplate, templateOptions, elements, displaySuggestions) {
-    const { html } = templateOptions;
-    // Don't return the default template and return a custom two-column layout instead
-    return html`
-      <div class="aa-PanelLayout aa-Panel--scrollable">
-        <div class="aa-PanelSections">
-          <div class="aa-PanelSection--left">
-            ${displaySuggestions &&
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteMainTemplate",
+    function (_defaultTemplate, templateOptions, elements, displaySuggestions) {
+      const { html } = templateOptions;
+      // Don't return the default template and return a custom two-column layout instead
+      return html`
+        <div class="aa-PanelLayout aa-Panel--scrollable">
+          <div class="aa-PanelSections">
+            <div class="aa-PanelSection--left">
+              ${displaySuggestions &&
               html`
                 <div class="aa-SourceHeader">
                   <span class="aa-SourceHeaderTitle"
@@ -189,16 +205,15 @@ document.addEventListener('algolia.hooks.initialize', function() {
                 </div>
                 ${elements.querySuggestionsPlugin}
               `}
-            ${elements.collections} ${elements.articles} ${elements.pages}
-            ${elements.redirectUrlPlugin}
-          </div>
-          <div class="aa-PanelSection--right">
-            ${elements.products}
+              ${elements.collections} ${elements.articles} ${elements.pages}
+              ${elements.redirectUrlPlugin}
+            </div>
+            <div class="aa-PanelSection--right">${elements.products}</div>
           </div>
         </div>
-      </div>
-    `;
-  });
+      `;
+    },
+  );
 });
 ```
 
@@ -208,18 +223,19 @@ Renders the product section in the autocomplete menu.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteMainProductsTemplate', function(_defaultTemplate, templateOptions, elements) {
-    const { html } = templateOptions;
-    return html`
-      <div class="aa-PanelLayout aa-Panel--scrollable">
-        <div class="aa-PanelSection">
-          ${elements.products}
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteMainProductsTemplate",
+    function (_defaultTemplate, templateOptions, elements) {
+      const { html } = templateOptions;
+      return html`
+        <div class="aa-PanelLayout aa-Panel--scrollable">
+          <div class="aa-PanelSection">${elements.products}</div>
         </div>
-      </div>
-    `;
-  });
+      `;
+    },
+  );
 });
 ```
 
@@ -229,21 +245,27 @@ Renders when there are no search results.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteNoResultsTemplate', function(_defaultTemplate, templateOptions) {
-    const { html, state } = templateOptions;
-    return html`
-      <div class="aa-PanelLayout aa-Panel--scrollable">
-        <p class="aa-NoResultsHeader">
-          ${algoliaShopify.translation_helpers.no_result_for(state.query)}
-        </p>
-        <a class="aa-NoResultsLink" href="${window.Shopify.routes.root}search?q=">
-          ${algoliaShopify.translations.allProducts}
-        </a>
-      </div>
-    `;
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteNoResultsTemplate",
+    function (_defaultTemplate, templateOptions) {
+      const { html, state } = templateOptions;
+      return html`
+        <div class="aa-PanelLayout aa-Panel--scrollable">
+          <p class="aa-NoResultsHeader">
+            ${algoliaShopify.translation_helpers.no_result_for(state.query)}
+          </p>
+          <a
+            class="aa-NoResultsLink"
+            href="${window.Shopify.routes.root}search?q="
+          >
+            ${algoliaShopify.translations.allProducts}
+          </a>
+        </div>
+      `;
+    },
+  );
 });
 ```
 
@@ -253,22 +275,25 @@ Renders a header section at the top of the autocomplete results panel.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteHeaderTemplate', function(_defaultTemplate, templateOptions, resource) {
-    const { html, state } = templateOptions;
-    return html`
-      <div class="aa-SourceHeader">
-        <span class="aa-SourceHeaderTitle">
-          ${algoliaShopify.translation_helpers.render_title(
-            resource,
-            state.query
-          )}
-        </span>
-        <div class="aa-SourceHeaderLine" />
-      </div>
-    `;
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteHeaderTemplate",
+    function (_defaultTemplate, templateOptions, resource) {
+      const { html, state } = templateOptions;
+      return html`
+        <div class="aa-SourceHeader">
+          <span class="aa-SourceHeaderTitle">
+            ${algoliaShopify.translation_helpers.render_title(
+              resource,
+              state.query,
+            )}
+          </span>
+          <div class="aa-SourceHeaderLine" />
+        </div>
+      `;
+    },
+  );
 });
 ```
 
@@ -279,22 +304,25 @@ To render a footer, select the **Show See All products** option in the Autocompl
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteFooterTemplate', function(_defaultTemplate, templateOptions) {
-    const { html, state } = templateOptions;
-    return html`
-      <div class="aa-footer">
-        <a
-          class="aa-SeeAllBtn"
-          href="${window.Shopify.routes.root}search?q=${state.query}"
-        >
-          ${algoliaShopify.translations.allProducts}
-          (${algoliaShopify.helpers.formatNumber(state.context.nbProducts)})
-        </a>
-      </div>
-    `;
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteFooterTemplate",
+    function (_defaultTemplate, templateOptions) {
+      const { html, state } = templateOptions;
+      return html`
+        <div class="aa-footer">
+          <a
+            class="aa-SeeAllBtn"
+            href="${window.Shopify.routes.root}search?q=${state.query}"
+          >
+            ${algoliaShopify.translations.allProducts}
+            (${algoliaShopify.helpers.formatNumber(state.context.nbProducts)})
+          </a>
+        </div>
+      `;
+    },
+  );
 });
 ```
 
@@ -304,7 +332,7 @@ Template for rendering each product hit in the autocomplete results.
 
 Example:
 
-```jsjs
+```js js
 document.addEventListener("algolia.hooks.initialize", function () {
   algoliaShopify.hooks.registerHook(
     "beforeAutocompleteProductTemplate",
@@ -312,44 +340,45 @@ document.addEventListener("algolia.hooks.initialize", function () {
       // Modify default options, then return them
       const { html, item, components } = templateOptions;
       return html`
-    <a
-      href="${itemLink}"
-      class="aa-ItemLink aa-ProductItem"
-      onClick="${(event) => handleItemClick(event, item)}"
-    >
-      <div class="aa-ItemContent">
-        <div class="aa-ItemPicture aa-ItemPicture--loaded">
-          <img
-            src="${algoliaShopify.helpers.compactImage(item)}"
-            alt="${item.title}"
-          />
-        </div>
-        <div class="aa-ItemContentBody">
-          <div class="aa-ItemContentBrand">
-            ${
-              item.product_type &&
-              components.Highlight({ hit: item, attribute: "product_type" })
-            }
-           removing vendor
-          </div>
-          <div class="aa-ItemContentTitleWrapper">
-            <div class="aa-ItemContentTitle">
-              ${components.Highlight({ hit: item, attribute: "title" })}
-              <span class="algolia-variant">
-                ${algoliaShopify.helpers.variantTitleAddition(item, distinct)}
-              </span>
+        <a
+          href="${itemLink}"
+          class="aa-ItemLink aa-ProductItem"
+          onClick="${(event) => handleItemClick(event, item)}"
+        >
+          <div class="aa-ItemContent">
+            <div class="aa-ItemPicture aa-ItemPicture--loaded">
+              <img
+                src="${algoliaShopify.helpers.compactImage(item)}"
+                alt="${item.title}"
+              />
+            </div>
+            <div class="aa-ItemContentBody">
+              <div class="aa-ItemContentBrand">
+                ${item.product_type &&
+                components.Highlight({ hit: item, attribute: "product_type" })}
+                removing vendor
+              </div>
+              <div class="aa-ItemContentTitleWrapper">
+                <div class="aa-ItemContentTitle">
+                  ${components.Highlight({ hit: item, attribute: "title" })}
+                  <span class="algolia-variant">
+                    ${algoliaShopify.helpers.variantTitleAddition(
+                      item,
+                      distinct,
+                    )}
+                  </span>
+                </div>
+              </div>
+              <div class="aa-ItemContentPrice">
+                <div class="aa-ItemContentPriceCurrent">
+                  ${algoliaShopify.helpers.displayPrice(item, distinct)}
+                </div>
+              </div>
             </div>
           </div>
-          <div class="aa-ItemContentPrice">
-            <div class="aa-ItemContentPriceCurrent">
-              ${algoliaShopify.helpers.displayPrice(item, distinct)}
-            </div>
-          </div>
-        </div>
-      </div>
-    </a>
-  `;
-    }
+        </a>
+      `;
+    },
   );
 });
 ```
@@ -360,36 +389,36 @@ Template for rendering each article hit in the autocomplete results.
 
 Example:
 
-```jsjs
+```js js
 document.addEventListener("algolia.hooks.initialize", function () {
   algoliaShopify.hooks.registerHook(
     "beforeAutocompleteArticlesTemplate",
     function (_defaultTemplate, templateOptions, itemLink) {
       const { item, html, components } = templateOptions;
       return html`
-    <a href="${itemLink}" class="aa-ItemLink">
-      <div class="aa-ItemWrapper">
-        <div class="aa-ItemContent">
-          <div class="aa-ItemIcon aa-ItemIcon--noBorder">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
-              />
-            </svg>
-          </div>
-          <div class="aa-ItemContentBody">
-            <div class="aa-ItemContentTitle">
-              ${components.Highlight({ hit: item, attribute: "title" })}
+        <a href="${itemLink}" class="aa-ItemLink">
+          <div class="aa-ItemWrapper">
+            <div class="aa-ItemContent">
+              <div class="aa-ItemIcon aa-ItemIcon--noBorder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                  />
+                </svg>
+              </div>
+              <div class="aa-ItemContentBody">
+                <div class="aa-ItemContentTitle">
+                  ${components.Highlight({ hit: item, attribute: "title" })}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </a>
-  `;
-    }
+        </a>
+      `;
+    },
   );
 });
 ```
@@ -400,34 +429,37 @@ Template for rendering each collection hit in the autocomplete results.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteCollectionsTemplate', function(_defaultTemplate, templateOptions, itemLink) {
-    const { html, item, components } = templateOptions;
-    return  html`
-      <a href="${itemLink}" class="aa-ItemLink">
-        <div class="aa-ItemWrapper">
-          <div class="aa-ItemContent">
-            <div class="aa-ItemIcon aa-ItemIcon--noBorder">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                />
-              </svg>
-            </div>
-            <div class="aa-ItemContentBody">
-              <div class="aa-ItemContentTitle">
-                ${components.Highlight({ hit: item, attribute: 'title' })}
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteCollectionsTemplate",
+    function (_defaultTemplate, templateOptions, itemLink) {
+      const { html, item, components } = templateOptions;
+      return html`
+        <a href="${itemLink}" class="aa-ItemLink">
+          <div class="aa-ItemWrapper">
+            <div class="aa-ItemContent">
+              <div class="aa-ItemIcon aa-ItemIcon--noBorder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                  />
+                </svg>
+              </div>
+              <div class="aa-ItemContentBody">
+                <div class="aa-ItemContentTitle">
+                  ${components.Highlight({ hit: item, attribute: "title" })}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </a>
-    `;
-  });
+        </a>
+      `;
+    },
+  );
 });
 ```
 
@@ -437,34 +469,37 @@ Template for rendering each pages hit in the autocomplete results.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompletePagesTemplate', function(_defaultTemplate, templateOptions, itemLink) {
-    const { html, item, components } = templateOptions;
-    return html`
-      <a href="${itemLink}" class="aa-ItemLink aa-ProductItem">
-        <div class="aa-ItemWrapper">
-          <div class="aa-ItemContent">
-            <div class="aa-ItemIcon aa-ItemIcon--noBorder">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <div class="aa-ItemContentBody">
-              <div class="aa-ItemContentTitle">
-                ${components.Highlight({ hit: item, attribute: 'title' })}
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompletePagesTemplate",
+    function (_defaultTemplate, templateOptions, itemLink) {
+      const { html, item, components } = templateOptions;
+      return html`
+        <a href="${itemLink}" class="aa-ItemLink aa-ProductItem">
+          <div class="aa-ItemWrapper">
+            <div class="aa-ItemContent">
+              <div class="aa-ItemIcon aa-ItemIcon--noBorder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div class="aa-ItemContentBody">
+                <div class="aa-ItemContentTitle">
+                  ${components.Highlight({ hit: item, attribute: "title" })}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </a>
-    `;
-  });
+        </a>
+      `;
+    },
+  );
 });
 ```
 
@@ -474,11 +509,13 @@ Template for rendering each search suggestion in the autocomplete menu.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteSuggestionsTemplate', function(_defaultTemplate, templateOptions) {
-    const { html, state } = templateOptions;
-    return html`
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteSuggestionsTemplate",
+    function (_defaultTemplate, templateOptions) {
+      const { html, state } = templateOptions;
+      return html`
       <a
         class="aa-ItemLink aa-ItemWrapper"
         href="${window.Shopify.routes.root}search?q=${item.query}"
@@ -491,7 +528,7 @@ document.addEventListener('algolia.hooks.initialize', function() {
           </div>
           <div class="aa-ItemContentBody">
             <div class="aa-ItemContentTitle">
-              ${components.Highlight({ hit: item, attribute: 'query' })}
+              ${components.Highlight({ hit: item, attribute: "query" })}
             </div>
           </div>
         </div>
@@ -507,7 +544,8 @@ document.addEventListener('algolia.hooks.initialize', function() {
         </div>
       </a>
     `;
-  });
+    },
+  );
 });
 ```
 
@@ -518,12 +556,15 @@ For more information, see [`transformresponse`](/ui-libraries/autocomplete/api-r
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAutocompleteProductTransformResponseHits', function(hits, results) {
-    console.log(hits);
-    return hits;
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteProductTransformResponseHits",
+    function (hits, results) {
+      console.log(hits);
+      return hits;
+    },
+  );
 });
 ```
 
@@ -533,11 +574,14 @@ Function that should run after a product is clicked.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algolia.shopify.hooks.registerHook('afterAutocompleteProductClickAction', function(_, line_item) {
-    return;
-  })
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algolia.shopify.hooks.registerHook(
+    "afterAutocompleteProductClickAction",
+    function (_, line_item) {
+      return;
+    },
+  );
 });
 ```
 
@@ -573,7 +617,7 @@ Changes [InstantSearch options](/api-reference/widgets/instantsearch/js/#options
 
 Example:
 
-```jsjs
+```js js
 document.addEventListener('algolia.hooks.initialize', function() {
   algoliaShopify.hooks.registerHook('beforeInstantSearchConfigurationOptions', function(options) {
     // Modify default options, then return them
@@ -601,13 +645,16 @@ Preserves URL parameters when navigating through the search results.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchAllowParamsArray', function(allowParamsArray) {
-    // Modify default array, then return an array
-    allowParamsArray.push('ref');
-    return allowParamsArray;
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchAllowParamsArray",
+    function (allowParamsArray) {
+      // Modify default array, then return an array
+      allowParamsArray.push("ref");
+      return allowParamsArray;
+    },
+  );
 });
 ```
 
@@ -617,18 +664,20 @@ Changes the [filter parameter](/api-reference/api-parameters/filters/) of the se
 
 Example:
 
-```jsjs
+```js js
 // Modify default `defaultFilter` if it exists
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchFiltersString', function(defaultFilter) {
-    // Modify or replace the default string, then return a string
-    if(defaultFilter) {
-      return defaultFilter + ' AND price > 5'
-    }
-    else {
-      return 'price > 5'
-    }
-  });
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchFiltersString",
+    function (defaultFilter) {
+      // Modify or replace the default string, then return a string
+      if (defaultFilter) {
+        return defaultFilter + " AND price > 5";
+      } else {
+        return "price > 5";
+      }
+    },
+  );
 });
 ```
 
@@ -638,27 +687,26 @@ Template for the main template container.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchMainTemplate', function(_defaultTemplate, data, html) {
-    return html`
-      <div class="ais-page">
-        <h1 class="ais-h2">${algoliaShopify.translations.searchTitle}</h1>
-        <div class="ais-input">
-          <div class="ais-search-box-container"></div>
-          <div class="ais-input-button">
-            <div class="ais-clear-input-icon"></div>
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchMainTemplate",
+    function (_defaultTemplate, data, html) {
+      return html`
+        <div class="ais-page">
+          <h1 class="ais-h2">${algoliaShopify.translations.searchTitle}</h1>
+          <div class="ais-input">
+            <div class="ais-search-box-container"></div>
+            <div class="ais-input-button">
+              <div class="ais-clear-input-icon"></div>
+            </div>
           </div>
-        </div>
-        <div class="ais-facets-button">
-          Show filters
-        </div>
-        <div class="ais-facets">
-          <div class="ais-clear-refinements-container"></div>
-          <div class="ais-current-refined-values-container"></div>
-          ${data.facets.map(
-            facet =>
-              html`
+          <div class="ais-facets-button">Show filters</div>
+          <div class="ais-facets">
+            <div class="ais-clear-refinements-container"></div>
+            <div class="ais-current-refined-values-container"></div>
+            ${data.facets.map(
+              (facet) => html`
                 <div
                   class="ais-facet-dropdown-wrapper ais-facet-${facet.type} ais-facet-${facet.escapedName}"
                 >
@@ -677,38 +725,40 @@ document.addEventListener('algolia.hooks.initialize', function() {
                     class="ais-facet-${facet.escapedName}-container ais-facet-dropdown-container"
                   ></div>
                 </div>
-              `
-          )}
-        </div>
-        <div class="ais-block">
-          <div class="ais-search-header">
-            <div class="ais-stats-container"></div>
-            <div class="ais-change-display">
-              <span class="ais-change-display-block ais-change-display-selected"
-                ><i class="fa fa-th-large"></i
-              ></span>
-              <span class="ais-change-display-list"
-                ><i class="fa fa-th-list"></i
-              ></span>
-            </div>
-            <div class="ais-sort">
-              ${data.multipleSortOrders
-                ? html`
-                    ${algoliaShopify.translations.sortBy}
-                    <span class="ais-sort-orders-container"></span>
-                  `
-                : html`
-                    ${algoliaShopify.translations.sortBy}
-                    ${algoliaShopify.translations.relevance}
-                  `}
-            </div>
+              `,
+            )}
           </div>
-          <div class="ais-hits-container ais-results-as-block"></div>
+          <div class="ais-block">
+            <div class="ais-search-header">
+              <div class="ais-stats-container"></div>
+              <div class="ais-change-display">
+                <span
+                  class="ais-change-display-block ais-change-display-selected"
+                  ><i class="fa fa-th-large"></i
+                ></span>
+                <span class="ais-change-display-list"
+                  ><i class="fa fa-th-list"></i
+                ></span>
+              </div>
+              <div class="ais-sort">
+                ${data.multipleSortOrders
+                  ? html`
+                      ${algoliaShopify.translations.sortBy}
+                      <span class="ais-sort-orders-container"></span>
+                    `
+                  : html`
+                      ${algoliaShopify.translations.sortBy}
+                      ${algoliaShopify.translations.relevance}
+                    `}
+              </div>
+            </div>
+            <div class="ais-hits-container ais-results-as-block"></div>
+          </div>
+          <div class="ais-pagination-container"></div>
         </div>
-        <div class="ais-pagination-container"></div>
-      </div>
-    `;
-  });
+      `;
+    },
+  );
 });
 ```
 
@@ -718,119 +768,118 @@ Template for product hits in the search results.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchProductTemplate', function(_defaultTemplate, hit, html, components) {
-    return html`
-      <div
-        class="ais-hit ais-product"
-        data-algolia-index="${hit.index}"
-        data-algolia-position="${hit.productPosition}"
-        data-algolia-queryid="${hit.queryID}"
-        data-algolia-objectid="${hit.objectID}"
-        data-handle="${hit.handle}"
-        data-variant-id="${hit.objectID}"
-        data-distinct="${hit._distinct}"
-        data-product-id="${hit.id}"
-        onClick="${(event) => handleItemClick(event, hit)}"
-      >
-        <img
-          class="ais-hit--picture"
-          src="${algoliaShopify.helpers.mediumImage(hit)}"
-          alt="${hit.title} - ${hit.variant_title}"
-        />
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchProductTemplate",
+    function (_defaultTemplate, hit, html, components) {
+      return html`
+        <div
+          class="ais-hit ais-product"
+          data-algolia-index="${hit.index}"
+          data-algolia-position="${hit.productPosition}"
+          data-algolia-queryid="${hit.queryID}"
+          data-algolia-objectid="${hit.objectID}"
+          data-handle="${hit.handle}"
+          data-variant-id="${hit.objectID}"
+          data-distinct="${hit._distinct}"
+          data-product-id="${hit.id}"
+          onClick="${(event) => handleItemClick(event, hit)}"
+        >
+          <img
+            class="ais-hit--picture"
+            src="${algoliaShopify.helpers.mediumImage(hit)}"
+            alt="${hit.title} - ${hit.variant_title}"
+          />
 
-        <div class="ais-hit--details">
-          <p class="ais-hit--title">
-            <a
-              data-algolia-index="${hit.index}"
-              data-algolia-position="${hit.productPosition}"
-              data-algolia-queryid="${hit.queryID}"
-              data-algolia-objectid="${hit.objectID}"
-              href="${algoliaShopify.helpers.instantsearchLink(hit)}"
-              onclick="void(0)"
-              title="${algoliaShopify.helpers.fullTitle(
-                hit.title,
-                hit._distinct,
-                hit.variant_title
+          <div class="ais-hit--details">
+            <p class="ais-hit--title">
+              <a
+                data-algolia-index="${hit.index}"
+                data-algolia-position="${hit.productPosition}"
+                data-algolia-queryid="${hit.queryID}"
+                data-algolia-objectid="${hit.objectID}"
+                href="${algoliaShopify.helpers.instantsearchLink(hit)}"
+                onclick="void(0)"
+                title="${algoliaShopify.helpers.fullTitle(
+                  hit.title,
+                  hit._distinct,
+                  hit.variant_title,
+                )}"
+              >
+                ${components.Highlight({ attribute: "title", hit })}
+                ${algoliaShopify.helpers.variantTitleAddition(
+                  hit,
+                  hit._distinct,
+                )}
+              </a>
+            </p>
+            <p
+              class="ais-hit--subtitle"
+              title="${hit.product_type}${algoliaShopify.translation_helpers.by(
+                hit.vendor,
               )}"
             >
-              ${components.Highlight({ attribute: 'title', hit })}
-              ${algoliaShopify.helpers.variantTitleAddition(hit, hit._distinct)}
-            </a>
-          </p>
-          <p
-            class="ais-hit--subtitle"
-            title="${hit.product_type}${algoliaShopify.translation_helpers.by(
-              hit.vendor
-            )}"
-          >
-            ${components.Highlight({ attribute: 'product_type', hit })}
-            ${hit.vendor &&
-              html`
-                <span> ${algoliaShopify.translations.by} </span>
-              `}
-            ${hit.vendor && components.Highlight({ attribute: 'vendor', hit })}
-          </p>
-          <p class="ais-hit--price">
-            <b>${algoliaShopify.helpers.displayPrice(hit, hit._distinct)}</b>
-            ${!hit._distinct &&
+              ${components.Highlight({ attribute: "product_type", hit })}
+              ${hit.vendor &&
+              html` <span> ${algoliaShopify.translations.by} </span> `}
+              ${hit.vendor &&
+              components.Highlight({ attribute: "vendor", hit })}
+            </p>
+            <p class="ais-hit--price">
+              <b>${algoliaShopify.helpers.displayPrice(hit, hit._distinct)}</b>
+              ${!hit._distinct &&
               html`
                 <span class="ais-hit--price-striked"
                   ><span
                     >${algoliaShopify.helpers.displayStrikedPrice(
                       hit.price,
-                      hit.compare_at_price
+                      hit.compare_at_price,
                     )}</span
                   ></span
                 >
               `}
-            ${!hit._distinct &&
+              ${!hit._distinct &&
               html`
                 <span class="ais-hit--price-discount"
                   >${algoliaShopify.helpers.displayDiscount(
                     hit.price,
                     hit.compare_at_price,
-                    hit.price_ratio
+                    hit.price_ratio,
                   )}</span
                 >
               `}
-          </p>
-          <!-- Extra info examples - Remove the display: none to show them -->
-          <p class="ais-hit--info" style="display: none">
-            ${hit.sku &&
+            </p>
+            <!-- Extra info examples - Remove the display: none to show them -->
+            <p class="ais-hit--info" style="display: none">
+              ${hit.sku &&
               html`
                 <span class="algolia-sku"
-                  >${components.Highlight({ attribute: 'sku', hit })}</span
+                  >${components.Highlight({ attribute: "sku", hit })}</span
                 >
               `}
-            ${hit.barcode &&
+              ${hit.barcode &&
               html`
                 <span class="algolia-barcode"
-                  >${components.Highlight({ attribute: 'barcode', hit })}</span
+                  >${components.Highlight({ attribute: "barcode", hit })}</span
                 >
               `}
-            ${hit.weight &&
-              html`
-                <span class="algolia-weight">${hit.weight}</span>
-              `}
-            ${!hit.taxable &&
+              ${hit.weight &&
+              html` <span class="algolia-weight">${hit.weight}</span> `}
+              ${!hit.taxable &&
               html`
                 <span class="algolia-taxable"
                   >${algoliaShopify.translations.taxFree}</span
                 >
               `}
-          </p>
-          <!-- Tags example - Remove the display: none to show them -->
-          <p class="ais-hit--tags" style="display: none">
-            ${hit?._highlightResult.tags?.map(
-              tag =>
-                html`
-                  <span class="ais-hit--tag">${tag.value}</span>
-                `
-            )}
-          </p>
-          ${!hit._distinct &&
+            </p>
+            <!-- Tags example - Remove the display: none to show them -->
+            <p class="ais-hit--tags" style="display: none">
+              ${hit?._highlightResult.tags?.map(
+                (tag) => html` <span class="ais-hit--tag">${tag.value}</span> `,
+              )}
+            </p>
+            ${!hit._distinct &&
             html`
               <form
                 id="algolia-add-to-cart-${hit.objectID}"
@@ -860,10 +909,11 @@ document.addEventListener('algolia.hooks.initialize', function() {
                     `}
               </p>
             `}
+          </div>
         </div>
-      </div>
-    `;
-  });
+      `;
+    },
+  );
 });
 ```
 
@@ -873,27 +923,30 @@ Template for when there are no results.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchNoResultTemplate', function(_defaultTemplate, html) {
-    return html`
-      <div class="ais-hit-empty">
-        <div class="ais-hit-empty--title">
-          ${algoliaShopify.translations.noResultFound}
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchNoResultTemplate",
+    function (_defaultTemplate, html) {
+      return html`
+        <div class="ais-hit-empty">
+          <div class="ais-hit-empty--title">
+            ${algoliaShopify.translations.noResultFound}
+          </div>
+          <div class="ais-hit-empty--clears">
+            ${algoliaShopify.translations.try} ${" "}
+            <a class="ais-hit-empty--clear-filters ais-link">
+              ${algoliaShopify.translations.clearFilters} ${" "}
+            </a>
+            ${algoliaShopify.translations.or} ${" "}
+            <a class="ais-hit-empty--clear-input ais-link">
+              ${algoliaShopify.translations.changeInput}
+            </a>
+          </div>
         </div>
-        <div class="ais-hit-empty--clears">
-          ${algoliaShopify.translations.try} ${' '}
-          <a class="ais-hit-empty--clear-filters ais-link">
-            ${algoliaShopify.translations.clearFilters} ${' '}
-          </a>
-          ${algoliaShopify.translations.or} ${' '}
-          <a class="ais-hit-empty--clear-input ais-link">
-            ${algoliaShopify.translations.changeInput}
-          </a>
-        </div>
-      </div>
-    `;
-  });
+      `;
+    },
+  );
 });
 ```
 
@@ -903,12 +956,14 @@ Template for rendering facet items.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchFacetItemTemplate', function(_defaultTemplate, item, html) {
-    return html`
-      <label class="${item.cssClasses.label}">
-        ${item.type === 'disjunctive' &&
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchFacetItemTemplate",
+    function (_defaultTemplate, item, html) {
+      return html`
+        <label class="${item.cssClasses.label}">
+          ${item.type === "disjunctive" &&
           (item.isRefined
             ? html`
                 <input
@@ -920,13 +975,14 @@ document.addEventListener('algolia.hooks.initialize', function() {
             : html`
                 <input type="checkbox" class="${item.cssClasses.checkbox}" />
               `)}
-        ${item.label}
-        <span class="${item.cssClasses.count}">
-          ${algoliaShopify.helpers.formatNumber(item.count)}
-        </span>
-      </label>
-    `;
-  });
+          ${item.label}
+          <span class="${item.cssClasses.count}">
+            ${algoliaShopify.helpers.formatNumber(item.count)}
+          </span>
+        </label>
+      `;
+    },
+  );
 });
 ```
 
@@ -936,17 +992,20 @@ Template for the [**Show more** button](/api-reference/widgets/refinement-list/j
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchShowMoreTemplate', function(_defaultTemplate, data, html) {
-    return html`
-      <span
-        >${data.isShowingMore
-          ? algoliaShopify.translations.showLess
-          : algoliaShopify.translations.showMore}</span
-      >
-    `;
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchShowMoreTemplate",
+    function (_defaultTemplate, data, html) {
+      return html`
+        <span
+          >${data.isShowingMore
+            ? algoliaShopify.translations.showLess
+            : algoliaShopify.translations.showMore}</span
+        >
+      `;
+    },
+  );
 });
 ```
 
@@ -956,29 +1015,28 @@ Template for [search stats](/api-reference/widgets/stats/js/)
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchStatsTemplate', function(_defaultTemplate, data, html) {
-    return html`
-      ${data.hasOneResult &&
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchStatsTemplate",
+    function (_defaultTemplate, data, html) {
+      return html`
+        ${data.hasOneResult &&
+        html` <span class="ais-stats--nb-results"> 1 result found </span> `}
+        ${data.hasManyResults &&
         html`
-          <span class="ais-stats--nb-results">
-            1 result found
-          </span>
-        `}
-      ${data.hasManyResults &&
-        html`
-          ${data.page * data.hitsPerPage + 1} - ${' '}
-          ${Math.min((data.page + 1) * data.hitsPerPage, data.nbHits)} ${' '}
+          ${data.page * data.hitsPerPage + 1} - ${" "}
+          ${Math.min((data.page + 1) * data.hitsPerPage, data.nbHits)} ${" "}
           out of
           <span class="ais-stats--nb-results">
-            ${' '} ${algoliaShopify.helpers.formatNumber(data.nbHits)} ${' '}
+            ${" "} ${algoliaShopify.helpers.formatNumber(data.nbHits)} ${" "}
             results found
           </span>
         `}
-      ${' '} in ${data.processingTimeMS / 1000}s
-    `;
-  });
+        ${" "} in ${data.processingTimeMS / 1000}s
+      `;
+    },
+  );
 });
 ```
 
@@ -986,11 +1044,14 @@ document.addEventListener('algolia.hooks.initialize', function() {
 
 Change [items](/guides/building-search-ui/upgrade-guides/js/#transformdata-is-replaced-by-transformitems) before they're rendered.
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeISTransformItems', function(transformedItems, items) {
-    return transformedItems;
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeISTransformItems",
+    function (transformedItems, items) {
+      return transformedItems;
+    },
+  );
 });
 ```
 
@@ -1008,14 +1069,14 @@ Add InstantSearch widgets to the search results page.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeISStartAddWidgetArray', function() {
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook("beforeISStartAddWidgetArray", function () {
     // Please be aware not all widgets are available
     const { searchBox } = window.algoliaShopify.externals.widgets;
 
     const searchBoxWidget = searchBox({
-      container: '#search-box'
+      container: "#search-box",
     });
 
     return [searchBoxWidget];
@@ -1036,16 +1097,19 @@ You can remove these widgets (`widget.widgetType`):
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('afterISStartRemoveDefaultWidget', function(defaultWidgets) {
-    // Find and return the default pagination widget
-    const defaultPaginationWidget = defaultWidgets.find(
-      widget => widget.$$widgetType === 'ais.pagination'
-    );
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "afterISStartRemoveDefaultWidget",
+    function (defaultWidgets) {
+      // Find and return the default pagination widget
+      const defaultPaginationWidget = defaultWidgets.find(
+        (widget) => widget.$$widgetType === "ais.pagination",
+      );
 
-    return [defaultPaginationWidget];
-  });
+      return [defaultPaginationWidget];
+    },
+  );
 });
 ```
 
@@ -1055,11 +1119,14 @@ Run a function after a search result is clicked.
 
 Example:
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('afterInstantSEarchHitClickAction', function(_, hit) {
-    return // ...
-  });
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "afterInstantSEarchHitClickAction",
+    function (_, hit) {
+      return; // ...
+    },
+  );
 });
 ```
 
@@ -1069,13 +1136,16 @@ Changes the [default number of facet values](/api-reference/widgets/refinement-l
 
 Example:
 
-```jsjs
+```js js
 // Modify default `limit`
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchFacetLimitNumber', function(limit) {
-    // Modify default limit, then return a number
-    return 12;
-  });
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchFacetLimitNumber",
+    function (limit) {
+      // Modify default limit, then return a number
+      return 12;
+    },
+  );
 });
 ```
 
@@ -1112,42 +1182,46 @@ The following hooks can be used to change the behavior of recommendations from A
 
 Can be used to modify the HTML template that renders the panel with recommendations.
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeRecommendHitTemplate', function(_defaultTemplate, html, item) {
-    return html`
-      <div
-      id="${item.objectID}"
-      class="card-wrapper product-card-wrapper underline-links-hover"
-    >
-      <div
-        class="card card--standard card--media"
-        style="--ratio-percent: 100%;"
-      >
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeRecommendHitTemplate",
+    function (_defaultTemplate, html, item) {
+      return html`
         <div
-          id="Card--${item.objectID}"
-          class="card__inner gradient ratio"
-          style="--ratio-percent: 100%"
+          id="${item.objectID}"
+          class="card-wrapper product-card-wrapper underline-links-hover"
         >
-          <div class="card__content">
-            <div class="card__information">
-              <h3 class="card__heading">
-                <a
-                  id="StandardCardNoMediaLink--${item.objectID}"
-                  class="full-unstyled-link"
-                  aria-labelledby="StandardCardNoMediaLink--${item.objectID} NoMediaStandardBadge--${item.objectID}"
-                >
-                  ${item.title}
-                </a>
-              </h3>
+          <div
+            class="card card--standard card--media"
+            style="--ratio-percent: 100%;"
+          >
+            <div
+              id="Card--${item.objectID}"
+              class="card__inner gradient ratio"
+              style="--ratio-percent: 100%"
+            >
+              <div class="card__content">
+                <div class="card__information">
+                  <h3 class="card__heading">
+                    <a
+                      id="StandardCardNoMediaLink--${item.objectID}"
+                      class="full-unstyled-link"
+                      aria-labelledby="StandardCardNoMediaLink--${item.objectID} NoMediaStandardBadge--${item.objectID}"
+                    >
+                      ${item.title}
+                    </a>
+                  </h3>
+                </div>
+                <div class="card__badge bottom left"></div>
+              </div>
             </div>
-            <div class="card__badge bottom left"></div>
           </div>
         </div>
-      </div>
-    `;
-  })
-})
+      `;
+    },
+  );
+});
 ```
 
 ## Insights hooks
@@ -1160,7 +1234,7 @@ Changes [parameters](/api-reference/api-methods/init/#parameters) of the Insight
 
 Example:
 
-```jsjs
+```js js
 document.addEventListener('algolia.hooks.initialize', function() {
   algoliaShopify.hooks.registerHook('beforeAlgoliaAnalyticsOptions', function(options) {
     return {
@@ -1177,13 +1251,16 @@ Changes the CSS selector for the add-to-cart button.
 
 Example:
 
-```jsjs
+```js js
 // Modify default `options`
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeAddToCartSelectorString', function(_selector) {
-    // The default selector is '[name="add"]'
-    // Return a CSS selector
-    return '#add-to-cart';
-  });
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeAddToCartSelectorString",
+    function (_selector) {
+      // The default selector is '[name="add"]'
+      // Return a CSS selector
+      return "#add-to-cart";
+    },
+  );
 });
 ```

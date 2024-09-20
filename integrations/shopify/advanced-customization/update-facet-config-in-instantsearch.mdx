@@ -23,37 +23,40 @@ You can achieve this with the [`beforeInstantSearchOptions`](/integration/shopif
 
 This example updates the configuration of all `refinementList` widgets to show only 5 facets, and to display a **Show more** button for revealing the rest of the facets.
 
-```jsjs
-document.addEventListener('algolia.hooks.initialize', function() {
-  algoliaShopify.hooks.registerHook('beforeInstantSearchOptions', function(options) {
-    // Loop through the facet widgets.
-    const widgets = options.facets.widgets.map(widget => {
-      // Only update the refinementList widget params.
-      if (widget.name !== 'refinementList') {
-        return widget;
-      }
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchOptions",
+    function (options) {
+      // Loop through the facet widgets.
+      const widgets = options.facets.widgets.map((widget) => {
+        // Only update the refinementList widget params.
+        if (widget.name !== "refinementList") {
+          return widget;
+        }
 
-      // This updates all `refinementList` widgets.
-      // If you only want to update specific facet(s),
-      // you can target them by checking the value of `widget.params.container`.
+        // This updates all `refinementList` widgets.
+        // If you only want to update specific facet(s),
+        // you can target them by checking the value of `widget.params.container`.
+
+        return {
+          ...widget,
+          params: {
+            ...widget.params,
+            limit: 5,
+            showMore: true,
+          },
+        };
+      });
 
       return {
-        ...widget,
-        params: {
-          ...widget.params,
-          limit: 5,
-          showMore: true,
-        }
-      }
-    });
-
-    return {
-      ...options,
-      facets: {
-        ...options.facets,
-        widgets
-      }
-    };
-  });
+        ...options,
+        facets: {
+          ...options.facets,
+          widgets,
+        },
+      };
+    },
+  );
 });
 ```
