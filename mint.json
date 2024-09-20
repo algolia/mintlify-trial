@@ -74,7 +74,68 @@
     {
       "group": "Integrations",
       "pages": [
-        "integrations/shopify"
+        "integrations/overview"
+      ]
+    },
+    {
+      "group": "Shopify",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/shopify/getting-started/quick-start",
+            "integrations/shopify/getting-started/configuration",
+            "integrations/shopify/getting-started/upgrade"
+          ]
+        },
+        {
+          "group": "Send and manage data",
+          "pages": [
+            "integrations/shopify/sending-and-managing-data/introduction-to-shopify-indexing",
+            "integrations/shopify/sending-and-managing-data/schemas",
+            "integrations/shopify/sending-and-managing-data/named-tags",
+            "integrations/shopify/sending-and-managing-data/metafields",
+            "integrations/shopify/sending-and-managing-data/locations",
+            "integrations/shopify/sending-and-managing-data/markets",
+            "integrations/shopify/sending-and-managing-data/algolia-config"
+          ]
+        },
+        {
+          "group": "Search UI",
+          "pages": [
+            "integrations/shopify/building-search-ui/front-end-choices",
+            "integrations/shopify/building-search-ui/autocomplete",
+            "integrations/shopify/building-search-ui/instant-search",
+            "integrations/shopify/building-search-ui/recommend",
+            "integrations/shopify/building-search-ui/events",
+            "integrations/shopify/building-search-ui/frontend-custom-events",
+            "integrations/shopify/building-search-ui/global-events"
+          ]
+        },
+        {
+          "group": "Collections and customization",
+          "pages": [
+            "integrations/shopify/advanced-customization/collection-search-page",
+            "integrations/shopify/advanced-customization/collection-customisation",
+            "integrations/shopify/advanced-customization/add-query-suggestions-to-autocomplete",
+            "integrations/shopify/advanced-customization/add-custom-plugin-to-autocomplete",
+            "integrations/shopify/advanced-customization/update-facet-config-in-instantsearch"
+          ]
+        },
+        {
+          "group": "Troubleshooting",
+          "pages": [
+            "integrations/shopify/troubleshooting/frequent-issues"
+          ]
+        },
+        {
+          "group": "Going further",
+          "pages": [
+            "integrations/shopify/going-further/out-of-stock-products",
+            "integrations/shopify/going-further/merchandising-tool",
+            "integrations/shopify/going-further/shopify-flow"
+          ]
+        }
       ]
     },
     {

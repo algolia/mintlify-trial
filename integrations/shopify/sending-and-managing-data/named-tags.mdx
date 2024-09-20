@@ -1,0 +1,102 @@
+---
+title: Named tags
+description: |-
+  Named tags are an alternative to Shopify's metafields in the Algolia AI Search & Discovery app.
+---
+
+Named tags are an optimized alternative to Shopify's metafields. Named tags automatically generate key-value attribute pairs from specifically formatted tags.
+
+Shopify limits tags to 255 characters per tag. If you want to index longer strings, use [metafields](/integration/shopify/sending-and-managing-data/metafields/).
+
+Shopify lets you apply up to 250 tags to each product. If you're adding many tags to your products, you should also keep your [Algolia record size limit](https://support.algolia.com/hc/en-us/articles/4406981897617-Is-there-a-size-limit-for-my-index-records-/) in mind.
+
+## Enabling named tags
+
+To activate named tags, go to the **Products** section of the **Indexing** tab and check the box that says **Index named tags**.
+
+![Enable named tags in your Shopify admin](/doc/assets/images/integrations/shopify/sending-and-managing-data/3-named-tags-ca52c09a.jpeg)
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Shopify stores tags as long comma-split strings. To use commas in your text values, use the [`encoded`](#encoded) type described below.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Adding named tags
+
+To add a named tag to a product, you must go to that product's page on Shopify and add a tag with the proper _named tag_ format. Currently, four different types of named tags are accepted:
+
+### Default
+
+`attr:value`
+Extracts `value` as a `string`.
+Can't contain a comma.
+
+**Example:** `author:Isaac Asimov`
+
+### Boolean
+
+`attr:boolean:value`
+Extracts `value` - true or false - as a `boolean`.
+
+**Example:** `suitable_for_children:boolean:true`
+
+### Number
+
+`attr:number:value`
+Extracts `value` - integer or decimal - as a `number`.
+
+**Example:** `age:number:34`
+
+**Example:** `alternative_price:number:199.90`
+
+### Encoded
+
+`attr:encoded:value`
+Extracts and decodes a [URL-encoded](https://developer.mozilla.org/en-US/docs/Glossary/percent-encoding) `value`.
+Allows for commas.
+
+**Example:** `alternative_name:encoded:Me%2C%20Myself%20and%20I`
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You need to replace `,` by `%2C`, but the URL-encoded approach provides a safe way to make sure that all characters are properly interpreted by Shopify's tag engine.
+</Note>
+
+{/* prettier-ignore-end */}
+
+To encode your string to this format, you can use:
+
+- An [online encoder](https://www.urlencoder.org/)
+- A function built into your programming language, such as [`encodeURIComponent`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent) in JavaScript
+
+## Restricting named tags to specific variants
+
+Shopify tags are only available at the product level, so you can't restrict them to a subset of your variants. Algolia provides a workaround with **named tags**.
+
+To do this, include a bracketed specifier in front of the named tag: `[option_name:option_value]variant_tag:variant_tag_option`.
+
+For example:
+
+1. if you want to add the named tag `long_name:Small` to a product's size S variant, then add the following tag to the product: `[size:S]long_name:Small`.
+1. if you want to add the named tag `original_price:number:19.90` to a product's size S _and_ blue variant, then add the following tag to the product: `[size:S][color:blue]original_price:number:19.90`
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you have a product with multiple options, such as `size` and `color`, and only specify one of them, the named tag will be applied to all of the matching ones.
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To handle long option values, you can use a `*` at the end of the value to target all of the option values starting with this string.
+  For instance, `[color:B*]` will apply to both `Blue` and `Brown` colors.
+</Note>
+
+{/* prettier-ignore-end */}

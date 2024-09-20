@@ -1,0 +1,241 @@
+---
+title: Manage out-of-stock products
+description: |-
+  Customize how out of stock products are handled with Algolia AI Search & Discovery.
+---
+
+The Algolia AI Search & Discovery app lets you choose if you want to keep or remove out-of-stock products from the search results.
+
+## Out-of-stock policies
+
+Out-of-stock product variants are removed from the search results based on [filters](/guides/managing-results/refine-results/filtering/).
+Filtering relies on the `inventory_quantity` and `inventory_policy` attributes of the
+[product variants](https://shopify.dev/docs/admin-api/rest/reference/products/product-variant) resource.
+A product variant is out-of-stock if the `inventory_quantity` attribute is 0.
+The `inventory_policy` attribute can be `allow` if you explicitly decided to [continue selling a product when it's out of stock](#continue-selling-out-of-stock-products). Otherwise, this attribute is `deny`.
+
+For handling out-of-stock product variants in the search results,
+you can choose between these policies.
+
+- **Include all out-of-stock products in the search results.** No filter is applied. All products are included in the search results.
+- **Remove all out-of-stock products from the search results.** A filter `inventory_quantity>0` is applied when searching Only in-stock items are included in the search results.
+- **Remove out-of-stock products, except those marked explicitly as available.** A filter `inventory_available:true` is applied when searching. The `inventory_available` attribute is true, when the `inventory_quantity` attribute is greater than 0, **or** when the `inventory_policy` attribute is set to `allow` for that product.
+
+## Select your out-of-stock policy
+
+To select your policy for handling out-of-stock items in the search results:
+
+1. In your Shopify admin, open the Algolia AI Search & Discovery app.
+
+1. On the **Search options** tab, go to the **Additional settings > Out of stock items** section.
+
+   ![Dialog for handling out-of-stock items in search results in the Algolia AI Search & Discovery app in the Shopify admin](/doc/assets/images/integrations/shopify/stock-policy/1-stock-policy-feature-dfdc1c79.jpeg)
+
+1. Select your policy for handling out-of-stock items:
+
+   - **Show all out of stock items in search results**.
+     Out-of-stock items are included in the search results.
+     This is the default.
+
+   - **Hide all out of stock items in search results**.
+     Out-of-stock items are removed from search results.
+
+   - **Hide out of stock items - except those marked as available**.
+     Out-of-stock items are removed from search results,
+     except products with the [**Continue selling when out of stock**](#continue-selling-out-of-stock-products) option.
+     After selecting this option, you might need to reindex your product catalog.
+
+## Continue selling out-of-stock products
+
+To select which products are included in the search results when they're out of stock:
+
+1. Go to the **Products** page in your Shopify admin.
+1. Select a product you want to show in the search result when it's out of stock.
+1. In the **Inventory** section,
+   select **Track quantity** and **Continue selling when out of stock**.
+
+The selected products are now included in the search results, even when they're out of stock.
+
+## UI updates
+
+The UI widgets of the Algolia AI Search & Discovery app have been updated to support this feature.
+You can find the Autocomplete and InstantSearch widgets in these files:
+
+- [`algolia_autocomplete.js.liquid`](https://shopify.algolia.com/shopify/assets/javascripts/v4/algolia_autocomplete.js.liquid)
+- [`algolia_instant_search.js.liquid`](https://shopify.algolia.com/shopify/assets/javascripts/v4/algolia_instant_search.js.liquid).
+
+### Autocomplete updates
+
+In Autocomplete v1, filters are located in the `algolia_autocomplete_product_plugin.js.liquid` file:
+
+```jsjs
++   // Filters for stock policy
++   let stockPolicyFilter = '';
++
++  if (algolia.config.stock_policy === 'deny') {
++    // For 'deny', filter out all items based on inventory quantity
++    stockPolicyFilter = 'inventory_quantity > 0';
++  } else if (algolia.config.stock_policy === 'continue') {
++    /**
++     * For 'continue', filter on an `inventory_available` attribute with a
++     * value dependent on:
++     * `inventory_quantity > 0 OR inventory_policy == 'continue'`
++     */
++    stockPolicyFilter = 'inventory_available:true';
++  }
+
+  algolia.productsPlugin = {
+    getSources({ query, setContext }) {
+      return [
+        {
+          sourceId: 'products',
+          getItems() {
+            return getAlgoliaResults({
+              searchClient: algolia.searchClient,
+              queries: [
+                {
+                  indexName: config.index_prefix + 'products',
+                  params: {
+                    query,
+                    hitsPerPage: config.products_autocomplete_hits_per_page,
+                    clickAnalytics: config.analytics_enabled,
++                   filters: stockPolicyFilter,
+                    distinct: algolia.config.show_products
+                  },
+                },
+              ],
+```
+
+In older versions of the Autocomplete widget, the `algolia_autocomplete.js.liquid` file includes the following changes:
+
+```jsjs
++    // Filters for stock policy
++    var stockPolicyFilter = null;
++
++    /**
++     * Filters for stock policy are valid only if:
++     * - stock policy has been defined, AND
++     * - we are targeting products search index
++     */
++    if (algolia.config.stock_policy && section === 'products') {
++      if (algolia.config.stock_policy === 'allow') {
++        /**
++         * For 'allow', we don't need to add any filter as we want to continue
++         * displaying all out of stock items.
++         */
++      } else if (algolia.config.stock_policy === 'deny') {
++        // For 'deny' we will filter out all items based on inventory quantity
++        stockPolicyFilter = 'inventory_quantity > 0';
++      } else if (algolia.config.stock_policy === 'continue') {
++        /**
++         * For 'continue' we will filter on `inventory_available` attribute whose
++         * value is dependent on:
++         * `inventory_quantity > 0 OR inventory_policy == 'continue'`
++         */
++        stockPolicyFilter = 'inventory_available:true';
++      }
++    }
++
+     return {
+       name: section,
+       source: function(query, callback) {
+@@ -61,6 +88,12 @@
+         if (params.distinct) {
+           searchOpts.distinct = true;
+         }
++
++        // Add the stock policy filter if applicable
++        if (stockPolicyFilter) {
++          searchOpts.filters = stockPolicyFilter;
++        }
++
+         index(section)
+           .search(query, searchOpts)
+           .then(function(answer) {
+```
+
+### InstantSearch updates
+
+The `algolia_instant_search.js.liquid` file includes the following changes:
+
+```jsjs
+@@ -25,6 +25,12 @@
+     return;
+   }
+
++  /**
++   * Array which will contain all filters to be applied while initiating the
++   * search API call.
++   */
++  var searchFilters = [];
++
+   var collectionFacetFilter = null;
+   var collectionRulesContextValue = null;
+   if (collectionPage) {
+@@ -39,11 +45,40 @@
+       collectionFacetFilter = 'collections:"' + handle + '"';
+     }
+
++    // Add the collection filter to the list of search filters
++    searchFilters.push(collectionFacetFilter);
++
+     collectionRulesContextValue = algolia.config.collection_id_query_rules
+       ? algolia.current_collection_id
+       : handle;
+   }
+
++  // Filters for stock policy
++  var stockPolicyFilter = null;
++  if (algolia.config.stock_policy) {
++    if (algolia.config.stock_policy === 'allow') {
++      /**
++       * For 'allow', we don't need to add any filter as we want to continue
++       * displaying all out of stock items.
++       */
++    } else if (algolia.config.stock_policy === 'deny') {
++      // For 'deny' we will filter out all items based on inventory quantity
++      stockPolicyFilter = 'inventory_quantity > 0';
++    } else if (algolia.config.stock_policy === 'continue') {
++      /**
++       * For 'continue' we will filter on `inventory_available` attribute whose
++       * value is dependent on:
++       * `inventory_quantity > 0 OR inventory_policy == 'continue'`
++       */
++      stockPolicyFilter = 'inventory_available:true';
++    }
++
++    // Add the stock policy filter to the list of search filters
++    if (stockPolicyFilter) {
++      searchFilters.push(stockPolicyFilter);
++    }
++  }
++
+   var results_selector = collectionPage
+     ? algolia.config.collection_css_selector
+     : algolia.config.results_selector;
+@@ -130,18 +165,18 @@
+           searchFunctionHelper.setQueryParameter('distinct', true);
+         }
+
+-        // Collection page features
+-        if (collectionPage) {
+-          // Collection page filtering
+-          if (collectionFacetFilter) {
++        // Assign any required filters
++        if (searchFilters.length) {
+           searchFunctionHelper.setQueryParameter(
+             'filters',
+-              collectionFacetFilter
++            searchFilters.join(' AND ')
+           );
+         }
+
++        // Assign any required `ruleContexts` which are required for query rules
++        // targeting collection pages
++        if (collectionPage) {
+           // Collection page merchandising:
+-
+           // send rulesContext for promoted results only if no filters active
+           if (
+             !hasRefinements(searchFunctionHelper, instant.facets.list) &&
+```

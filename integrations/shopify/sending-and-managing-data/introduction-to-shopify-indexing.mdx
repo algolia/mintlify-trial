@@ -1,0 +1,74 @@
+---
+title: Introduction to Shopify indexing
+description: |-
+  Learn how indexing works with the Algolia AI Search & Discovery app for Shopify.
+---
+
+To index your data, the Algolia AI Search & Discovery app uses the Shopify API and webhooks.
+
+## Full reindexing
+
+When you install the app in your store, it automatically starts indexing your data.
+
+This is called a _full reindex_. You can trigger a full reindex, for any data type, in the **Indexing** tab.
+
+![Indexing status screen in the Shopify admin](/doc/assets/images/integrations/shopify/sending-and-managing-data/1-indexing-status-49b2f30d.jpeg)
+
+## Automatic updates
+
+The app is designed to automatically keep your data up to date. It uses [Shopify webhooks](https://help.shopify.com/api/reference/webhook) to know when you make updates to your Shopify catalog and to immediately push the changes.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Blog posts and pages are a special case. Shopify doesn't provide webhooks for them. To keep your search up to date, the app does a full reindex of the articles and pages every day. If you want your search results updated faster, you can trigger a full reindexing from your **Indexing** tab.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Indexing jobs
+
+To index your data while keeping your data consistent and respecting [Shopify's rate limiting](https://help.shopify.com/en/api/reference/rest-admin-api-rate-limits), the app uses an indexing queue: all your indexing jobs wait until they can be processed. You can see the number of queued indexing jobs in the **Indexing** tab of the app.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Whenever you notice that your data isn't up to date, you should check the indexing queue. Every data packet that is either waiting to be or is actively being processed is listed here, alongside a progress bar.
+</Note>
+
+{/* prettier-ignore-end */}
+
+![The indexing queue screen in the Shopify admin](/doc/assets/images/integrations/shopify/sending-and-managing-data/2-indexing-progress-f362591b.jpeg)
+
+## Algolia operations
+
+When automatic updates are enabled, the app generates various Algolia indexing operations to keep your data in sync. Here's how many indexing operations the app generates based on the update type received from Shopify:
+
+- **Product updates**
+
+  The number of indexing operations for each product is equal to the number of variants for that product.
+
+  For example, if you update 5 products with 4 variants each, the total number of indexing operations is 20 (5 times 4).
+
+- **Collection updates**
+
+  If you enable collection indexing, the number of indexing operations for each collection is equal to the number of product variants in that collection (if you enable the "Collection Pages" feature or "Enable faceting on collections" option), plus one operation for the collection itself.
+
+  For example, if you didn't enable the "Collection Pages" feature and update 2 collections that have 20 and 30 variants respectively, there are only 2 indexing operation to index the collections themselves.
+
+  However, if you did enable the "Collection Pages" feature, the number of indexing operations will be 52: 2 for updating the collections themselves, and 50 for updating their variants.
+
+- **Order updates**
+
+  Each order update generates 1 indexing operation.
+  For example, if the app received 20 order updates, it will generate 20 indexing operations.
+
+When performing a full reindex, similar numbers apply:
+
+- **Full product reindex**
+
+  The number of indexing operations generated is equal to the total number of published variants in the store.
+
+- **Full collection reindex**
+
+  The number of indexing operations is equal to the total number of published collections. If you enable the "Collection Pages" feature or the "Enable faceting on collections" option, the app makes extra indexing operations equal to the number of variants in those collections.

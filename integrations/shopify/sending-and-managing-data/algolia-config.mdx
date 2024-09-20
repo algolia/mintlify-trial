@@ -1,0 +1,206 @@
+---
+title: Shopify Algolia configuration
+description: |-
+  Configuration settings for Algolia are stored in metafields.
+---
+
+Starting **December 31, 2023**, the Algolia AI Search & Discovery app will no longer be able to change Shopify theme code.
+Algolia stores all configurations in the Shop metafields.
+For more information, see [The Asset API resource](https://shopify.dev/docs/apps/online-store/other-integration-methods/asset) in the Shopify documentation.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The file `assets/algolia_config.js.liquid` is still available in your theme.
+  However, after December 31, 2023, the Algolia AI Search & Discovery app will not be able to update the theme code.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Where to find the Algolia configuration settings
+
+The Algolia AI Search & Discovery app creates metafields in the Shop object.
+The easiest way to inspect the metafields is through the Shopify admin:
+
+1. In your Shopify admin, go to **Home**.
+1. In the address bar of your browser, add `/metafields.json` to the end of your store's URL.
+
+The Algolia configuration is stored in the namespace `algolia_search`.
+
+Metafields are grouped under these keys:
+
+- `translations`: translations for labels and placeholder text
+- `facets`: InstantSearch facets for filters
+- `sort_orders`: InstantSearch sort orders
+- `algolia_config`: Algolia configuration settings
+- `collections_facets_<COLLECTION_ID>`: customized collection facets, one for each customized collection
+- `collections_sort_orders_<COLLECTION_ID>`: customized collection sort orders, one for each customized collection
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Collection facets and sort orders are only created when you customize collections.
+</Note>
+
+{/* prettier-ignore-end */}
+
+The following example shows how the Algolia configuration settings are stored in the Shop metafields.
+
+```jsonjson
+{
+   "id": 22262894166073,
+   "namespace": "algolia_search",
+   "key": "algolia_config",
+   "value": "",
+   "type": "json_string",
+},
+{
+   "id": 28038128697506,
+   "namespace": "algolia_search",
+   "key": "collection_sort_orders_293559566498",
+   "value": "[{\"key\":\"recently_ordered_count\",\"title\":\"Popularity\",\"desc\":{\"active\":true,\"title\":\"Most popular\"}}]",
+   "description": null,
+   "owner_id": 47976251554,
+   "created_at": "2023-11-15T15:05:03-05:00",
+   "updated_at": "2023-11-15T15:05:03-05:00",
+   "owner_resource": "shop",
+   "type": "json_string",
+   "admin_graphql_api_id": "gid://shopify/Metafield/28038128697506"
+}
+```
+
+## Update metafields
+
+Metafields are automatically updated when you change your Algolia configuration.
+
+To manually update metafields, use the Shopify API.
+You can't update metafields in the Shopify admin.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Manage metafields](https://shopify.dev/docs/apps/custom-data/metafields/manage-metafields)
+  - [Metafield (Shopify Admin REST API)](https://shopify.dev/docs/api/admin-rest/latest/resources/metafield)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Migrate your Algolia configuration to metafields
+
+1. In your Shopify admin, go to **Online store > Themes**, select the theme you want to update, and click **Edit code**.
+
+   ![Shopify theme library code editor](/doc/assets/images/integrations/shopify/edit-theme-code-5d877a8a.png)
+
+1. Open the **Layouts** folder and open the `theme.liquid` file. Locate the line for including `algolia_config.js`.
+
+   ```liquidliquid
+   <!-- Algolia head -->
+   {{ 'algolia_config.js' | asset_url | script_tag }}
+   ```
+
+   ![algolia\_config.js](/doc/assets/images/integrations/shopify/theme-liquid-alglia-config-c3ed213b.png)
+
+1. Replace this line with:
+
+   ```liquidliquid
+   <!-- Algolia head -->
+   {% render 'algolia_config' %}
+   ```
+
+1. Save your updates.
+
+   ![Save theme](/doc/assets/images/integrations/shopify/save-theme-b5053573.png)
+
+1. Open the **Snippet** folder and select **Add a new snippet**.
+
+1. Enter the filename for the new snippet: `algolia_config`.
+
+1. Paste the following code into the new snippet.
+
+   ```liquidliquid
+   <script>
+      window.algoliaShopify = window.algoliaShopify || {};
+      {% if shop.metafields.algolia_search.algolia_config %}
+         window.algoliaShopify.config = window.algoliaShopify.config || {};
+         window.algoliaShopify.config = {{ shop.metafields.algolia_search.algolia_config | json }};
+      {% else %}
+         window.algoliaShopify.config = algoliaShopify.config || {};
+      {% endif %}
+      {% if shop.metafields.algolia_search.instantsearch_sort_orders %}
+         window.algoliaShopify.config.sort_orders = {{ shop.metafields.algolia_search.instantsearch_sort_orders | json }};
+      {% endif %}
+      {% if shop.metafields.algolia_search.instantsearch_facets %}
+         window.algoliaShopify.config.facets = {{ shop.metafields.algolia_search.instantsearch_facets | json }};
+      {% endif %}
+
+      {% if collection %}
+         window.algoliaShopify.current_collection_id = {{ collection.id }};
+      {% endif %}
+
+      {% assign sort_orders_collection_meta = 'collection_sort_orders_' | append: collection.id %}
+      {% if collection %}
+         {% if shop.metafields.algolia_search[sort_orders_collection_meta] %}
+            window.algoliaShopify.config.collection_sort_orders = window.algoliaShopify.config.collection_sort_orders || {};
+            window.algoliaShopify.config.collection_sort_orders['{{ collection.id }}'] = {{ shop.metafields.algolia_search[sort_orders_collection_meta] | json }};
+         {% else %}
+            window.algoliaShopify.config.collection_sort_orders = window.algoliaShopify.config.collection_sort_orders || {};
+            window.algoliaShopify.config.collection_sort_orders['default'] = {{ shop.metafields.algolia_search['collection_sort_orders_default'] | json }}
+         {% endif %}
+      {% else %}
+         window.algoliaShopify.config.collection_sort_orders = null
+      {% endif %}
+
+      {% assign facet_collection_meta = 'collection_facets_' | append: collection.id %}
+      {% if collection %}
+         {% if shop.metafields.algolia_search[facet_collection_meta] %}
+            window.algoliaShopify.config.collection_facets = window.algoliaShopify.config.collection_facets || {};
+            window.algoliaShopify.config.collection_facets['{{ collection.id }}'] = {{ shop.metafields.algolia_search[facet_collection_meta] | json }};
+         {% else %}
+            window.algoliaShopify.config.collection_facets = window.algoliaShopify.config.collection_facets || {};
+            window.algoliaShopify.config.collection_facets['default'] = {{ shop.metafields.algolia_search['collection_facets_default'] | json }}
+         {% endif %}
+      {% else %}
+         window.algoliaShopify.config.collection_facets = null
+      {% endif %}
+   </script>
+   ```
+
+1. Save your changes.
+
+## Manually synchronize your Algolia configuration
+
+Configuration updates are automatically synchronized when you save your changes in the Algolia dashboard.
+However, you can also manually synchronize your configuration changes.
+The 'Sync Metafields' button only synchronizes Algolia configurations and the search page's facets and sort orders.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Collections facets and sort orders aren't synchronized. However, you can do this from the [Algolia dashboard](/integration/shopify/sending-and-managing-data/algolia-config/#manually-sync-collection-sort-orders-and-facets).
+</Note>
+
+{/* prettier-ignore-end */}
+
+1. In Shopify admin, go to **Apps** and click **Algolia AI Search & Discovery**.
+1. Click **Search options**.
+1. Scroll down to the bottom of the page.
+1. Click **Sync Metafields**.
+
+## Manually sync collection sort orders and facets
+
+Collection sort orders and facets are automatically synchronizes when you save your collection changes.
+However, you can also manually synchronize collection sort orders and facets.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The 'Sync Metafields' button only synchronizes facets and sort orders for the collection you're editing.
+  To synchronize another customized collection, select it, and click its **Sync Metafields** button.
+</Note>
+
+{/* prettier-ignore-end */}
+
+1. In Shopify admin, go to **Apps** and click **Algolia AI Search & Discovery**.
+1. Click **Collection pages**.
+1. Scroll down to the bottom of the page.
+1. Click **Sync Collection Sort Orders and Facets**.

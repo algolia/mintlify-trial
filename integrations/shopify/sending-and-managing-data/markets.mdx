@@ -1,0 +1,149 @@
+---
+title: Shopify Markets indexing
+description: |-
+  Algolia supports Shopify Markets for international ecommerce.
+---
+
+[Shopify Markets](https://shopify.dev/docs/apps/markets) helps merchants sell around the world with multiple languages,
+international pricing, or market-specific domains.
+
+The Algolia AI Search & Discovery app creates one index for each market and language.
+This lets you tailor ranking settings for each language and is compatible with existing Algolia features.
+
+## Before you begin: update Shopify theme assets
+
+To support Shopify Markets indexing, update your Algolia theme assets to the latest version.
+
+1. In your Shopify admin, go to the Algolia AI Search & Discovery app.
+1. Go to the **Search options** tab.
+1. Click **Enable on new theme** and either install the theme assets to your existing theme,
+   or install a new theme.
+
+   {/* prettier-ignore-start */}
+
+   <Warning>
+     Before updating your existing theme, make a backup. Updating will reset any
+     customization you've made to your Algolia theme assets.
+   </Warning>
+
+   {/* prettier-ignore-end */}
+
+   ![Enable Algolia theme assets in Shopify](/doc/assets/images/integrations/shopify/sending-and-managing-data/1a-markets-enable-assets-4195a343.jpeg)
+
+## Enable markets indexing
+
+1. To enable markets settings on your store's Algolia application, contact the [Algolia support](https://support.algolia.com/hc/en-us/requests/new)
+   team and provide them with your Shopify domain and Algolia application ID.
+
+1. After activation, go to the **Indexing** tab in the Algolia AI Search & Discovery app.
+
+1. Select **Enable Markets Indexing**.
+
+   ![Checkbox displayed to enable markets indexing](/doc/assets/images/integrations/shopify/sending-and-managing-data/1-markets-enable-toggle-a060f114.jpeg)
+
+   A list shows your store's active Shopify Markets and their available languages.
+
+1. For each market/language combination you want to index, check the option in the **Sync to Algolia** column.
+
+   ![UI of markets indexing after being enabled](/doc/assets/images/integrations/shopify/sending-and-managing-data/2-markets-indexing-enabled-40fb3194.jpeg)
+
+   {/* prettier-ignore-start */}
+
+   <Note>
+     Each selected market/language combination creates a new index. Only select
+     the combinations you actually need, since the processing time and number of
+     records increases with each new index. Don't select more than 10 markets.
+   </Note>
+
+   {/* prettier-ignore-end */}
+
+1. Click **Save**.
+
+### Reindexing
+
+First, Algolia prepares for real-time indexing in the background.
+This might take up to one minute.
+
+Next, Algolia reindexes your products and collections with new indices, replicas,
+and extra metafields for each record, such as, multiple currencies.
+
+![Algolia dashboard index list after markets indexing is enabled](/doc/assets/images/integrations/shopify/sending-and-managing-data/3-markets-algolia-dashboard-indices-f149e969.jpeg)
+
+After the initial re-indexing,
+real-time indexing keeps your products up-to-date with changes from each market.
+
+### Configure your Shopify storefront
+
+Update your search experience to support translation.
+
+#### Autocomplete dynamic selector helper
+
+1. In the **Search options** tab, go to the **Search basics** section.
+1. In the **Autocomplete** section, click **Customize**.
+1. Select **Use default dynamic selector**.
+   This helps the Algolia autocomplete menu to connect to the correct search form URL when users change to a different language or market in your store.
+
+![Dynamic selector helper checkbox for multi-language support with autocomplete widget](/doc/assets/images/integrations/shopify/sending-and-managing-data/6-markets-dynamic-selector-helper-2e0040c3.jpeg)
+
+#### Widget text translations
+
+You can translate text from your Shopify templates with Shopify's [Translate and Adapt](https://apps.shopify.com/translate-and-adapt) app.
+The translatable text from Algolia includes labels, placeholders, and helper text.
+
+To edit the translations:
+
+1. Open the Translate and Adapt app.
+
+1. Select **Store metadata**.
+
+   ![Guide to access store metafields translations](/doc/assets/images/integrations/shopify/sending-and-managing-data/4-markets-algolia-metafields-6285962b.jpeg)
+
+1. Add your translation to these metafields:
+
+   - `algolia_search.translations`—translations for labels and placeholder text
+   - `algolia_search.facets`—translations for facet filters
+   - `algolia_search.sort_orders`—translations for different sort orders
+
+![UI of JSON fields to translate Algolia widget text for markets support](/doc/assets/images/integrations/shopify/sending-and-managing-data/5-markets-algolia-metafields-translations-f9142d38.jpeg)
+
+## Schema
+
+If you added translations for product attributes in Shopify, they're added to each record.
+Otherwise, the record defaults to your store's primary language.
+
+The currency for each record defaults to your store's primary currency.
+Additional currencies are added as separate objects, such as, `market_pricing_eur`.
+
+The following example shows the changed fields of a record after enabling Markets indexing:
+
+```jsoncjsonc
+{
+  // ...variant record data
+  "title": "Product Title", // Translation applied || default title
+  "variant_title": "option1 / option2 / option 3", // Translation applied || default variant title
+  "description": "Product description", // Translation applied || default description
+  "handle": "product-handle", // Translation applied || default handle
+  "price": 100, // Price in primary currency
+  "compare_at_price": 150, // Price in primary currency
+  "variant_min_price": 100, // Price in primary currency
+  "variant_max_price": 150, // Price in primary currency
+  "variant_min_compare_at_price": 150, // Price in primary currency
+  "variant_max_compare_at_price": 200, // Price in primary currency
+  "market_pricing_eur": {
+    "price": 90, // Price in EUR
+    "compare_at_price": 135, // Price in EUR
+    "variant_min_price": 90, // Price in EUR
+    "variant_max_price": 135, // Price in EUR
+    "variant_min_compare_at_price": 135, // Price in EUR
+    "variant_max_compare_at_price": 180 // Price in EUR
+  },
+  "market_pricing_gbp": {
+    "price": 80, // Price in GBP
+    "compare_at_price": 120, // Price in GBP
+    "variant_min_price": 80, // Price in GBP
+    "variant_max_price": 120, // Price in GBP
+    "variant_min_compare_at_price": 120, // Price in GBP
+    "variant_max_compare_at_price": 160 // Price in GBP
+  }
+}
+```
