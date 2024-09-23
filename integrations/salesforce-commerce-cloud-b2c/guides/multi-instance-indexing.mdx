@@ -1,0 +1,77 @@
+---
+title: Multi-instance indexing
+description: |-
+  Learn how to set up multi-instance indexing for your store.
+---
+
+This guide helps you configure the Algolia B2C cartridge for multi-instance indexing.
+
+## Key concepts
+
+### Single-instance vs. multi-instance indexing
+
+By default, the Algolia B2C cartridge is configured for single-instance indexing. This means that for day-to-day, [ongoing indexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing/), you should run `AlgoliaProductDeltaIndex_v2`, `AlgoliaProductInventoryIndex_v2` and `AlgoliaProductPriceIndex_v2` from the Production instance.
+
+Multi-instance indexing lets you index certain product data from one instance (for example product attribute data from Staging),
+while other data from another (for example inventory and price data from Production).
+This is useful, for example, when your product data tends to be updated less frequently than inventory levels and prices,
+or when different instances are being used as the "source of truth" for different attributes.
+Using non-Production environments for non-time-sensitive data updates can reduce the resource load on your Production instance.
+
+The same mechanism can also be used when you want to update your indices from both Salesforce B2C instances and non-B2C data sources (such as a composable architecture with external PIMs or inventory management systems).
+
+### Partial record updates
+
+Partial record updates let you update only specific attributes of a record during an indexing job.
+This means that only the attributes that are sent during the indexing job will be updated, while all other existing attributes will remain unchanged.
+
+This is different from full record updates, where the entire record is replaced when a new record with the same `objectID` is sent.
+Partial record updates are useful when you want to update only a few attributes of a record, without having to re-send the entire record.
+
+All product indexing jobs can be configured to perform **partial record updates**, including `AlgoliaProductInventoryIndex_v2` and `AlgoliaProductPriceIndex_v2`, which do this by default.
+
+To set up multi-instance indexing, the `AlgoliaProductDeltaIndex_v2` job needs to be configured to perform partial record updates on the Staging instance.
+
+### Index prefix
+
+When indexing from Salesforce Commerce Cloud B2C instances, the index name is calculated dynamically by default.
+The name of the index includes part of the instance URL, for example `"staging-*"` or `"production-"`.
+As a result, separate indices will be created for each instance when indexing jobs are run from these instances.
+
+This behavior is useful when you wish to keep data indexed from multiple instances separate.
+However, if you want to index data from multiple instances into a single index, you can specify a custom index prefix.
+
+To specify a custom index prefix, you can use the [**Index Prefix**](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/) custom site preference in the **Algolia Business Manager module**.
+
+## Steps to set up multi-instance indexing
+
+### Before you begin
+
+Ensure that you have the identical cartridge version installed on all instances you want to use multi-instance indexing on (for example Staging and Production).
+Multi-instance indexing is supported from cartridge version **23.5.0**.
+[Follow the installation steps](/integration/salesforce-commerce-cloud-b2c/getting-started/set-up-the-algolia-cartridge/) or,
+if upgrading from an older cartridge version, by following [the migration guide](/integration/salesforce-commerce-cloud-b2c/guides/migrating-to-23-5-0/).
+Skip the steps about enabling and scheduling the jobs `AlgoliaProductDeltaIndex_v2`, `AlgoliaProductInventoryIndex_v2`, and `AlgoliaProductPriceIndex_v2` for now.
+
+### Steps to follow on your Staging instance
+
+1. Go to the **Algolia Business Manager module** (**Merchant Tools > Algolia > Algolia**) on your Staging instance.
+
+1. Enter a value for the **Index Prefix** site preference. The [Production instance](#steps-to-follow-on-your-production-instance) should match this value.
+
+1. Go to **Administration > Operations > Jobs**, click `AlgoliaProductDeltaIndex_v2`, then go to the **Job Steps** tab.
+
+1. Click the **algoliaProductDeltaIndex** job step, select `partialRecordUpdate` for the job parameter `indexingMethod` and then click **Assign**.
+
+1. Enable and schedule the job on the **Schedule and History** tab.
+
+### Steps to follow on your Production instance
+
+1. Go to the **Algolia Business Manager module** (**Merchant Tools > Algolia > Algolia**) on your Staging instance.
+1. Enter a value for the **Index Prefix** site preference. The [Staging instance](#steps-to-follow-on-your-staging-instance) should match this value.
+1. Go to **Administration > Operations > Jobs**, then enable and schedule the `AlgoliaProductInventoryIndex_v2` and `AlgoliaProductPriceIndex_v2` jobs.
+
+### Verify if the jobs are configured properly
+
+1. Run the `AlgoliaProductDeltaIndex_v2` job on your Staging instance and check your Algolia dashboard to see if the indices with the new index prefix were created.
+1. Run the `AlgoliaProductInventoryIndex_v2` and `AlgoliaProductPriceIndex_v2` jobs on your Production instance and confirm that the same indices were updated with your inventory and price data from Production.

@@ -1,0 +1,194 @@
+---
+title: Troubleshooting Magento 2 - in-depth walkthrough
+description: |-
+  FAQ on errors linked to data, indexing, and queueing.
+---
+
+This guide helps you debug your data, indexing, and queueing issues with Magento 2.
+
+For example, you're getting an error with your data or search results.
+It may be an error that other Magento/Algolia users experience.
+
+The types of errors vary, affecting both new and long-time users.
+While many problems can be serious, they often require only a few simple steps to resolve.
+
+If you haven't yet installed the extension or followed the steps in [getting started](/integration/magento-2/getting-started/quick-start/), do so before continuing. If you're still having trouble, read through the [Magento FAQ](/integration/magento-2/troubleshooting/general-faq/).
+
+## Your data is missing or not up to date
+
+You've done everything: installed the extension, configured your data and settings, and added a search bar to your site. It should now fetch your Magento product data, process it (transforming it to JSON), and then send the JSON data to Algolia.
+
+But nothing happens. You search, and you get no results. Or, only some of your data appears, but the rest is missing. Or there aren't any facets.
+
+Your problem is most likely an indexing or queueing issue. Did you:
+
+- Upload your data?
+- Reindex?
+- Enable queueing?
+- Start cron?
+
+## Uploading your data
+
+### Do you have empty indexes? Have you only just installed the extension?
+
+The extension should have created the indices when you [set up your credentials](/integration/magento-2/getting-started/quick-start/#before-you-begin).
+
+And as soon as you change a setting or add/remove/modify your data, a new index is ready to go to Algolia. If it doesn't get to Algolia (through a reindex), the change won't appear in your search results.
+
+### Check your credentials. Are your `App ID` and `API key` correct?
+
+If your credentials are correct, check to see if you've [enabled the queue for automatic indexing](/integration/magento-2/how-it-works/indexing-queue/). Your changes won't take effect without the queue unless you reindex manually.
+
+However, if the indexing _did_ occur, and you still have data problems: check the logs to see if the reindexing failed with errors.
+
+## Enabling the queue and starting cron
+
+Here's how the queue works:
+
+- To reindex, you need to set up a cron job which will run every few minutes.
+- When you reindex your products, it doesn't send them to Algolia immediately; instead, it creates many reindexing records/jobs in the `algoliasearch_queue` table in your Magento database.
+- Every time the cron runs, it processes only a small portion of the records/jobs. Five minutes later, it picks up where it left off, eventually clearing out the queue. Once all the jobs are processed, the extension will have fully reindexed your data.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Enabling the queue doesn't just require setting up the cron job: you also need to start cron. If you need your data to be sent immediately to Algolia, you must _first_ turn off the queue and then manually run the indexing process. Turn on the queue once that's done.
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [How to start the cron job](/integration/magento-2/how-it-works/indexing-queue/#configure-the-queue)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Why use a queue?
+
+- **The queue is asynchronous**. This means it doesn't prevent you from doing other things. Whether you're reindexing through code or the Magento console, you can still use the console, or your code can do other things while the queue is reindexing in the background.
+
+- **The queue is more reliable**. For two reasons:
+
+  - If the job fails, the next run of the queue will automatically retry.
+  - How the queue breaks up your index (see ["Your data is too large" below](#your-data-is-too-large)).
+
+- **No downtime**: the queue uses temporary indices to ensure that indexing doesn't cause any downtime on your site.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Whether you reindex from the command-line or programmatically, you must wait for the cron job to run the process. This won't cause significant delays because the cron job runs every five minutes.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Your data is too large
+
+Data needs to be broken into smaller chunks to avoid [timeouts](#network-errors) and [memory limits](#running-out-of-memory). **Large indexes cause problems if queueing isn't enabled because of the way queuing breaks up and batches index operations.**
+
+[Algolia limits the size of individual records for performance reasons](https://support.algolia.com/hc/en-us/articles/4406981897617-Is-there-a-size-limit-for-my-index-records-/). The extension hides this from you. Whether you use the queue or not, the extension breaks up your data every time you reindex to ensure that it complies with Algolia's size limit.
+
+The extension does the following: for every reindex, the extension pushes only 1,000 products at a time. Therefore, if you have 5,000 records, the extension breaks up your index into five smaller chunks.
+
+Without the queue, the PHP code attempts to push your five smaller chunks one after the other, which takes a long time and can result in a timeout or an out-of-memory error.
+
+The queue resolves this by breaking up your indexes into five jobs, where each job contains 1,000 records. This way, the queue sends each job, one at a time. You have little chance of running out of memory or timing out with this approach. And even if there is an error, the next time the cron runs, it will retry the job that failed.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Although queueing solves the problem of large indexes, it inevitably slows down indexing. This is only natural. If you have 10,000 products, ten jobs are required to update them. If the cron runs every five minutes, that means these ten jobs take five minutes per job = 50 minutes.
+</Note>
+
+{/* prettier-ignore-end */}
+
+To learn more about record size limits, refer to the [data, record size, and usage limitations documentation](/guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations/).
+
+## Common errors
+
+**OK, you've done everything correctly - set up your data, enabled the queue, and started the cron job - but your data is still not there.**
+
+### Queueing
+
+Verify that you have enabled indexing and your cron job is running. Not enabling these correctly is the most common cause of errors.
+
+**The best solution to an error is to have queueing enabled because it's self-correcting.** Even if your indexing fails, the next time the cron job runs, the process will start where it left off - and this time, it might pass.
+
+### Network errors
+
+Timeouts and outages. Usually, these kinds of errors are automatically fixed by the queueing process. The next run may not show the same problem. However, if this error persists, see if there's an issue with your network infrastructure.
+
+### Running out of memory
+
+Large indexes commonly cause memory problems. Magento has some problems with memory leaks which cause errors when memory usage increases. Secondly, with Algolia, memory usage increases when you send Algolia an index that exceeds 10K. Algolia requires that all indexes be no greater than 10K. Queueing resolves this problem because the cron job breaks up large indexes into 10K chunks.
+
+Without a cron job, index size isn't checked with [`EMPTY_QUEUE=1`](/integration/magento-2/how-it-works/indexing-queue/#clear-the-queue).
+
+### Too many products
+
+[Algolia only accepts 10K index sizes](#your-data-is-too-large). If you aren't using the queue, there is no check on this, and so if the size of your product index exceeds 10K, the indexing fails. With queuing enabled, the cron job breaks down the index into 10K chunks, ensuring success.
+
+To learn more about record size limits, see the [documentation](/guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations/).
+
+Knowing that a reindex will stop because you have too many products, the result is that your data won't be complete until the whole index is uploaded to Algolia - and this might take some time. In the meantime, some data will be missing, or not updated, or not all facets will be present.
+
+How to know if the indexing process has failed?
+
+- You can see it from the frontend - the data isn't correct.
+- Check the [`algoliasearch_queue` table](/integration/magento-2/how-it-works/indexing-queue/) to see if there are unfinished jobs.
+
+Whenever reindexing fails, you must restart it, but the good news is that **all "restarts" continue where they left off**. An index can be restarted in two ways:
+
+- Enable the queue. This will then reindex automatically every five minutes (or whatever you have set it to).
+- Manually, in the Magento dashboard. Click on the index and press restart.
+
+Again, enabling the queue is the preferred solution.
+
+### Missing facets
+
+The extension is only partially indexing: searching categories but not products. Solve this issue by checking for errors or setting up your queue.
+
+When you [add a new attribute to your facets](/integration/magento-2/how-it-works/indexing/#facets), you must reindex your products to include the new attribute in your Algolia data to ensure the attribute presents as a facet in your search results.
+
+### Some products are invisible (not showing up)
+
+If some products are filtered out of your indexes, check the product's attributes.
+
+The extension comes with a product-level filter that removes all out-of-stock products and products you turned off, from your search results. No invisible products will be indexed either. For more information, refer to the [product indexing documentation](/integration/magento-2/how-it-works/indexing/#indexing-products).
+
+**Make sure that all products are enabled, visible, and in stock**
+
+If they're still not showing up, they may have been filtered out. Take a look at the following code (used by Algolia to filter-out products).
+
+```php php
+// Remove product from index if: deleted, disabled, out of stock, not visible
+if (  $product->isDeleted() === true
+  ||  $product->getStatus() == Status::STATUS_DISABLED
+  || ($product->isInStock() == false && !$this->configHelper->getShowOutOfStock($storeId))
+  ||  !in_array((int) $product->getVisibility(),
+          [Product\Visibility::VISIBILITY_BOTH,
+          Product\Visibility::VISIBILITY_IN_SEARCH,
+          Product\Visibility::VISIBILITY_IN_CATALOG], true)
+  ) {
+      $productsToRemove[$productId] = $productId;
+      continue;
+  }
+```
+
+### Still getting errors?
+
+Check to see if there are any more errors or whether some indexes are still in the queue. Once you have determined there are no correctable errors and no queued jobs:
+
+1. Recheck your settings
+1. Reindex again _with queueing enabled_
+1. When the queue is empty, verify whether any products are still missing.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If products are still missing, [contact Algolia's support team](https://www.algolia.com/support/#contact). There may be something specific to your account, infrastructure, or extension configuration.
+</Note>
+
+{/* prettier-ignore-end */}

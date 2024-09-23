@@ -1,0 +1,73 @@
+---
+title: Frontend (UI/UX)
+description: |-
+  Learn how your Salesforce B2C Commerce storefront works with the Algolia Salesforce B2C Commerce cartridge.
+---
+
+Whether you're using the SiteGenesis (`int_algolia_controllers` and `algolia_sg_changes`) or Storefront reference architecture (`int_algolia_sfra`) [cartridges](/integration/salesforce-commerce-cloud-b2c/getting-started/set-up-the-algolia-cartridge/#install-with-salesforce-b2c-commerce-ux-studio),
+Algolia provides a set of configuration files, which you can customize to match the look and feel of your site.
+
+## Autocomplete
+
+Algolia's Salesforce B2C Commerce cartridge uses the [Autocomplete library](/ui-libraries/autocomplete/introduction/getting-started/) to provide a search-as-you-type experience. It suggests products and categories by default.
+
+The Autocomplete configuration is in the following files:
+
+- **SFRA.** `int_algolia/cartridges/int_algolia_sfra/cartridge/static/default/js/algolia/autocomplete-config.js`
+- **SiteGenesis.** `int_algolia/cartridges/int_algolia_controllers/cartridge/static/default/js/algolia/autocomplete-config.js`
+
+## Category and search results page
+
+Algolia's Salesforce B2C Commerce integration uses the following InstantSearch.js widgets to display results on your search page:
+
+| Widget                                                             | Description                                                             |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| [`infiniteHits`](/api-reference/widgets/infinite-hits/js/)         | A list of products matching the query                                   |
+| [`sortBy`](/api-reference/widgets/sort-by/js/)                     | A switch to toggle between different product sorts                      |
+| [`rangeInput`](/api-reference/widgets/range-input/js/)             | A price range filter                                                    |
+| [`hierarchicalMenu`](/api-reference/widgets/hierarchical-menu/js/) | A menu to refine the category of the products                           |
+| [`refinementList`](/api-reference/widgets/refinement-list/js/)     | A menu to refine by a facet—for example, brand, color, or size          |
+| [`panel`](/api-reference/widgets/panel/js/)                        | Used to toggle other faceting widgets                                   |
+| [`clearRefinements`](/api-reference/widgets/clear-refinements/js/) | Used to clear/reset all refinements                                     |
+| [`pagination`](/api-reference/widgets/pagination/js/)              | A pagination widget                                                     |
+| [`stats`](/api-reference/widgets/stats/js/)                        | A widget to display the number of hits and the time it took to get them |
+| [`breadcrumb`](/api-reference/widgets/breadcrumb/js/)              | A widget to display the current refinements                             |
+| [`highlight`](/api-reference/widgets/highlight/js/)                | A widget to highlight the query in the results                          |
+
+Customize the defaults to fit the look and feel of your site, and add extra features in the following files:
+
+- **SFRA.** `int_algolia/cartridges/int_algolia_sfra/cartridge/static/default/js/algolia/instantsearch-config.js`
+- **SiteGenesis.** `int_algolia/cartridges/int_algolia_controllers/cartridge/static/default/js/algolia/instantsearch-config.js`
+
+The page is rendered with a "controller". You can customize the controller in the following files:
+
+- **SFRA.** `int_algolia/cartridges/int_algolia_sfra/cartridge/controllers/Search.js`
+- **SiteGenesis.** `int_algolia/cartridges/algolia_sg_changes/cartridge/controllers/Search.js`
+
+## Display color swatches
+
+Color swatches are enabled by default when you use the [product-level record model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#product-level-default-model).
+
+For the [variant-level record model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#variant-level-default-model), some extra information must be added to the records.
+To ensure that the Algolia integration for Salesforce B2C Commerce can display the colors of all variants, each variant record must contain the images for each color.
+For that, you must add the `colorVariations` [additional attribute](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/?client=javascript#configurable-attributes).
+[Group the variants](/integration/salesforce-commerce-cloud-b2c/getting-started/configure-your-search/#configure-results-grouping) for a better search experience.
+
+## Click and conversion events
+
+To complete your setup, see [Click and conversion events](/integration/salesforce-commerce-cloud-b2c/building-the-search-ui/events/).
+
+## Content search UI
+
+Integrating content pages enhances the user experience by broadening the search scope.
+To incorporate relevant content pages into your search results:
+
+1. [Index your content pages](/integration/salesforce-commerce-cloud-b2c/indexing/content-indexing/fundamentals/)
+1. Select **Enable content search** in the Algolia Business Manager Module. If content search is enabled _before_ indexing content pages, the UI will malfunction.
+
+Your site's search capabilities have now been enhanced in two notable ways:
+
+- **Autocomplete**: a new section has been added which provides relevant content suggestions to users.
+- **InstantSearch**: a new tab has been added which lets users browse content page results. The tab isn't displayed if there are no content page results.
+
+To align content search with your site's design and user experience, you can customize the appearance and behavior by modifying the same configuration files used for category and search result pages.

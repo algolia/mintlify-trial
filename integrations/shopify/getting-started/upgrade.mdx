@@ -33,13 +33,9 @@ To automatically update the Algolia dependencies of your theme, go to your Algol
 
 1. Click **Install to a new theme**.
 
-   ![The display tab in your Shopify admin](/doc/assets/images/integrations/shopify/getting-started/upgrade-guides/1-third-party-libraries-migration-714fb70c.jpeg)
-
 1. Select the theme you want to update.
 
 1. You will see a migration notice explaining that the wizard will migrate the third-party assets for you.
-
-   ![Migration notice in Shopify admin](/doc/assets/images/integrations/shopify/getting-started/upgrade-guides/2-third-party-libraries-migration-ed173d3b.jpeg)
 
 1. Click **Finish installation**.
 
@@ -51,8 +47,6 @@ If your shop has a custom theme or relies on non-standard versions of external l
 
 1. Open the theme code editor.
 
-   ![Dropdown to open the theme code editor](/doc/assets/images/integrations/shopify/getting-started/upgrade-guides/3-third-party-libraries-migration-2116a667.jpeg)
-
 1. Open the `layout/theme.liquid` file.
 
 1. For each asset with a `jsdelivr.net` URL:
@@ -61,14 +55,12 @@ If your shop has a custom theme or relies on non-standard versions of external l
    - In **Assets**, click **Add a new asset**, and select **Create a blank file** (use the same filename as the opened file)
    - Paste the copied content in the newly created asset
 
-![Fifth third party library migration](/doc/assets/images/integrations/shopify/getting-started/upgrade-guides/5-third-party-libraries-migration-4c2e119d.jpeg)
-
-4. Once you have created assets from each `jsdelivr.net` URL, update their associated URLs in the `theme.liquid` file.
+1. Once you have created assets from each `jsdelivr.net` URL, update their associated URLs in the `theme.liquid` file.
 
    Change `{{ '//cdn.jsdelivr.net/folder/filename.js' | script_tag }}` to `{{ 'filename.js' | asset_url | script_tag }}`.
    `filename.js` is the name of the newly created asset.
 
-4. Save the file.
+1. Save the file.
 
 {/* prettier-ignore-start */}
 

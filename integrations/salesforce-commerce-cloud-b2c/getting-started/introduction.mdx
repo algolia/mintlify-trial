@@ -1,0 +1,51 @@
+---
+title: Algolia for Salesforce B2C Commerce
+description: |-
+  Integrate Algolia with Salesforce B2C Commerce.
+---
+
+Algolia's cartridge unlocks best-in-class Search and Discovery on Salesforce B2C Commerce.
+
+The cartridges synchronize product (including price and inventory), category, and content data, and powers search and discovery for both [SFRA (Storefront Reference Architecture)](https://developer.salesforce.com/docs/commerce/sfra/guide/sfra-overview.html) and SiteGenesis.
+You can customize these InstantSearch.js-based experiences to match your brand's needs.
+You can also use the backend cartridges on their own to synchronize data for headless,
+[composable](https://developer.salesforce.com/docs/commerce/pwa-kit-managed-runtime/guide/getting-started.html) storefront integrations,
+accelerated by Algolia's [React InstantSearch](/guides/building-search-ui/what-is-instantsearch/react/),
+[Autocomplete](/ui-libraries/autocomplete/introduction/what-is-autocomplete/),
+and [Recommend](/deprecated/recommend/introduction/getting-started/?client=React) UI libraries.
+
+The integration works with Algolia's [Merchandising Studio](/guides/managing-results/rules/merchandising-and-promoting/),
+[search analytics](/guides/search-analytics/overview/),
+[NeuralSearch](/guides/getting-started/neuralsearch/),
+[Personalization](/guides/personalization/what-is-personalization/),
+and [Recommend](/guides/algolia-recommend/overview/).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Algolia for Salesforce B2C Commerce](https://academy.algolia.com/guides/718dcbf0-786f-11ec-a21b-02d47b69d3fd/tasks/9bc2de0c-6ddd-11ec-b6dd-06d1e47e4b53)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Compatibility
+
+The cartridge supports these versions:
+
+- Salesforce Commerce Cloud API version 21.7 (compatibility mode: 21.2)
+- SiteGenesis controllers version 105.0.0
+- SFRA version 6.0.0
+
+A SiteGenesis-based site can use both pipeline and controller architectures simultaneously.
+The Algolia cartridge uses controllers, but is fully compatible with your current pipeline architecture.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Cartridge versions 23.4.x and lower ("Gen 1") are deprecated.
+  They will be [sunset](https://www.algolia.com/blog/algolia/sunsetting-salesforce-b2c-commerce-cartridge-gen-1/) on **October 31, 2024**.
+  To take advantage of the improvements in the latest version, upgrade to the "Gen 2" cartridges (>23.5.x).
+  For more information, see the [release notes](https://github.com/algolia/algoliasearch-sfcc-b2c/releases) and the [migration guide](/integration/salesforce-commerce-cloud-b2c/guides/migrating-to-23-5-0/).
+</Warning>
+
+{/* prettier-ignore-end */}

@@ -61,34 +61,22 @@ the InstantSearch settings in the **Search Options** of the application.
 
 1. Open the **Merchandising tool** tab and click **Create your first query rule**.
 
-   ![The Merchandising tool in the Shopify admin](/doc/assets/images/integrations/shopify/going-further/7-create-qr-68ca0ef9.jpeg)
-
 1. Type a search query you want to assign actions to, and click **Search**.
    You can change the order of the results.
-
-   ![Merchandising a search query in the Shopify admin](/doc/assets/images/integrations/shopify/going-further/8-merchandising-c37ec7e1.jpeg)
 
 ## How to promote or demote products
 
 Use the arrow buttons to adjust the desired position of a product: up or down.
 
-![Promoting or demoting items with the arrow buttons](/doc/assets/images/integrations/shopify/going-further/9-pinned-b0383ae1.jpeg)
-
 ## How to pin a product that is outside search results
 
 In the following example, the search query "watch" returns video games.
-
-![The default results on a search query](/doc/assets/images/integrations/shopify/going-further/10-result-e5cb5521.jpeg)
 
 To show wrist watches instead:
 
 1. Click **Add another product to pin** and search for the item you want to promote.
 
-   ![Search for the product you want to pin to this query](/doc/assets/images/integrations/shopify/going-further/11-autocomplete-67de7ab3.jpeg)
-
 1. The items are pinned to the first available (not pinned) position. Other pinned items aren't impacted.
-
-   ![Your item is now pinned to the results](/doc/assets/images/integrations/shopify/going-further/12-pinned-item-a28682dd.jpeg)
 
 ## How to hide a product from search results
 
@@ -104,8 +92,6 @@ By default, pinned items show up in the search results even if they don't match 
 You can change this behavior by selecting **Pinned items must match active filters to be displayed** in the **Merchandising tool > Merchandising settings** section.
 
 For example, if you pinned a red item that is on sale, but users filter on blue items, this setting ensures that only blue items appear (discarding your pinned red item).
-
-![Pinned items and filtering](/doc/assets/images/integrations/shopify/going-further/21-filter-pinned-items-ba8a7e92.jpeg)
 
 ### Widget updates
 
@@ -164,16 +150,12 @@ You need to perform these steps:
 1. Go to the [**Rules**](https://dashboard.algolia.com/rules/) section in the Algolia dashboard and select your index to which you want to add a Rule.
 1. Select either **Create your first Rule** or **New Rule** and select **Visual Editor**.
 
-   ![Create a rule from the visual editor](/doc/assets/images/integrations/shopify/going-further/23-add-new-rule-c8d194e3.jpeg)
-
 ### Set the collection context
 
 1. In the Visual Editor, click **Set a search query**.
 1. In the menu next to **Your search**, select **is** and leave the following input field empty.
 1. In **Add a context (optional)**, add a collection handle.
    To trigger a Rule when a user lands on a collection page, the search query must be empty and the context must be equal to your collection handle.
-
-   ![Set the search context](/doc/assets/images/integrations/shopify/going-further/24-search-context-25954eca.jpeg)
 
 The collection handle is the last part of your collection page's URL.
 You can also find it when editing your collection's "website SEO" in the Algolia AI Search & Discovery app's settings.
@@ -190,8 +172,6 @@ In the **Category** section, you can either choose to filter on:
 
 Filtering on the `collection_ids` attribute is more robust, as changes to the collection ID are less likely.
 
-![Filter the search results on that particular collection](/doc/assets/images/integrations/shopify/going-further/25-filter-on-collection-4d8774bb.jpeg)
-
 {/* prettier-ignore-start */}
 
 <Note>
@@ -205,7 +185,5 @@ Filtering on the `collection_ids` attribute is more robust, as changes to the co
 
 Move the items at the position you want them to appear in the collection page and hide the ones you don't want to show.
 Save your selection by clicking **Review and Publish**.
-
-![Promote and hide the items the way you want them to appear](/doc/assets/images/integrations/shopify/going-further/26-pin-and-hide-items-a11ceb5c.jpeg)
 
 **If you want to use the Algolia dashboard to merchandise a collection, the Rule Condition must be an empty query and the context must be the collection handle.**

@@ -1,0 +1,234 @@
+---
+title: Integrate recommendations in your storefront
+description: |-
+  Use Algolia Recommendations on your Salesforce B2C Commerce storefront.
+---
+
+This guide explains how to integrate Algolia-powered recommendations into your Salesforce B2C Commerce storefront architecture. By using the [`recommend-js`](/deprecated/recommend/api-reference/recommend-js/) library with Algolia's SFRA cartridge, you can deliver product recommendations to enhance the shopping experience for your users.
+
+To learn how recommendations work, see [Algolia Recommend](/guides/algolia-recommend/overview/).
+
+## General approach
+
+Algolia Recommend seamlessly integrates into your Salesforce B2C Commerce storefront through [content slots](https://help.salesforce.com/s/articleView?id=cc.b2c_content_slots.htm\&type=5). Algolia's SFRA cartridge integration supports customizable templates for displaying product recommendations.
+
+Some recommendation widgets may require anchor products for which (related, similarly looking etc.) recommendations are generated. You can set these anchor products using a session variable in your controller or ISML template file, similar to [Einstein Recommendations](https://help.salesforce.com/s/articleView?id=cc.b2c_recommender_types.htm\&type=5), or pass them with content slot configuration.
+
+## Before you begin
+
+Ensure you've collected [enough events](/guides/sending-events/concepts/event-types/#minimum-number-of-events) for the models you want to use.
+Use the [SFRA events integration](/integration/salesforce-commerce-cloud-b2c/building-the-search-ui/events/?client=javascript#default-events) to collect events from your storefront.
+To speed up your implementation, [import historical events](/guides/algolia-recommend/how-to/csv-upload/) from a CSV file.
+
+Once you've collected sufficient events, [train](/guides/algolia-recommend/how-to/set-up/#train-the-recommend-models) the relevant models.
+
+## Configuration
+
+These steps are common for all recommendation widgets:
+
+1. Go to the [content slot configuration](https://help.salesforce.com/s/articleView?id=cc.b2c_managing_and_creating_content_slot_configurations.htm\&type=5) and select the content slot for recommendations.
+
+1. Create a new configuration for the content slot. Set the content type to **Product**.
+
+1. Choose the template you want to use for the recommendations, corresponding to the [Recommend models](/guides/algolia-recommend/overview/#recommend-models):
+
+   - Related Products
+   - Frequently Bought Together
+   - Trending Items
+   - Looking Similar
+
+1. Provide anchor products [using the session variable `session.privacy.algoliaAnchorProducts`](#passing-anchor-products-with-session-variables) or specify them directly and statically in the [content slot's **Product** field](/integration/salesforce-commerce-cloud-b2c/guides/algolia-recommend/#passing-anchor-products-with-content-slot-configuration). Depending on the widget and recommendation requirements, you can specify either single or multiple anchor products.
+
+1. If you want to show trending items recommendations in your autocomplete menu, [update the `autocomplete-config.js` file](#autocomplete-trending-items-widget).
+
+1. Activate Algolia Recommend in your SFRA cartridge. In your Business Manager, go to **Merchant Tools > Algolia** and open the [Custom Preferences](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/).
+
+### Passing anchor products with session variables
+
+Use this strategy when the anchor product IDs, for which recommendations are generated, vary due to user interactions, or the location of the widget.
+It's especially useful for creating recommendations:
+
+- Across a wide range or products, such as all product detail pages
+- For rapidly updating product sets, such as when new products are added
+- For a shopper's specific product carts
+
+To use specific products as anchor items, you can assign the session variable `algoliaAnchorProducts` in either the corresponding controller or the ISML template file. For example, you can do this in the `Wishlist` controller or the `wishlist.isml` template file if you want to show recommendations based on the products in the shopper's wishlist.
+
+```ISML ISML
+<isscript>
+var algoliaAnchorProducts = [];
+var plis = pdict.wishlistItems.toArray();
+for (var i = 0; i < plis.length; i++) {
+      algoliaAnchorProducts.push(plis[i].id);
+   }
+   session.privacy.algoliaAnchorProducts = JSON.stringify(algoliaAnchorProducts);
+</isscript>
+```
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This is not needed for the `Cart-Show` and `Product-Show` controllers, as the Algolia SFRA cartridge already sets this variable.
+  Therefore, unless there are specific customizations in your instance or you want to change this default behavior, you can directly utilize content slots on these pages to display recommendations based on products in the cart on the basket page and the currently displayed product on the product detail page, respectively.
+</Note>
+
+{/* prettier-ignore-end */}
+
+Some templates may require additional configuration.
+For details, see [each widget's section on this page](#recommendation-widgets).
+
+### Passing anchor products with content slot configuration
+
+Choose this content slot configuration when your anchor products for which to generate recommendations are static and unaffected by shoppers' actions or the placement of the widget. This means the widget generates only recommendations for the specific products listed in the **Products** field (using Products IDs).
+
+## Recommendation widgets
+
+Algolia Recommend includes widgets for showing recommendations across your storefront, for example home, category, product detail, no-result, and cart pages.
+
+- You need to train models in the Algolia dashboard before you can use the widgets. For more information, see [Train the Recommend models](/guides/algolia-recommend/how-to/set-up/#train-the-recommend-models).
+
+### Trending items widget
+
+The [Trending Items](/deprecated/recommend/api-reference/recommend-js/trendingItems/) widget displays the most popular items in your store.
+This widget's basic configuration does not require additional setup. If you want to use it on a category page, it automatically shows the trending items for that category.
+Otherwise, it displays the trending items for the entire index.
+
+To display this widget, you can use an existing content slot or create a new one:
+
+```ISML ISML
+<div class="container">
+   <isslot id="algolia-home-products" description="Renders Trending Products" context="global" />
+</div>
+```
+
+Then, go to the content slot configuration, set the content type to **Product** and choose **Trending Items** template.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The logic for displaying trending products in a specific category depends on the `categoryDisplayNamePath` variable.
+  This variable is automatically set in the `Search.js` Controller file for categories and then used as the `facetValue` in the widget.
+  To display popular items for a different facet, customize the logic.
+  For more details, refer to the trending items [widget reference](/deprecated/recommend/api-reference/recommend-js/trendingItems/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Frequently bought together widget
+
+The [Frequently Bought Together](/guides/algolia-recommend/overview/#frequently-bought-together) widget displays items that are frequently purchased together. This widget requires anchor products as reference against which frequently bought together items are identified.
+
+The logic for anchor products is handled with a session variable named `session.privacy.algoliaAnchorProducts`. You can set this variable in your controller or ISML template file. The following example sets this variable and creates a new content slot:
+
+```ISML ISML
+<isscript>
+   var algoliaAnchorProducts = [];
+   var plis = pdict.items.toArray(); // for example all products in the basket
+   for (var i = 0; i < plis.length; i++) {
+       algoliaAnchorProducts.push(plis[i].id);
+   }
+   session.privacy.algoliaAnchorProducts = JSON.stringify(algoliaAnchorProducts);
+</isscript>
+<div class="container mt-5">
+    <isslot id="algolia-fbt-cart" description="Algolia Frequently bought together products" context="global" />
+</div>
+```
+
+Then, go to the content slot configuration, set the content type to **product** and choose the **Frequently Bought Together** template.
+
+For more details, refer to the frequently bought together [widget reference](/deprecated/recommend/api-reference/recommend-js/frequentlyBoughtTogether/).
+
+### Related Products widget
+
+The [Related Products](/guides/algolia-recommend/overview/#related-products-and-related-content) widget displays items that are related to the current product. This widget requires anchor products as reference against which related items are identified.
+
+The logic for the anchor product is handled with a session variable named `session.privacy.algoliaAnchorProduct`, similarly to the [Frequently Bought Together widget](/integration/salesforce-commerce-cloud-b2c/guides/algolia-recommend/#frequently-bought-together-widget) preceding. You can set this variable in your controller or ISML template file.
+Here is an example of setting this variable and creating a new content slot:
+
+```ISML ISML
+<isscript>
+var algoliaAnchorProducts = [];
+var plis = pdict.items.toArray();
+for (var i = 0; i < plis.length; i++) {
+    algoliaAnchorProducts.push(plis[i].id);
+}
+session.privacy.algoliaAnchorProducts = JSON.stringify(algoliaAnchorProducts);
+</isscript>
+
+<div class="container">
+    <isslot id="algolia-related-products-cart" description="Algolia Related Products" context="global" />
+</div>
+```
+
+Then, go to the content slot configuration and select the `Content Type` as `Product` and choose the template as `Related Products`.
+
+For more details, refer to the related products widget [API reference](/deprecated/recommend/api-reference/recommend-js/relatedProducts/).
+
+### Looking Similar widget
+
+The [Looking Similar](/guides/algolia-recommend/overview/#looking-similar) widget displays items that are visually similar to the current product. This widget requires anchor products as reference against which similarly looking items are identified.
+
+It also requires the `lsImage` attribute to be available in the index to provide the reference image to the model. You can send this attribute to Algolia by adding it to the _Additional Product Attributes_ setting in the Algolia Business Manager module [Custom Preferences](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/).
+
+1. Go to the Algolia dashboard and train the Looking Similar model, with `lsImage` as the image attribute.
+1. In the Business Manager, go to the content slot configuration, set the content type to **Product**, and choose the **Looking Similar** template.
+1. Set the session variable `session.privacy.algoliaAnchorProduct`. See the [Frequently Bought Together widget](#frequently-bought-together-widget).
+
+The following example sets this variable and creates a new content slot:
+
+```ISML ISML
+<isscript>
+    var algoliaAnchorProducts = [];
+    algoliaAnchorProducts.push(pdict.product.id);
+    session.privacy.algoliaAnchorProducts = JSON.stringify(algoliaAnchorProducts);
+</isscript>
+<div class="recommendations mt-5">
+    <isslot id="algolia-pdp-looking-similar" description="Looking similar products" context="global" />
+</div>
+```
+
+For more details, refer to the looking similar [widget reference](/deprecated/recommend/api-reference/recommend-js/lookingSimilar/).
+
+### Similar Content widget
+
+The Similar Content widget is used for displaying similar content. It is fully configurable and can be used in any content asset or Page Designer component.
+To use it, add the following code snippet to your content asset or Page Designer component in Business Manager.
+The `data-object-ids` attribute is used to pass the object ids of the current content to the widget.
+
+```HTML HTML
+<div class="row" id="similarContents" data-object-ids="['about-us_1']"></div>
+```
+
+### Autocomplete trending items widget
+
+[Trending Items](/guides/algolia-recommend/overview/#trending-items-and-trending-facet-values) recommendations are a powerful way to suggest popular products to your shoppers as inspiration when they start searching. If you want to use this feature in your autocomplete menu, follow these steps:
+
+1. Train your Trending Items model.
+
+1. In the `int_algolia_sfra/cartridge/static/default/js/algolia/autocomplete-config.js` file, set `useTrendingItems` to `true`.
+
+1. Turn on the **Enable Recommend** [Custom Preference](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/).
+
+You can adjust the `maxRecommendations` variable within the `autocomplete-config.js` file to alter the number of trending items displayed. Additionally, you can tailor the styling, placement, and ordering of the trending items through modifications in this file.
+
+## Widget styling
+
+You can customize widget styles, titles, and attributes (such as number of shown products, or the confidence score thresholds) by adjusting settings in the `recommend-js` library. For details, see the [`recommend-js` reference](/deprecated/recommend/api-reference/recommend-js/). You might also want to add optimizations such as scrolling or pagination to iterate through shown recommendations.
+
+Algolia Recommend can deduplicate product variants with the [`distinct`](/guides/managing-results/refine-results/grouping/#introducing-algolias-distinct-feature) setting. For example, if you use a [variant-level record model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#variant-level-default-model) and you want to avoid showing duplicate product tiles for different variants, such as different sizes or different colors, use the `masterID` index attribute as your deduplication attribute (`attributeForDistinct`).
+
+## Compatibility
+
+Algolia Recommend is supported for the **SFRA** cartridge by default.
+
+To support Algolia Recommend for the **SiteGenesis** cartridge, update these files in your cartridge:
+
+- `int_algolia_sfra/cartridge/static/default/js/algolia/autocomplete-config.js`
+- `cartridges/int_algolia_sfra/cartridge/static/default/js/algolia/recommend-config.js`
+
+Add this directory to SiteGenesis:
+
+- `cartridges/int_algolia_sfra/cartridge/templates/default/slots/product`
+
+To add recommendations to **PWA Kit**, add the widgets from the Recommend UI library.
+For more information, see the [Recommend UI reference](/deprecated/recommend/api-reference/recommend-js/)

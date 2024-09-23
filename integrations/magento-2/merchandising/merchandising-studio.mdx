@@ -1,0 +1,150 @@
+---
+title: Merchandising Studio
+description: |-
+  Learn how to use Algolia's Merchandising Studio with Magento 2.
+---
+
+Available on premium plans, the [Merchandising Studio](/guides/managing-results/rules/merchandising-and-promoting/#merchandising-studio) is an all-in-one no-code interface tailored for retail ecommerce, providing drag-and-drop visual merchandising capabilities for both search and category pages combined with powerful analytics.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Merchandising Studio](https://academy.algolia.com/guides/70f10de2-c1b6-11ed-918c-06cf503dca07/tasks/bab7c90a-c1b3-11ed-94fe-067360dfb065)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## A new way to merchandise with Magento
+
+It is recommended wherever possible to use the Merchandising Studio instead of the merchandising capabilities that have been previously provided within our Magento extension. No new features will be added to the legacy merchandising capabilities and they may be removed from the extension in the future.
+
+Meanwhile, the Merchandising Studio offers many benefits over the legacy extension capabilities including:
+
+- Centralized rule management (eliminating the risk of rule overwriting by the Magento integration)
+- The ability to do more than just pinning items such as:
+  - Boost/bury attributes
+  - Dynamic Re-Ranking
+  - Results filtering
+  - Sorting strategies
+- The ability to apply multiple merchandising strategies at a time
+
+Further, the legacy Magento merchandising feature creates _Manual Rules_ in Algolia. The new integration with Merchandising Studio supports the creation of _Visual Rules_ which are far easier to work with for business team users.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To use the Merchandising Studio with Magento, you need to upgrade the Algolia extension to version 3.11 or later.
+  Along with Merchandising Studio support, you can now also create Visual Editor rules for categories in the standard Algolia dashboard.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Enable Merchandising Studio
+
+To enable Merchandising Studio, go to **Stores > Configuration > Algolia Search > Products** and set **Enable visual merchandising support** to **Yes**:
+
+After enabling this setting, specify a [category page identifier](/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/#configure-a-category-page-identifier):
+
+Enter the name of the attribute of your indexed product records that serves as category page identifier.
+The default name for this attribute is `categoryPageId`.
+
+After making your changes:
+
+- Save your settings within the Magento admin interface.
+- Clear your local Magento configuration cache by running: `bin/magento cache:flush config`
+- Re-run the full Algolia product indexer: `bin/magento indexer:reindex algolia_products`
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  A full reindex of your product catalog to Algolia is a critical step. If you enable support for visual merchandising in Magento but don't re-run the index, your category pages won't correctly load products from the Algolia index.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Category page identifiers
+
+Once your products have been indexed into Algolia with the new category page identifier, configure Merchandising Studio to use this information:
+
+1. In the Algolia dashboard, select [Merchandising Studio](https://dashboard.algolia.com/merchandising/studio) in the top right.
+
+1. Go to **Settings > Category Page Identifiers**:
+
+1. The Magento integration automatically formats your category data
+   for you, so you can ignore the warning "Category pages only
+   work with certain types of implementations".
+
+   Click **I'm good. Let's go.**
+
+1. Select the same category identifier you configured in the Magento admin.
+
+The following example uses `categoryPageId`, which is the default attribute name:
+
+### Subcategory separator
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Even though it's labeled as optional for the Magento extension, you must specify the **Custom subcategory separator**
+</Note>
+
+{/* prettier-ignore-end */}
+
+The Algolia Magento extension uses `///` as default category separator . You must configure the Merchandising Studio to match.
+**This setting is whitespace-sensitive**. Make sure to include leading and trailing spaces:
+
+If you want to use a different subcategory separator,
+update **both** your Magento and Merchandising Studio configurations.
+
+1. In Magento, go to **Stores > Configuration > Algolia Search > Categories > Category separator** and change the category separator.
+
+1. Reindex your products in Algolia.
+
+1. Update the Merchandising Studio configuration as described previously.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  If you change your category separator in Magento, always run a full product re-index to Algolia or else your category pages won't render correctly on your store front.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Supported features
+
+Enabling the visual merchandising setting in Magento lets you [merchandise category pages](/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/) using rules.
+
+The Magento integration supports the following features in the [Algolia Merchandising Studio](https://www.algolia.com/industries-and-solutions/ecommerce/digital-merchandising/):
+
+- [Promoting or hiding search results](/guides/managing-results/rules/merchandising-and-promoting/how-to/promote-hits/)
+- [Category merchandising](/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/)
+- [Dynamic re-ranking](/guides/algolia-ai/re-ranking/)
+- [Sorting strategies](/guides/getting-started/how-algolia-works/in-depth/features/#multiple-sorting-strategies)
+
+The following features require customizing your frontend libraries:
+
+- [Facet merchandising](/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-facets/)
+- [Redirects](/guides/managing-results/rules/merchandising-and-promoting/how-to/redirects/#handle-the-redirect-data-in-your-user-interface)
+
+For more information, see [Custom frontend events](/integration/magento-2/customize/custom-front-end-events/).
+
+## Dynamic re-ranking
+
+To apply [dynamic re-ranking](/guides/algolia-ai/re-ranking/) to Magento categories:
+
+1. In the Algolia dashboard, go to **Search > Enhance > Re-Ranking > Settings**.
+1. In the **Browse Facet** box, enter your category page attribute you [configured previously](#enable-merchandising-studio).
+   set "Browsing Facet" to the category page id attribute [specified earlier](#enable-merchandising-studio).
+
+For example, to use dynamic re-ranking on the attribute `categoryPageId`:
+
+## Migration of manual rules
+
+The legacy merchandiser provided by the Magento extension creates _manual rules_ whereas the Merchandising Studio creates _visual rules_.
+While both types of rules can coexist, older rules take precedence over newer rules.
+
+You can't automatically migrate older, manual rules created by the Magento extension.
+If you want to switch to the Merchandising Studio, you need to delete and recreate the rules in the [Algolia dashboard](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#using-the-rules-dashboard).
+
+You can automate this process by using the [Rules API methods](/api-client/methods/rules/),
+or the [Algolia CLI](/tools/cli/commands/algolia-rules/).

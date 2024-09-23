@@ -1,0 +1,33 @@
+---
+title: Hogan support
+description: |-
+  Retaining Hogan template support for Autocomplete on Magento Open Source / Adobe Commerce 2.4.5 and 2.4.6.
+---
+
+The Algolia Search extension for Adobe Commerce and Magento Open Source [version 3.8.0](https://github.com/algolia/algoliasearch-magento-2/releases/tag/3.8.0) and later includes the Autocomplete library version 1.6.3. **This version doesn't support Hogan templates**.
+
+If you need to upgrade to Adobe Commerce or Magento Open Source version 2.4.5 or 2.4.6, and you still need the support for Hogan templates, you can install the patch 3.7.0-p2 of the Algolia extension as a workaround.
+
+**You should only install the 3.7.0-p2 release of the Algolia extension as a temporary workaround until you can upgrade. This patch offers compatibility with Magento 2.4.5 and 2.4.6, and includes the Autocomplete library version 0.38. It doesn't include the latest fixes and features.**
+
+Algolia supports the 3.7.0-p2 patch until **April 2023**. To stay up to date, check the [release notes](https://github.com/algolia/algoliasearch-magento-2/releases/tag/3.7.0-p2).
+
+## Install the Algolia extension with composer
+
+Use [composer](https://getcomposer.org/) to install the Algolia extension for Magento.
+Run the following commands:
+
+```sh sh
+composer require algolia/algoliasearch-magento-2:3.7.0-p2
+php bin/magento module:enable Algolia_AlgoliaSearch
+php bin/magento setup:upgrade
+php bin/magento setup:static-content:deploy
+```
+
+**In developer mode**, add the `-f` flag to the last command:
+
+```sh sh
+php bin/magento setup:static-content:deploy -f
+```
+
+See [General CLI installation](https://devdocs.magento.com/extensions/install/) in the Magento documentation for more information.

@@ -29,17 +29,11 @@ To enable InstantSearch on this [collection list](/integration/shopify/getting-s
 You can enable Algolia on your Collections in one click.
 To get started, go to the **Collection pages** tab and click **Enable**.
 
-![The Collection pages enable screen in the Shopify admin](/doc/assets/images/integrations/shopify/collection-pages/1-enabling-collection-pages-2219b377.jpeg)
-
 Once the feature is enabled, all your products and collections will be reindexed to ensure that all required data is available.
-
-![The Collection pages reindexing screen in the Shopify admin](/doc/assets/images/integrations/shopify/collection-pages/2-collection-pages-reindexing-a31eb758.jpeg)
 
 Once the reindexing is done, InstantSearch will be enabled on your Collection pages. You can now configure how it behaves.
 
 ## Configure Algolia on collection pages
-
-![The Collection pages display settings in the Shopify admin](/doc/assets/images/integrations/shopify/collection-pages/3-collection-pages-display-settings-58289cc9.jpeg)
 
 ### Enabling the InstantSearch on collection pages
 
@@ -55,8 +49,6 @@ The number of products to show per page for your collections.
 ### Sort orders
 
 In this section, you can choose which sort orders you want to activate for your collections, how you want to call them, and which ones you want to display first.
-
-![The Collection pages sort orders settings in the Shopify admin](/doc/assets/images/integrations/shopify/collection-pages/4-collection-pages-sort-orders-397fab43.jpeg)
 
 Ranking happens at indexing time. This means that for each sort order, a new index is created that contains as many records as the main one.
 
@@ -78,8 +70,6 @@ You can read the [full guide on sorting](/guides/managing-results/refine-results
 
 In this section, you can choose which facets to activate for your collections, how you want to call them, and which ones you want to display first.
 
-![The Collection pages facets settings in the Shopify admin](/doc/assets/images/integrations/shopify/collection-pages/5-collection-pages-facets-2c6bf181.jpeg)
-
 Facets are primarily used to refine searches.
 
 {/* prettier-ignore-start */}
@@ -100,15 +90,9 @@ To create a more accessible interface to merchandise your categories, we advise 
 
    Add a custom facet called 'collections' with the Shopify-Algolia integration and set it as hidden and searchable:
 
-   ![The Collection add facets settings in the Shopify admin](/doc/assets/images/integrations/shopify/collection-pages/13-collection-add-facet-c4bfbc53.png)
-
-   ![The Collection edit facets settings in the Shopify admin](/doc/assets/images/integrations/shopify/collection-pages/14-collection-edit-facet-8e2e89a4.png)
-
 1. **Change the category page identifier:**
 
    You can configure the category page identifier on your Merchandising studio settings. To do this, go to **Merchandising Studio > Settings > Category Page Identifiers** and change the Category Page Identifier to `collections`.
-
-   ![The Collection category page identifier configuration](/doc/assets/images/integrations/shopify/collection-pages/15-collection-category-page-identifier-17c65818.png)
 
 1. **Change your frontend code:**
 
@@ -143,10 +127,6 @@ To create a more accessible interface to merchandise your categories, we advise 
 
    Then, on your collection pages you should be able to see this filter being applied:
 
-   ![Viewing the network tab of the Collection page](/doc/assets/images/integrations/shopify/collection-pages/16-collection-page-network-c8a23572.png)
-
 ## Turn off Algolia on collection pages
-
-![The Collection pages facets settings in the Shopify admin](/doc/assets/images/integrations/shopify/collection-pages/6-collection-pages-disable-f7bb19c8.jpeg)
 
 To turn off Algolia on Collection pages, head to the section at the bottom of the page and click **Disable**. Your Collection pages will revert to their default layout, and InstantSearch will no longer show up.

@@ -1,0 +1,257 @@
+---
+title: Set up the Algolia cartridge
+description: |-
+  Learn how to set up the Algolia cartridge for Salesforce B2C Commerce.
+---
+
+Algolia provides the following cartridges to integrate with your Salesforce B2C Commerce storefronts:
+
+| Cartridge name                                         | Purpose                                                                                                                     |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| **bm\_algolia**                                        | Configure and monitor Algolia indexing and search from your Business Manager (adding a corresponding Merchant Tools module) |
+| **int\_algolia**                                       | Synchronize (index) your product catalog and content data from B2C Commerce to Algolia                                      |
+| **int\_algolia\_sfra**                                 | Add Algolia InstantSearch and Autocomplete on your SFRA storefront                                                          |
+| **int\_algolia\_controllers** **algolia\_sg\_changes** | Add Algolia InstantSearch and Autocomplete to your SiteGenesis storefront                                                   |
+
+## Install the cartridge
+
+You can install the cartridges with sgmf-scripts, the Prophet Debugger Visual Studio Code extension, or Salesforce B2C Commerce UX Studio.
+
+### Install using sgmf-scripts
+
+1. Download the cartridge source from the [GitHub repository](https://github.com/algolia/algoliasearch-sfcc-b2c).
+
+1. Extract the directory.
+
+1. Install the dependencies from the extracted directory:
+
+   ```sh sh
+   cd /path/to/unzipped/folder
+   npm install
+   ```
+
+1. Create a `dw.json` file in the same directory with the following content:
+
+   ```json json
+   {
+     "hostname": "...",
+     "username": "...",
+     "password": "...",
+     "code-version": "..."
+   }
+   ```
+
+   - `hostname` the hostname of your sandbox—for example: `"zzaa-001.sandbox.us01.dx.commercecloud.salesforce.com"`
+   - `username` and `password` are your account manager credentials
+   - `code-version` is the active code version listed in **Administration > Code Deployment**—for example, `"SFRA_AP_05_15_2020"`
+
+1. Upload the cartridges:
+
+   ```sh sh
+   npm run uploadCartridge
+   ```
+
+1. Go to **Administration > Development Setup > Folder Browser > Cartridges** and verify that the Algolia cartridges are uploaded.
+
+### Install using Prophet Debugger (Visual Studio Code extension)
+
+1. Install [Prophet Debugger](https://marketplace.visualstudio.com/items?itemName=SqrTT.prophet) from the Visual Studio Code marketplace.
+
+1. Create a `dw.json` file in the same directory with the following content:
+
+   ```json json
+   {
+     "hostname": "...",
+     "username": "...",
+     "password": "...",
+     "code-version": "..."
+   }
+   ```
+
+1. Run `Prophet: Enable Upload` from the command menu.
+
+### Install with Salesforce B2C Commerce UX Studio
+
+1. Download the cartridge source from the [GitHub repository](https://github.com/algolia/algoliasearch-sfcc-b2c).
+
+1. Establish a new digital server connection with your Salesforce B2C Commerce instance.
+
+1. Import the cartridges to a workspace in Salesforce UX Studio.
+
+1. Select the cartridges you want to add and click **Finish**.
+
+1. Wait until Salesforce UX Studio uploads the cartridge to your B2C Commerce instance.
+
+## Enable the cartridges on your site
+
+### Add the Algolia cartridges to your site
+
+1. Go to **Administration > Sites > Manage Sites**.
+
+   Select your site from the **Storefront Sites** list:
+
+1. In **Settings**, add the cartridges that match your site's architecture:
+
+   **SFRA**
+
+   Add `int_algolia_sfra:int_algolia` to the **beginning** of your cartridge path.
+
+   **SiteGenesis**
+
+   1. Add `algolia_sg_changes:int_algolia_controllers` to the **beginning** of your cartridge path.
+   1. Add `int_algolia` to the **end** of your cartridge path.
+
+**Headless**
+
+Add `int_algolia` to the **beginning** of your cartridge path.
+
+### Add the Algolia cartridges to the Business Manager
+
+1. Go to **Administration > Sites > Manage Sites** and select **Business Manager**.
+
+1. In **Settings**, add `bm_algolia:int_algolia` at the **end** of your cartridge path.
+
+## Enable Algolia in the Business Manager
+
+1. Go to **Administration > Organization > Roles & Permissions**.
+
+1. Select the role for which you'd like to enable access, such as, Administrator.
+
+1. Go to **Business Manager Modules**.
+
+1. Select **Algolia** and click **Update**.
+
+## Import metadata
+
+1. Go to **Administration > Site Development > Import & Export** and click **Upload** under **Import & Export files**.
+
+1. Upload both files from the `metadata/algolia/meta` folder by clicking **Choose File**, then **Upload**. Do this for both `custom-objecttype-definitions.xml` and `system-objecttype-extensions.xml`.
+
+1. Go back to **Administration > Site Development > Import & Export** and click **Import** under **Meta Data**.
+
+1. Select `custom-objecttype-definitions.xml`, click **Next**, then **Import**.
+
+1. Click **Import** under **Meta Data** and import `system-objecttype-extensions.xml` as well.
+
+1. Confirm that the import is successful:
+
+## Import jobs and services
+
+1. Go to **Administration > Operations > Import & Export** and click **Upload** under **Import & Export files**
+
+1. Upload both files from the `metadata/algolia` folder by clicking **Choose File**, then **Upload**. Do this for both `jobs.xml` and `services.xml`.
+
+1. Go back to **Administration > Operations > Import & Export** and click **Import** under **Jobs**.
+
+1. Select `jobs.xml` and click **Next**, **Next**, then **Import**.
+
+1. Click **Import** under **Services**.
+
+1. Select `services.xml` and click **Next**, **Next**, then **Import**.
+
+1. Confirm that the import is successful:
+
+## Set Algolia custom preferences for your site
+
+1. Go to **Merchant Tools > Algolia > Algolia**.
+
+1. Enable Algolia by checking the checkbox next to **Enable Algolia**.
+
+1. Enter your **Application ID**, **Search API Key** and **Admin API Key**.
+   Find them in the [Algolia dashboard](https://dashboard.algolia.com/account/api-keys/).
+
+   {/* prettier-ignore-start */}
+
+   <Note>
+     Consider using restricted API keys for security reasons. For more
+     information see [API key
+     restrictions](/guides/security/api-keys/in-depth/api-key-restrictions/).
+   </Note>
+
+   {/* prettier-ignore-end */}
+
+1. In the **Additional Product Attributes** field, enter the [additional attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#configurable-attributes) you want to index.
+
+   The following attributes are always indexed and don't need to be specified: `name`, `primary_category_id`, `categories`, `url`, `image_groups`, `in_stock`, `price`.
+
+   Consider adding these attributes: `short_description` and `long_description`.
+   Then, expand the list to include attributes specific to your product catalog, such as, `brand`, `color`, or `size`.
+
+   The content attributes you want to index are managed using the `attributeList` job step parameter. For more information, see the [Content indexing job configuration](/integration/salesforce-commerce-cloud-b2c/indexing/content-indexing/configuration/#content-indexing-job-configuration).
+
+1. Choose a record model that fits your needs. Consider [grouping records](/integration/salesforce-commerce-cloud-b2c/getting-started/configure-your-search/#configure-results-grouping) if you use the variant-level model.
+
+For more information, see [Custom preferences](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/).
+
+## Update your templates
+
+You need to update your templates, if your site uses a **SiteGenesis** or **SFRA** architecture **AND**
+you haven't [enabled the Algolia cartridge](#enable-the-cartridges-on-your-site).
+The Algolia cartridges already include these updates.
+If you are using a **headless** architecture, see [Headless storefronts](/integration/salesforce-commerce-cloud-b2c/guides/headless/).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To maintain the integrity of the original SFRA cartridge, you should create a new cartridge as best practice. You can then move the original templates into this new cartridge and make the necessary modifications.
+  If you are already using a custom cartridge, you can simply incorporate or adapt these changes into your existing cartridge.
+</Note>
+
+{/* prettier-ignore-end */}
+
+1. In `app_storefront_base/cartridge/templates/default/common/htmlHead.isml`, add the following code on line 32:
+
+   ```html html
+   <isinclude template="algolia/headerScripts" />
+   ```
+
+1. In `app_storefront_base/cartridge/templates/default/components/header/search.isml`,
+   add the following code at the start of the file, and move existing the code to an `<iselse>` section:
+
+   ```html html
+   <isset
+     name="algoliaData"
+     value="${require('*/cartridge/scripts/algolia/lib/algoliaData')}"
+     scope="page"
+   />
+   <isif condition="${algoliaData.getPreference('Enable')}">
+     <div class="site-search">
+       <div
+         id="suggestions-wrapper"
+         data-category="${pdict.cgid}"
+         data-category-display-name-path="${pdict.categoryDisplayNamePath}"
+         data-category-display-name-path-separator="${pdict.categoryDisplayNamePathSeparator}"
+         data-q="${pdict.q}"
+         data-search-page-root="${URLUtils.http('Search-Show')}"
+       ></div>
+
+       <input
+         type="search"
+         id="aa-search-input"
+         class="aa-input-search form-control"
+         placeholder="${Resource.msg('label.header.searchwatermark', 'common', null)}"
+         name="search"
+         autocomplete="off"
+       />
+     </div>
+     <iselse />
+     <!-- existing code from the template -->
+   </isif>
+   ```
+
+1. In `app_storefront_base/cartridge/templates/default/search/searchResult.isml`,
+   replace this line:
+
+   ```html html
+   <isinclude template="search/searchResultsNoDecorator" />
+   ```
+
+   with the following code:
+
+   ```html html
+   <isif condition="${pdict.algoliaEnable}">
+     <isinclude template="algolia/search/searchResultsNoDecorator" />
+     <iselse />
+     <isinclude template="search/searchResultsNoDecorator" />
+   </isif>
+   ```

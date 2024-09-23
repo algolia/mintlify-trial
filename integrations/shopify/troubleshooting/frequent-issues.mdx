@@ -11,11 +11,7 @@ This can happen if the theme isn't configured within the Algolia AI Search & Dis
 
 To confirm that the theme is configured within the app, check that it shows up in the list in the **Search options** tab.
 
-![The theme list in the Shopify admin](/doc/assets/images/integrations/shopify/troubleshooting/theme-list-045575aa.jpeg)
-
 If the theme doesn't show up and if it already contains an `algolia_config.js` file, you can synchronize the themes by clicking on the **Synchronize** button:
-
-![The synchronize themes button in the Shopify admin](/doc/assets/images/integrations/shopify/troubleshooting/sync-themes-f4957a9d.jpeg)
 
 If the theme shows up in the list and the configuration is still not updated, you can force the app to push the latest version of this file to the theme.
 Do this by updating any Algolia setting, then revert it.
@@ -37,8 +33,6 @@ Update the availability of the products using the **Availability** field in the 
 - Click on **Edit products**
 - If you don't see the **Availability** field, add it using the **Add fields** button
 - Mark the products as available/unavailable
-
-![The bulk-editor screen in the Shopify admin](/doc/assets/images/integrations/shopify/troubleshooting/bulk-editor-10196018.jpeg)
 
 This action triggers the correct webhook from Shopify, which will trigger an Algolia indexing.
 

@@ -1,0 +1,118 @@
+---
+title: Quickstart
+description: |-
+  Get started using Algolia in your Magento Open Source or Adobe Commerce store.
+---
+
+The Algolia extension elevates the search experience of your Adobe Commerce and Magento Open Source store.
+It replaces the default search with an autocomplete search menu and a new search results page that updates with products and categories in real time.
+
+[View source code](https://github.com/algolia/algoliasearch-magento-2)
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Magento 2 extension overview (full course)](https://academy.algolia.com/training/900ba68e-d3ca-11e9-a937-06c0361096e5/overview)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Before you begin
+
+Before you can use the Algolia extension in your Magento store,
+you need to [create a (free) Algolia account](https://dashboard.algolia.com/users/sign_up).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can use Algolia for Magento with [Grow or Premium plans](https://www.algolia.com/pricing/),
+  but some features are only available in the Premium plan.
+</Note>
+
+{/* prettier-ignore-end */}
+
+When signing up, **select a data center closest to the data center of your Magento installation**.
+This ensures better performance.
+
+## Magento 2.4 compatibility
+
+The Magento 2.4 release introduced significant changes, including removing the MySQL search engine option.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you're running Magento 2.4, you must install version 3 of the Algolia extension.
+</Note>
+
+{/* prettier-ignore-end */}
+
+To be compatible with Magento 2.4, Algolia's extension (starting from version 3) doesn't include backend rendering features that rely on the MySQL search adapter classes.
+
+Older versions of the Algolia extension aren't compatible with Magento 2.4,
+and are no longer supported by Algolia.
+
+See [System requirements](https://devdocs.magento.com/guides/v2.4/install-gde/system-requirements.html) in the Magento documentation for more information.
+
+## Installation
+
+You can install the Algolia extension for Magento Open Source and Adobe Commerce
+using [composer](https://getcomposer.org/), or from the [Magento Marketplace](https://marketplace.magento.com/algolia-algoliasearch-magento-2.html).
+
+### Install the Algolia extension with composer
+
+Use [composer](https://getcomposer.org/) to install the Algolia extension for Magento.
+Run the following commands:
+
+```sh sh
+composer require algolia/algoliasearch-magento-2
+php bin/magento module:enable Algolia_AlgoliaSearch
+php bin/magento setup:upgrade
+php bin/magento setup:static-content:deploy
+```
+
+**In developer mode**, add the `-f` flag to the last command:
+
+```sh sh
+php bin/magento setup:static-content:deploy -f
+```
+
+See [General CLI installation](https://devdocs.magento.com/extensions/install/) in the Magento documentation for more information.
+
+### Install the Algolia extension from the Magento Marketplace
+
+Go to the [Magento Marketplace](https://marketplace.magento.com/algolia-algoliasearch-magento-2.html) to get the extension and follow the instructions to install.
+
+If you run into an error about missing dependencies while installing or upgrading through the Marketplace,
+resolve all dependencies by running `composer update`.
+
+### Installation error
+
+The "Fatal error: Class 'AlgoliaSearch\Version' not found in .../AlgoliaHelper.php on line xx" error usually means that the extension has been installed incorrectly.
+Reinstall according to [the instructions](#installation).
+
+## Configuration
+
+To configure the Magento extension, you need the following Algolia credentials:
+
+- Application ID
+- [Search-only API key](/guides/security/api-keys/#search-only-api-key)
+- [Admin API key](/guides/security/api-keys/#admin-api-key)
+
+You can find these credentials in the [Algolia dashboard](https://dashboard.algolia.com/account/api-keys/).
+
+To configure the Algolia extension, follow these steps:
+
+1. In the Admin panel of your Magento project, go to **Stores > Algolia Search > Credentials and Basic Setup** to open the configuration page for Algolia.
+
+1. Enter your Algolia credentials and choose a name for the **Index Name Prefix**.
+
+1. Click **Save Config** at the top right to save your configuration.
+
+## Indexing
+
+After configuring the extension, start the indexing process to copy the data from your Magento store to Algolia.
+To do this, run the following command from the root of your Magento project:
+
+```bash bash
+php bin/magento indexer:reindex algolia_products algolia_categories algolia_pages algolia_suggestions algolia_additional_sections
+```

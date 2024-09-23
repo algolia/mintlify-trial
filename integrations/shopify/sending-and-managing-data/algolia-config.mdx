@@ -89,16 +89,12 @@ You can't update metafields in the Shopify admin.
 
 1. In your Shopify admin, go to **Online store > Themes**, select the theme you want to update, and click **Edit code**.
 
-   ![Shopify theme library code editor](/doc/assets/images/integrations/shopify/edit-theme-code-5d877a8a.png)
-
 1. Open the **Layouts** folder and open the `theme.liquid` file. Locate the line for including `algolia_config.js`.
 
    ```liquid liquid
    <!-- Algolia head -->
    {{ 'algolia_config.js' | asset_url | script_tag }}
    ```
-
-   ![algolia\_config.js](/doc/assets/images/integrations/shopify/theme-liquid-alglia-config-c3ed213b.png)
 
 1. Replace this line with:
 
@@ -108,8 +104,6 @@ You can't update metafields in the Shopify admin.
    ```
 
 1. Save your updates.
-
-   ![Save theme](/doc/assets/images/integrations/shopify/save-theme-b5053573.png)
 
 1. Open the **Snippet** folder and select **Add a new snippet**.
 

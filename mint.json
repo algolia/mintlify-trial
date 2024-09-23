@@ -139,6 +139,186 @@
       ]
     },
     {
+      "group": "Salesforce B2C Commerce",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/introduction",
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/set-up-the-algolia-cartridge",
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/start-indexing-your-data",
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/configure-your-search",
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/custom-preferences"
+          ]
+        },
+        {
+          "group": "Indexing",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/content-indexing/fundamentals",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/content-indexing/configuration"
+          ]
+        },
+        {
+          "group": "Search UI",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/building-the-search-ui/front-end",
+            "integrations/salesforce-commerce-cloud-b2c/building-the-search-ui/events"
+          ]
+        },
+        {
+          "group": "Guides",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/guides/headless",
+            "integrations/salesforce-commerce-cloud-b2c/guides/migrating-to-23-5-0",
+            "integrations/salesforce-commerce-cloud-b2c/guides/pwa-kit",
+            "integrations/salesforce-commerce-cloud-b2c/guides/custom-react-frontend",
+            "integrations/salesforce-commerce-cloud-b2c/guides/storefront-sample-app",
+            "integrations/salesforce-commerce-cloud-b2c/guides/algolia-recommend",
+            "integrations/salesforce-commerce-cloud-b2c/guides/ssr-caching",
+            "integrations/salesforce-commerce-cloud-b2c/guides/facet-bucketing",
+            "integrations/salesforce-commerce-cloud-b2c/guides/multi-instance-indexing",
+            "integrations/salesforce-commerce-cloud-b2c/guides/performance-considerations"
+          ]
+        },
+        {
+          "group": "Troubleshooting",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/troubleshooting/monitoring"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Magento/Adobe Commerce",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/magento-2/getting-started/quick-start",
+            "integrations/magento-2/getting-started/moving-to-production",
+            "integrations/magento-2/getting-started/upgrading",
+            "integrations/magento-2/getting-started/hogan-support"
+          ]
+        },
+        {
+          "group": "How it works",
+          "pages": [
+            "integrations/magento-2/how-it-works/front-end",
+            "integrations/magento-2/how-it-works/events",
+            "integrations/magento-2/how-it-works/indexing",
+            "integrations/magento-2/how-it-works/indexing-queue",
+            "integrations/magento-2/how-it-works/sku-reindexing-form",
+            "integrations/magento-2/how-it-works/analytics-overview",
+            "integrations/magento-2/how-it-works/google-analytics",
+            "integrations/magento-2/how-it-works/recommend",
+            "integrations/magento-2/how-it-works/personalization",
+            "integrations/magento-2/how-it-works/help-and-support-page",
+            "integrations/magento-2/how-it-works/magento-feature-compatibility",
+            "integrations/magento-2/how-it-works/cookie-law-compliance"
+          ]
+        },
+        {
+          "group": "Merchandising",
+          "pages": [
+            "integrations/magento-2/merchandising/visual-merchandising",
+            "integrations/magento-2/merchandising/query-merchandiser",
+            "integrations/magento-2/merchandising/category-merchandising",
+            "integrations/magento-2/merchandising/landing-page-builder",
+            "integrations/magento-2/merchandising/merchandising-studio"
+          ]
+        },
+        {
+          "group": "Customization",
+          "pages": [
+            "integrations/magento-2/customize/autocomplete-menu",
+            "integrations/magento-2/customize/instant-search-page",
+            "integrations/magento-2/customize/custom-front-end-events",
+            "integrations/magento-2/customize/custom-back-end-events",
+            "integrations/magento-2/customize/logging-and-debugging"
+          ]
+        },
+        {
+          "group": "Guides",
+          "pages": [
+            "integrations/magento-2/guides/create-a-custom-extension",
+            "integrations/magento-2/guides/transform-indexed-attribute",
+            "integrations/magento-2/guides/multi-language-search",
+            "integrations/magento-2/guides/algolia-query-suggestions",
+            "integrations/magento-2/guides/category-pages"
+          ]
+        },
+        {
+          "group": "Troubleshooting",
+          "pages": [
+            "integrations/magento-2/troubleshooting/data-indexes-queues",
+            "integrations/magento-2/troubleshooting/in-depth/data-indexes-queues",
+            "integrations/magento-2/troubleshooting/technical-troubleshooting",
+            "integrations/magento-2/troubleshooting/back-end-issues",
+            "integrations/magento-2/troubleshooting/front-end-issues"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Commercetools",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/commercetools/get-started/installation",
+            "integrations/commercetools/get-started/configuration"
+          ]
+        },
+        {
+          "group": "Indexing",
+          "pages": [
+            "integrations/commercetools/indexing/monitoring-commercetools-indexing",
+            "integrations/commercetools/indexing/product-schema"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Bigcommerce",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/bigcommerce/get-started/installation",
+            "integrations/bigcommerce/get-started/configuration"
+          ]
+        },
+        {
+          "group": "Search settings",
+          "pages": [
+            "integrations/bigcommerce/search-settings/autocomplete",
+            "integrations/bigcommerce/search-settings/instantsearch",
+            "integrations/bigcommerce/search-settings/events",
+            "integrations/bigcommerce/search-settings/customization",
+            "integrations/bigcommerce/search-settings/custom-hooks",
+            "integrations/bigcommerce/search-settings/recommend"
+          ]
+        },
+        {
+          "group": "Indexing",
+          "pages": [
+            "integrations/bigcommerce/indexing/product-schema",
+            "integrations/bigcommerce/indexing/monitoring-bigcommerce-indexing"
+          ]
+        },
+        {
+          "group": "Uninstall",
+          "pages": [
+            "integrations/bigcommerce/uninstalling/bigcommerce-uninstall-checklist"
+          ]
+        }
+      ]
+    },
+    {
       "group": "API reference",
       "pages": [
         "api-reference/overview",

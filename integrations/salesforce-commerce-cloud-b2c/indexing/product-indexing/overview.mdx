@@ -1,0 +1,33 @@
+---
+title: Product indexing
+description: |-
+  Learn how the indexing works with the Algolia Salesforce B2C Commerce cartridge.
+---
+
+The **int\_algolia** cartridge keeps your site's data in sync with Algolia.
+
+## Key concepts
+
+- **B2C object.** A business object of any B2C class such as `Product`, `Pricebook`, `ProductInventoryList`, or `ProductInventoryRecord`. A Product object has built-in and custom attributes, such as `ID`, `name`, `shortDescription`, `longDescription`, and more.
+
+- **Algolia product record.** The JSON product object stored in the Algolia index. It has a different structure to that of a B2C Product object and contains all relevant data you configure the jobs to export, such as `price`, `in_stock`. Some of these attributes are simple values and some are more complex, see [Indexing attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/).
+
+## Overview of the indexing jobs
+
+- `AlgoliaProductIndex_v2`: performs a [full catalog update](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing/).
+
+- `AlgoliaProductDeltaIndex_v2`: performs delta updates on your Algolia product records using the [B2C Delta Export](https://help.salesforce.com/s/articleView?id=cc.b2c_delta_exports.htm\&type=5) feature. For more details, see [Ongoing indexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing/#algoliaproductdeltaindex_v2).
+
+- `AlgoliaProductPriceIndex_v2`: updates price information for all your Algolia products. For more details, see [Price and inventory data index jobs](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing/#price-and-inventory-data-index-jobs).
+
+- `AlgoliaProductInventoryIndex_v2`: updates inventory information for all your Algolia products. For more details, see [Price and inventory data index jobs](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing/#price-and-inventory-data-index-jobs).
+
+- `AlgoliaCategoryIndex_v2`: updates your category indices.
+
+## What data does the cartridge send?
+
+For details on which attributes get indexed by default and how to extend them, see [Indexing attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/).
+
+## Indexing performance considerations
+
+For guidance on optimizing indexing performance, see [Performance considerations](/integration/salesforce-commerce-cloud-b2c/guides/performance-considerations/).

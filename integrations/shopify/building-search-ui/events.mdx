@@ -53,8 +53,6 @@ you can't identify user profiles across sessions.
 This option stores the user token in a cookie on the user's device.
 You must use Shopify's [Customer Privacy API](https://shopify.dev/docs/api/consent-tracking) or enable Shopify's Cookie Consent Banner in your Shopify admin settings.
 
-![Enable your Cookie Consent Banner](/doc/assets/images/integrations/shopify/building-search-ui/4-enable-cookie-consent-a4b80f05.png)
-
 If the user hasn't consented, a random alphanumeric string is used as user token.
 
 Algolia uses Shopify's [`loadFeatures` method](https://shopify.dev/docs/api/consent-tracking#loading-the-customer-privacy-api) to check if the user has consented.
@@ -74,8 +72,6 @@ you can choose between:
 
 - **Use Essentials Analytics**: automatically send "click", "view", and "search" events to Algolia.
 - **Use Conversion Analytics**: using Shopify web pixels, send "addToCart" and "purchase" conversion events to Algolia.
-
-![Send click events section in the Shopify admin](/doc/assets/images/integrations/shopify/going-further/22-click-analytics-7f65ce48.png)
 
 ## Shopify web pixels
 
@@ -105,15 +101,9 @@ You can use the data to improve the relevance of your search results and gain in
 
 1. Open the **Customer events** tab.
 
-   ![Shopify settings customer events](/doc/assets/images/integrations/shopify/web-pixel/settings-customer-events-0831b9b7.png)
-
 1. Click **Add custom pixel**.
 
-   ![Shopify add custom pixel](/doc/assets/images/integrations/shopify/web-pixel/add-custom-pixel-07355b88.png)
-
 1. Name your pixel and click **Add pixel**.
-
-   ![Shopify add pixel name](/doc/assets/images/integrations/shopify/web-pixel/add-pixel-name-b0ac2fe9.png)
 
 1. Copy the pixel code and paste it into the **Algolia web pixels** area in the **Code** section provided by Shopify.
 
@@ -373,8 +363,4 @@ You can use the data to improve the relevance of your search results and gain in
    Your Shopify web pixels are now installed and can start tracking user interactions on your store.
    Make sure that your web pixels show **Connected** in their status.
 
-   ![Shopify connected status](/doc/assets/images/integrations/shopify/web-pixel/connected-status-0c9ee203.png)
-
 1. Go back to your Shopify admin and complete the setup by clicking **Activate & Continue**.
-
-   ![Final web pixel step](/doc/assets/images/integrations/shopify/web-pixel/final-web-pixel-step-b1e0a310.png)

@@ -1,0 +1,121 @@
+---
+title: InstantSearch
+description: |-
+  Learn how to configure Algolia InstantSearch for BigCommerce.
+---
+
+The Algolia integration for BigCommerce replaces the built-in BigCommerce search results page with [InstantSearch.js](/guides/building-search-ui/what-is-instantsearch/js/).
+
+## Configuration
+
+To configure the InstantSearch page, select a channel in your BigCommerce app and go to the **Search settings** tab.
+
+The **Search Form CSS Selector** option targets the main element of your search results page.
+
+The **Search Form Attribute** option stores the HTML attribute that contains the route to the search results page. The default value is `data-url`.
+
+## Customizing facets
+
+The InstantSearch page comes with a default facet for the `default_price` attribute.
+
+To add a new facet, click **Add facet** and enter the name of the facet, the attribute to use, and the widget to use to display the facet. Then click **Confirm facet**.
+
+Configure [attributes for faceting in the dashboard](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting-with-dashboard/).
+Making a facet searchable lets users to enter a value to filter results for that facet.
+For example: color or size.
+
+Facets can be displayed as a conjunctive or disjunctive list, an input range, or a slider.
+
+1. **Conjunctive List**: users select multiple options; all selected criteria must match for items to appear.
+1. **Disjunctive List**: users choose any combination of options; items matching any selected criteria show.
+1. **Input Range**: users specify a numeric range. For example, price or date, and items within that range display.
+1. **Slider**: users adjust a value along a scale. For example, updating the price or rating.
+
+To reorder the facets, drag them around in the list. To remove a facet, click **Remove**.
+
+You can limit the amount of facet options displayed in InstantSearch by changing the **Facet Option Limit** setting.
+
+After making changes to the facets, click **Save**.
+
+## Customizing sort order
+
+The default sort ordering option is [Relevance](/guides/managing-results/refine-results/sorting/#relevant-sorting).
+
+To add sort ordering options, first [add replica indices](/guides/managing-results/refine-results/sorting/)
+
+When the replicas have been added, apply sorting to your InstantSearch configuration:
+
+1. Click the **Plus** icon next to **Add Sort**
+1. Enter the title you would like displayed for the sort order
+1. Select your replica index
+
+After making changes to the sort order, click **Save**
+
+## InstantSearch categories
+
+InstantSearch categories let you display different configurations for different categories in your shop.
+
+To enable InstantSearch categories, you must have:
+
+- InstantSearch configured, saved, and enabled for your shop
+- At least one category in your shop
+- At least one category with products in it.
+
+To enable InstantSearch categories, click the toggle next to **InstantSearch Categories**.
+
+You can also turn individual InstantSearch categories on or off.
+
+Any duplicate category names are marked with an icon ("Towels" in the screenshot).
+
+When you update, delete, or create a category, you must click:
+
+- **Refresh** to update the category data from BigCommerce
+- **Save** to send the changes to the Algolia for BigCommerce integration.
+
+**Categories placement region** lets you specify where on the category page the InstantSearch categories widget should be displayed.
+The default is `category_below_header`.
+
+**Categories CSS selector** targets the main element of your category page.
+
+## Customizing InstantSearch categories facets
+
+InstantSearch categories facets lets you display different facets for different categories in your shop.
+If you don't select a facet for a category, the default InstantSearch facets are used.
+
+To add, remove, or reorder InstantSearch categories facets, click **Edit** next to the appropriate category.
+
+Click **Save** to apply the facets to the category.
+
+Facet data, including their ordering, is then sent to BigCommerce metafields (and pulled from there when the category page is loaded).
+
+### Limitations of InstantSearch categories
+
+When turning InstantSearch categories on or off,
+it can take 30 or more seconds for the changes to be applied to your shop (due to BigCommerce API rate limitations).
+
+## Customize the InstantSearch menu
+
+InstantSearch is pre-configured for the Cornerstone theme in BigCommerce.
+For other themes, you might need to tweak the InstantSearch menu to match.
+You can adjust both the CSS and JavaScript for InstantSearch.
+
+To configure the InstantSearch CSS and JavaScript, go to the **Search settings** tab and select **Edit CSS** or **Edit JavaScript**.
+
+Selecting **Edit CSS** or **Edit JavaScript** opens the editor where you can change InstantSearch's CSS or JavaScript.
+
+When you're done, save your changes in the editor. Then, click **Save** on the search settings page for InstantSearch to publish your changes.
+
+## Restore default CSS and JavaScript
+
+1. Open the **Search settings** tab and select **Edit CSS** or **Edit JavaScript**.
+1. Click **Reset to default** at the bottom right of the editor.
+1. Confirm that you want to reset the CSS or JavaScript code to its default. This action overwrites any changes you've made.
+1. Save your changes in the editor, then click **Save** on the main search settings page for InstantSearch to publish your changes.
+
+## Updating InstantSearch CSS and JavaScript
+
+If there's an update for the InstantSearch CSS and JavaScript code available,
+you'll get notified by a banner in the **Search settings** tab.
+To update, click **Edit CSS** or **Edit JavaScript**.
+
+The editor shows the differences between your existing code and the updated version. Make any changes you'd like to make, click **Apply Changes**, then save your changes.

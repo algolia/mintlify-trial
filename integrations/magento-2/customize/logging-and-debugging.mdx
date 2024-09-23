@@ -1,0 +1,36 @@
+---
+title: Logging and debugging
+description: |-
+  Learn how to debug issues with Algolia extension for Magento 2.
+---
+
+Sometimes, things don't go as expected.
+As a developer, logs are a great way to figure out why things are not running smoothly.
+That's why the extension provides the ability to enable logging.
+You can turn logging on by navigating to **Stores > Configuration > Algolia Search > Credentials & Setup**.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  **Never turn logging on in production!** It can create huge amounts of data and exhaust your server resources quickly. You should only enable logging during development to debug certain processes.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+With logging enabled, the extension creates info type logs. By default, Magento writes info type logs to the following files:
+
+- `var/log/system.log`
+- `var/log/debug.log`
+
+The logs capture information on the following events:
+
+- Full reindex of products
+- Rebuilding a page of products
+- Loading products' collection
+- Indexing of a single product
+- Indexing of a collection of products
+- Beginning and ending of sending data to Algolia
+- Beginning and ending of removing data from Algolia
+- Beginning and ending of emulation
+- Image loading exceptions that are thrown
+- Miscellaneous errors and exceptions

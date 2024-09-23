@@ -1,0 +1,262 @@
+---
+title: Backend issues in Algolia's Magento Open Source and Adobe Commerce extension
+description: |-
+  Technical troubleshooting - backend issues.
+---
+
+The first thing to do if you encounter an issue is to ensure your Algolia Magento Open Source and Adobe Commerce extension is up to date. A new release may have fixed your issue, and you'll also benefit from improvements to the extension's performance and security.
+
+**To check the extension's version,** check the [GitHub repository](https://github.com/algolia/algoliasearch-magento-2/releases). Compare this version to the version stated in the `etc/module.xml` file in your Magento installation:
+
+You can also check for updates from Algolia's [dashboard](https://dashboard.algolia.com/dashboard). Find the API clients using your indices by going to **Monitoring > Operations > API Client**. If a new version is available, it will be displayed next to the version in use.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To update the extension, read the [upgrading](/integration/magento-2/getting-started/upgrading/) guide.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Understand how your Magento configuration determines the number of indices to create
+
+You must add your account credentials when setting up the extension for the first time. The extension will then automatically add all the indices your account requires. You can check which indices have been created from Algolia's [dashboard](https://dashboard.algolia.com/dashboard) if you wish.
+
+### Sorting
+
+By default, the extension creates **three** [replicas](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/) for each product index. These replicas are directly related to the sorting configuration in the InstantSearch section.
+
+Modifying sorting directly affects [the number of records created](/integration/magento-2/troubleshooting/general-faq/?client=php#how-many-records-are-created).
+
+### Indices
+
+Algolia's [dashboard](https://dashboard.algolia.com/dashboard) provides insight into how the Magento extension uses indices.
+
+Indices created by the extension depend on how Magento configures indices for products, categories, and additional sections. The index name is influenced by the **index name prefix** defined in the Magento configuration.
+
+If you use the extension in production, you probably want to use it in an acceptance/staging or development environment. Defining meaningful prefixes to identify instantly "which index belongs to which environment" is good practice, resulting in indices like _prod\_magento_, _staging\_magento_, and
+_dev\_magento_.
+
+The first step to successful indexing is to perfect your Magento configuration. This way, it's easier to anticipate [the number of indices created](https://dashboard.algolia.com/explorer/indices). If the number of indices is incorrect, something may be wrong with your Magento configuration.
+
+### Incorrect configuration
+
+The following are examples of Magento configurations that can lead to an unexpected number of indices.
+
+#### Different configuration on store view or website level
+
+Magento allows users to define a default configuration _and_ a configuration for a specific store view or website. You can configure some extension settings this way too.
+
+For example, you can sort differently on two websites in the same Magento installation, creating a different number of indices for these two websites. Since Magento only displays the default configuration when landing on the settings page, this manual configuration is easy to overlook, especially with more than one administrator.
+
+If an unexpected number of indices is created, ensure no unwanted configuration has been set by **switching from the default settings to a store view or a website-specific configuration**.
+
+#### All stores configuration
+
+The extension adheres to [Magento's list of websites, stores, and views](https://experienceleague.adobe.com/docs/commerce-operations/configuration-guide/multi-sites/ms-admin.html). Find these by going to **Stores > Settings > All Stores**.
+
+If you have a multilingual site that uses the extension, every language needs its own indices, and the total number of indices can significantly increase because of this.
+
+#### Customer group configuration
+
+By default, Magento creates a set of four customer groups: _General_, _Not logged in_, _Retailer_, and _Wholesale_. Third-party extensions can create their own customer groups in the Magento installation, sometimes even hundreds of them.
+
+The extension lets you manage customer groups in the _advanced_ section of the configuration.
+Be careful when enabling this feature: every customer group will create new indices.
+If a third-party extension creates hundreds of customer groups, Algolia's extension will create hundreds more indices **per store view**.
+
+### Out of sync data
+
+If it seems like data isn't being pushed to Algolia's servers:
+
+1. An error may have occurred during the indexing process: [investigate the logs](#investigate-the-logs)
+1. If the indexing queue is turned on, there could be [a queue processing problem](#the-queue-may-be-stuck)
+1. The product or category being indexed has a particular status preventing it from being indexed.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Read about the requirements for a [product](/integration/magento-2/how-it-works/indexing/#indexable-products) or [category](/integration/magento-2/how-it-works/indexing/#indexing-categories) to be indexed in the [indexing](/integration/magento-2/how-it-works/indexing/) guide.
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### Debugging missing products or categories
+
+If your data isn't showing up but meets the requirements listed on the [indexing](/integration/magento-2/how-it-works/indexing/) page:
+
+1. Go to the Magento back-office and find the product or category missing.
+
+1. Save the item without changing anything. This should trigger the Magento `save` event and send any data that requires updating to Algolia's servers. This also works if the indexing queue is turned off.
+
+1. Go to Algolia's [dashboard](https://dashboard.algolia.com/dashboard).
+
+1. Check if the extension has updated the product or category. Find the index, look up the product/category and check the `algoliaLastUpdateAtCET` attribute. This attribute contains the date and time the records were updated (Central European Time).
+
+1. If products are still out of sync, check the logs on Algolia's dashboard: go to [API Monitoring > Search API Logs](https://dashboard.algolia.com/monitoring/logs). Reindexing triggers a POST request that should appear at the top of the list. The URL should be something like `/1/indexes/[INDEX_NAME]/batch`. By clicking the link, the request details will show up. The extension successfully sent the record to Algolia's servers if you can see the attributes in the **Request body** tab (under the _AddObject_ action).
+
+1. If the attributes aren't updated, _and_ the `algoliaLastUpdateAtCET` attribute in the index's object isn't updated, use the [SKU reindexing form](/integration/magento-2/how-it-works/sku-reindexing-form/). This form gives you feedback on _why_ the product hasn't updated.
+
+##### Third-party extensions
+
+The extension uses Magento's [plug-in system](https://developer.adobe.com/commerce/php/development/components/plugins/) to apply Algolia's logic to the following Magento classes:
+
+- `Magento\Catalog\Model\ResourceModel\Product`
+- `Magento\Catalog\Model\Product\Action`
+- `Magento\CatalogInventory\Model\ResourceModel\Stock\Item`
+- `Magento\Catalog\Model\ResourceModel\Category`
+- `Magento\Catalog\Model\Category\Action`
+
+Any third-party extension that updates resources **without** triggering Magento's `save` events on the preceding classes will break the real-time updating of the catalog. To fix this, you must manually trigger reindexing.
+
+#### Updates aren't sent to Algolia
+
+If the data in Algolia's [dashboard](https://dashboard.algolia.com/dashboard) has unexpected values, look at the attributes specific to the store view or website. The extension respects settings set at the store view and website level, which may override the default settings. To check if this is the case, change the view to show the store view or website setting by using Magento's store switcher (top-left corner of the window).
+
+## Investigate the logs
+
+First, figure out if your indexing process generates errors. Since the process can be asynchronous, errors can happen without you being aware.
+
+During the asynchronous indexing process, the extension generates temporary indices suffixed by `_tmp`.
+For example, if the main product index is `magento_products_default`, the extension will generate an index named `magento_products_default_tmp`.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The temporary indices are created to do an [atomic reindex](/api-reference/api-methods/replace-all-objects/) to prevent production indices from being corrupted.
+</Note>
+
+{/* prettier-ignore-end */}
+
+Because the temporary index is only swapped _after_ the whole process completes, if there is an error, the temporary index will still exist.
+Check Algolia's [dashboard](https://dashboard.algolia.com/dashboard) to see if any indices end with a `_tmp` suffix and **haven't been updated in a while**.
+
+All errors are logged by default in Magento. The `var/log` folder in the Magento installation contains two log files:
+
+- `system.log`
+- `exception.log`
+
+If you want to see if anything gets logged during the indexing process, run the following command from the terminal (from the root folder of the Magento installation) before re-running the indexing process again:
+
+```bash bash
+tail -f var/log/system.log var/log/exception.log
+```
+
+The error messages in the log will help you pinpoint the issue's source.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can also request [more detailed logging](/integration/magento-2/customize/logging-and-debugging/) during the indexing process.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## The queue may be stuck
+
+If the data in your index isn't up-to-date, your indexing queue may be stuck. The queue relies on one of [Magento's indexers](https://developer.adobe.com/commerce/php/development/components/indexing/), added by the extension: the `algolia_queue_runner`.
+
+Ensure the Magento indexer is "ready" by running the following in the command line:
+
+```bash bash
+php bin/magento indexer:status algolia_queue_runner
+```
+
+If the status of the queue is "processing" for a long time, it may need to be reset by running the following in the command line:
+
+```bash bash
+php bin/magento indexer:reset algolia_queue_runner
+```
+
+### Monitoring the queue
+
+From version 1.8 of the extension, there's a monitoring page (at **Stores > Algolia Search > Indexing Queue**). This page contains a grid displaying the contents of the indexing queue. It lets you monitor the number of operations the queue needs to perform.
+
+You can see details of each operation by clicking the 'view' link. Any error occurring during the job is logged in the _Error Log_ attribute.
+
+At the top of the page, the **recommendations** section helps you configure and optimize the queue in the best way possible.
+
+If the indexing queue performs as expected, the number of jobs should decrease every 5 minutes: refresh the page to check this.
+If the number of operations doesn't decrease, ensure that the [queue](/integration/magento-2/how-it-works/indexing-queue/#process-the-queue) is correctly set up.
+
+From version 1.8 of the extension, any failing operation that reached the maximum number of retries is archived in the **algoliasearch\_queue\_archive** table. This is another good place to check for error logs since the last encountered error is stored along with the job.
+
+## Migrate to granular virtual replicas
+
+Version 3.14.0 of the extension introduces the ability to granularly activate virtual replicas for [sorting strategies](/integration/magento-2/how-it-works/indexing/?client=php#sorting-strategies) at the attribute level for default, website and store view scope.
+
+Previous versions of the extension implemented a single "Yes/No" configuration to activate virtual replicas that weren't store-scope sensitive and would transform all sorting replicas from standard to virtual if enabled.
+This was problematic because a Magento instance with many replicas could exceed the [limit of 20 virtual replicas per index](/guides/scaling/algolia-service-limits/#application-record-and-index-limits).
+This is especially true for stores with a large number of customer groups since a [sorting replica index must be created for each pricing group](/integration/magento-2/troubleshooting/general-faq/?client=php#how-many-records-are-created).
+
+You can now set up your replicas how you want, without writing any code.
+
+### Migrating old configuration data
+
+This old configuration must be migrated when upgrading to 3.14.x but potential problems may arise if the previous replica configuration isn't correct.
+
+To address this, it is important to run the following command when [performing an upgrade](/integration/magento-2/getting-started/upgrading/):
+
+```sh sh
+bin/magento setup:upgrade
+```
+
+This process will attempt to migrate to the new configuration and alert you if any problems with the upgrade are encountered.
+
+If this happens it is best to reset all replicas to the standard configuration with `algolia:replicas:disable-virtual-replicas` and rerun `setup:upgrade`.
+
+### CLI tools
+
+A set of CLI tools has now been provided to assist with this. You can view what is available with the following command:
+
+```sh sh
+bin/magento list | grep algolia
+```
+
+To get help on an individual command run:
+
+```sh sh
+bin/magento help algolia:replicas:<command-name>
+```
+
+The command to reset all sorting strategies to standard replicas is:
+
+```sh sh
+bin/magento algolia:replicas:disable-virtual-replicas
+```
+
+### Magento admin updates
+
+In the future, while making changes to the Algolia configuration in your store's Admin (such as adding sorting strategies or enabling customer group pricing support), you may run into the replica limit again.
+
+The extension doesn't let you save an invalid configuration: make the needed adjustments and try saving your changes again.
+
+### Rebuilding replica data
+
+Your store's Admin automatically handles the creation, modification, and deletion of standard and virtual replicas.
+If your replica configuration in Algolia ever becomes corrupted or out of sync with Magento, or if the save operation from your store's Admin doesn't work as expected, you can fully rebuild your replica configuration with the following command:
+
+```sh sh
+bin/magento algolia:replicas:rebuild
+```
+
+### Understanding the Algolia replica configuration
+
+The extension will update the Algolia index `replicas` setting for the corresponding product index for each Algolia-enabled store view in Magento.
+
+Typically, the replica indices that are created are a one-to-one relationship with the sorting strategies defined in your store's Admin:
+
+But if customer groups are enabled for the store, the number of indices required for the pricing sorts is multiplied by the number of customer groups in Magento.
+
+It is also important to understand that other processes (such as those used by the [Merchandising Studio](/integration/magento-2/merchandising/merchandising-studio/) and the Algolia Dashboard) may create replicas in addition to the ones that the Magento extension creates.
+To avoid the extension overwriting other Algolia indices, don't give them a prefix that might be mistaken as being [managed by Magento](/integration/magento-2/getting-started/quick-start/#configuration).
+
+Here's example of how various replica configurations might look (the Magento-managed indices are distinguished by the prefix `magento2_dev_`.)
+
+In the preceding example (which is purely for illustrative purposes), the Magento managed indices are distinguished by the prefix `magento2_dev_`.
+
+## How to update the PHP client connection time
+
+To access the configuration page for Algolia in your Magento project, go to **Stores > Algolia Search > Advanced** in the Admin panel.
+
+From there, you can modify the connection, read, and write timeouts.
