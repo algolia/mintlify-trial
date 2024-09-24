@@ -1,0 +1,48 @@
+---
+title: Elasticsearch
+description: |-
+  Index your data from Elasticsearch.
+---
+
+The Elasticsearch connector lets you read data from ElasticSearch and store it in an Algolia index.
+
+The Elasticsearch connector supports Elasticsearch version 7 or later.
+
+## Set up an API key and secret in Elasticsearch
+
+To create an API key and secret, configure your Elasticsearch cluster's security settings:
+
+1. Sign in to your Elasticsearch instance, either through a web interface, or with command-line tools.
+1. To create an API key, open the main menu and select **Stack Management > API Keys > Create API key**.
+1. The key will be base64-encoded. Algolia's connector needs the underlying key and secret separately. To decode the created key, copy the base64-encoded key into a decoder to reveal the key and secret.
+
+For more information, see [API keys](https://www.elastic.co/guide/en/kibana/current/api-keys.html) in the Elastic documentation.
+
+## Configure your data source
+
+1. Open the [**Connectors**](https://dashboard.algolia.com/connectors/) page in the Algolia dashboard.
+1. Select the Elasticsearch connector, click **Connect**, and click **Get started**.
+1. In the **Server Endpoint** field, enter the full URL to your Elasticsearch server.
+1. Select your authentication method:
+
+   - **None**. No authentication is needed for the connector to read your data.
+   - **API key/Secret**. Decode the base64-encoded Elasticsearch [API key](#set-up-an-api-key-and-secret-in-elasticsearch) and enter the API key ID and API key secret.
+   - **Username/Password**. Provide the username and password, which the connector should use to authenticate.
+
+If you're using authentication, the user needs permissions to create an index if it doesn't exist and create documents.
+
+5. Enter a name for the source. This helps you distinguish between different sources.
+5. Click **Create source**. Algolia will try to access your source and lets you continue if it succeeds.
+
+## Configure your destination
+
+Select an Algolia index, where the records from your Elasticsearch source should be stored.
+For more details, see the [JSON connector](/guides/sending-and-managing-data/send-and-update-your-data/connectors/json/#configure-your-destination).
+
+## Configure your task
+
+1. Decide if you want to fetch your data on a schedule or on demand.
+1. If you select a schedule, choose from a list of popular schedules or enter a custom cron expression.
+1. In the **What should we do with your data** section, select **Replace**, **Save**, or **Partial Update**.
+1. Select the indices you want to import into Algolia.
+1. Finalize the configuration and click **Create task**.

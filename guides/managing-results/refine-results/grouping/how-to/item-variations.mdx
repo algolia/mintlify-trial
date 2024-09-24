@@ -1,0 +1,376 @@
+---
+title: Item variations
+description: |-
+  Learn how to use Algolia's Distinct feature to deduplicate results that share a common attribute.
+---
+
+Suppose you're selling products with variations, such as t-shirts in different colors or smartphones with different memory capacities (and costs).
+Arranging your inventory data without ending up with duplicates can be tricky.
+
+For example, say your site sells t-shirts and sweatshirts in many designs and colors.
+You have two ways of structuring your data. One record for each:
+
+- **Product** (product-level model).
+- **Color variant** (variant-level model).
+
+The following information explains the main concepts of the **variant-level** records model.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  For more information about each model, see: [Structure ecommerce product records](/guides/sending-and-managing-data/prepare-your-data/how-to/ecommerce-records/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Dataset example
+
+In the inventory, you have two t-shirt designs (A and B) and two designs of sweatshirts (C and D). Each design comes in several colors.
+
+In your dataset, you can represent them by creating one record for each color variant of each item. Each record specifies the type, the design, the color, and the associated thumbnail. Here's what your records look like:
+
+```json json
+[
+  {
+    "type": "t-shirt",
+    "design": "B",
+    "color": "blue",
+    "thumbnail_url": "tshirt-B-blue.png"
+  },
+  {
+    "type": "sweatshirt",
+    "design": "C",
+    "color": "red",
+    "thumbnail_url": "sweatshirt-C-red.png"
+  }
+]
+```
+
+Going further, you could add all the possible color variations for each record.
+This way, you could display all the variants for a single product in your frontend (for example, color swatches under the thumbnail), allowing users to discover them.
+
+```json json
+[
+  {
+    "type": "t-shirt",
+    "design": "B",
+    "color": "blue",
+    "thumbnail_url": "tshirt-B-blue.png",
+    "color_variants": ["orange", "teal", "yellow", "red", "green"]
+  },
+  {
+    "type": "t-shirt",
+    "design": "B",
+    "color": "orange",
+    "thumbnail_url": "tshirt-B-orange.png",
+    "color_variants": ["blue", "teal", "yellow", "red", "green"]
+  }
+]
+```
+
+With this approach, every record represents a single variation, which ensures always displaying consistent data. One record per variation lets you add granular custom ranking attributes, like `number_of_sales`. Besides, you can use Algolia's [distinct feature](/guides/managing-results/refine-results/grouping/) to deduplicate designs. This way, when someone searches for "t-shirt", they only get one of each design.
+
+## Using the API
+
+### At indexing time
+
+Before deduplicating items, restrict what attributes are searchable. You don't want to search into `thumbnail_url`, which may be irrelevant and add noise, nor into `color_variants`, because it could lead to false positives. Therefore, you can set `design`, `type`, and `color` as [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/).
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string> { "design", "type", "color" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		"design",
+  		"type",
+  		"color",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setSearchableAttributes(Arrays.asList(
+      "design",
+      "type",
+      "color"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      searchableAttributes: ["design", "type", "color"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+          +"design"
+          +"type"
+          +"color"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'searchableAttributes' => [
+      "design",
+      "type",
+      "color"
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"searchableAttributes": ["design", "type", "color"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      searchableAttributes: [
+        "design",
+        "type",
+        "color"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(Seq(
+        SearchableAttributes.attributes("design"),
+        SearchableAttributes.attribute("type"),
+        SearchableAttributes.attributes("color"), )))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "searchableAttributes": [
+      "design",
+      "type",
+      "color",
+    ]
+  ])
+  ```
+</CodeGroup>
+
+To use [`distinct`](/api-reference/api-parameters/distinct/), you first need to set `design` as [`attributeForDistinct`](/api-reference/api-parameters/attributeForDistinct/) during indexing time. Only then can you set [`distinct`](/api-reference/api-parameters/distinct/) to `true` to deduplicate your results.
+Note that setting [`distinct`](/api-reference/api-parameters/distinct/) at indexing time is optional. If you want to, you can set it at query time instead.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings { AttributeForDistinct = "design", Distinct = true };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributeForDistinct: opt.AttributeForDistinct("design"),
+  	Distinct:             opt.Distinct(true),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings()
+      .setAttributeForDistinct("design")
+      .setDistinct(Distinct.of(true))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributeForDistinct: "design",
+      distinct: true,
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributeForDistinct = Attribute("design")
+      distinct = Distinct(1)
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributeForDistinct' => 'design',
+    'distinct' => true
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"attributeForDistinct": "design", "distinct": True})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      attributeForDistinct: "design",
+      distinct: true
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributeForDistinct = Some("design"),
+      distinct = Some(true))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "attributeForDistinct": "design",
+    "distinct": true,
+  ])
+  ```
+</CodeGroup>
+
+### At query time
+
+Once [`attributeForDistinct`](/api-reference/api-parameters/attributeForDistinct/) is set, you can enable [`distinct`](/api-reference/api-parameters/distinct/) by setting it to `true`.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can set [`distinct`](/api-reference/api-parameters/distinct/) to `true` or `1` interchangeably.
+</Note>
+
+{/* prettier-ignore-end */}
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(new Query<JObject>("query") { Distinct = true });
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"query",
+  	opt.Distinct(true),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("query").setDistinct(Distinct.of(true))
+  );
+  ```
+
+  ```js js
+  index
+    .search("query", {
+      distinct: true,
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("query") {
+      distinct = Distinct(1)
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('query', [
+    'distinct' => true
+  ]);
+  ```
+
+  ```python python
+  results = index.search("query", {"distinct": True})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "query",
+    {
+      distinct: true
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("query"),
+      distinct = Some(true))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "query")
+  query.distinct = true
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+## Using the dashboard
+
+You can also set your attribute for distinct and enable distinct in your Algolia dashboard.
+
+1. Go to your dashboard, then go to the **Search** product and select your index.
+1. Click on the **Configuration** tab.
+1. In the **Searchable Attributes** section, click the "Add a searchable attribute" button.
+1. Select the `design`, `type`, and `color` attributes in the drop-down menu one after another.
+1. Click the **Deduplication and Grouping** tab, which you can find under _Search behavior_.
+1. Set the **Distinct** option to `true`.
+1. Set the **Attribute for Distinct** option to `design`.
+1. Save your changes.
+
+When distinct is `true`, you get one color for each design. To control which one, you can set a new attribute with business metrics, for example, `number_of_sales`, and set it up for [custom ranking](/guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking/).
+
+Additionally, you can display all available colors for each item thanks to the `color_variants` attribute.
+This way, users can access all possible variants from the search results without the page being crowded with too many items.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Managing variants](https://www.algolia.com/ecommerce-merchandising-playbook/managing-variants/)
+</Info>
+
+{/* prettier-ignore-end */}

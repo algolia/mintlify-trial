@@ -1,0 +1,531 @@
+---
+title: Copy indices
+description: |-
+  Learn how to copy indices including their records, settings, synonyms, and rules.
+---
+
+You can copy (duplicate) indices, including their associated records, settings, synonyms, and rules, within the same Algolia application using both the Algolia dashboard and the API.
+To [copy an index between two Algolia applications](#copy-indices-between-different-applications), use the API.
+
+## About copying indices
+
+- Copying an index duplicates the records and configuration,
+  including synonyms and rules of an existing index (except the `enableReRanking` setting).
+
+- Copying an index **does not create a [replica](/guides/managing-results/refine-results/sorting/in-depth/replicas/)**. The new index will be an independent copy.
+
+- Copying an index [doesn't copy the associated analytics data](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/concepts/indices-analytics/).
+
+- Copying indices is resource-intensive and is
+  [rate-limited](https://support.algolia.com/hc/en-us/articles/4406975251089#when-do-we-trigger-the-rate-limit).
+
+## Copy indices in the Algolia dashboard
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. Select **Manage index > Duplicate**.
+
+1. Select **Create a new index** or **Overwrite an existing index** and enter the name of the destination index.
+
+1. If you're overwriting an existing index, enter `DUPLICATE` to confirm.
+
+1. Click **Duplicate**.
+
+## Copy indices with the API
+
+To copy indices, use one of these methods:
+
+- API clients: [`copyIndex`](/api-reference/api-methods/copy-index/)
+- Algolia CLI: [`algolia indices copy`](/tools/cli/commands/algolia-indices/#algolia-indices-copy)
+
+Provide a [`scope`](/api-reference/api-methods/copy-index/#method-param-scope) parameter or command-line option,
+to choose what you want to copy: records, settings, synonyms, or rules.
+
+The **API keys** of the source are merged with the existing keys in the destination index.
+
+### Copy indices fully
+
+To copy an index **including records, settings, synonyms, and Rules**,
+use the [`copyIndex`](/api-reference/api-methods/copy-index/) method:
+
+<CodeGroup>
+  ```csharp csharp
+  // Use an API key with `addObject` ACL
+  var client = new SearchClient("YourApplicationID", "YourAPIKey");
+
+  // Copy `indexNameSrc` to `indexNameDest`
+  client.CopyIndex("indexNameSrc", "indexNameDest");
+
+  // Asynchronous
+  await client.CopyIndexAsync("indexNameSrc", "indexNameDest");
+  ```
+
+  ```go go
+  // Use an API key with `addObject` ACL
+  client := search.NewClient("YourApplicationID", "YourAPIKey")
+
+  // Copy `indexNameSrc` to `indexNameDest`
+  res, err := client.CopyIndex("indexNameSrc", "indexNameDest")
+  ```
+
+  ```java java
+  // Use an API key with `addObject` ACL
+  SearchClient client = DefaultSearchClient.create("YourApplicationID", "YourAPIKey");
+
+  // Copy `indexNameSrc` to `indexNameDest`
+  client.copyIndex("indexNameSrc", "indexNameDest");
+
+  // Asynchronous
+  client.copyIndexAsync("indexNameSrc", "indexNameDest");
+  ```
+
+  ```js js
+  const algoliasearch = require("algoliasearch");
+
+  // Use an API key with `addObject` ACL
+  const client = algoliasearch("YourApplicationID", "YourAPIKey");
+
+  // Copy `indexNameSrc` to `indexNameDest`
+  client.copyIndex("indexNameSrc", "indexNameDest");
+  ```
+
+  ```kotlin kotlin
+  // Use an API key with `addObject` ACL
+  val client = ClientSearch(
+    ApplicationID("YourApplicationID")
+    APIKey("YourAPIKey")
+  )
+  // Copy `indexNameSrc` to `indexNameDest`
+  val index = client.initIndex(IndexName("indexNameSrc"))
+  index.copyIndex(IndexName("indexNameDest"))
+  ```
+
+  ```php php
+  <?php
+  require_once __DIR__ . "/vendor/autoload.php";
+  use Algolia\AlgoliaSearch\SearchClient;
+
+  // Use an API key with `addObject` ACL
+  $client = SearchClient::create("YourApplicationID", "YourAPIKey");
+
+  // Copy `indexNameSrc` to `indexNameDest`
+  $client->copyIndex("indexNameSrc", "indexNameDest");
+  ```
+
+  ```python python
+  from algoliasearch.search_client import SearchClient
+
+  # Use an API key with `addObject` ACL
+  client = SearchClient.create("YourApplicationID", "YourAPIKey")
+
+  # Copy `indexNameSrc` to `indexNameDest`
+  client.copy_index("indexNameSrc", "indexNameDest")
+  ```
+
+  ```ruby ruby
+  require "algolia"
+
+  # Use an API key with `addObject` ACL
+  client = Algolia::Search::Client.create(
+    "YourApplicationID",
+    "YourAPIKey"
+  )
+
+  # Copy `indexNameSrc` to `indexNameDest`
+  client.copy_index("indexNameSrc", "indexNameDest")
+  ```
+
+  ```scala scala
+  // Use an API key with `addObject` ACL
+  val client = new AlgoliaClient("YourApplicationID", "YourAPIKey")
+
+  // Copy `indexNameSrc` to `indexNameDest`
+  client.execute { copy index "indexNameSrc" to "indexNameDest" }
+  ```
+
+  ```sh CLI
+  # Copy `INDEX_NAME_SRC` to `INDEX_NAME_DEST`
+  algolia index copy INDEX_NAME_SRC INDEX_NAME_DEST
+  ```
+
+  ```swift swift
+  import AlgoliaSearchClient
+
+  // Use an API key with `addObject` ACL
+  let client = SearchClient(
+    appID: "YourApplicationID",
+    apiKey: "YourAPIKey"
+  )
+
+  // Copy `indexNameSrc` to `indexNameDest`
+  client.copyIndex(from: "indexNameSrc", to: "indexNameDest") { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+- If the source index doesn't exist, [`copyIndex`](/api-reference/api-methods/copy-index/) creates an empty index with zero records under the new name.
+- If an index with the new name already exists, the destination index will be overwritten.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  To prevent overwriting existing indices,
+  you can check if an index exists with the [`indexExists`](/api-reference/api-methods/index-exists/) method.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+### Copy indices partially
+
+To copy **parts of an index**, use the [`scope`](/api-reference/api-methods/copy-index/#method-param-scope) parameter.
+For example, to copy only the synonyms and settings between indices, but not records or rules:
+
+<CodeGroup>
+  ```csharp csharp
+  // Use an API key with `addObject` ACL
+  var client = new SearchClient("YourApplicationID", "YourAPIKey");
+
+  // Copy only settings and synonyms from `indexNameSrc` to `indexNameDest`
+  List<string> scopes = new List<string>() { CopyScope.Settings, CopyScope.Synonyms };
+
+  client.CopyIndex("indexNameSrc", "indexNameDest", scope: scopes);
+
+  // Asynchronous
+  client.CopyIndexAsync("indexNameSrc", "indexNameDest", scope: scopes);
+  ```
+
+  ```go go
+  // Use an API key with `addObject` ACL
+  client := search.NewClient("YourApplicationID", "YourAPIKey")
+
+  // Copy only settings and synonyms from `indexNameSrc` to `indexNameDest`
+  res, err := client.CopyIndex(
+  	"indexNameSrc",
+  	"indexNameDest",
+  	opt.Scopes("settings", "synonyms"),
+  )
+  ```
+
+  ```java java
+  // Use an API key with `addObject` ACL
+  SearchClient client = DefaultSearchClient.create("YourApplicationID", "YourAPIKey");
+
+  // Copy only settings and synonyms from `indexNameSrc` to `indexNameDest`
+  client.copyIndex(
+    "indexNameSrc", "indexNameDest",
+    Arrays.asList("settings", "synonyms")
+  );
+  ```
+
+  ```js js
+  // Copy only settings and synonyms from `indexNameSrc` to `indexNameDest`
+  client.copyIndex("indexNameSrc", "indexNameDest", {
+    scope: ["settings", "synonyms"],
+  });
+  ```
+
+  ```kotlin kotlin
+  // Use an API key with `addObject` ACL
+  val client = ClientSearch(
+    ApplicationID("YourApplicationID"),
+    APIKey("YourAPIKey")
+  )
+
+  // Copy only synonyms and settings from `indexNameSrc` to `indexNameDest`
+  val index = client.initIndex(IndexName("indexNameSrc"))
+  val scopes = listOf(
+      Scope.Settings,
+      Scope.Synonyms
+  )
+  index.copyIndex(IndexName("indexNameDest"), scopes)
+  ```
+
+  ```php php
+  <?php
+  require_once __DIR__ . "/vendor/autoload.php";
+  use Algolia\AlgoliaSearch\SearchClient;
+
+  // Use an API key with `addObject` ACL
+  $client = SearchClient::create("YourApplicationID", "YourAPIKey");
+
+  // Copy only settings and synonyms from `indexNameSrc` to `indexNameDest`
+  $client->copyIndex("indexNameSrc", "indexNameDest", [
+    "scope" => ["settings", "synonyms"],
+  ]);
+  ```
+
+  ```python python
+  from algoliasearch.search_client import SearchClient
+
+  # Use an API key with `addObject` ACL
+  client = SearchClient.create("YourApplicationID", "YourAPIKey")
+
+  # Copy only settings and synonyms from `indexNameSrc` to `indexNameDest`
+  client.copy_index("indexNameSrc", "indexNameDest", {"scope": ["settings", "synonyms"]})
+  ```
+
+  ```ruby ruby
+  require "algolia"
+
+  # Use an API key with `addObject` ACL
+  client = Algolia::Search::Client.create(
+    "YourApplicationID",
+    "YourAPIKey"
+  )
+
+  # Copy only settings and synonyms from `indexNameSrc` to `indexNameDest`
+  client.copy_index(
+    "indexNameSrc",
+    "indexNameDest",
+    {
+      scope: ["settings", "synonyms"]
+    }
+  )
+  ```
+
+  ```scala scala
+  // Use an API key with `addObject` ACL
+  val client = new AlgoliaClient("YourApplicationID", "YourAPIKey")
+
+  // Copy only settings and synonyms from `indexNameSrc` to `indexNameDest`
+  client.execute {
+    copy index "indexNameSrc" to "indexNameDest" scopes Seq("settings", "synonyms")
+  }
+  ```
+
+  ```sh CLI
+  # Copy only settings and synonyms from `INDEX_NAME_SRC` to `INDEX_NAME_DEST`
+  algolia index copy INDEX_NAME_SRC INDEX_NAME_DEST \
+    --scopes "settings,synonyms"
+  ```
+
+  ```swift swift
+  import AlgoliaSearchClient
+
+  // Use an API key with `addObject` ACL
+  let client = SearchClient(
+    appID: "YourApplicationID",
+    apiKey: "YourAPIKey"
+  )
+
+  // Copy only settings and synonyms from `indexNameSrc` to `indexNameDest`
+  client.copyIndex(
+    from: "indexNameSrc",
+    to: "indexNameDest",
+    scope: [Scope.settings, Scope.synonyms]
+  )
+  ```
+</CodeGroup>
+
+If you use the `scope` parameter, records aren't copied to the new index.
+Existing items of the scope are replaced.
+Items belonging to other scopes are preserved.
+For example, if you use the `settings` scope, only the settings are copied to the destination index, keeping the records, synonyms, and rules.
+
+For more information, see [Scopes](/api-reference/api-methods/copy-index/#scopes).
+
+### Indices with replicas
+
+Copying a source index that has replicas copies the index's data, but not its replicas.
+The destination index won't have replicas.
+
+**You can't copy to a destination index that already has replicas.**
+
+## Copy indices between different applications
+
+To copy an index between different Algolia applications,
+use the `AccountClient`, which is part of the [Algolia API clients](/api-client/getting-started/install/php/),
+or use the Algolia CLI.
+
+<CodeGroup>
+  ```csharp csharp
+  // Copy `indexNameSrc` from app `SOURCE_APP_ID` to app `TARGET_APP_ID`
+  SearchClient sourceClient = new SearchClient("SOURCE_APP_ID", "SOURCE_API_KEY");
+  SearchClient targetClient = new SearchClient("TARGET_APP_ID", "TARGET_API_KEY");
+
+  SearchIndex sourceIndex = sourceClient.InitIndex("indexNameSrc");
+  SearchIndex targetIndex = targetClient.InitIndex("indexNameDest");
+
+  AccountClient accountClient = new AccountClient();
+
+  // Provide your 'Record' class for serializing the records during copying
+  // This method throws an exception if `targetIndex` exists
+  accountClient.CopyIndex<Record>(sourceIndex, targetIndex);
+
+  // Asynchronous
+  await accountClient.CopyIndexAsync<Record>(sourceIndex, targetIndex);
+  ```
+
+  ```go go
+  // Copy `indexNameSrc` from app `SOURCE_APP_ID` to app `TARGET_APP_ID`
+  sourceIndex = search.NewClient("SOURCE_APP_ID", "SOURCE_API_KEY").InitIndex("indexNameSrc")
+  targetIndex = search.NewClient("TARGET_APP_ID", "TARGET_API_KEY").InitIndex("indexNameDest")
+
+  res, err := search.NewAccount().CopyIndex(sourceIndex, targetIndex)
+  ```
+
+  ```java java
+  // Copy `indexNameSrc` from app `SOURCE_APP_ID` to app `TARGET_APP_ID`
+  SearchClient sourceClient =
+    DefaultSearchClient.create("SOURCE_APP_ID", "SOURCE_API_KEY");
+
+  SearchIndex<Record> sourceIndex =
+    sourceClient.initIndex("indexNameSrc", Record.class);
+
+  SearchClient targetClient =
+  DefaultSearchClient.create("TARGET_APP_ID", "TARGET_API_KEY");
+
+  SearchIndex<Record> targetIndex =
+    targetClient.initIndex("indexNameDest", Record.class);
+
+  AccountClient accountClient = new AccountClient();
+
+  // This method throws an exception, if `targetIndex` exists
+  accountClient.copyIndex(sourceIndex, targetIndex);
+
+  // Asynchronous
+  accountClient.copyIndexAsync(sourceIndex, destinationIndex);
+  ```
+
+  ```js js
+  const algoliasearch = require("algoliasearch");
+  // Extra package: `npm install @algolia/client-account`
+  const accountCopyIndex = require("@algolia/client-account").accountCopyIndex;
+
+  // Copy `indexNameSrc` from app `SOURCE_APP_ID` to app `TARGET_APP_ID`
+  const sourceIndex = algoliasearch("SOURCE_APP_ID", "SOURCE_API_KEY").initIndex(
+    "indexNameSrc",
+  );
+  const targetIndex = algoliasearch("TARGET_APP_ID", "TARGET_API_KEY").initIndex(
+    "indexNameDest",
+  );
+
+  // This method returns an error if `targetIndex` exists
+  accountCopyIndex(sourceIndex, targetIndex);
+  ```
+
+  ```kotlin kotlin
+  // Copy `indexNameSrc` from app `SOURCE_APP_ID` to app `TARGET_APP_ID`
+  val sourceIndex = ClientSearch(
+      ApplicationID("SOURCE_APP_ID"),
+      APIKey("SOURCE_API_KEY")
+  ).initIndex(IndexName("indexNameSrc"))
+
+  val targetIndex = ClientSearch(
+      ApplicationID("TARGET_APP_ID"),
+      APIKey("TARGET_API_KEY")
+  ).initIndex(IndexName("indexNameDest"))
+
+  // This method throws an exception if `targetIndex` exists
+  ClientAccount.copyIndex(sourceIndex, targetIndex)
+  ```
+
+  ```php php
+  use \Algolia\AlgoliaSearch\SearchClient;
+  use \Algolia\AlgoliaSearch\AccountClient;
+
+  // Copy `indexNameSrc` from app `SOURCE_APP_ID` to app `TARGET_APP_ID`
+  $sourceIndex = SearchClient::create('SOURCE_APP_ID', 'SOURCE_API_KEY')->initIndex('indexNameSrc');
+  $targetIndex = SearchClient::create('TARGET_APP_ID', 'TARGET_API_KEY')->initIndex('indexNameDest');
+
+  // This method returns an error if `$targetIndex` exists
+  AccountClient::copyIndex($sourceIndex, $targetIndex);
+  ```
+
+  ```python python
+  from algoliasearch.search_client import SearchClient
+  from algoliasearch.account_client import AccountClient
+
+  # Copy `indexNameSrc` from app `SOURCE_APP_ID` to app `TARGET_APP_ID`
+  source_index = SearchClient.create("SOURCE_APP_ID", "SOURCE_API_KEY").init_index(
+      "indexNameSrc"
+  )
+
+  target_index = SearchClient.create("TARGET_APP_ID", "TARGET_API_KEY").init_index(
+      "indexNameDest"
+  )
+
+  # This method throws an exception if `target_index` exists
+  AccountClient.copy_index(source_index, target_index)
+  ```
+
+  ```ruby ruby
+  require "algolia"
+
+  # Copy `indexNameSrc` from app `SOURCE_APP_ID` to app `TARGET_APP_ID`
+  source_index = Algolia::Search::Client
+    .create(
+      "SOURCE_APP_ID",
+      "SOURCE_API_KEY"
+    )
+    .init_index("indexNameSrc")
+  target_index = Algolia::Search::Client
+    .create(
+      "TARGET_APP_ID",
+      "TARGET_API_KEY"
+    )
+    .init_index("indexNameDest")
+
+  # This method returns an error if `target_index` exists
+  Algolia::Account::Client.copy_index(source_index, target_index)
+  ```
+
+  ```sh CLI
+  # Copy records from `INDEX_NAME_SRC` of the profile `SOURCE` to `INDEX_NAME_DEST` of the profile `TARGET`
+  algolia --profile SOURCE objects browse INDEX_NAME_SRC |
+    algolia --profile TARGET objects import INDEX_NAME_DEST --file -
+
+  # Copy settings
+  algolia --profile SOURCE settings get INDEX_NAME_SRC |
+    algolia --profile TARGET settings import INDEX_NAME_DEST --file -
+
+  # Copy synonyms
+  algolia --profile SOURCE synonyms browse INDEX_NAME_SRC |
+    algolia --profile TARGET synonyms import INDEX_NAME_DEST --file -
+
+  # Copy Rules
+  algolia --profile SOURCE rules browse INDEX_NAME_SRC |
+    algolia --profile TARGET rules import INDEX_NAME_DEST --file -
+  ```
+
+  ```swift swift
+  import AlgoliaSearchClient
+
+  // Copy `indexNameSrc` from app `SOURCE_APP_ID` to app `TARGET_APP_ID`
+  let sourceIndex = SearchClient(appID: "SOURCE_APP_ID", apiKey: "SOURCE_API_KEY").index(
+    withName: "indexNameSrc")
+  let targetIndex = SearchClient(appID: "TARGET_APP_ID", apiKey: "TARGET_API_KEY").index(
+    withName: "indexNameDest")
+
+  try AccountClient.copyIndex(source: sourceIndex, destination: targetIndex) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  If you copy an index to a different Algolia application,
+  the `targetIndex` **must not** exist, or the process fails.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+If you want to _move_ an index between Algolia applications,
+you can copy it first, and then [delete](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/delete-indices/) it.
+
+## Copy index settings
+
+If you want to copy only an index's setting to another index, you can use the
+**Manage index > Copy Settings** action in the dashboard,
+or the [`copySettings`](/api-reference/api-methods/copy-settings/) method of the API clients.

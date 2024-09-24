@@ -1,0 +1,99 @@
+---
+title: Adjusting the Exact criterion
+description: |-
+  See how to adjust the Exact ranking criterion. The criterion counts the number of exact matches between a query and a record.
+---
+
+The [Exact ranking criterion](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#exact) helps users find what they want by showing the most relevant results.
+When users search for something, Algolia ranks records with the _exact_ query words higher than those with similar (inexact) words.
+For example, if you search for "dog food," records that contain the exact phrase "dog food" will rank higher than records containing phrases such as "food for dogs" or "dog treats".
+
+An exact match occurs when a full word in a query matches a full word in an attribute.
+An inexact match has typos or only matches a prefix or partial word.
+For example:
+
+- "dog food" is an exact match for "dog food"
+- "dog fod" is an inexact match for "dog food"
+- "food for dogs" is an exact matches for the individual words "food" and "dogs", but an inexact match for "dog food".
+
+## The Exact criterion counter
+
+The Exact criterion is a counter: for every exact matching word in an attribute, the count increases by 1.
+The higher the count, the higher the record is ranked.
+The count ranges from 0 to the number of words in the query.
+
+- **Exact words are only counted once per record.** If the same word has 10 exact matches in a record, whether in the same attribute or not, that query word still gets only 1 point.
+- **Synonyms and singular/plural forms of a word are treated as exact matches**. For example, "dog" and "dogs" are exact matches.
+- **The order of words in the query matters**. For example, "dog food" is an exact match for "dog food," but "food dog" isn't an exact match even though both words are present.
+
+### Multi-word queries
+
+**The counter works with single or multi-word queries, but every word is treated separately.**
+
+- If the query contains two words with exact matches in the same attribute, that's 2 points, 1 for each match.
+- If the first word matches in one attribute, and the second in another, that's also 2 points.
+
+For example, if the query is "dog food," and one record contains "dog food" and another contains "dog" in one attribute and "food" in another, both records would receive 2 points.
+
+### Multi-word attributes
+
+**Single-word matches in multi-word attributes aren't considered exact matches by default.**
+For example, for the single-word query "road," only a record with an attribute containing just "road" is considered to be an exact match.
+A record with an attribute containing the term "road trip" isn't an exact match.
+
+### Exact versus Words criteria scores
+
+A record's Exact criterion score differs from the [Words](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#words-if-applicable) criterion score because the Words criterion considers _inexact_ matches.
+A record's Exact score may be less than the number of query words because of inexact matches or the [`optionalWords` setting](/guides/managing-results/optimize-search-results/empty-or-insufficient-results/#creating-a-list-of-optional-words).
+
+For example, for the query "iPhon 14", a record containing "iPhone 14" would have a Words score of 2 and an Exact score of 1.
+
+## Adjustments to the Exact settings
+
+You can change the settings to make single-word queries behave differently or to turn off Exact for some attributes.
+This can help users find what they're looking for.
+
+### Single-word queries
+
+By default, Algolia handles single-word and multi-word queries differently:
+
+- Single-word queries increment the count when they fully match single-word attributes
+- Multi-word queries increment the count when there's a match for any word in a multi-word attribute.
+
+To change this default and make single-word queries behave similarly to multi-word queries, set [`exactOnSingleWordQuery`](/api-reference/api-parameters/exactOnSingleWordQuery/) to `word`.
+**Consider doing this if you don't have many important single-word attributes and want matches on single-word and multi-word attributes to rank evenly.**
+
+For example, you search for "Road" in a TV database site, and there are two records with "Road" and "Road Trip" as the `title` attribute:
+
+- `exactOnSingleWordQuery` = `attribute` (the default). Only matches the record with "Road" as the `title`
+- `exactOnSingleWordQuery` = `word`. Matches both "Road" and "Road Trip".
+
+### Turn off Exact for some attributes
+
+You can remove the Exact score computation from some attributes with the [`disableExactOnAttributes`](/api-reference/api-parameters/disableExactOnAttributes/) setting.
+
+Consider doing this if you have text-heavy attributes such as `description` that makes exact matching more likely and less useful for ranking.
+Doing this gives attributes with shorter content, such as `title` or `name`, more control over ranking.
+
+### Plurals and synonyms
+
+By default, Algolia counts singular and plural forms, and single-word synonym matches as exact matches.
+For example, if you have a [synonym](/guides/managing-results/optimize-search-results/adding-synonyms/#regular-synonyms) for "swimwear" and "swimsuit", a search for "swimwear" will count as an exact match on a record with the word "swimsuit".
+
+Multi-word synonyms aren't counted as exact matches.
+
+While the default behavior works well in most cases, you can customize it with the [`alternativesAsExact`](/api-reference/api-parameters/alternativesAsExact/) setting.
+
+## See also
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [`alternativesAsExact`](/api-reference/api-parameters/alternativesAsExact/)
+  - [`disableExactOnAttributes`](/api-reference/api-parameters/disableExactOnAttributes/)
+  - [`exactOnSingleWordQuery`](/api-reference/api-parameters/exactOnSingleWordQuery/)
+  - [The eight ranking criteria](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/)
+  - [Mobile search and discovery](https://www.algolia.com/blog/ux/mobile-search-ux-best-practices/)
+</Info>
+
+{/* prettier-ignore-end */}

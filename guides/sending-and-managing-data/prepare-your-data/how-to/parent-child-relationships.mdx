@@ -1,0 +1,56 @@
+---
+title: Creating parent-child relationships
+description: |-
+  The indexing technique for maintaining parent-child relationships between records when you migrate data to Algolia's JSON format.
+---
+
+If your source data has parent-child relationships between records and you want to maintain those relationships when you migrate to Algolia's JSON format, this guide outlines the recommended indexing process.
+
+Use parent-child relationships when you want to:
+
+- [Filter](/guides/managing-results/refine-results/filtering/) on children
+- Update parents without affecting children
+- Index a tree-like data structure
+- Model a [one-to-many](https://wikipedia.org/wiki/One-to-many_\(data_model\)) relationship.
+
+## Modeling the relationship in your JSON file
+
+To model a parent-child relationship in [the records of your Algolia JSON data](/guides/sending-and-managing-data/prepare-your-data/#algolia-records):
+
+- **Create one record per child**, and add a unique reference to their parent as a key-value pair (`parentID` in the example)
+- **Don't create records for parents**.
+
+### Dataset
+
+```json json
+[
+  {
+    "parentID": "ABC",
+    "parentName": "Parent",
+    "name": "Child One"
+  },
+  {
+    "parentID": "ABC",
+    "parentName": "Parent",
+    "name": "Child Two"
+  }
+]
+```
+
+## Implementation notes
+
+Since:
+
+- **You don't have any parent records:** you can only query children.
+- **A parent may have many children:** use [Algolia's distinct feature](/guides/managing-results/refine-results/grouping/#introducing-algolias-distinct-feature) to retrieve the most relevant child per parent (`parentID` in the preceding example).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Indexing relational data](/guides/sending-and-managing-data/prepare-your-data/how-to/handling-data-relationships/)
+  - [Preparing your data for indexing](/guides/sending-and-managing-data/prepare-your-data/in-depth/prepare-data-in-depth/)
+  - [Using filtering attributes with Rules](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#only-the-filtering-attributes-in-the-condition-matter)
+  - [Sub-categorizing records with nested attributes](/guides/sending-and-managing-data/prepare-your-data/how-to/creating-and-using-nested-attributes/)
+</Info>
+
+{/* prettier-ignore-end */}

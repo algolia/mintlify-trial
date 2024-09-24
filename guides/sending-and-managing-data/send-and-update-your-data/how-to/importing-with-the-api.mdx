@@ -1,0 +1,555 @@
+---
+title: Importing with the API
+description: |-
+  How to index your data to Algolia using an API client.
+---
+
+Algolia doesn't directly search your data sources. Instead, you upload the parts of your data that are relevant for search to Algolia. Algolia stores this data in an _index_: a data structure optimized for fast search.
+
+- For more information about preparing your data for indexing, see [Format and structure your data](/guides/sending-and-managing-data/prepare-your-data/).
+- For alternatives to the API for pushing data, see [Send your data to Algolia](/guides/sending-and-managing-data/send-and-update-your-data/).
+
+## Required credentials
+
+To send data to Algolia, you need an Application ID and a valid API key (with [`addObjects`](/guides/security/api-keys/#access-control-list-acl) permission). You can find them in the **API Keys** section of [Algolia's dashboard](https://dashboard.algolia.com/account/api-keys/all).
+
+### Application ID
+
+Your Application ID is what Algolia uses to identify your app, where all your indices live.
+
+### API key
+
+[API keys](/guides/security/api-keys/) control access to Algolia's API and determine what you're allowed to do, such as searching an index, or adding new records. For better security, create specific API keys with minimal [permissions](/guides/security/api-keys/#access-control-list-acl) for indexing tasks, which you should only use in server-side code. Keep your indexing API keys secret.
+
+**Only use the [Admin API key](/guides/security/api-keys/#admin-api-key) to create other API keys**. Don't use the Admin API key in your apps.
+
+## Set up the API client
+
+First, you need to install and set up your API client. For installation instructions, go to the API client documentation for your programming language:
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Go](/api-client/getting-started/install/go/)
+  - [Java](/api-client/getting-started/install/java/)
+  - [JavaScript](/api-client/getting-started/install/javascript/)
+  - [Kotlin](/api-client/getting-started/install/kotlin/)
+  - [.NET](/api-client/getting-started/install/csharp/)
+  - [PHP](/api-client/getting-started/install/php/)
+  - [Python](/api-client/getting-started/install/python/)
+  - [Ruby](/api-client/getting-started/install/ruby/)
+  - [Scala](/api-client/getting-started/install/scala/)
+  - [Swift](/api-client/getting-started/install/swift/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+After installing the API client, you can initialize it and connect to Algolia:
+
+<CodeGroup>
+  ```csharp csharp
+  SearchClient client = new SearchClient("YourApplicationID", "YourWriteAPIKey");
+  SearchIndex index = client.InitIndex("your_index_name");
+  ```
+
+  ```go go
+  package main
+
+  import "github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
+  func main() {
+  	client := search.NewClient("YourApplicationID", "YourWriteAPIKey")
+  	index := client.InitIndex("your_index_name")
+  }
+  ```
+
+  ```java java
+  SearchClient client = DefaultSearchClient.create(
+    "YourApplicationID",
+    "YourWriteAPIKey"
+  );
+
+  SearchIndex index = client.initIndex("your_index_name");
+
+  ```
+
+  ```js js
+  // Default version
+  import algoliasearch from "algoliasearch";
+
+  // Search-only version
+  // import algoliasearch from 'algoliasearch/lite';
+
+  const client = algoliasearch("YourApplicationID", "YourWriteAPIKey");
+  const index = client.initIndex("your_index_name");
+  ```
+
+  ```kotlin kotlin
+  val client = ClientSearch(
+      applicationID = ApplicationID("YourApplicationID"),
+      apiKey = APIKey("YourWriteAPIKey")
+  )
+  val indexName = IndexName("your_index_name")
+
+  client.initIndex(indexName)
+  ```
+
+  ```php php
+  // composer autoload
+  require __DIR__ . '/vendor/autoload.php';
+
+  // if you are not using composer
+  // require_once 'path/to/algoliasearch.php';
+
+  $client = \Algolia\AlgoliaSearch\SearchClient::create(
+    'YourApplicationID',
+    'YourWriteAPIKey'
+  );
+
+  $index = $client->initIndex('your_index_name');
+  ```
+
+  ```python python
+  from algoliasearch.search_client import SearchClient
+
+  client = SearchClient.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```ruby ruby
+  require "algolia"
+
+  client = Algolia::Search::Client.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```scala scala
+  // No initIndex
+  val client = new AlgoliaClient("YourApplicationID", "YourWriteAPIKey")
+  ```
+
+  ```swift swift
+  let client = SearchClient(appID: "YourApplicationID", apiKey: "YourWriteAPIKey")
+  let index = client.index(withName: "your_index_name")
+  ```
+</CodeGroup>
+
+## Fetch your data
+
+Before sending anything to Algolia, **you need to retrieve your data**. You can do this in several ways, depending on the nature of your app. Here are potential examples:
+
+### From a database
+
+<CodeGroup>
+  ```csharp csharp
+  IEnumerable<Actor> FetchDataFromDataBase()
+  {
+      // Fetch data from your database
+  }
+
+  var actors = FetchDataFromDataBase();
+  ```
+
+  ```go go
+  func fetchDataFromDatabase() []Actor {
+  	// Fetch data from your database
+  }
+
+  func main() {
+  	records := fetchDataFromDatabase()
+  }
+  ```
+
+  ```java java
+  public List<Actor> fetchDataFromDatabase() {
+    // Fetch data from your database
+  }
+
+  List<Actor> actors = fetchDataFromDataBase();
+
+  ```
+
+  ```js js
+  const fetchDataFromDatabase = () => {
+    // Fetch data from your database.
+  };
+
+  const records = fetchDataFromDatabase();
+  ```
+
+  ```kotlin kotlin
+  fun fetchFromDatabase(): List<Actor> {}
+
+  val actors: List<Actor> = fetchFromDatabase()
+  ```
+
+  ```php php
+  function fetchDataFromDatabase() {
+    // Fetch data from your database
+  }
+
+  $records = fetchDataFromDatabase();
+  ```
+
+  ```python python
+  def fetch_data_from_database():
+      data = {}
+      # Fetch data from your database
+      return data
+
+  records = fetch_data_from_database()
+  ```
+
+  ```ruby ruby
+  def fetch_data_from_database
+    # Fetch data from your database
+  end
+
+  records = fetch_data_from_database
+  ```
+
+  ```scala scala
+  def fetchDataFromDatabase(): Iterable[Actor] = {
+    // Fetch data from your database
+  }
+
+  val actors = fetchDataFromDatabase()
+  ```
+
+  ```swift swift
+  func fetchDataFromDataBase() -> [[String: Any]] {
+    // Fetch data from your database
+  }
+
+  let records = fetchDataFromDataBase()
+  ```
+</CodeGroup>
+
+### From a file
+
+You can use this [actors dataset](https://github.com/algolia/datasets/blob/master/movies/actors.json) to test this out.
+
+<CodeGroup>
+  ```csharp csharp
+  using System.Collections.Generic;
+  using System.IO;
+  using Algolia.Search.Clients;
+  using Newtonsoft.Json;
+  using Newtonsoft.Json.Serialization;
+
+  public class Actor
+  {
+      public string Name { get; set; }
+      public string ObjectID { get; set; }
+      public int Rating { get; set; }
+      public string ImagePath { get; set; }
+      public string AlternativePath { get; set; }
+  }
+
+  public class AlgoliaActorsIndexer
+  {
+      private SearchClient client;
+      private SearchIndex index;
+
+      public AlgoliaActorsIndexer(string appId, string apiKey, string indexName)
+      {
+          client = new SearchClient(appId, apiKey);
+          index = client.InitIndex(indexName);
+      }
+
+      public void IndexActorsFromFile(string filePath)
+      {
+          var settings = new JsonSerializerSettings
+          {
+              ContractResolver = new DefaultContractResolver
+              {
+                  NamingStrategy = new CamelCaseNamingStrategy()
+              }
+          };
+
+          IEnumerable<Actor> actors = JsonConvert.DeserializeObject<IEnumerable<Actor>>(
+              File.ReadAllText(filePath),
+              settings
+          );
+          index.SaveObjects(actors);
+      }
+  }
+
+  // Usage
+  public class Program
+  {
+      public static void Main(string[] args)
+      {
+          AlgoliaActorsIndexer indexer = new AlgoliaActorsIndexer(
+              "YourApplicationID",
+              "YourWriteAPIKey",
+              "actors"
+          );
+          indexer.IndexActorsFromFile("actors.json");
+      }
+  }
+  ```
+
+  ```go go
+  package main
+
+  import (
+  	"encoding/json"
+  	"io/ioutil"
+  )
+
+  type Actor struct {
+  	Name            string `json:"name"`
+  	Rating          int    `json:"rating"`
+  	ImagePath       string `json:"image_path"`
+  	AlternativeName string `json:"alternative_name"`
+  	ObjectID        string `json:"objectID"`
+  }
+
+  func main() {
+  	var actors []Actor
+  	data, _ := ioutil.ReadFile("actors.json")
+  	_ = json.Unmarshal(data, &actors)
+  }
+  ```
+
+  ```java java
+  import com.fasterxml.jackson.databind.ObjectMapper;
+  import java.io.FileInputStream;
+  import java.io.InputStream;
+
+  public class Actor {
+
+    // Getters/Setters ommitted
+    private String name;
+    private String objectID;
+    private int rating;
+    private String imagePath;
+    private String alternativePath;
+  }
+
+  ObjectMapper objectMapper = Defaults.getObjectMapper();
+
+  InputStream input = new FileInputStream("actors.json");
+
+  Actor[] actors = objectMapper.readValue(input, Actor[].class);
+
+  ```
+
+  ```js js
+  const records = require("./actors.json");
+  ```
+
+  ```kotlin kotlin
+  @Serializable
+  data class Actor(val name: String, val rating: Int, val imagePath: String, val alternativePath: String, override  val objectID: ObjectID) : Indexable
+
+  val string = File("actors.json").readText()
+  val actors: List<Actors> = Json.plain.parse(Actor.serializer().list, string)
+  ```
+
+  ```php php
+  $records = json_decode(file_get_contents('actors.json'), true);
+  ```
+
+  ```python python
+  import json
+
+  with open("actors.json") as f:
+      records = json.load(f)
+  ```
+
+  ```ruby ruby
+  require "json"
+
+  file = File.read("actors.json")
+  records = JSON.parse(file)
+  ```
+
+  ```scala scala
+  import org.json4s._
+  import org.json4s.native.JsonMethods._
+
+  case class Actor(
+    name: String,
+    rating: Int,
+    image_path: String,
+    alternative_path: Option[String],
+    objectID: String)
+
+  object Main {
+
+    def main(args: Array[String]): Unit = {
+
+      val json = parse(new FileInputStream("actors.json")).extract[Seq[Actor]]
+
+    }
+
+  }
+  ```
+
+  ```swift swift
+  let filePath = Bundle.main.path(forResource: "actors", ofType: "json")!
+  let contentData = FileManager.default.contents(atPath: filePath)!
+  let records = try! JSONSerialization.jsonObject(with: contentData, options: []) as! [[String: Any]]
+  ```
+</CodeGroup>
+
+### From the source code directly
+
+Only use this method for exploration purposes or if you have a small amount of data.
+
+<CodeGroup>
+  ```csharp csharp
+  using System.Collections.Generic;
+
+  public class Actor
+  {
+      public string Name { get; set; }
+  }
+
+  public class Program
+  {
+      public static void Main()
+      {
+          IEnumerable<Actor> records = new List<Actor>
+          {
+              new Actor { Name = "Tom Cruise" },
+              new Actor { Name = "Scarlett Johansson" }
+          };
+      }
+  }
+  ```
+
+  ```go go
+  actors := []Actor{
+  	{Name: "Tom Cruise"},
+  	{Name: "Scarlett Johansson"},
+  }
+  ```
+
+  ```java java
+  public class Person {
+
+    private String name;
+
+    public Person() {}
+
+    public String getName() {
+      return name;
+    }
+
+    public Person setName(String name) {
+      this.name = name;
+      return this;
+    }
+  }
+
+  ArrayList<Person> persons = new ArrayList<Person>() {
+    {
+      add(new Person().setName("Tom Cruise"));
+      add(new Person().setName("Scarlett Johansson"));
+    }
+  };
+
+  ```
+
+  ```js js
+  const records = [{ name: "Tom Cruise" }, { name: "Scarlett Johansson" }];
+  ```
+
+  ```kotlin kotlin
+  val records = listOf(json {
+      "name" to "Tom Cruise"
+  }, json {
+      "name" to "Scarlett Johansson"
+  })
+  ```
+
+  ```php php
+  $records = [
+    ['name' => 'Tom Cruise'],
+    ['name' => 'Scarlett Johansson']
+  ];
+  ```
+
+  ```python python
+  records = [{"name": "Tom Cruise"}, {"name": "Scarlett Johansson"}]
+  ```
+
+  ```ruby ruby
+  records = [
+    {name: "Tom Cruise"},
+    {name: "Scarlett Johansson"}
+  ]
+  ```
+
+  ```scala scala
+  case class Person(name: String)
+
+  val records = Seq(
+    Person("Tom Cruise"),
+    Person("Scarlett Johansson"), )
+  ```
+
+  ```swift swift
+  let records: [[String: Any]] = [
+    ["name": "Tom Cruise"],
+    ["name": "Scarlett Johansson"],
+  ]
+  ```
+</CodeGroup>
+
+## Send the data to Algolia
+
+Once the records are ready, you can push them to Algolia using the [`saveObjects`](/api-reference/api-methods/save-objects/) method.
+
+<CodeGroup>
+  ```csharp csharp
+  index.SaveObjects(records, autoGenerateObjectId: true);
+  ```
+
+  ```go go
+  index.SaveObjects(records, opt.AutoGenerateObjectIDIfNotExist(true))
+  ```
+
+  ```java java
+  index.saveObjects(records);
+  ```
+
+  ```js js
+  index.saveObjects(records, { autoGenerateObjectIDIfNotExist: true });
+  ```
+
+  ```kotlin kotlin
+  index.saveObjects(records)
+  ```
+
+  ```php php
+  $index->saveObjects($records, ['autoGenerateObjectIDIfNotExist' => true]);
+  ```
+
+  ```python python
+  index.save_objects(records, {"autoGenerateObjectIDIfNotExist": True})
+  ```
+
+  ```ruby ruby
+  index.save_objects(records, {autoGenerateObjectIDIfNotExist: true})
+  ```
+
+  ```scala scala
+  client.execute {
+    index into "your_index_name" objects records
+  }
+  ```
+
+  ```swift swift
+  index.saveObjects(records)
+  ```
+</CodeGroup>
+
+### Send your data in batches
+
+For performance reasons, you should send several records at once instead of one by one. If you have many records to index, you should [send them in batches](/guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches/).
+
+Once you're done, you can [configure relevance settings](/guides/managing-results/relevance-overview/).

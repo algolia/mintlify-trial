@@ -1,0 +1,178 @@
+---
+title: Custom ranking of results per category
+description: |-
+  Adjust custom rankings per category.
+---
+
+When you set [custom ranking](/guides/managing-results/must-do/custom-ranking/) attributes in Algolia, they affect the whole index—independent of categories. But what if you want to use different custom rankings _per category_? This guide shows how you can use duplicate records in the Algolia index and filtering to use different custom rankings per category.
+
+## Implementation steps
+
+To use different custom rankings per category, you need to perform these tasks:
+
+- **Data**: use duplicate records for each product, with extra attributes for "ranked category," and "rank within that category"
+- **Index**: select the "rank within category" attribute for custom ranking and select the "ranked category" attribute for faceting. To handle duplicate search results, use a distinct identifier for each product
+- **Frontend**: dynamically filter search results with or without category filters
+
+## Preparing your data
+
+**Duplicate records** let you use filters to rank products differently in different categories. Each record has attributes for the category in which the product ranks and the rank within that category.
+
+For example, assume you have an online clothing store. One of your products is _Sports shoes_, and you want to rank these shoes higher as users search in _narrower_ categories. For each record, you add new attributes:
+
+- `category`: a list with all category names for this product—ranked and not ranked. This is used for [faceting](/guides/managing-results/refine-results/faceting/) the search results. See [Creating a category data attribute](/guides/solutions/ecommerce/browse/tutorials/category-pages/) for more information, and how to implement hierarchical categories.
+- `ranked_category`: the name of the category for which the product ranks. To show a product also for searches without category filters, **one record per product must have `ranked_category: none`**.
+- `category_rank`: the rank of the product in the category. Each duplicate of the product's record has one corresponding pair of `ranked_category` and `category_rank` attributes, which enables the per-category custom ranking.
+- `parent_objectID`: a unique identifier for events. When [tracking click and conversion events](/guides/sending-events/getting-started/) with the Insights API, you use this identifier to link all events from the duplicate records to the same product.
+
+Conceptually, users search for sports shoes in three different ways:
+
+- Search "Sports shoes" without any category filters
+- Search "Sports shoes" in the category _Shoes_
+- Search "Sports shoes" in the category _Shoes > Sports_
+
+If you want to use different custom rankings per category, you need at least three records per product.
+
+1. The _main_ record for searches without categories and all other categories:
+
+   ```json json
+   {
+     "objectID": "492533",
+     "sku": "4597310",
+     "name": "Sports shoes",
+     "category": ["Shoes", "Shoes > Sports"],
+     "ranked_category": "none",
+     "sales_count": 852
+   }
+   ```
+
+   This record matches when users search without category filters or in other categories, where this product doesn't rank. The textual and custom relevance settings for the index decide the position in the search results. When tracking click and conversion events for this record, use the `objectID` attribute as the unique identifier.
+
+1. A record for searches in the _Shoes_ category:
+
+   ```json json
+   {
+     "objectID": "473828",
+     "parent_objectID": "492533",
+     "sku": "4597310",
+     "name": "Sports shoes",
+     "category": ["Shoes", "Shoes > Sports"],
+     "ranked_category": "Shoes",
+     "category_rank": 20,
+     "sales_count": 852
+   }
+   ```
+
+   When users search in the _Shoes_ category, this product shows at the custom rank 20. To mark this record as a duplicate of the first record, the attribute `parent_objectID` has the same value as the `objectID` of the first record. For tracking events, use the `parent_objectID` attribute as the unique identifier.
+
+1. A record for searches in the _Shoes > Sports_ category:
+
+   ```json json
+   {
+     "objectID": "511621",
+     "parent_objectID": "492533",
+     "sku": "4597310",
+     "name": "Sports shoes",
+     "category": ["Shoes", "Shoes > Sports"],
+     "ranked_category": "Shoes > Sports",
+     "category_rank": 1,
+     "sales_count": 852
+   }
+   ```
+
+   When users search in the _Shoes > Sports_ category, this product shows at the top of the custom ranking. To track events for this record as duplicates of the first record, use the attribute `parent_objectID`. It has the same value as the `objectID` attribute of the first record.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Get started with click and conversion events](/guides/sending-events/getting-started/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Configuring the index
+
+To configure the Algolia index for category-based custom ranking, follow these steps:
+
+1. Add the `category_rank` attribute to the top of the custom ranking criteria and sort the results by ascending values so that low values rank high. In the [Algolia dashboard](https://dashboard.algolia.com/explorer/configuration/), choose your index and select **Ranking and Sorting**.
+
+1. Add `ranked_category` to the attributes for faceting. Since you want to use this attribute just for filtering the search results, use the [`filterOnly`](/api-reference/api-parameters/attributesForFaceting/#modifiers) modifier to discard the facet values and counts. This reduces the size of the index and speeds up the search. In the Dashboard, go to **Facets** and add the `ranked_category` attribute.
+
+1. When searching with category filters, the search might return multiple records for the same product. That's why you need to deduplicate the results. In the Dashboard, go to **Deduplication and Grouping** and set **Distinct** to **true**. Select the `sku` attribute as **Attribute for Distinct**.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Using `distinct` is computationally intensive and can slow down the search.
+</Note>
+
+{/* prettier-ignore-end */}
+
+You can configure [sorting attributes](/guides/managing-results/refine-results/sorting/) independently from the custom ranking attributes per category. Both settings don't influence each other.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Create custom ranking attributes](/guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking/)
+  - [How to declare attributes for faceting with the API](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/)
+  - [`attributeForDistinct`](/api-reference/api-parameters/attributeForDistinct/)
+  - [`distinct`](/api-reference/api-parameters/distinct/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Showing custom ranking per category in the frontend
+
+To take advantage of the per-category custom ranking in the frontend, you need to filter the search results on the `ranked_category` attribute. Depending on whether users search with or without categories, you need to filter the results dynamically:
+
+- When users search **without categories**:
+
+  ```js js
+  index.search(
+    query,
+    {
+      facetingAfterDistinct: true,
+      filters: "ranked_category:none",
+    },
+    function done(err, results) {
+      // ...
+    },
+  );
+  ```
+
+  For searches without categories, the results show records with the `ranked_category: none` attribute.
+
+- When users search **with categories**, there are two possibilities: the product ranks for the current category, or it doesn't (but it might rank for a different category):
+
+  ```js js
+  index.search(
+    query,
+    {
+      facetingAfterDistinct: true,
+      filters: `category:${currentCategory} AND (ranked_category:${currentCategory} OR ranked_category:none)`,
+    },
+    function done(err, results) {
+      // ...
+    },
+  );
+  ```
+
+  If a product ranks for the current category, the search would return both records.
+  For example, if users search in the category _Shoes_, these records match the filter:
+
+  - `category: Shoes AND ranked_category: Shoes`
+  - `category: Shoes AND ranked_category: none`
+
+Since you use `distinct` for this index, results only show the record with `ranked_category: Shoes`.
+
+If users search in a different category, for example, the category _Accessories_, the results show the record matching `category: Accessories and ranked_category: none`.
+
+These rules decide the ranking between records with and without ranked categories:
+
+1. Both records are the same _except_ for the `ranked_category` and `category_rank` attributes. Since they have the same textual relevance, Algolia ranks them by their custom ranking attributes.
+
+1. The first custom ranking attribute is `category_rank`. As the record with `ranked_category:none` doesn't have a `category_rank` attribute, it ranks lower than a record with a value for this attribute.
+
+1. With `distinct(true)`, the search returns the first record from a list of identical records. Because you set `attributeForDistinct` to `sku`, all products with the same `sku` attribute are identical.
+
+By default, faceting is applied _before_ the deduplication. To ensure correct facet counts, deduplicate first and set [`facetingAfterDistinct`](/api-reference/api-parameters/facetingAfterDistinct/) to `true`. You have to apply this setting at query time.

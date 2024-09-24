@@ -1,0 +1,271 @@
+---
+title: How to group results
+description: |-
+  Grouping repeated data with Algolia's Distinct feature, by merging records into distinct groups, aggregating results, and flattening hierarchies.
+---
+
+Algolia works differently than relational databases. When fetching data from a database, you can select what you need, perform complex operations to aggregate data from different tables together, and get data in a format that's already close to how you want to display it on your frontend. With Algolia, every time you have a match within one or more of your records, **the engine returns the full records ranked by relevance**.
+
+Sometimes your data contains records that are parts of a larger record. This can happen with a blog article that is broken up into one paragraph per record. It can also happen when several records share a common source, as in a hierarchy or one-to-many relationship. A good example of this is with job openings, where companies offer multiple job offers.
+
+As you'll see, the solution is to **flatten records and repeat some data**. In the job offer example, you only want to show the most relevant 1 or 3 offers per company, leaving room for other companies.
+
+For more information about breaking up large texts, see [Indexing long documents](/guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents/)
+
+## Dataset example: job offer
+
+### Before
+
+Using a "traditional" approach to structuring records, the dataset could look like this:
+
+```json json
+[
+  {
+    "company": "Twilio",
+    "job_openings": [
+      "Staff Software Engineer - Cloud Platform",
+      "Lead Frontend Engineer",
+      "Senior Data Engineer",
+      "Senior Software Engineer, Developer Experience"
+    ]
+  },
+  {
+    "company": "Algolia",
+    "job_openings": [
+      "Full-Stack Software Engineer",
+      "Frontend Engineer",
+      "Open Source Software Engineer (JavaScript)",
+      "Senior Software Engineer - Core API",
+      "Senior Systems Engineer - SRE"
+    ]
+  }
+]
+```
+
+The problem with this structure is that whenever you have a match for any opening, the engine returns the full record for the company. If you want to show the best match per company, this data structure doesn't work.
+
+If you want to show a limited number of job openings per company, the right approach would be to **split content into smaller records, by job opening, and repeat company data**.
+
+### After
+
+With the strategy of splitting records per company, you would have a single record per job opening, and repeat the company in each. Here's what it might look like:
+
+```json json
+[
+  {
+    "company": "Twilio",
+    "job_opening": "Staff Software Engineer - Cloud Platform"
+  },
+  {
+    "company": "Twilio",
+    "job_opening": "Lead Frontend Engineer"
+  },
+  {
+    "company": "Twilio",
+    "job_opening": "Senior Data Engineer"
+  },
+  {
+    "company": "Twilio",
+    "job_opening": "Senior Software Engineer, Developer Experience"
+  },
+  {
+    "company": "Algolia",
+    "job_opening": "Full-Stack Software Engineer"
+  },
+  {
+    "company": "Algolia",
+    "job_opening": "Frontend Engineer"
+  },
+  {
+    "company": "Algolia",
+    "job_opening": "Open Source Software Engineer (JavaScript)"
+  },
+  {
+    "company": "Algolia",
+    "job_opening": "Senior Software Engineer - Core API"
+  },
+  {
+    "company": "Algolia",
+    "job_opening": "Senior Systems Engineer - SRE"
+  }
+]
+```
+
+This approach has many benefits. First, job openings are no longer intertwined, which allows for more granular search. Whenever someone searches for a position, for example, "engineer", they no longer retrieve records representing a company with the full job openings list. Instead, **they get single, best matching job positions, that can be individually ranked with custom ranking attributes**.
+
+Besides, you can handle the duplicate data with Algolia's [distinct feature](/guides/managing-results/refine-results/grouping/). Enabling this would let you, for example, only retrieve the best matching position per `company`.
+
+## Configuring `attributeForDistinct` and enabling distinct
+
+### Using the API
+
+To use [`distinct`](/api-reference/api-parameters/distinct/) you first need to set `company` as [`attributeForDistinct`](/api-reference/api-parameters/attributeForDistinct/) during indexing time. Only then can you set [`distinct`](/api-reference/api-parameters/distinct/) to `true` to deduplicate your results.
+Note that setting [`distinct`](/api-reference/api-parameters/distinct/) at indexing time is optional. If you want to, you can set it at query time instead.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings { AttributeForDistinct = "company", Distinct = true };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributeForDistinct: opt.AttributeForDistinct("company"),
+  	Distinct:             opt.Distinct(true),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings()
+      .setAttributeForDistinct("company")
+      .setDistinct(Distinct.of(true))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributeForDistinct: "company",
+      distinct: true,
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributeForDistinct = Attribute("company")
+      distinct = true
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributeForDistinct' => 'company',
+    'distinct' => true
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"attributeForDistinct": "company", "distinct": True})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      attributeForDistinct: "company",
+      distinct: true
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributeForDistinct = Some("company"),
+      distinct = Some(true))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "attributeForDistinct": "company",
+    "distinct": true,
+  ])
+  ```
+</CodeGroup>
+
+Once [`attributeForDistinct`](/api-reference/api-parameters/attributeForDistinct/) is set, you can enable [`distinct`](/api-reference/api-parameters/distinct/) by setting it to `true`. Note that you can set [`distinct`](/api-reference/api-parameters/distinct/) to `true` or `1` interchangeably. If you wanted to show the three best positions for one company, you could set [`distinct`](/api-reference/api-parameters/distinct/) to `3`.
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(new Query<JObject>("query") { Distinct = true });
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"query",
+  	opt.Distinct(true),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("query").setDistinct(Distinct.of(true))
+  );
+  ```
+
+  ```js js
+  index
+    .search("query", {
+      distinct: true,
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("query") {
+      distinct = Distinct(1)
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('query', [
+    'distinct' => true
+  ]);
+  ```
+
+  ```python python
+  results = index.search("query", {"distinct": True})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "query",
+    {
+      distinct: true
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("query"),
+      distinct = Some(true))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "query")
+  query.distinct = true
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+### Using the dashboard
+
+You can also set your attribute for distinct and enable distinct in your Algolia dashboard.
+
+1. Go to your dashboard and select your index.
+1. Click the **Configuration** tab, then click **Deduplication and Grouping**.
+1. Set **Distinct** to **true**
+1. Select attribute "company" in the **Attribute for Distinct** drop-down menu.
+1. Save your changes.

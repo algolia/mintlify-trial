@@ -1,0 +1,996 @@
+---
+title: Promoting hits
+description: |-
+  How to promote hits using Rules.
+---
+
+You can use Rules to raise some results over others, or put one result or banner at the top of the results.
+
+## Promoting a single item
+
+### Use case
+
+_A book store wants to recommend a Harry Potter Box Set whenever the words Harry Potter form part of a search._
+
+### Rule
+
+_If query=Harry Potter then promote Harry Potter Box Set_
+
+{/* prettier-ignore-start */}
+
+<Note>
+  By default, you can pin up to 300 items per rule.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Using the API
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "Promote Harry Potter Box Set",
+      Condition = new Condition { Anchoring = "contains", Pattern = "Harry Potter" },
+      Consequence = new Consequence
+      {
+          Promote = new List<ConsequencePromote>
+          {
+              new ConsequencePromote { ObjectID = "HP-12345", Position = 0 }
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:  "promote-harry-potter-box-set",
+  	Condition: search.RuleCondition{Anchoring: search.Contains, Pattern: "Harry Potter"},
+  	Consequence: search.RuleConsequence{
+  		Promote: []search.PromotedObject{
+  			{"HP-12345", 0}, // objectID 'HP-12345' ==> Harry Potter Box Set
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule, false)
+  ```
+
+  ```java java
+  Condition condition = new Condition().setPattern("Harry Potter").setAnchoring("contains");
+  ConsequencePromote promote = new ConsequencePromote().setObjectID("HP-12345").setPosition(0);
+  Consequence consequence = new Consequence().setPromote(Collections.singletonList(promote));
+
+  Rule rule =
+      new Rule()
+          .setObjectID("Promote Harry Potter Box Set")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+  ```
+
+  ```js js
+  index.saveRule({
+    objectID: "promote-harry-potter-box-set",
+    condition: {
+      pattern: "Harry Potter",
+      anchoring: "contains",
+    },
+    consequence: {
+      promote: [
+        {
+          objectID: "HP-12345",
+          position: 0, // objectID 'HP-12345' ==> Harry Potter Box Set
+        },
+      ],
+    },
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          objectID = "Promote Harry Potter Box Set",
+          conditions = conditions {
+              condition(anchoring = Anchoring.Contains, pattern = Pattern.Literal("Harry Potter"))
+          },
+          consequence = consequence(
+              promote = promotions {
+                  +ObjectID("HP-12345")(0)
+              }
+          )
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  // Turn JSON into an array
+  $rule = array(
+    'objectID' => 'promote-harry-potter-box-set',
+    'conditions' => array(array(
+      'pattern' => 'Harry Potter',
+      'anchoring' => 'contains'
+    )),
+    'consequence' => array(
+      'promote' => array(
+         array(
+            'objectID' => 'HP-12345',
+            'position'=> 0 // objectID 'HP-12345' ==> Harry Potter Box Set
+         )
+      )
+    )
+  );
+
+  // Push Rule to index
+  $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "promote-harry-potter-box-set",
+      "condition": {
+          "anchoring": "contains",
+          "pattern": "Harry Potter",
+      },
+      "consequence": {
+          "promote": [
+              {
+                  "objectID": "HP-12345",
+                  "position": 0,
+              },
+          ],
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    objectID: "promote-harry-potter-box-set",
+    conditions: [
+      {
+        pattern: "Harry Potter",
+        anchoring: "contains"
+      }
+    ],
+    consequence: {
+      promote: [
+        {
+          objectID: "HP-12345",
+          # objectID 'HP-12345' ==> Harry Potter Box Set
+          position: 0
+        }
+      ]
+    }
+  }
+
+  index.save_rule("promote-harry-potter-box-set", rule)
+  ```
+
+  ```scala scala
+  val rule = Rule(
+    objectID = "promote-harry-potter-box-set",
+    condition = Some(
+      Condition(
+        pattern = "Harry Potter",
+        anchoring = "contains")),
+    consequence = Consequence(
+      promote = Some(Seq(ConsequencePromote("HP-12345", 0)))))
+
+  client.execute {
+    save rule rule inIndex "indexName"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "promote-harry-potter-box-set")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("Harry Potter"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(
+          \.promote,
+          to: [
+            // objectID 'HP-12345' ==> Harry Potter Box Set
+            .init(objectID: "HP-12345", position: 0)
+          ])
+    )
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Using the dashboard
+
+#### Visual Editor
+
+1. Select the **Search** product icon on your dashboard and then select your index.
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Visual Editor** option.
+
+1. In the **It all starts here** section:
+
+   - Click **Set search query** button.
+   - In the side panel, type "Harry Potter" in the input field and click `Save`.
+
+1. In the **What do you want to do?** section:
+
+   - Click the **Pin item** button.
+   - In the side panel, find the product 'HP-12345' you want to pin in the input field and press `Save`.
+
+1. Review and publish your changes.
+
+#### Manual Editor
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Manual Editor** option.
+
+1. In the **Condition(s)** section, keep **Query contains** and enter "Harry Potter" in the input field.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button and select **Pin an item**.
+   - Find the product 'HP-12345' you want to pin the input field and press `Enter`.
+
+1. Save your changes.
+
+## Promoting the newest release
+
+### Use case
+
+_You've placed "best-selling items" at the top of your search results by using Custom Ranking. But the newest release? Set up a Rule telling the engine that whenever iPhone is searched for, place the newest version at the top, but for the rest of the same brand phones, continue sorting by most-sold._
+
+### Rule
+
+_If query = iphone then promote newest iPhone release_
+
+### Using the API
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "Promote-iPhone-X",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "iPhone" }
+      },
+      Consequence = new Consequence
+      {
+          Promote = new List<ConsequencePromote>
+          {
+              new ConsequencePromote
+              {
+                  ObjectID = "iPhone-12345",
+                  // objectID 'iPhone-12345' ==> iPhone X (newest release)
+                  Position = 0
+              }
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:  "Promote-iPhone-X",
+  	Condition: search.RuleCondition{Anchoring: search.Contains, Pattern: "iPhone"},
+  	Consequence: search.RuleConsequence{
+  		Promote: []search.PromotedObject{
+  			{
+  				ObjectID: "iPhone-12345",
+  				Position: 0, // objectID 'iPhone-12345' ==> iPhone X (newest release)
+  			},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition()
+      .setAnchoring("contains")
+      .setPattern("iPhone");
+
+  ConsequencePromote promote = new ConsequencePromote()
+      .setObjectID("iPhone-12345")
+      // objectID 'iPhone-12345' ==> iPhone X (newest release)
+      .setPosition(0);
+
+  Consequence consequence = new Consequence()
+      .setPromote(Collections.singletonList(promote));
+
+  Rule rule = new Rule()
+          .setObjectID("Promote-iPhone-X")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+
+  // Asynchronous
+  index.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  index.saveRule({
+    objectID: "Promote-iPhone-X",
+    condition: {
+      pattern: "iPhone",
+      anchoring: "contains",
+    },
+    consequence: {
+      promote: [
+        {
+          objectID: "iPhone-12345",
+          // objectID 'iPhone-12345' ==> iPhone X (newest release)
+          position: 0,
+        },
+      ],
+    },
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          objectID = "Promote-iPhone-X",
+          conditions = conditions {
+              condition(anchoring = Anchoring.Contains, pattern = Pattern.Literal("iPhone"))
+          },
+          consequence = consequence(
+              promote = promotions {
+                  // objectID 'iPhone-12345' ==> iPhone X (newest release)
+                  +ObjectID("iPhone-12345")(0)
+              }
+          )
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  // Turn JSON into an array
+  $rule = array(
+    'objectID' => 'Promote-iPhone-X',
+    'conditions' => array(array(
+      'pattern' => 'iPhone',
+      'anchoring' => 'contains'
+    )),
+    'consequence' => array(
+      'promote' => array(
+        array(
+          'objectID' => 'iPhone-12345',
+          'position' => 0 // objectID 'iPhone-12345' ==> iPhone X (newest release)
+        )
+      )
+    )
+  );
+
+  // Push Rule to index
+  $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "Promote-iPhone-X",
+      "condition": {
+          "anchoring": "contains",
+          "pattern": "iPhone",
+      },
+      "consequence": {
+          "promote": [
+              {
+                  "objectID": "iPhone-12345",
+                  # objectID 'iPhone-12345' ==> iPhone X (newest release)
+                  "position": 0,
+              },
+          ],
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  index.save_rule(
+    "Promote-iPhone-X",
+    {
+      objectID: "Promote-iPhone-X",
+      conditions: [
+        {
+          pattern: "iPhone",
+          anchoring: "contains"
+        }
+      ],
+      consequence: {
+        promote: [
+          {
+            objectID: "iPhone-12345",
+            # objectID 'iPhone-12345' ==> iPhone X (newest release)
+            position: 0
+          }
+        ]
+      }
+    }
+  )
+  ```
+
+  ```scala scala
+  val rule = Rule(
+    objectID = "Promote-iPhone-X",
+    condition = Some(
+      Condition(
+        pattern = "iPhone",
+        anchoring = "contains")),
+    consequence = Consequence(
+      promote = Some(Seq(ConsequencePromote("iPhone-12345", 0)))
+    // objectID 'iPhone-12345' ==> iPhone X (newest release)
+    ))
+
+  client.execute {
+    save rule rule inIndex "indexName"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "Promote-iPhone-X")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("iPhone"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(
+          \.promote,
+          to: [
+            // objectID 'iPhone-12345' ==> iPhone X (newest release)
+            .init(objectID: "iPhone-12345", position: 0)
+          ])
+    )
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Using the dashboard
+
+#### Visual Editor
+
+1. Select the **Search** product icon on your dashboard and then select your index.
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Visual Editor** option.
+
+1. In the **It all starts here** section:
+
+   - Click **Set search query** button.
+   - In the side panel, type "iPhone" in the input field and click `Save`.
+
+1. In the **What do you want to do?** section:
+
+   - Click the **Pin item** button.
+   - In the side panel, find the product "iPhone-12345" you want to pin in the input field and press `Save`.
+
+1. Review and publish your changes.
+
+#### Manual Editor
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Manual Editor** option.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** in the drop-down menu, and enter "iPhone" in the input field.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button and select **Pin an item**.
+   - Find the product "iPhone-12345" you want to pin the input field and press `Enter`.
+
+1. Save your changes.
+
+## Promoting several results
+
+### Use case
+
+_You're running a promotion on the newest Apple products. Set up a Rule telling the engine that whenever apple is searched for, place the newest releases at the top._
+
+### Rule
+
+_If query = apple then promote newest Apple releases_
+
+### Using the API
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "Promote-Apple-Newest",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "is", Pattern = "apple" }
+      },
+      Consequence = new Consequence
+      {
+          Promote = new List<ConsequencePromote>
+          {
+              new ConsequencePromote
+              {
+                  ObjectIDs = new List<string> { "iPhone-12345", "watch-123" },
+                  Position = 0
+              }
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:  "Promote-Apple-Newest",
+  	Condition: search.RuleCondition{Anchoring: search.Is, Pattern: "apple"},
+  	Consequence: search.RuleConsequence{
+  		Promote: []search.PromotedObject{
+  			{
+  				ObjectIDs: []string{"iPhone-12345", "watch-123"},
+  				Position:  0,
+  			},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition()
+      .setAnchoring("is")
+      .setPattern("apple");
+
+  ConsequencePromote promote = new ConsequencePromote()
+      .setObjectIDs(Arrays.asList("iPhone-12345", "watch-123"))
+      .setPosition(0);
+
+  Consequence consequence = new Consequence()
+      .setPromote(Collections.singletonList(promote));
+
+  Rule rule = new Rule()
+          .setObjectID("Promote-Apple-Newest")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+
+  // Asynchronous
+  index.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  index.saveRule({
+    objectID: "Promote-Apple-Newest",
+    condition: {
+      pattern: "apple",
+      anchoring: "is",
+    },
+    consequence: {
+      promote: [
+        {
+          objectIDs: ["iPhone-12345", "watch-123"],
+          position: 0,
+        },
+      ],
+    },
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          objectID = "Promote-Apple-Newest",
+          conditions = conditions {
+              condition(anchoring = Anchoring.Is, pattern = Pattern.Literal("apple"))
+          },
+          consequence = consequence(
+              promote = promotions {
+                  +ObjectIDs("iPhone-12345", "watch-123")(0)
+              }
+          )
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  // Turn JSON into an array
+  $rule = array(
+    'objectID' => 'Promote-Apple-Newest',
+    'conditions' => array(array(
+      'pattern' => 'apple',
+      'anchoring' => 'is'
+    )),
+    'consequence' => array(
+      'promote' => array(
+        array(
+          'objectIDs' => array('iPhone-12345', 'watch-123'),
+          'position' => 0
+        )
+      )
+    )
+  );
+
+  // Push Rule to index
+  $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "Promote-Apple-Newest",
+      "condition": {
+          "anchoring": "is",
+          "pattern": "apple",
+      },
+      "consequence": {
+          "promote": [
+              {
+                  "objectIDs": ["iPhone-12345", "watch-123"],
+                  "position": 0,
+              },
+          ],
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  index.save_rule(
+    "Promote-Apple-Newest",
+    {
+      objectID: "Promote-Apple-Newest",
+      conditions: [
+        {
+          pattern: "apple",
+          anchoring: "is"
+        }
+      ],
+      consequence: {
+        promote: [
+          {
+            objectIDs: ["iPhone-12345", "watch-123"],
+            position: 0
+          }
+        ]
+      }
+    }
+  )
+  ```
+</CodeGroup>
+
+### Using the dashboard
+
+#### Visual Editor
+
+1. Select the **Search** product icon on your dashboard and then select your index.
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Visual Editor** option.
+
+1. In the **It all starts here** section:
+
+   - Click **Set search query** button.
+   - In the side panel, type "apple" in the input field and click `Save`.
+
+1. In the **What do you want to do?** section:
+
+   - Click the **Pin item** button.
+   - In the side panel, click the **Pin multiple items** button.
+   - One per line, enter the object IDs you want to pin, "iPhone-12345" and "watch-123", in the input field and press `Pin items`.
+   - Click `Apply`.
+
+1. Review and publish your changes.
+
+#### Manual Editor
+
+The Manual Editor only allows for pinning a single item at a time.
+
+## Promoting some results over others
+
+### Use case
+
+_Tomato: A simple search, but one that may never return the fruit (or vegetable) because too many Tomato Soup brands are selling better than cherry tomatoes._
+
+### Rule
+
+_If query=tomato then put fruits higher than the rest_
+
+### Using the API
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "tomato-fruit",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "tomato" }
+      },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              OptionalFilters = new List<List<string>> { new List<string> { "food_group:fruit" } },
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:  "tomato-fruit",
+  	Condition: search.RuleCondition{Anchoring: search.Contains, Pattern: "tomato"},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{
+  						search.RemoveEdit("t-shirt"),
+  					},
+  				},
+  			),
+  			QueryParams: search.QueryParams{
+  				OptionalFilters: opt.OptionalFilterAnd("food_group:fruit"),
+  			},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition()
+      .setAnchoring("contains")
+      .setPattern("tomato");
+
+  ConsequenceParams params =
+      new ConsequenceParams()
+          .setFilters("food_group:fruit");
+
+  Consequence consequence = new Consequence()
+      .setParams(params);
+
+  Rule rule = new Rule()
+          .setObjectID("tomato-fruit")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+
+  // Asynchronous
+  index.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  index.saveRule({
+    objectID: "tomato-fruit",
+    condition: {
+      pattern: "tomato",
+      anchoring: "contains",
+    },
+    consequence: {
+      optionalFilters: "food_group:fruit",
+    },
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          objectID = "tomato-fruit",
+          conditions = conditions {
+              condition(anchoring = Anchoring.Contains, pattern = Pattern.Literal("tomato"))
+          },
+          consequence = consequence(
+              query = query {
+                  filters = "food_group:fruit"
+              }
+          )
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  // Turn JSON into an array
+  $rule = array(
+      'objectID' => 'tomato-fruit',
+      'conditions' => array(array(
+          'pattern' => 'tomato',
+          'anchoring' => 'contains'
+      )),
+      'consequence' => array(
+          'params' => array(
+              'optionalFilters' => 'food_group:fruit'
+          )
+      )
+  );
+  // Push Rule to index
+  $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "tomato-fruit",
+      "condition": {
+          "anchoring": "contains",
+          "pattern": "tomato",
+      },
+      "consequence": {
+          "params": {
+              "optionalFilters": "food_group:fruit",
+          },
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  index.save_rule(
+    "tomato-fruit",
+    {
+      objectID: "tomato-fruit",
+      conditions: [
+        {
+          pattern: "tomato",
+          anchoring: "contains"
+        }
+      ],
+      consequence: {
+        params: {
+          optionalFilters: "food_group:fruit"
+        }
+      }
+    }
+  )
+  ```
+
+  ```scala scala
+  val rule = Rule(
+    objectID = "tomato-fruit",
+    condition = Some(
+      Condition(
+        pattern = "tomato",
+        anchoring = "contains")),
+    consequence = Consequence(
+      params = Some(
+        Map(
+          "optionalFilters" -> "food_group:fruit"))))
+
+  client.execute {
+    save rule rule inIndex "indexName"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "tomato-fruit")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("tomato"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence().set(\.query, to: Query().set(\.filters, to: "food_group:fruit"))
+    )
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Using the dashboard
+
+#### Visual Editor
+
+1. Select the **Search** product icon on your dashboard and then select your index.
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Visual Editor** option.
+
+1. In the **It all starts here** section:
+
+   - Click **Set search query** button.
+   - In the side panel, type "tomato" in the input field and click `Save`.
+
+1. In the **What do you want to do?** section:
+
+   - Click the **Boost Categories** button.
+   - In the side panel, type "food\_group" in the input field for category, then "fruit" in the second input field and press **Save**.
+
+1. Review and publish your changes.
+
+#### Manual Editor
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Manual Editor** option.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** in the drop-down menu, and enter "tomato" in the input field.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button and select **Add Query Parameter**.
+   - Type `{"optionalFilters":"food_group:fruit"}`.
+
+1. Save your changes.

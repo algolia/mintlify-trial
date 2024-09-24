@@ -1,0 +1,51 @@
+---
+title: Overview
+description: |-
+  Index your data without writing code.
+---
+
+Algolia's connectors _pull_ data from a source and _push_ it to Algolia.
+They let you index your data without writing code.
+
+[Connectors in the Algolia dashboard](https://dashboard.algolia.com/connectors)
+
+For alternative methods of sending your data,
+see [Send and update your data](/guides/sending-and-managing-data/send-and-update-your-data/).
+
+The connectors are based on the [Ingestion API](/rest-api/ingestion/).
+
+Connectors have three main components:
+
+- **Sources** determine from where to pull your data, such as a JSON file hosted on your server, or a MySQL database.
+- **Destinations** determine to where to push your data, such as an Algolia index or Algolia insights.
+- **Tasks** determine how and when to sync your data, for example, on a regular schedule.
+
+If you want to transform your source data before adding it to the destination,
+you can add [**Transformations**](/guides/sending-and-managing-data/send-and-update-your-data/connectors/transformations/) to a destination.
+
+## Get notified when tasks fail
+
+Tasks are automatically deactivated if they fail more than five times in a row,
+with a [`critical` status](https://dashboard.algolia.com/connectors/debugger).
+Algolia sends an email to all email addresses associated with your Algolia app.
+
+## Authentication
+
+The connector can authenticate with sources and destinations.
+Different sources support different authentication methods,
+such as basic authentication, or Google service accounts.
+
+Algolia indices require an API key with the following [ACL](/guides/security/api-keys/#access-control-list-acl):
+
+- `addObject`
+- `deleteIndex`
+- `editSettings`
+
+You can manage your credentials for your connectors in the [**Authentications**](https://dashboard.algolia.com/connectors/authentications) tab in the Algolia dashboard.
+
+## Allow Algolia IP addresses
+
+If you restrict access to your **source**, you will need to allow these Algolia IP addresses:
+
+- `104.196.103.173`
+- `35.234.69.129`

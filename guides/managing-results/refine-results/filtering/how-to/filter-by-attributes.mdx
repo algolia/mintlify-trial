@@ -1,0 +1,1429 @@
+---
+title: Filter by attributes
+description: |-
+  How to use Algolia to filter content.
+---
+
+Filters can work with strings, numbers, booleans, dates, tags, or lists.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  [Add filters to your UI](/guides/managing-results/refine-results/filtering/#how-to-apply-filtering-to-the-search-ui) with InstantSearch widgets or your own custom code.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Filter by string
+
+[Example dataset](#example-dataset)
+
+Algolia lets you filter search results by string attributes. For example, users of an online bookstore might want to search for books from different publishers. With [filters](/guides/managing-results/refine-results/filtering/), they can refine results by:
+
+- Showing books published by Penguin
+- Showing books published by Bloomsbury or Scribe
+- Showing all books _except_ those published by Penguin
+
+### Apply a string filter
+
+Set `author` as an [attribute for faceting](/guides/managing-results/refine-results/filtering/#define-filterable-attributes), then apply your string filters with the [`filters`](/api-reference/api-parameters/filters/) parameter in your [`search`](/api-reference/api-methods/search/) code:
+
+<CodeGroup>
+  ```csharp csharp
+  // Published by Penguin
+  index.Search(new Query("books") { Filters = "publisher:Penguin" });
+
+  // Published by Bloomsbury or Scribe
+  index.Search(new Query("books") { Filters = "publisher:Bloomsbury OR publisher:Scribe" });
+
+  // Everything but Penguin books
+  index.Search(new Query("books") { Filters = "NOT publisher:Penguin" });
+  ```
+
+  ```go go
+  // Published by Penguin
+  res, err := index.Search(
+  	"books",
+  	opt.Filters("publisher:Penguin"),
+  )
+
+  // Published by Bloomsbury or Scribe
+  res, err := index.Search(
+  	"books",
+  	opt.Filters("publisher:Bloomsbury OR publisher:Scribe"),
+  )
+
+  // Everything but Penguin books
+  res, err := index.Search(
+  	"books",
+  	opt.Filters("NOT publisher:Penguin"),
+  )
+  ```
+
+  ```java java
+  // Published by Penguin
+  index.search(new Query("books")
+    .setFilters("publisher:Penguin"));
+
+  // Published by Bloomsbury or Scribe
+  index.search(new Query("books")
+    .setFilters("publisher:Bloomsbury OR publisher:Scribe"));
+
+  // Everything but Penguin books
+  index.search(new Query("books")
+    .setFilters("NOT publisher:Penguin"));
+  ```
+
+  ```js js
+  // Published by Penguin
+  index
+    .search("books", {
+      filters: "publisher:Penguin",
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+
+  // Published by Bloomsbury or Scribe
+  index
+    .search("books", {
+      filters: "publisher:Bloomsbury OR publisher:Scribe",
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+
+  // Everything but Penguin books
+  index
+    .search("books", {
+      filters: "NOT publisher:Penguin",
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  // Published by Penguin
+  index.search(query("books") {
+      filters {
+          and {
+              facet("publisher", "Penguin")
+          }
+      }
+  })
+
+  // Published by Bloomsbury or Scribe
+  index.search(query("books") {
+      filters {
+          orFacet {
+              facet("publisher", "Bloomsbury")
+              facet("publisher", "Scribe")
+          }
+      }
+  })
+
+  // Everything but Penguin books
+  index.search(query("books") {
+      filters {
+          and {
+              facet("brand", "Penguin", isNegated = true)
+          }
+      }
+  })
+  ```
+
+  ```php php
+  // Published by Penguin
+  $results = $index->search('books', [
+    'filters' => 'publisher:Penguin'
+  ]);
+
+  // Published by Bloomsbury or Scribe
+  $results2 = $index->search('books', [
+    'filters' => 'publisher:Bloomsbury OR publisher:Scribe'
+  ]);
+
+  // Everything but Penguin books
+  $results3 = $index->search('books', [
+    'filters' => 'NOT publisher:Penguin'
+  ]);
+  ```
+
+  ```python python
+  # Published by Penguin
+  results = index.search("books", {"filters": "publisher:Penguin"})
+
+  # Published by Bloomsbury or Scribe
+  results2 = index.search(
+      "books", {"filters": "publisher:Bloomsbury OR publisher:Scribe"}
+  )
+
+  # Everything but Penguin books
+  results3 = index.search("books", {"filters": "NOT publisher:Penguin"})
+  ```
+
+  ```ruby ruby
+  # Published by Penguin
+  results = index.search(
+    "books",
+    {
+      filters: "publisher:Penguin"
+    }
+  )
+
+  # Published by Bloomsbury or Scribe
+  results2 = index.search(
+    "books",
+    {
+      filters: "publisher:Bloomsbury OR publisher:Scribe"
+    }
+  )
+
+  # Everything but Penguin books
+  results3 = index.search(
+    "books",
+    {
+      filters: "NOT publisher:Penguin"
+    }
+  )
+  ```
+
+  ```swift swift
+  // Published by Penguin
+  let query = Query(query: "books")
+  query.filters = "publisher:Penguin"
+
+  // Published by Bloomsbury or Scribe
+  let query2 = Query(query: "books")
+  query2.filters = "publisher:Bloomsbury OR publisher:Scribe"
+
+  // Everything but Penguin books
+  let query3 = Query(query: "books")
+  query3.filters = "NOT publisher:Penguin"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+## Filter by numeric value
+
+Algolia lets you numerically filter results with a comparison or a range.
+This only works with numeric values.
+For example, you could allow users to only show books that cost less than a certain price or those in a specific price range.
+
+**The `price` attribute is a numeric attribute, not a string attribute**.
+
+### Apply a numeric filter
+
+[Example dataset](#example-dataset)
+
+Using the example dataset, you've decided to let users define a price limit. For example, they may only want books that cost less than $10:
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(new Query("books") { Filters = "price < 10" });
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"books",
+  	opt.Filters("price < 10"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("books")
+      .setFilters("price < 10")
+  );
+  ```
+
+  ```js js
+  index
+    .search("books", {
+      filters: `price < 10`,
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("books") {
+      filters {
+          and {
+              comparison("price", Less, 10)
+          }
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('books', [
+    'filters' => 'price < 10'
+  ]);
+  ```
+
+  ```python python
+  results = index.search("books", {"filters": "price < 10"})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "books",
+    {
+      filters: "price < 10"
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("books"),
+      filters = Some("price < 10"))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "books")
+  query.filters = "price < 10"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+Algolia filters use an SQL-like syntax, which lets you use comparison operator attributes: `<`, `<=`, `=`, `!=`, `>=`, and `>`.
+
+To allow users to retrieve books between a range, say $10 and $20, set a range filter:
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(new Query<Book>("books") { Filters = "price:10 TO 20" });
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"books",
+  	opt.Filters("price:10 TO 20"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("books")
+      .setFilters("price:10 TO 20")
+  );
+  ```
+
+  ```js js
+  index
+    .search("books", {
+      filters: "price:10 TO 20",
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("books") {
+      filters {
+          and {
+              range("price", 10..20)
+          }
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('query', [
+    'filters' => 'price:10 TO 20'
+  ]);
+  ```
+
+  ```python python
+  results = index.search("books", {"filters": "price:10 TO 20"})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "books",
+    {
+      filters: "price:10 TO 20"
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("books"),
+      filters = Some("price:10 TO 20"))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "books")
+  query.filters = "price:10 TO 20"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+## Filter by date
+
+[Example dataset](#example-dataset)
+
+As well as [sorting](/guides/managing-results/refine-results/sorting/how-to/sort-an-index-by-date/), you can use dates to **filter search results within a specific period**. For example, you can allow users to filter on recently published books or only see books published within a certain period.
+
+### Format your dates suitably
+
+Algolia can filter on date attributes,
+but they must be formatted as [Unix timestamps](https://wikipedia.org/wiki/Unix_time).
+For more information, see [Formatting dates](/guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record/#dates)
+
+Instead of changing the date attribute, you could add an additional timestamp attribute.
+In the example dataset,
+the `publication_date` attribute has the formatted date for display, while the `date_timestamp` attribute can be used for filtering.
+
+### Apply a date filter
+
+With dates represented as Unix timestamp, use the [`filters`](/api-reference/api-parameters/filters/) parameter to only retrieve some results. For example:
+
+- [Recently published books](#recently-published-books)
+- [Books for a particular year](#books-for-a-particular-year)
+- [Closest dates](#closest-dates)
+
+#### Recently published books
+
+If you want users to filter for recent books, first decide what _recent_ means to you.
+For example, a _recent book_ might be a book published less than a year ago. This means you must set a filter that excludes records with `date_timestamp` greater than now minus one year.
+
+<CodeGroup>
+  ```csharp csharp
+  DateTime date = DateTime.UtcNow.AddYears(-1);
+  DateTime sTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+  long unixTime = (long)(date - sTime).TotalSeconds;
+
+  index.Search(new Query("YourSearchQuery") { Filters = $"date_timestamp > {unixTime}" });
+  ```
+
+  ```go go
+  dateTimestamp := time.Now().AddDate(-1, 0, 0).Unix()
+  filter := fmt.Sprintf("date_timestamp > %d", dateTimestamp)
+
+  res, err := index.Search(
+  	"YourSearchQuery",
+  	opt.Filters(filter),
+  )
+  ```
+
+  ```java java
+  long unixTimeStamp = ZonedDateTime.now(ZoneOffset.UTC).plusYears(-1).toEpochSecond();
+  index.search(new Query().setFilters("date_timestamp > " + unixTimeStamp));
+  ```
+
+  ```js js
+  const d = new Date();
+
+  index
+    .search("YourSearchQuery", {
+      filters: `date_timestamp > ${Math.floor(d.setDate(d.getDate() - 365) / 1000)}`,
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("YourSearchQuery") {
+      filters {
+          and {
+              comparison("date_timestamp", Greater, today.minusYears(1).toInstant().toEpochMilli())
+          }
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $dateTimestamp = strtotime('-1 years');
+
+  $results = $index->search('YourSearchQuery', [
+    'filters' => "date_timestamp > $dateTimestamp"
+  ]);
+  ```
+
+  ```python python
+  date = datetime.datetime.now() - datetime.timedelta(days=365)
+  date_timestamp = int(time.mktime(date.timetuple()))
+
+  results = index.search(
+      "YourSearchQuery", {"filters": f"date_timestamp > {date_timestamp}"}
+  )
+  ```
+
+  ```ruby ruby
+  # Unix timestamp
+  nowTimestamp = Time.now.to_i
+
+  results = index.search(
+    "YourSearchQuery",
+    {
+      filters: "date_timestamp >= #{nowTimestamp - 60 * 60 * 24 * 365}"
+    }
+  )
+  ```
+
+  ```scala scala
+  val dateTimestamp = LocalDateTime.now().minusYears(1).toInstant(ZoneOffset.UTC).getEpochSecond
+
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("YourSearchQuery"),
+      filters = Some("date_timestamp > " + dateTimestamp), )
+  }
+  ```
+
+  ```swift swift
+  let date = Calendar.current.date(byAdding: .year, value: -1, to: Date())
+  let dateTimestamp = Int(date!.timeIntervalSince1970)
+
+  let query = Query(query: "YourSearchQuery")
+  query.filters = "date_timestamp > \(dateTimestamp)"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+Algolia filters use an SQL-like syntax, which lets you use comparison operators: `<`, `<=`, `=`, `!=`, `>=`, and `>`.
+
+#### Books for a particular year
+
+If you want to only retrieve books from 2018, set a range filter and provide it with Unix timestamps for the first and last day of the year:
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(new Query("YourSearchQuery") { Filters = "date_timestamp:1514764800 TO 1546300799" });
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"YourSearchQuery",
+  	opt.Filters("date_timestamp:1514764800 TO 1546300799"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("YourSearchQuery")
+      .setFilters("date_timestamp:1514764800 TO 1546300799")
+  );
+  ```
+
+  ```js js
+  index
+    .search("YourSearchQuery", {
+      filters: "date_timestamp:1514764800 TO 1546300799",
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("YourSearchQuery") {
+      filters {
+          and {
+              range("date_timestamp", 1514764800000..1546300799000)
+          }
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('YourSearchQuery', [
+    'filters' => 'date_timestamp:1514764800 TO 1546300799'
+  ]);
+  ```
+
+  ```python python
+  results = index.search(
+      "YourSearchQuery", {"filters": "date_timestamp:1514764800 TO 1546300799"}
+  )
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "YourSearchQuery",
+    {
+      filters: "date_timestamp:1514764800 TO 1546300799"
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("YourSearchQuery"),
+      filters = Some("date_timestamp:1514764800 TO 1546300799"))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "YourSearchQuery")
+  query.filters = "date_timestamp:1514764800 TO 1546300799"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+If you want to exclude a particular year or search for all books published outside a specific time you can combine time periods with the `NOT` boolean operator:
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(
+      new Query("YourSearchQuery") { Filters = "NOT date_timestamp:1514764800 TO 1546300799" }
+  );
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"YourSearchQuery",
+  	opt.Filters("NOT date_timestamp:1514764800 TO 1546300799"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("YourSearchQuery")
+      .setFilters("NOT date_timestamp:1514764800 TO 1546300799")
+  );
+  ```
+
+  ```js js
+  index
+    .search("YourSearchQuery", {
+      filters: "NOT date_timestamp:1514764800 TO 1546300799",
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```php php
+  $results = $index->search('YourSearchQuery', [
+    'filters' => 'NOT date_timestamp:1514764800 TO 1546300799'
+  ]);
+  ```
+
+  ```python python
+  results = index.search(
+      "YourSearchQuery", {"filters": "NOT date_timestamp:1514764800 TO 1546300799"}
+  )
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "YourSearchQuery",
+    {
+      filters: "NOT date_timestamp:1514764800 TO 1546300799"
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("YourSearchQuery"),
+      filters = Some("NOT date_timestamp:1514764800 TO 1546300799"))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "YourSearchQuery")
+  query.filters = "NOT date_timestamp:1514764800 TO 1546300799"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+#### Closest dates
+
+If your index contains books that will be published in the future, it can be helpful to [sort results from sooner to later](/guides/managing-results/refine-results/sorting/how-to/sort-an-index-by-date/), so that users will see the next published books first.
+
+First, sort records by ascending date so that books due to be published later sit lower in the search results:
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      Ranking = new List<string>
+      {
+          "asc(date_timestamp)",
+          "typo",
+          "geo",
+          "words",
+          "filters",
+          "proximity",
+          "attribute",
+          "exact",
+          "custom"
+      }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	Ranking: opt.Ranking(
+  		"asc(date_timestamp)",
+  		"typo",
+  		"geo",
+  		"words",
+  		"filters",
+  		"proximity",
+  		"attribute",
+  		"exact",
+  		"custom",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setRanking(Arrays.asList(
+      "asc(date_timestamp)",
+      "typo",
+      "geo",
+      "words",
+      "filters",
+      "proximity",
+      "attribute",
+      "exact",
+      "custom",
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      ranking: [
+        "asc(date_timestamp)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom",
+      ],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```php php
+  $index->setSettings([
+    'ranking' => [
+      'asc(date_timestamp)',
+      'typo',
+      'geo',
+      'words',
+      'filters',
+      'proximity',
+      'attribute',
+      'exact',
+      'custom'
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "ranking": [
+              "asc(date_timestamp)",
+              "typo",
+              "geo",
+              "words",
+              "filters",
+              "proximity",
+              "attribute",
+              "exact",
+              "custom",
+          ]
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      ranking: [
+        "asc(date_timestamp)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      ranking = Some(Seq(
+        Ranking.asc("date_timestamp"),
+        Ranking.typo,
+        Ranking.geo,
+        Ranking.words,
+        Ranking.filters,
+        Ranking.proximity,
+        Ranking.attribute,
+        Ranking.exact,
+        Ranking.custom)))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "ranking": [
+      "asc(date_timestamp)",
+      "typo",
+      "geo",
+      "words",
+      "filters",
+      "proximity",
+      "attribute",
+      "exact",
+      "custom",
+    ]
+  ])
+  ```
+</CodeGroup>
+
+Then, filter out every record with past dates:
+
+<CodeGroup>
+  ```csharp csharp
+  long nowTimeStamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+
+  index.Search(new Query("YourSearchQuery") { Filters = $"date_timestamp > {nowTimeStamp}" });
+  ```
+
+  ```go go
+  nowTimestamp := time.Now().Unix()
+  filter := fmt.Sprintf("date_timestamp > %d", nowTimestamp)
+
+  res, err := index.Search(
+  	"YourSearchQuery",
+  	opt.Filters(filter),
+  )
+  ```
+
+  ```java java
+  long nowTimeStamp = OffsetDateTime.now(ZoneOffset.UTC).toEpochSecond();
+  index.search(new Query().setFilters("date_timestamp >= " + nowTimeStamp));
+  ```
+
+  ```js js
+  const nowTimestamp = Date.now();
+
+  index
+    .search("YourSearchQuery", {
+      filters: `date_timestamp >= ${nowTimestamp}`,
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```php php
+  $nowTimestamp = time();
+
+  $results = $index->search('YourSearchQuery', [
+    'filters' => "date_timestamp >= $nowTimestamp"
+  ]);
+  ```
+
+  ```python python
+  now_timestamp = int(time.time())
+
+  results = index.search(
+      "YourSearchQuery", {"filters": f"date_timestamp >= {now_timestamp}"}
+  )
+  ```
+
+  ```ruby ruby
+  nowTimestamp = Time.now.to_i
+
+  results = index.search(
+    "YourSearchQuery",
+    {
+      filters: "date_timestamp >= #{nowTimestamp}"
+    }
+  )
+  ```
+
+  ```scala scala
+  val nowTimestamp = LocalDateTime.now().toInstant(ZoneOffset.UTC).getEpochSecond
+
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("YourSearchQuery"),
+      filters = Some("date_timestamp > " + nowTimestamp), )
+  }
+  ```
+
+  ```swift swift
+  let nowTimestamp = NSDate().timeIntervalSince1970
+
+  let query = Query(query: "YourSearchQuery")
+  query.filters = "date_timestamp >= \(nowTimestamp)"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+## Filter by array
+
+[Example dataset](#example-dataset)
+
+Some attributes, such as the genre of a book, are lists of values. One book can belong to multiple genres.
+Hence, the genre attribute should be an array.
+
+If you have a chain of bookstores with an accompanying ecommerce website, you may want to let users filter by book genre _and_ store. To do this, the example dataset has two array attributes: `store` and `categories`.
+
+Using this dataset, users could, for example, retrieve all books about politics in stock in _The Corner Bookshop_.
+
+### Apply an array filter
+
+Once you've set `categories` and `store` as [attributes for faceting](/guides/managing-results/refine-results/filtering/#define-filterable-attributes), apply string filters with the [`filters`](/api-reference/api-parameters/filters/) parameter in your [`search`](/api-reference/api-methods/search/) code:
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(
+      new Query("ben") { Filters = "categories:politics AND store:Gibert Joseph Saint-Michel" }
+  );
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"ben",
+  	opt.Filters("categories:politics AND store:Gibert Joseph Saint-Michel"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("ben")
+      .setFilters("categories:politics AND store:Gibert Joseph Saint-Michel")
+  );
+  ```
+
+  ```js js
+  index
+    .search("ben", {
+      filters: "categories:politics AND store:Gibert Joseph Saint-Michel",
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("ben") {
+      filters {
+          and {
+              facet("categories", "politics")
+              facet("store", "Gibert Joseph Saint-Michel")
+          }
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('ben', [
+    'filters' => 'categories:politics AND store:Gibert Joseph Saint-Michel'
+  ]);
+  ```
+
+  ```python python
+  results = index.search(
+      "ben", {"filters": "categories:politics AND store:Gibert Joseph Saint-Michel"}
+  )
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "ben",
+    {
+      filters: "categories:politics AND store:Gibert Joseph Saint-Michel"
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("ben"),
+      filters = Some("categories:politics AND store:Gibert Joseph Saint-Michel"))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "harry")
+  query.filters = "categories:politics AND store:Gibert Joseph Saint-Michel"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+## Filter by boolean
+
+[Example dataset](#example-dataset)
+
+Algolia lets you filter results by boolean attributes.
+
+For example, you can use the `is_available` boolean attribute in the example dataset to exclude all records where `is_available` is `false`. To do this, first [declare `is_available` as an attribute for faceting](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/).
+
+### Apply a boolean filter
+
+If you want users to see only the available books, do the following:
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(new Query<Book>("books") { Filters = "is_available:true" });
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"books",
+  	opt.Filters("is_available:true"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("books")
+      .setFilters("is_available:true")
+  );
+  ```
+
+  ```js js
+  index
+    .search("books", {
+      filters: `is_available:true`,
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("books") {
+      filters {
+          and {
+              facet("is_available", true)
+          }
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('books', [
+    'filters' => 'is_available:true'
+  ]);
+  ```
+
+  ```python python
+  results = index.search("books", {"filters": "is_available:true"})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "books",
+    {
+      filters: "is_available:true"
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("books"),
+      filters = Some("is_available:true"))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "books")
+  query.filters = "is_available:true"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+The engine considers booleans as integers: `false` as `0` and `true` as `1`. This means you can apply [numeric filters](#filter-by-numeric-value) for boolean attributes. With the example dataset, `is_available=0` is the same as `is_available:false`.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If creating numeric or boolean filters, you don't need to declare the attribute as `attributesForFaceting`.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Filter by tags
+
+[Example dataset](#example-dataset)
+
+Sometimes, you may want to filter search results based on specific metadata, like a type or a category.
+
+Using the example dataset, the accompanying online bookstore has fiction and non-fiction sections.
+Depending on _which_ section users are searching from, **you can provide a context-sensitive search experience**.
+For example, a user goes to the website's non-fiction section, then starts searching for the biography of President Harry S. Truman.
+If your search relevance is primarily based on popularity, by typing "harry", they might retrieve Harry Potter books first, which wouldn't make sense to them.
+
+Instead, what you can do is **filter results based on what they most likely want to find**.
+Algolia lets you add tags to your records with the reserved `_tags` attribute.
+
+Using the example dataset, if users type "harry" with the search restricted to "non-fiction", it would retrieve "Where the Buck Stops" because it has "non-fiction" in the `_tags` attribute and contains the word "harry" in the record.
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(
+      new Query<JObject>("harry")
+      {
+          Filters = "non-fiction" // Same as "_tags:non-fiction"
+      }
+  );
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"harry",
+  	opt.Filters("non-fiction"), // Same as "_tags:non-fiction"
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("harry")
+      .setFilters("non-fiction") // Same as "_tags:non-fiction"
+  );
+  ```
+
+  ```js js
+  index
+    .search("harry", {
+      filters: "non-fiction", // Same as '_tags:non-fiction'
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("harry") {
+      filters {
+          and {
+              tag("non-fiction") // Same as "_tags:non-fiction"
+          }
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('harry', [
+    'filters' => 'non-fiction' // Same as '_tags:non-fiction'
+  ]);
+  ```
+
+  ```python python
+  results = index.search(
+      "harry", {"filters": "non-fiction"}  # Same as "_tags:non-fiction"
+  )
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "harry",
+    {
+      # Same as '_tags:non-fiction'
+      filters: "non-fiction"
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("harry"),
+      filters = Some("non-fiction") // Same as "_tags:non-fiction"
+    )
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "harry")
+  query.filters = "non-fiction"  // Same as "_tags:non-fiction"
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+If you don't specify an attribute name, the filter is assumed to apply to the `_tags` attribute. For example, `fiction` translates into `_tags:fiction`.
+
+You can also use [`tagFilters`](/api-reference/api-parameters/tagFilters/) to do the same thing.
+
+### The difference between `_tags` and custom attributes
+
+It's important to consider the following when deciding whether to use the Algolia `_tags` attribute or a custom attribute for faceting:
+
+- `_tags` is a [reserved attribute](/guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record/#reserved-attribute-names) which means it automatically works as a string filter without you having to set it as an attribute for faceting or use the `filterOnly` modifier.
+- `_tags` isn't searchable by default.
+- You can't use `_tags` for non-filtering purposes, such as displaying in search results or computing counts of records that match the filters.
+- `_tags` can only contain strings.
+
+In short, if you have several types of string filters or any non-string filters, creating a custom attribute is usually the way to go.
+
+## Filter by null or missing attributes
+
+Since Algolia **doesn't support filtering on `null` values or missing attributes**, what happens when your index contains an attribute that isn't present in all records?
+For example, consider an online bookstore where people can buy and rate books from 0 to 5. Any record _without_ the `rating` attribute is assumed to be unrated.
+If you want users to search for both rated and unrated books in the same filter, you must modify your data.
+To do this, you can take one of two approaches:
+
+- [Use the `_tags` attribute](#create-a-tag)
+- [Use a boolean attribute](#create-a-boolean-attribute).
+
+### Create a tag
+
+[Example dataset](#example-dataset)
+
+At indexing time, you can add a tag value to indicate if a record is or isn't rated. In the example dataset, some records have a `rating` attribute and value, others have a null `rating`, and some don't have a `rating` attribute.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  A `null` or nonexistent attribute is different from zero, which represents a book with the lowest rating.
+</Note>
+
+{/* prettier-ignore-end */}
+
+```jsonc jsonc
+[
+  {
+    // ...
+    "rating": 5,
+    "_tags": ["is_rated"],
+  },
+  {
+    // ...
+    "rating": null,
+    "_tags": ["is_not_rated"],
+  },
+  {
+    // ...
+    "_tags": ["is_not_rated"],
+  },
+]
+```
+
+To search for records without the attribute or have a null value, you can now use [tags filtering](#filter-by-tags).
+
+### Create a boolean attribute
+
+At indexing time, you can add a boolean value to indicate if a record is or isn't rated:
+
+```jsonc jsonc
+[
+  {
+    // ...
+    "rating": 5,
+    "is_rated": true,
+  },
+  {
+    // ...
+    "rating": null,
+    "is_rated": false,
+  },
+  {
+    // ...
+    "is_rated": false,
+  },
+]
+```
+
+To search for records without the attribute or have a null value, you can now use [boolean filtering](#filter-by-boolean).
+
+## Filter by `objectID`
+
+By default, the engine sets a record's `objectID` attribute as a [filter-only facet](/api-reference/api-parameters/attributesForFaceting/#modifiers).
+This means **you can use the [`filters`](/api-reference/api-parameters/filters/) parameter to filter on `objectID`**.
+This is helpful when you want to include or exclude specific records in the current search.
+For example, to exclude the record with `objectID` "1234", use the filter `NOT objectID:1234` in the [`filters`](/api-reference/api-parameters/filters/) parameter of your search.
+
+## Example dataset
+
+All the examples on this page use a bookstore index: `books`. The index has records that look like this:
+
+```json json
+[
+  {
+    "title": "Harry Potter and the Philosopher's Stone",
+    "author": "J. K. Rowling",
+    "publisher": "Bloomsbury",
+    "price": 7.94,
+    "publication_date": "1996-06-17",
+    "date_timestamp": 866505600,
+    "is_available": true,
+    "rating": 5,
+    "_tags": ["fiction", "is_rated"],
+    "popularity": 1000,
+    "store": [
+      "The Corner Bookshop",
+      "Gibert Joseph Barbès",
+      "Gibert Joseph Paris 13 - Grande Bibliothèque"
+    ],
+    "categories": ["fantasy", "science fiction", "children's literature"]
+  },
+  {
+    "title": "A Perfect Crime",
+    "author": "Peter Abrahams",
+    "publisher": "Penguin",
+    "price": 7.94,
+    "publication_date": "1998-09-16",
+    "date_timestamp": 905904000,
+    "is_available": true,
+    "rating": null,
+    "_tags": ["fiction", "is_not_rated"],
+    "popularity": 800,
+    "store": ["The Corner Bookshop", "Gibert Joseph Barbès"],
+    "categories": ["thriller", "crime fiction"]
+  },
+  {
+    "title": "The World as It Is",
+    "author": "Ben Rhodes",
+    "publisher": "Penguin",
+    "price": 9.54,
+    "publication_date": "2018-06-05",
+    "date_timestamp": 1528156800,
+    "is_available": false,
+    "_tags": ["non-fiction", "is_not_rated"],
+    "popularity": 900,
+    "store": ["The Corner Bookshop"],
+    "categories": ["history", "politics"]
+  },
+  {
+    "title": "Yellowface",
+    "author": "R.F. Kuang",
+    "publisher": "The Borough Press",
+    "price": 9.19,
+    "publication_date": "2023-05-16",
+    "date_timestamp": 1684108800,
+    "is_available": true,
+    "_tags": ["fiction", "is_not_rated"],
+    "popularity": 900,
+    "store": ["The Corner Bookshop"],
+    "categories": ["dark humor", "satire"]
+  },
+  {
+    "title": "A Fighting Chance",
+    "author": "Elizabeth Warren",
+    "publisher": "Scribe",
+    "price": 12.97,
+    "publication_date": "2014-04-22",
+    "date_timestamp": 1398124800,
+    "is_available": false,
+    "rating": 5,
+    "_tags": ["non-fiction", "is_rated"],
+    "popularity": 800,
+    "store": ["The Corner Bookshop"],
+    "categories": ["history", "politics"]
+  },
+  {
+    "title": "Where the Buck Stops",
+    "author": "Harry S Truman",
+    "publisher": "Warner Books",
+    "price": 15.014,
+    "publication_date": "1990-10-01",
+    "date_timestamp": 654739200,
+    "is_available": true,
+    "_tags": ["non-fiction", "is_not_rated"],
+    "popularity": 800,
+    "store": ["The Corner Bookshop"],
+    "categories": ["history", "politics", "biography"]
+  }
+]
+```

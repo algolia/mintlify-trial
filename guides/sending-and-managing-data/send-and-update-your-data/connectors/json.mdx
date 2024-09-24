@@ -1,0 +1,63 @@
+---
+title: JSON
+description: |-
+  Index your data from a JSON file you host.
+---
+
+The JSON connector lets you read objects from a JSON file and store them in an Algolia index.
+
+The connector imports a single array of JSON objects as records.
+Each record must have a unique identifier to be used as the [object ID](/guides/sending-and-managing-data/send-and-update-your-data/#unique-object-identifiers) in Algolia.
+
+In the following example, `userID` could serve as the object ID.
+
+```json json
+[
+  {
+    "userID": 1001,
+    "firstName": "Marianne",
+    "lastName": "Neal"
+  },
+  {
+    "userID": 1002,
+    "firstName": "Austin",
+    "lastName": "Wolfe"
+  }
+]
+```
+
+## Configure your data source
+
+1. Open the [**Connectors**](https://dashboard.algolia.com/connectors) page in the Algolia dashboard.
+1. Select the JSON connector and click **Connect**.
+1. Click **Get started**.
+1. Select the authentication method:
+   - **None** if the file is public.
+   - **Basic Auth** if you need a username and password to access the file.
+1. Enter the FTP or HTTP URL to your JSON file.
+   For HTTP URLs, you can further select whether to fetch the JSON file with a GET or a POST request. This depends on your server.
+1. In the **Unique property identifier** field, enter the property of your JSON objects that should serve as unique identifiers for your Algolia records (`objectID`).
+1. Enter a name for the source. This helps you distinguish between different sources.
+1. Click **Create source**.
+
+## Configure your destination
+
+1. Create a new [Algolia API key](/guides/security/api-keys/)
+   or select an existing one for indexing your data.
+1. Enter an index name, where the connector should store the records.
+   If you enter a name of an existing index, it'll be overwritten.
+1. Enter a name for the destination. This helps you distinguish between different destinations.
+1. Click **Create destination**.
+
+## Configure your task
+
+1. Select when the connector should fetch your data:
+   - **On demand**. The connector only fetches data if you manually run it from the [**Tasks**](https://dashboard.algolia.com/connectors/tasks/).
+   - **Scheduled**. The connector runs on a schedule.
+     You can select a schedule from the list, or enter a custom schedule with a cron expression.
+1. Click **Create task**.
+
+### Manage your task
+
+To see the status of your tasks, run them, deactivate them, or delete them,
+go to the [**Tasks**](https://dashboard.algolia.com/connectors/tasks/) in the Algolia dashboard.

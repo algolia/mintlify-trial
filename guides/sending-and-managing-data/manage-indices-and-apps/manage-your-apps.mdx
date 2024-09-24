@@ -1,0 +1,88 @@
+---
+title: Manage your Algolia applications
+description: |-
+  Set up different Algolia applications for your production, testing, or other environments.
+---
+
+You can create multiple Algolia applications with different environments for development, testing, and production.
+You can also [use different indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/concepts/one-or-more-indices/) within the same app for different environments.
+
+## One or multiple Algolia applications
+
+Depending on the level of isolation needed between your different environments, you can:
+
+- Separate your environments into different indices on the same Algolia application
+- Create separate Algolia applications, one for each environment.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can use different datasets in environments other than production. For example, you can use a small subset of your production index to reduce indexing operations.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Separate indices for each environment on the same Algolia application
+
+If you're using a single Algolia application,
+you can separate your production from your development and testing environments by creating separate indices.
+
+To distinguish the different environments,
+make sure to name your indices consistently,
+for example, by using prefixes or suffixes that indicate the environment to which the index belongs:
+`dev_index`, `staging_index`, `prod_index`.
+
+### Controlling access to your indices
+
+Indices on the same Algolia application share the same application ID.
+To **control the access level to the index**, you can create an Algolia user for each environment with different search and Admin API keys.
+**The Team Advanced Permissions feature is required create a dedicated user per environment.**
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Team Advanced Permissions is available as part of the Enterprise add-on to your [pricing plan](https://dashboard.algolia.com/info/plans/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+To create a new team member with access to all indices of a single environment:
+
+1. Go to the [**Team**](https://dashboard.algolia.com/team) page in the Algolia dashboard and click **Add Team Member.**
+1. Add your prefix in the indices box followed by an `"*"` (asterisk) character. For example, use `staging_*` for your staging environment.
+
+You can find this user's admin and search-only API keys on the [Algolia dashboard](https://www.algolia.com/account/api-keys/all/).
+
+These keys only give them access to indices matching `"staging_*"`.
+You can use those keys in your code to ensure isolation between environments.
+
+You can repeat the same operation for all your environments.
+The only shared elements between your environments are the number of records and operations since they belong to the same Algolia application.
+
+## Separate Algolia applications for each environment
+
+To provide complete isolation between your environments,
+you can create separate Algolia applications for each environment.
+
+**Separate Algolia applications each have their own pricing plan.**
+
+You can create new Algolia applications in the [Algolia dashboard](https://dashboard.algolia.com/dashboard/).
+
+You can create a new app on the [**Applications**](https://dashboard.algolia.com/applications) page in the Algolia dashboard, or by clicking the **Settings** icon > **Applications**, and then clicking **Create Application**.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  A dedicated cluster of servers is available as part of the Enterprise add-on to your [pricing plan](https://dashboard.algolia.com/info/plans/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Delete an application
+
+If you no longer need an Algolia application, you can delete it:
+
+1. Go to the [**Applications**](https://dashboard.algolia.com/applications) page in the Algolia dashboard.
+1. Click the three dots to the right of the application.
+1. Click **Delete**.
+1. Confirm your request.

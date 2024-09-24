@@ -1,0 +1,167 @@
+---
+title: Language-specific configurations
+description: |-
+  How to go global and configure Algolia to handle multiple languages.
+---
+
+When Algolia knows the language of your data and your users, the engine can apply word-based processing techniques, such as:
+
+- Removing common (stop) words like "the" and "a"
+- Making singulars and plurals equivalent
+- Detecting word roots
+- Separating or combining compound words.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [What is natural language search?](https://www.algolia.com/blog/product/what-is-natural-language-search/)
+  - [What is natural language processing (NLP)?](https://www.algolia.com/blog/product/what-is-natural-language-processing-and-how-is-it-leveraged-by-search-tools-software/)
+  - [NLP vs natural language understanding (NLU)](https://www.algolia.com/blog/product/what-is-natural-language-understanding-and-how-is-it-different-from-nlp/)
+  - [Advanced keyword search is built on NLP](https://www.algolia.com/blog/ai/advanced-keyword-search-is-built-upon-natural-language-processing-nlp/)
+  - [Handling natural languages in search](https://www.algolia.com/blog/engineering/natural-languages-in-search/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Setting the search language
+
+Algolia doesn't attempt to detect the language of an index automatically. If you want language-based settings like [typo tolerance, stop words, and plurals](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/#using-dictionaries) to work correctly, you should tell the engine which language you want these settings to use.
+
+If you don't, the engine will use the default setting (_all_ languages), which may result in anomalies such as applying French spellings to English words.
+
+You can do this individually for each setting or more globally, with one setting per index.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Set an index's query language](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/how-to-set-an-index-query-language/)
+  - [Configuring language settings](https://www.algolia.com/ecommerce-merchandising-playbook/configuring-language-settings/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Removing stop words
+
+To separate a query's key terms from its common words (such as "the", "on", and "it"), you can instruct the engine to ignore these common words and help the engine focus on the essentials of what people are looking for: nouns and adjectives.
+
+Algolia references several sources (including Wiktionary and ranks.nl) to create a list of stop words in all [supported languages](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages/).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Customize stop words](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-stop-words/)
+  - [Configuring language settings](https://www.algolia.com/ecommerce-merchandising-playbook/configuring-language-settings/)
+  - [`removeStopWords`](/api-reference/api-parameters/removeStopWords/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Ignoring plurals (and other alternative forms)
+
+Algolia's [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) parameter, if enabled, tells the engine to consider a word's plural and singular forms as equivalent.
+
+For example, in English, "cars" = "car" and "feet" = "foot".
+To ensure completeness and support multiple languages, Algolia uses [Wiktionary templates](https://wiktionary.org/wiki/Wiktionary:Templates) to declare alternative forms of a word. For example, the template `{en-noun|s}`, would show up like this on Wiktionary's "car" page:
+
+```txt txt
+car (plural cars)
+```
+
+With Wiktionary templates, Algolia builds a dictionary of alternative forms. Almost every language has its own template syntax, and many languages have multiple templates.
+
+Wiktionary templates also support other alternative forms:
+
+- **German declension.** A German noun changes form depending on its case, gender, number, and role in a sentence (dative, nominative, accusative, and genitive). German nouns can have numerous endings: -er, -e, -es, -e (for nominative), en, -e, -es, -e (accusative), -em, -er, -em, -en (dative), -es, -er, -es, -er (genitive).
+- **Dutch diminutive endings.** A Dutch noun changes its ending based on whether it's small, countable, and other such nuances. For example, _huisje_ is a small _huis_, and _colaatje_ is a glass of _cola_.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Customize plurals and other declensions](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-plurals-and-other-declensions/)
+  - [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Splitting compound words
+
+Compound words refer to noun phrases (or nominal groups) that combine, without spaces, several words to form a single entity or idea.
+
+An example is the German word "Hundehütte" ("dog house").
+
+The goal of decompounding is to index and search the individual words "Hund" and "Hütte" ("dog" and "house") separately, thus improving the chance of a match.
+
+For example, if a user searches for "Hütte für große Hunde" ("house for big dog"), but in your records, you only have the term "Hundehütte". Without decompounding, Algolia can't match these records. **The query and records can only match if the records contain the compound word "Hundehütte" in its split form.**
+
+This setting supports six languages:
+
+- Dutch (`nl`)
+- German (`de`)
+- Finnish (`fi`)
+- Danish (`da`)
+- Swedish (`sv`)
+- Norwegian Bokmål (`no`).
+
+Compound words are automatically split within:
+
+- All queries where [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) contains one of the six supported languages
+- All attributes configured in [`decompoundedAttributes`](/api-reference/api-parameters/decompoundedAttributes/).
+
+**Splitting compound words doesn't alter the records sent to Algolia.** Compound words aren't replaced by the segmented version but indexed in two formats: as the full word and as the atoms.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [`queryLanguages`](/api-reference/api-parameters/queryLanguages/)
+  - [`decompoundedAttributes`](/api-reference/api-parameters/decompoundedAttributes/)
+  - [`decompoundQuery`](/api-reference/api-parameters/decompoundQuery/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Words segmentation
+
+In some logographic languages, words in queries or sentences aren't separated by spaces as in Latin languages. The reader distinguishes each word based on the context.
+Since Algolia's relevance matches words in the query with words in the records, it identifies which characters represent a word for a given query.
+
+For example, "長い赤いドレス" in Japanese means "long red dress". When receiving this query, Algolia segments it into its composing words "長い" (long), "赤い" (red), and "ドレス" (dress). The same segmentation happens on the records, ensuring a great match and relevance for Japanese queries.
+
+Algolia supports segmentation in Chinese (`zh`) and Korean (only at query time) and in Japanese (`ja`) (at both query and indexing time). You must set the [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) and [`indexLanguages`](/api-reference/api-parameters/indexLanguages/) to the relevant language code to ensure this segmentation applies.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Configuring language settings](https://www.algolia.com/ecommerce-merchandising-playbook/configuring-language-settings/)
+  - [`queryLanguages`](/api-reference/api-parameters/queryLanguages/)
+  - [`indexLanguages`](/api-reference/api-parameters/indexLanguages/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Japanese transliteration and type-ahead
+
+The Japanese language uses three writing systems: Kanji, Hiragana, and Katakana. When typing a query in Japanese, users first type its pronunciation in Hiragana and then convert it to Katakana or Kanji if relevant.
+
+To ensure relevant results as soon as users start typing, not just when the query is complete, Algolia indexes Japanese words in both their original form and in Hiragana.
+
+Transliteration is only available in Japanese (`ja`). To apply it, set the [`indexLanguages`](/api-reference/api-parameters/indexLanguages/) setting to `ja`. You can limit transliteration to some attributes or turn it off with the [`attributesToTransliterate`](/api-reference/api-parameters/attributesToTransliterate/) setting.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Multiple conjugations can end up with the same transliteration.
+</Note>
+
+{/* prettier-ignore-end */}
+
+You can use this feature with [Query Suggestions](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/) to ensure Japanese users start seeing suggestions from the first keystrokes.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [`queryLanguages`](/api-reference/api-parameters/queryLanguages/)
+  - [`indexLanguages`](/api-reference/api-parameters/indexLanguages/)
+  - [transliteratedAttributes](/api-reference/api-parameters/attributesToTransliterate/)
+</Info>
+
+{/* prettier-ignore-end */}

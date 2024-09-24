@@ -1,0 +1,238 @@
+---
+title: Synonyms
+description: |-
+  Synonyms tell Algolia which words and expressions to consider equal.
+---
+
+Synonyms are words or phrases that mean the same thing.
+For example, in Algolia, if "pants" and "trousers" are synonyms, searching for either word returns results containing both.
+
+Algolia has four types of synonyms: regular, one-way, alternative corrections, and placeholders.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Configure synonyms](https://academy.algolia.com/guides/397d64b6-f84f-11ee-b2f9-067706ffc04d/tasks/49084aac-f842-11ee-8e20-06ed93d039b7)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Regular synonyms
+
+Use regular synonyms when you want a word or list of words to be interchangeable with any other word in the list.
+
+For example, in the list `["pants", "trousers", "slacks"]`, a search for "trousers" returns records with "pants" or "slacks", and a search for "pants" returns records with "trousers" or "slacks".
+
+Regular synonyms can be represented by the following JSON:
+
+```json json
+{
+  "objectID": "a-list-of-2-synonyms",
+  "type": "synonym",
+  "synonyms": ["pants", "trousers", "slacks"]
+}
+```
+
+## One-way synonyms
+
+Use one-way synonyms when you want a word or phrase to find its synonyms, but not the reverse.
+
+For example, a search for "tablet" will find "iPad", so that iPads show up on all "tablet" searches.
+However, a search for "iPad" won't find "tablet", avoiding displaying non-Apple brands.
+
+One-way synonyms can be represented by the following JSON:
+
+```json json
+{
+  "objectID": "a-unique-identifier",
+  "type": "oneWaySynonym",
+  "input": "tablet",
+  "synonyms": ["ipad", "galaxy tab"]
+}
+```
+
+## Alternative corrections
+
+Use alternative corrections to rank exact matches higher than synonym matches.
+When synonyms aren't exact matches, alternative corrections treat them as words with one or two [typos](/guides/managing-results/optimize-search-results/typo-tolerance/).
+
+For example, if "pants" and "trousers" are synonyms, a search for "trousers" should prioritize exact matches for "trousers" over matches for "pants". The following table shows how search results are ordered for both types of alternative correction:
+
+| Alternative correction type | Query    | Results order                                                            |
+| --------------------------- | -------- | ------------------------------------------------------------------------ |
+| **One typo**                | trousers | 1. trousers (0 typos) <br /> 2. pants                                    |
+| **Two typos**               | pants    | 1. pants (0 typos) <br /> 2. panto (1 typo) <br /> 3. trousers (2 typos) |
+
+A one-typo alternative correction synonym can be represented by the following JSON:
+
+```json json
+{
+  "objectID": "a-unique-identifier",
+  "type": "altCorrection1",
+  "word": "trousers",
+  "corrections": ["pants"]
+}
+```
+
+A two-typo alternative correction synonym can be represented by the following JSON:
+
+```json json
+{
+  "objectID": "a-unique-identifier",
+  "type": "altCorrection2",
+  "word": "trousers",
+  "corrections": ["pants"]
+}
+```
+
+## Placeholders
+
+Use placeholders to tailor search queries.
+A placeholder is a part of a record that can be replaced by any value from a list of synonyms when that value appears in a query.
+
+For example, in a store selling iPhone cases, add the `<model>` placeholder to your records.
+
+```json json
+[
+  {
+    "product_name": "Case for iPhone <model>",
+    "sku": "123456"
+  }
+]
+```
+
+Instead of duplicating the same record for each version it applies to,
+you can define a placeholder in your records.
+
+For that particular case (`sku`), ` <model>` can be replaced by "13" or "14" (since the iPhone 13 and 14 have similar dimensions, some cases will fit both versions).
+Searches for "case iPhone 13" or "case iPhone 14" return the same record, with `<model>` replaced by the number in the search query.
+
+A placeholder synonym can be represented by the following JSON:
+
+```json json
+{
+  "type": "placeholder",
+  "placeholder": "<model>",
+  "replacements": ["13", "14"]
+}
+```
+
+### Placeholders versus distinct
+
+Placeholder synonyms only work when one record applies to variations of the query.
+To show different information for each variation, for example, other product information or images between versions,
+it's better to use one record for each variation,
+and then use the [`distinct`](/api-reference/api-parameters/distinct/) parameter to deduplicate the variations.
+For more information, see [Grouping results](/guides/managing-results/refine-results/grouping/).
+
+## Manage synonyms
+
+You can add new synonyms, and edit, or delete existing ones in the Algolia dashboard,
+the Search API, or the Algolia CLI.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Manage synonyms in the dashboard](/guides/managing-results/optimize-search-results/adding-synonyms/how-to/managing-synonyms-from-the-dashboard/)
+  - [Synonyms API client methods](/api-client/methods/synonyms/)
+  - [Algolia CLI synonyms command](/tools/cli/commands/algolia-synonyms/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Considerations for synonym usage
+
+Synonyms can be helpful but their effectiveness can be hindered by certain challenges.
+
+### Synonyms and plurals
+
+Algolia synonyms don't recognize plurals.
+Singular and plural forms require specific synonyms.
+
+For example, if you create a synonym pair `"boot","shoe"`:
+
+- A search for "boot" shows results for both "shoe" and "shoes"
+- A search for "boots" **doesn't** show results for "shoe" or "shoes"
+
+### Synonym terms don't produce the same results
+
+It's not guaranteed that each term defined in a synonym will return the same results as other terms.
+
+For example, if you make "swimwear" and "swimsuit" synonyms, you might get different results when you search for "swimwear" and "swimsuit".
+This is because Algolia searches for the exact query, _and_ typos, synonyms, plurals, and other variations of the query.
+These underlying variations can differ from term to term.
+
+If you want two queries to have the same results, create a [rule](/guides/managing-results/rules/rules-overview/) that [replaces one word with another](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#remove-or-replace-a-word-from-the-query-string).
+For example, if you want "swimwear" to produce the same results as "swimsuit", create a rule that changes the query "swimwear" to "swimsuit".
+
+### Algolia doesn't provide a synonym dictionary
+
+Algolia doesn't offer a pre-built synonym dictionary due to the wide variety of use cases.
+
+Use [search analytics](/guides/search-analytics/overview/) to investigate whether you need to add a synonym.
+Look for search queries [with little or no results](/guides/managing-results/optimize-search-results/empty-or-insufficient-results/).
+To automate this, activate [Dynamic Synonym Suggestions](/guides/algolia-ai/dynamic-synonym-suggestions/).
+
+### Cascading synonyms
+
+Synonyms don't _cascade_.
+If you have two pairs of synonyms—for example, `pants ⇔ trousers` and `trousers ⇒ slacks`,
+a search for "pants" matches "trousers", but doesn't match "slacks".
+
+If you want cascading behavior, create a list of regular synonyms, such as `pants ⇔ trousers ⇔ slacks`.
+In this example, a search for "pants" matches "trousers" _and_ "slacks".
+
+### Don't overuse synonyms
+
+Overusing synonyms can lead to unexpected or unwanted results.
+It's best to use them sparingly.
+
+You might have set up synonyms that yielded ambiguous results and then tried to correct them with other adjustments, like adding more synonyms, creating rules or optional filters, or tweaking settings such as typo tolerance.
+
+To avoid this, look out for:
+
+- **Words with several meanings,** like "baskets" in the synonym `sneakers ⇔ baskets`.
+  Users searching for "sneaker" might see an odd mix of high-top basketball sneakers and hand-knit storage baskets.
+- **Common words.** For example, if you create the synonym `photocopier ⇔ xerox`: a "photocopier" search might show many "Xerox" results,
+  and a search for "xerox" might show many non-Xerox photocopiers.
+
+### Multi-word synonym matching
+
+Multi-word synonyms match by [sequence expression](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization/#sequence-expressions): they must be in the correct order with nothing in between.
+
+For example, if you have a synonym pair `HD ⇔ High Definition` and search for `HD`,
+the search first matches records with "High Definition", but doesn't match records with "High Resolution Definition" or "Definition High".
+
+## Dynamic Synonym Suggestions
+
+[Dynamic Synonym Suggestions](/guides/algolia-ai/dynamic-synonym-suggestions/) automate adding synonyms based on your users' behavior.
+
+Algolia identifies any queries your users enter and subsequently edit and suggests them as synonyms.
+For example, if Algolia detects that users search for "trousers" and then change their query to "pants",
+Dynamic Synonym Suggestions can suggest the synonym `trousers ⇔ pants`.
+If you accept the suggestion, a new synonym is added automatically.
+
+## Keyword attributes as an alternative to synonyms
+
+Instead of using Algolia's regular synonyms feature, you could add a [searchable attribute](/guides/managing-results/must-do/searchable-attributes/) to your records that contains a list of synonymous terms.
+
+- **Use Algolia's regular synonyms feature** when synonyms should apply across all records.
+- **Use synonym attributes in your records** when synonyms apply only to specific attribute values. For example, "denim" should be a synonym for "Jeans" but not for other categories like "Jackets":
+
+  ```json json
+  {
+    "category": "Jeans",
+    "other_words": ["denim", "pants", "trousers"]
+  }
+  ```
+
+## Further reading
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Prefix search](/guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/prefix-searching/)
+  - [Fuzzy matching with synonyms](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+</Info>
+
+{/* prettier-ignore-end */}

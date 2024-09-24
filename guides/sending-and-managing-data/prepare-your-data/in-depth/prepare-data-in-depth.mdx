@@ -1,0 +1,130 @@
+---
+title: Prepare your index
+description: |-
+  Learn how to prepare your data for Algolia, how to fetch it from your data source, and how to structure your index.
+---
+
+Before sending anything to Algolia, consider **what information you want to make searchable**. For an ecommerce store, it's products. For a music store, it might be records and artists. For a real estate company, it might be houses and locations.
+
+Be selective about what goes in the record and only gather the information that helps you build a search experience.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Optimize your search index](https://www.algolia.com/blog/engineering/12-ways-to-improve-your-search-index/)
+  - [An example search index](https://www.algolia.com/blog/engineering/building-an-open-source-index-for-all/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Fetch your data
+
+Algolia doesn't directly search your data source.
+Instead, you send it to Algolia's servers where it's stored in a format that's optimal for fast search. The data may come from any format: relational databases, CSV, XML, or HTML files, or Excel spreadsheets.
+You need to write code to fetch, transform, and [send your data to Algolia](#send-data-to-algolia) as JSON objects.
+You might also want to refine the records by changing their contents or adding new information.
+
+For example, you have a custom PHP blog with a MySQL database and want to make your blog posts searchable. You can create a script that fetches the posts from your database, transforms the data, and rearranges it into records. Then, use the [PHP API client](/api-client/getting-started/what-is-the-api-client/php/) to send the objects to Algolia and keep the data up to date when you add, update, or delete a post.
+
+## Send data to Algolia
+
+Once you have prepared your records, send them to an index on Algolia's servers using an Algolia API client, no-code connector, CLI, Crawler, or dashboard. The records can then be searched.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Prepare your records for indexing](/guides/sending-and-managing-data/prepare-your-data/)
+  - [Send and update your data](/guides/sending-and-managing-data/send-and-update-your-data/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Algolia index
+
+An index is where the data used by Algolia is stored. It's the equivalent of a table in a database but optimized for search and discovery operations.
+
+Once you've sent your data to Algolia, you can decide how to structure your indices. This includes how many indices you need and how to configure each one. You can put all your records into a single index or spread them across a few smaller indices. **How you structure your indices depends on how you want to search and display your records.**
+
+### Structuring indices
+
+An index is a collection of records. When you perform a search, you examine an Algolia index's records.
+
+Flattened data is best for searching. This applies at the index level too. It's a good approach to create several indices and map them to your tables, where each index represents a different kind of entity. For example, you may want to separate movies from actors and create an index for each. However, this might not serve the purposes of your search. What if you want your users to search for both movies and actors simultaneously and for them to appear in the same results? In that case, a single index works better.
+
+The main reason for this is relevance. Algolia searches one index at a time: it doesn't perform cross-index searches. Searching two indices produces two sets of results, each with a dedicated relevance configuration. Algolia doesn't merge these results, and trying to do this yourself would break the relevance (since combining Algolia's results after a search requires understanding and re-implementing Algolia's ranking algorithm). You would be undoing all the work that Algolia does for you.
+
+It doesn't mean there are no reasons for [multiple indices](#when-to-use-multiple-indices) but splitting data per entity isn't one of them.
+
+### Handling record hierarchy
+
+Simplifying and restructuring your records doesn't mean losing hierarchy or relationships. For example, if you want your users to search for movies and see them organized by director, you should store this relationship in your index. You can organize your data in any way you want and keep it straightforward without losing complexity.
+
+The following record represents a director and all the movies they directed (one or several records). However, it doesn't help users search for individual movies. While you wouldn't want to repeat data in a traditional database, this is perfectly okay in your Algolia index.
+
+```json json
+{
+  "director": "Hayao Miyazaki",
+  "movies": [
+    {
+      "title": "Spirited Away",
+      "score": 201.6
+    },
+    {
+      "title": "My Neighbor Totoro",
+      "score": 196
+    },
+    {
+      "title": "Princess Mononoke",
+      "score": 195.4
+    }
+  ]
+}
+```
+
+Now take a look at that same information in three flatter, less hierarchical records:
+
+```json json
+[
+  {
+    "title": "Spirited Away",
+    "score": 201.6,
+    "director": "Hayao Miyazaki"
+  },
+  {
+    "title": "My Neighbor Totoro",
+    "score": 196,
+    "director": "Hayao Miyazaki"
+  },
+  {
+    "title": "Princess Mononoke",
+    "score": 195.4,
+    "director": "Hayao Miyazaki"
+  }
+]
+```
+
+This format lets users find movies more easily. Additionally, if you wanted to show a limited number of movies per director, like the most popular ones, you could use Algolia's [`distinct`](/api-reference/api-parameters/distinct/) feature on `director` along with custom ranking on `score`.
+
+This way, searching for "miyazaki" would only return Hayao Miyazaki's most popular movie.
+
+Flattening data adds more records to your index. If you have 10,000 directors with an average of ten movies each, this results in an index with 100,000 records. It may sound like a lot, but it's not. Besides what your [plan](https://www.algolia.com/pricing/) allows, Algolia has no limit to the number of records, only [disk size](/guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations/).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Grouping results](/guides/managing-results/refine-results/grouping/)
+  - [Handling data relationships](/guides/sending-and-managing-data/prepare-your-data/how-to/handling-data-relationships/)
+  - [`attributeForDistinct`](/api-reference/api-parameters/attributeForDistinct/)
+  - [Distinct](/api-reference/api-parameters/distinct/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### When to use multiple indices
+
+For your UI, you need to determine [whether to use one or more indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/concepts/one-or-more-indices/). For example, if you want your search experience to display movies and actors separately, it's better to use different indices.
+
+Use separate indices when:
+
+- Showcasing popular queries with Algolia's [Query Suggestions](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/) feature. You need two indices: one for your content and one for common queries.
+- You want to let users switch between rankings, such as ascending or descending popularity. While you can't dynamically change the ranking of an index, you can use [replica indices](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/) with the same data and different ranking strategies.

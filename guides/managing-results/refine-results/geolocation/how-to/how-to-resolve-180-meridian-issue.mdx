@@ -1,0 +1,43 @@
+---
+title: How to solve the 180th meridian issue
+description: |-
+  To solve the 180th meridian issue, create two separate areas east and west of this line.
+---
+
+The [180th meridian](https://wikipedia.org/wiki/180th_meridian) is the geographical boundary between the Eastern and Western hemispheres.
+It passes through the Pacific Ocean, Russia, Alaska, and Fiji.
+
+## The problem
+
+When searching by location, the 180th meridian can lead to unexpected results.
+If a rectangle or polygon includes the 180th meridian, the search won't include results from inside the area.
+
+Instead, the results return everything _outside_ the area you selected.
+
+## The reason: longitudinal value reversal
+
+When you cross the 180th meridian, the longitude switches from positive to negative numbers: from 180 to -180, not 181.
+
+## The solution: create two areas
+
+If your area crosses the meridian, split the affected area into two adjacent shapes, one east of the meridian and one west.
+
+### Rectangles
+
+Consider a rectangle that includes the 180th meridian: `[70, 170, 60, -170]`.
+
+To resolve the issue, split this rectangle into two smaller ones:
+
+- Rectangle 1: `[70, 170, 60, 180]` (east of the meridian)
+- Rectangle 2: `[70, -180, 60, -170]` (west of the meridian)
+
+Use [`insideBoundingBox`](/api-reference/api-parameters/insideBoundingBox/) to define these shapes with the value `[[70, 170, 60, 180], [70, -180, 60, -170]]`.
+
+### Polygons
+
+Consider a polygon that includes the 180th meridian: `[[70, 170], [80, 160], [90, 140], [80, 120], [70, 110], [60, 130], [70, 140]]`.
+
+To resolve the issue, use [`insidePolygon`](/api-reference/api-parameters/insidePolygon/) to split this shape into two smaller ones:
+
+- Polygon 1: `[[70, 170], [80, 160], [90, 140], [80, 120], [70, 110], [60, 130], [70, 140]]` (area east of the meridian)
+- Polygon 2: `[[60, 130], [70, 140], [70, 170], [60, 180], [50, 160], [60, 150], [60, 130]]` (area west of the meridian)

@@ -1,0 +1,126 @@
+---
+title: Normalization
+description: |-
+  How Algolia normalizes your data - sometimes for the purpose of generalizing all languages, other times to handle language-specific complexities.
+---
+
+## What is normalization
+
+- Switch all characters to lower case
+- Remove all diacritics, for example, accents
+- Remove punctuation within words, for example, apostrophes
+- Manage punctuation between words
+- Use word separators (such as spaces, but not only)
+- Transform traditional Chinese to modern
+
+## When is normalization applied?
+
+Normalization is done at both indexing and query time, ensuring consistency in how your data is represented as well as matched.
+
+You can't turn off normalization. Additionally, the normalization is language-agnostic.
+
+You can change the default normalization by providing a [custom normalization](/api-reference/api-parameters/customNormalization/) for your index.
+
+### Character-based (UTF) normalization
+
+Algolia uses Unicode (UTF-16), which handles every known language.
+Character-based normalization means reducing the full UTF-16 character set to a smaller,
+more consistent subset of Unicode characters.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [How Algolia processes Unicode](https://www.algolia.com/blog/engineering/why-develop-our-own-unicode-library/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Keeping diacritics
+
+By default, Algolia's search engine _normalizes_ characters by transforming them into lowercase counterparts and stripping their _diacritics_. For example: `é` becomes `e`, `ø` becomes `o`, `で` becomes `て`, etc.
+Since, in several languages, this default behavior can cause problems, you can specify characters that will keep diacritics with the [`keepDiacriticsOnCharacters`](/api-reference/api-parameters/keepDiacriticsOnCharacters/) parameter. Characters passed to this parameter aren't normalized.
+
+### Word separators
+
+The engine uses the _space_ character (among other techniques) to spot a word.
+However, not every language relies _exclusively_ on spacing to separate words.
+
+Spacing is a fairly reliable method of word detection ([tokenization](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization/)).
+For many languages, it's a near perfect tokenizer.
+And where it's less efficient, the problem may be that it doesn't go far enough: while most words are detected, some within _compound words_ aren't.
+
+You can improve word detection with dictionaries.
+Some languages _concatenate_ and _compound_ words (Agglutinated Words) and others string together words without using spaces (CJK).
+With the use of dictionaries, you can spot the "words within the words".
+
+### Word-based normalization
+
+You can't turn off the following techniques:
+
+- **Splitting.** Split words when they're combined: "jamesbrown" matches with "James Brown". Words are only split if there aren't any typos.
+- **Concatenation.** Combine words that are separated by a space: "entert ainment" matches with "entertainment". Words are only combined if there aren't any typos.
+- **Acronyms.** Separator characters between letters are removed. D.N.A is considered the same as DNA.
+- **Hyphenated words.** If each separated component is three or more letters, each component is treated as a standalone word (off-campus → off + campus + offcampus).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Tokenization](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization/)
+  - [Splitting and concatenation](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Normalization for logogram-based languages (CJK)
+
+### Detecting words
+
+Some languages don't use spaces to delimit words.
+Without words, search is limited to a sequential, character-based matching.
+This is a serious limitation, as it doesn't allow for some important and basic search features, such as inverse word matching ("red shirt" / "shirt red"), non-contiguous words ("chocolate cookies" finds "chocolate _chip_ cookies"), the use of ANDs and ORs, or Rules, and other situations.
+
+Detecting words in CJK logograms, Algolia follows a two-step process:
+
+1. Use the Unicode (ICU) library to find words. This library is based on the MECAB dictionary, enriched with data from Wiktionary.
+1. If that fails, use a sequential character-based search.
+
+As this logic is part of the engine, it can't be turned off.
+The logic is only triggered when the engine detects a CJK character.
+
+### Using a language-specific dictionary for CJK words
+
+The engine can detect when a user is entering CJK characters, but it can't detect the exact CJK language.
+This means that, whenever CJK is detected, the engine will apply a _generic_ CJK logic to separate logograms.
+This is often fine, but if you want the engine to go further and apply **language-specific dictionaries**, you'll need to use the [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) setting.
+
+For example, with `queryLanguages`, you can specify Chinese ("zh") in the first position to ensure the use of a Chinese dictionary in finding words.
+
+Note that you can change the dictionary dynamically with each search, enabling multi-lingual support.
+
+### Converting traditional to standard Chinese characters
+
+As part of the normalization process, all traditional characters are converted into their modern Unicode counterparts.
+
+## Normalization for Arabic languages
+
+### Short vowels removal
+
+Arabic languages make extensive use of diacritics to give hints on pronunciation.
+Yet, it's not uncommon to omit them when typing, which may hurt search of text _with_ diacritics.
+Usually, Algolia ignores diacritics by default, but those are a bit different, as they're considered as full-fledged characters by the Unicode Standard.
+
+Algolia processes the most common of those diacritics to ignore them in both indices and queries.
+Consequently, **searching with or without them yields the same results.**
+
+These diacritics are ignored:
+
+- Fathah
+- Kasrah
+- Dammah
+- Sukun
+
+### Equivalence between Arabic and Persian
+
+Arabic and Persian characters share many similarities, so much that it makes sense for some users to search inside an Arabic index using Persian letters.
+Yet, two characters are considered different by the Unicode Standard: ك and ک as well as ی and ي.
+By considering those letters as the same, **you can search across a Persian index while typing on an Arabic keyboard layout, and vice versa**.

@@ -1,0 +1,402 @@
+---
+title: Promote records with optional filters
+description: |-
+  Learn how to use optional filters to modify your custom ranking.
+---
+
+Optional filters are a powerful tool for influencing the ranking of search results. Use them to boost or bury records based on specific criteria, but without hiding those records.
+
+For example, on a website that handles fast food deliveries, if a user types "hungry" and clicks the "deliver quickly" option, the website will show the restaurants that can deliver the fastest at the top of the list but still show other restaurants.
+
+You can also use _negative_ optional filters to demote records.
+For example, to lower the ranking of restaurants with poor reviews.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Optional filters aren't available on the [Grow plan](https://www.algolia.com/pricing/).
+
+  If you signed up for the Community, Essential, or Plus plans before December 15, 2018, you can only use one optional filter per query.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Update your records
+
+Since optional filters only work with _exact_ matches, you might need to update your records. Using the fast food delivery website as an example, flag restaurants that can deliver within 20 minutes by adding a boolean attribute called `can_deliver_quickly` and set it to `true` or `false` for each record.
+
+```json json
+[
+  {
+    "name": "Pasta Bolognese",
+    "restaurant": "Millbrook Deli",
+    "delivery_waiting_time": 20,
+    "can_deliver_quickly": true,
+    "popularity": 80
+  },
+  {
+    "name": "Pasta Bolognese",
+    "restaurant": "The Hive",
+    "delivery_waiting_time": 15,
+    "can_deliver_quickly": true,
+    "popularity": 80
+  },
+  {
+    "name": "Pasta Bolognese",
+    "restaurant": "Bert's Inn",
+    "delivery_waiting_time": 40,
+    "can_deliver_quickly": false,
+    "popularity": 90
+  }
+]
+```
+
+## How to apply optional filters
+
+To use optional filters, you need to:
+
+- Set the attribute as an `attributeForFaceting` at indexing time. You can do this either through the API or the Algolia dashboard.
+- Add the optional filter to your query with the API.
+
+### Using the dashboard
+
+Set the attribute to use for faceting in your Algolia dashboard:
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. Click the **Configuration** tab.
+
+1. In the **Facets** subsection of _Filtering and Faceting_, click the "Add an attribute" button and select the optional filter attributes from the drop-down menu (for example, `can_deliver_quickly`).
+
+1. Save your changes.
+
+You can _test_ filters in the [Rules Visual Editor](https://support.algolia.com/hc/en-us/articles/4406981935761) before using them in your code:
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. Click **[Rules](https://dashboard.algolia.com/rules/)** in the sidebar
+
+1. Create a new Rule and choose **Visual Editor**.
+
+1. Click the **Set query condition(s)** button under _It all starts here._
+
+1. Click **Filters**, and in **Filter Name**, enter the name of your optional filter (for example, `can_deliver_quickly`)
+
+1. In **Value**, type `true`
+
+1. Type something into the **Query** box, such as `*` (to display all matching records)
+
+1. Click **Apply**.
+
+Using the [example dataset](#update-your-records) and the query `*` \`, two out of three records will be displayed.
+
+### Using the API
+
+Set the attribute to use for faceting with [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/).
+For example:
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      AttributesForFaceting = new List<string> { "can_deliver_quickly", "restaurant" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributesForFaceting: opt.AttributesForFaceting("can_deliver_quickly", "restaurant"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+          new IndexSettings().setAttributesForFaceting(Collections.singletonList("can_deliver_quickly", "restaurant")));
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributesForFaceting: ["can_deliver_quickly", "restaurant"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributesForFaceting {
+          +"can_deliver_quickly",
+          +"restaurant"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributesForFaceting' => [
+      "can_deliver_quickly",
+      "restaurant"
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"attributesForFaceting": ["can_deliver_quickly", "restaurant"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      attributesForFaceting: [
+        "can_deliver_quickly",
+        "restaurant"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributesForFaceting = Some(Seq(
+        "can_deliver_quickly",
+        "restaurant")))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(\.attributesForFaceting, to: ["can_deliver_quickly", "restaurant"])
+  index.setSettings(settings) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+Send the optional filters with your query.
+For example:
+
+<CodeGroup>
+  ```csharp csharp
+  var query = new Query()
+  {
+      SearchQuery = "hungry",
+      OptionalFilters = new List<List<string>> { new List<string> { "can_deliver_quickly:true" } }
+  };
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"hungry",
+  	opt.OptionalFilterAnd("can_deliver_quickly:true"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("hungry").setOptionalFilters(
+      Collections.singletonList(Arrays.asList(
+      "can_deliver_quickly:true")))
+  );
+  ```
+
+  ```js js
+  index
+    .search("hungry", {
+      optionalFilters: ["can_deliver_quickly:true"],
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("hungry") {
+      optionalFilters {
+          and {
+              facet("can_deliver_quickly", true)
+          }
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search("hungry", [
+    'optionalFilters' => [
+      "can_deliver_quickly:true"
+    ]
+  ]);
+  ```
+
+  ```python python
+  results = index.search("hungry", {"optionalFilters": ["can_deliver_quickly:true"]})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "hungry",
+    {
+      optionalFilters: [
+        "can_deliver_quickly:true"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("hungry"),
+      customParameters = Some(
+        Map(
+          "optionalFilters" -> Some(Seq(
+            "can_deliver_quickly:true")))))
+  }
+  ```
+
+  ```swift swift
+  let query = Query("hungry")
+    .set(\.optionalFilters, to: ["can_deliver_quickly:true"])
+
+  index.search(query: query) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+You can also add negative optional filters.
+For example, to demote a specific restaurant:
+
+<CodeGroup>
+  ```csharp csharp
+  var query = new Query()
+  {
+      SearchQuery = "hungry",
+      OptionalFilters = new List<List<string>> { new List<string> { "restaurant:-Bert's Inn" } }
+  };
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"hungry",
+  	opt.OptionalFilterAnd("restaurant:-Bert's Inn"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("hungry").setOptionalFilters(
+      Collections.singletonList(Arrays.asList(
+      "restaurant:-Bert's Inn")))
+  );
+  ```
+
+  ```js js
+  index
+    .search("hungry", {
+      optionalFilters: ["restaurant:-Bert's Inn"],
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("hungry") {
+      optionalFilters {
+          and {
+              facet("restaurant", "-Bert's Inn")
+          }
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search("hungry", [
+    'optionalFilters' => [
+      "restaurant:-Bert's Inn"
+    ]
+  ]);
+  ```
+
+  ```python python
+  results = index.search("hungry", {"optionalFilters": ["restaurant:-Bert's Inn"]})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "hungry",
+    {
+      optionalFilters: [
+        "restaurant:-Bert's Inn"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("hungry"),
+      customParameters = Some(
+        Map(
+          "optionalFilters" -> Some(Seq(
+            "restaurant:-Bert's Inn")))))
+  }
+  ```
+
+  ```swift swift
+  let query = Query("hungry")
+    .set(\.optionalFilters, to: ["restaurant:-Bert's Inn"])
+
+  index.search(query: query) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+## An alternative: facet filters
+
+An alternative to optional filters is [facet filters](/guides/managing-results/refine-results/filtering/in-depth/filters-and-facetfilters/).
+To determine whether to use optional filters or facet filters, consider your specific goals:
+
+- Use optional filters to boost records
+- Use facet filters if you only need to filter out records.
+
+## Further reading
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Filter scoring](/guides/managing-results/refine-results/filtering/in-depth/filter-scoring/)
+  - [Fuzzy search: optional filters](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+</Info>
+
+{/* prettier-ignore-end */}
