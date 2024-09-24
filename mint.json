@@ -66,6 +66,52 @@
       ]
     },
     {
+      "group": "Send events",
+      "pages": [
+        "guides/send-events/get-started",
+        {
+          "group": "Concepts",
+          "pages": [
+            "guides/send-events/concepts/event-types",
+            "guides/send-events/concepts/user-token"
+          ]
+        },
+        {
+          "group": "Guides",
+          "pages": [
+            "guides/send-events/guides/plan",
+            "guides/send-events/guides/queryid",
+            "guides/send-events/guides/validate"
+          ]
+        },
+        {
+          "group": "API client",
+          "pages": [
+            "guides/send-events/api-client/send-ecommerce-events",
+            "guides/send-events/api-client/send-media-events",
+            "guides/send-events/api-client/send-events"
+          ]
+        },
+        {
+          "group": "InstantSearch",
+          "pages": [
+            "guides/send-events/instantsearch/send-ecommerce-events",
+            "guides/send-events/instantsearch/send-media-events",
+            "guides/send-events/instantsearch/send-events"
+          ]
+        },
+        {
+          "group": "Connectors",
+          "pages": [
+            "guides/send-events/connectors/google-tag-manager",
+            "guides/send-events/connectors/google-analytics-big-query-export",
+            "guides/send-events/connectors/segment",
+            "guides/send-events/connectors/tealium"
+          ]
+        }
+      ]
+    },
+    {
       "group": "Libraries",
       "pages": [
         "libraries/python"

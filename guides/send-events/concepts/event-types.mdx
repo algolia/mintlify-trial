@@ -1,0 +1,151 @@
+---
+title: 'Event types'
+sidebarTitle: 'Event types'
+description: Learn about the different events you can collect with the Algolia Insights API and the features they unlock.
+---
+
+The Algolia Insights API accepts three types of events: click, conversion, and view events.
+By sending events, you can enable one or more Algolia features.
+
+To get started with your implementation,
+see [Get started with click and conversion events](/guides/send-events/get-started/).
+
+## Events by features
+
+The following table lists events and where they're used.
+
+import Events from '/snippets/insights/events.mdx';
+
+To learn more about the properties of each event,
+see the [Insights API reference](/api-reference/insights-api/).
+
+## Minimum number of events
+
+In general, the features that require events work better with more events.
+Some features need a minimum number of events to be active.
+
+### Events requirements for NeuralSearch
+
+- **Minimum** 1,000 click **OR** 100 conversion events within 30 days.
+
+NeuralSearch uses these events:
+
+import NeuralsearchEvents from '/snippets/insights/neuralsearch-events.mdx';
+
+### Events requirements for Recommend—Frequently Bought Together
+
+- **Minimum** 1,000 conversion events with 2 or more products within 30 days
+- **Maximum** 3,000,000 conversion events within 30 days
+
+If there aren't enough events within 30 days, the collection period extends to 90 days.
+
+Frequently Bought Together uses these events:
+
+import FrequentlyboughttogetherEvents from '/snippets/insights/frequentlyboughttogether-events.mdx';
+
+### Events requirements for Recommend—Related Products
+
+- **Minimum** 10,000 events within 30 days
+- **Maximum** 3,000,000 events within 30 days
+
+If there aren't enough events within 30 days, the collection period extends to 90 days.
+
+Related Products uses these events:
+
+import RelatedproductsEvents from '/snippets/insights/relatedproducts-events.mdx';
+
+### Events requirements for Recommend—Related Content
+
+- **Minimum** 10 events on items with content-based attributes within 30 days
+- **Maximum** 1,500,000 events within 30 days
+
+If there aren't enough events within 30 days, the collection period extends to 90 days.
+
+Related Content uses the same events as the Related Products model.
+
+### Events requirements for Recommend—Trending Items and Trending Facet Values
+
+- **Minimum** 500 conversion events within 30 days
+- **Maximum** 3,000,000 conversion events.
+
+Trending Items and Trending Facet Values use these events:
+
+import TrendingEvents from '/snippets/insights/trending-events.mdx';
+
+### Events requirements for Dynamic Re-Ranking
+
+- **Minimum** 20 click events **OR** 2 conversion events within 30 days
+
+Records with fewer events won't be re-ranked.
+
+Dynamic Re-Ranking uses these events:
+
+import DrrEvents from '/snippets/insights/drr-events.mdx';
+
+To prevent a manipulation of your ranking,
+Dynamic Re-Ranking only considers **1 event per user (`userToken`) per search query per record (`objectID`).**
+
+### Events requirements for Query Categorization
+
+Query Categorization needs a minimum number of events to train the model for predicting categories.
+It always uses events from the last 90 days.
+
+Query Categorization uses these events:
+
+import QcatEvents from '/snippets/insights/qcat-events.mdx';
+
+## Events on category pages
+
+You can build category pages with Algolia by sending a request with an empty search query and an applied filter.
+
+Because category pages are just a different form of search requests,
+you'll use the same events for category pages and search results.
+
+## Events related and unrelated to Algolia requests
+
+Some events come in two variants: with and without a query ID.
+Events with a query ID have `AfterSearch` in their name.
+
+Most Algolia features use events with query IDs, for example, to calculate the conversion rate of your search.
+
+### What is the query ID?
+
+The `queryID` is a random sequence of letters and numbers that uniquely identifies a search request.
+Algolia uses the query ID to connect a search or [browse](#events-on-category-pages) request to a click or conversion event.
+Use the [events debugger](/guides/send-events/guides/validate/#debugger) to check which search API request corresponds to which event.
+Algolia generates the query ID and includes it in the API response if you set `clickAnalytics` to `true` when making the search request.
+
+Since conversions often occur outside Algolia-driven experiences—for example, from the shopping cart,
+you need to [keep track of the query ID](/guides/send-events/guides/queryid/) on your site.
+
+### Events related to Algolia requests
+
+To track events after a previous Algolia search or browse request,
+set the `clickAnalytics` parameter to `true` and
+use the `clickedObjectIDsAfterSearch` or `convertedObjectIDsAfterSearch` methods.
+
+Examples include:
+
+- A user searches and clicks a search result to visit a detail page.
+  You can track this by sending a `clickedObjectIDsAfterSearch` event.
+- A user converts on a category page you built with Algolia.
+  You can track this by sending a `convertedObjectIDsAfterSearch` event.
+
+<Note>Click and conversion events with a `queryID` are **time-sensitive.** They must occur within one hour of the corresponding search request.</Note>
+
+### Events unrelated to Algolia requests
+
+To track events that are unrelated to a previous Algolia search or browse request,
+use the `clickedObjectIDs` and `convertedObjectIDs` methods.
+
+Examples include:
+
+- You're not using Algolia to build your category pages.
+  Use `clickedObjectIDs` to track clicks and `convertedObjectIDs` to track conversions.
+
+- You're sending [emails with recommendations](https://www.algolia.com/developers/code-exchange/showcase/personalized-email-recommendations/).
+  When users click a recommendation and buy an item, track the conversion with `convertedObjectIDs`.
+
+- In a [buy-online, pick-up in-store](https://www.algolia.com/blog/engineering/building-a-store-locator-in-react-using-algolia-mapbox-and-twilio-part-1/) scenario,
+  the conversion finishes hours or days after the initial search or browse request.
+  Use `convertedObjectIDs` to track the conversion.
