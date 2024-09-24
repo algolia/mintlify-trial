@@ -1,0 +1,424 @@
+---
+title: Dispatched backend events
+description: |-
+  The Algolia extension for Magento 2 provides custom events to modify the extension's behavior.
+---
+
+Algolia for Magento 2 | Backend Events
+
+By Algolia, 5 min
+
+The Algolia extension exposes events based on Magento's [dispatched events](https://devdocs.magento.com/guides/v2.3/extension-dev-guide/events-and-observers.html)
+so that you can customize the behavior of the extension.
+
+For information about creating custom event listeners for custom extensions, see [Create a custom extension tutorial](/integration/magento-2/guides/create-a-custom-extension/).
+
+## Modify index settings
+
+To change index settings before sending them to Algolia,
+use the `{ENTITY}_index_before_set_settings` event.
+
+| Entity              | Event                                                   |
+| ------------------- | ------------------------------------------------------- |
+| Products            | `algolia_products_index_before_set_settings`            |
+| Categories          | `algolia_categories_index_before_set_settings`          |
+| Pages               | `algolia_pages_index_before_set_settings`               |
+| Suggestions         | `algolia_suggestions_index_before_set_settings`         |
+| Additional sections | `algolia_additional_sections_index_before_set_settings` |
+
+For example:
+
+```php php
+$indexSettings = [
+    // ...
+];
+
+// Additional index settings from event observer
+$transport = new DataObject($indexSettings);
+
+$this->eventManager->dispatch(
+    'algolia_products_index_before_set_settings',
+    [
+        'store_id'       => $storeId,
+        'index_settings' => $transport,
+    ]
+);
+
+$indexSettings = $transport->getData();
+$this->algoliaHelper->setSettings($indexName, $indexSettings, false, true);
+```
+
+Make sure to refer where the backend events are dispatched in the code.
+This lets you see what variables are available for your customization.
+
+You can add or change [index settings parameters](/api-reference/settings-api-parameters/) before sending it to Algolia.
+At this point of the event, the extension has already added and formatted parameters based on your settings.
+
+Here's an example of how an observer could modify index settings:
+
+```php php
+<?php
+
+namespace Your\CustomModule\Observer;
+
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+
+class AlgoliaUpdateProductsSettings implements ObserverInterface
+{
+  public function execute(Observer $observer)
+  {
+    $productsSettings = $observer->getData("index_settings");
+    $searchableAttributes = $productSettings->getData("searchableAttributes");
+
+    // Add code here to modify searchableAttributes
+
+    // reset the searchableAttributes value with the updated array
+    $productsSettings->setData("searchableAttributes", $searchableAttributes);
+
+    // add unhandled setting
+    $productsSettings->setData("snippetEllipsisText", "...");
+  }
+}
+```
+
+## Update attribute data
+
+To change entity data before indexing,
+use the `algolia_after_create_{ENTITY}_object` events.
+
+| Entity      | Event                                    |
+| ----------- | ---------------------------------------- |
+| products    | `algolia_after_create_product_object`    |
+| categories  | `algolia_after_create_category_object`   |
+| pages       | `algolia_after_create_page_object`       |
+| suggestions | `algolia_after_create_suggestion_object` |
+
+These events fire in the `getObject()` method of the entity Helper class.
+For example, in `\Algolia\AlgoliaSearch\Helper\Entity\ProductHelper::getObject()` this event is dispatched just before the object is returned for indexing:
+
+```php php
+$transport = new DataObject($customData);
+$this->eventManager->dispatch(
+    'algolia_after_create_product_object',
+    ['custom_data' => $transport, 'sub_products' => $subProducts, 'productObject' => $product]
+);
+$customData = $transport->getData();
+```
+
+Here's an example of how an observer could transform the `created_at` attribute from the default MySQL date format to a timestamp:
+
+```php php
+<?php
+
+namespace Your\CustomModule\Observer;
+
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+
+class AlgoliaAfterCreateProductObject implements ObserverInterface
+{
+  public function execute(Observer $observer)
+  {
+    $data = $observer->getData("custom_data");
+
+    // update created_at MySQL date format to timestamp
+    $createdAt = $data->getData("created_at");
+    $data->setData("created_at", strtotime($createdAt));
+  }
+}
+```
+
+### Modify product data
+
+Use the [`algolia_after_create_product_object`](#dispatched-after-fetching-products-attributes-for-indexing) event to change the product data sent to Algolia.
+
+If you need access to specific attributes that aren't available in the collection data,
+request them from the product collection with the `algolia_after_products_collection_build` event.
+
+The product data used for indexing is from a product collection request.
+The full product model isn't available during the object creation method.
+
+This applies for categories and suggestions indexing as well.
+They have their own `algolia_after_{ENTITY}_collection_build` events where you can access the collection.
+
+The product collection is created by the
+`\Algolia\AlgoliaSearch\Helper\Entity\ProductHelper::getProductCollectionQuery()` method.
+This method dispatches the [`algolia_after_products_collection_build`](#dispatched-after-products-collection-creation) event, which lets you access the `$collection` object:
+
+```php php
+$this->eventManager->dispatch(
+    'algolia_after_products_collection_build',
+    [
+        'store' => $storeId,
+        'collection' => $products,
+        'only_visible' => $onlyVisible,
+        'include_not_visible_individually' => $includeNotVisibleIndividually,
+    ]
+);
+```
+
+In your custom observer, you can access the product collection and add your attribute before the collection loads:
+
+```php php
+<?php
+
+namespace Your\CustomModule\Observer;
+
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+
+class AlgoliaAddAttributesToProductCollection implements ObserverInterface
+{
+  public function execute(Observer $observer)
+  {
+    $collection = $observer->getData("collection");
+    $collection->addAttributeToSelect("custom_attribute_code");
+  }
+}
+```
+
+After adding the attribute, your product can retrieve it in your observer for the [`algolia_after_create_product_object`](#dispatched-after-fetching-products-attributes-for-indexing) event:
+
+```php php
+<?php
+
+namespace Your\CustomModule\Observer;
+
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+
+class AlgoliaAfterCreateProductObject implements ObserverInterface
+{
+  public function execute(Observer $observer)
+  {
+    $data = $observer->getData("custom_data");
+    $product = $observer->getData("productObject");
+
+    // add new custom attribute
+    $data->setData(
+      "newCustomAttribute",
+      $product->getData("custom_attribute_code")
+    );
+
+    // update created_at MySQL date format to timestamp
+    $createdAt = $data->getData("created_at");
+    $data->setData("created_at", strtotime($createdAt));
+  }
+}
+```
+
+## Modify the frontend configuration
+
+To let the frontend display the configured UI,
+the Algolia extension creates the `algoliaConfig` JavaScript variable by retrieving the configuration from a class.
+You can change the `algoliaConfig` object before the page loads by using the [`algolia_after_create_configuration`](#dispatched-after-frontend-configuration-creation) event.
+
+This event is dispatched at the end of `\Algolia\AlgoliaSearch\Block\Configuration::getConfiguration()`:
+
+```php php
+$transport = new DataObject($algoliaJsConfig);
+$this->_eventManager->dispatch(
+    'algolia_after_create_configuration',
+    ['configuration' => $transport]
+);
+$algoliaJsConfig = $transport->getData();
+```
+
+The method turns the configuration array into a `DataObject` so that you can make changes in your observer using getters and setters:
+
+```php php
+<?php
+
+namespace Your\CustomModule\Observer;
+
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+
+class AlgoliaAfterCreateConfiguration implements ObserverInterface
+{
+  public function execute(Observer $observer)
+  {
+    $config = $observer->getData("configuration");
+    // add new config value
+    $config->setData("newData", "newValue");
+
+    // modify set value 9 -> 10
+    $config->setData("hitsPerPage", 10);
+
+    // modify/add new translations
+    $trans = $config->getData("translations");
+    $trans["newTranslation"] = __("New Translation");
+    $trans["showMore"] = __("Show More");
+    $config->setData("translations", $trans);
+  }
+}
+```
+
+## List of product events
+
+### Dispatched before sending products' index settings to Algolia
+
+`algolia_products_index_before_set_settings`
+
+Parameters:
+
+- `$storeId`
+- `$index_settings` as data in `Magento\Framework\DataObject` object (**modifiable**)
+
+### Dispatched after products collection creation
+
+`algolia_after_products_collection_build`
+
+Parameters:
+
+- `$storeId`
+- `$collection` as `Magento\Catalog\Model\ResourceModel\Product\Collection` (**modifiable**)
+- `$only_visible`
+- `$include_not_visible_individually`
+
+### Dispatched before final products collection load
+
+`algolia_before_products_collection_load`
+
+Parameters:
+
+- `$collection` as `Magento\Catalog\Model\ResourceModel\Product\Collection` (**modifiable**)
+- `$store`
+
+### Dispatched before fetching product's attributes for indexing
+
+`algolia_product_index_before`
+
+Parameters:
+
+- `$product` as `Magento\Catalog\Model\Product`
+- `$custom_data` as data in `Magento\Framework\DataObject` object (**modifiable**)
+
+### Dispatched after fetching product's attributes for indexing
+
+`algolia_after_create_product_object`
+
+Parameters:
+
+- `$custom_data` as data in `Magento\Framework\DataObject` object (**modifiable**)
+- `$subProducts` as array of sub products
+- `$productObject` as `Magento\Catalog\Model\Product`
+
+## List of category events
+
+### Dispatched before pushing categories' index settings to Algolia
+
+`algolia_categories_index_before_set_settings`
+
+Parameters:
+
+- `$storeId`
+- `$index_settings` as data in `Magento\Framework\DataObject` object (**modifiable**)
+
+### Dispatched after categories collection creation
+
+`algolia_after_categories_collection_build`
+
+Parameters:
+
+- `$store`
+- `$collection` as `Magento\Catalog\Model\ResourceModel\Category\Collection` (**modifiable**)
+
+### Dispatched before fetching category's attributes for indexing
+
+`algolia_category_index_before`
+
+Parameters:
+
+- `$category` as `Magento\Catalog\Model\Category`
+- `$custom_data` as data in `Magento\Framework\DataObject` object (**modifiable**)
+
+### Dispatched after fetching category's attributes for indexing
+
+`algolia_after_create_category_object`
+
+Parameters:
+
+- `$category` as `Magento\Catalog\Model\Category`
+- `$categoryObject` as data in `Magento\Framework\DataObject` object (**modifiable**)
+
+## List of page events
+
+### Dispatched before pushing pages' index settings to Algolia
+
+`algolia_pages_index_before_set_settings`
+
+Parameters:
+
+- `$store_id`
+- `$index_settings` as data in `Magento\Framework\DataObject` object (**modifiable**)
+
+### Dispatched after fetching page's attributes for indexing
+
+`algolia_after_create_page_object`
+
+Parameters:
+
+- `$page` as data in `Magento\Framework\DataObject` object (**modifiable**)
+- `$pageObject` as `Magento\Cms\Model\Page`
+
+## List of suggestion events
+
+### Dispatched before pushing suggestions' index settings to Algolia
+
+`algolia_suggestions_index_before_set_settings`
+
+Parameters:
+
+- `$store_id`
+- `$index_settings` as data in `Magento\Framework\DataObject` object (**modifiable**)
+
+### Dispatched after suggestions collection creation
+
+`algolia_after_suggestions_collection_build`
+
+Parameters:
+
+- `$store`
+- `$collection` as `Magento\Search\Model\ResourceModel\Query\Collection` (**modifiable**)
+
+### Dispatched after fetching suggestion's attributes for indexing
+
+`algolia_after_create_suggestion_object`
+
+Parameters:
+
+- `$suggestion` as data in `Magento\Framework\DataObject` object (**modifiable**)
+- `$suggestionObject` as `Magento\Search\Model\Query`
+
+## List of additional sections events
+
+### Dispatched before pushing additional sections' index settings to Algolia
+
+`algolia_additional_sections_index_before_set_settings`
+
+Parameters:
+
+- `$store_id`
+- `$index_settings` as data in `Magento\Framework\DataObject` object (**modifiable**)
+
+### Dispatched after fetching additional\_section's attributes for indexing
+
+`algolia_additional_section_items_before_index`
+
+Parameters:
+
+- `$section`
+- `$record` as data in `Magento\Framework\DataObject` object (**modifiable**)
+- `$store_id`
+
+## List of frontend configuration events
+
+### Dispatched after frontend configuration creation
+
+`algolia_after_create_configuration`
+
+Parameters:
+
+- `$configuration` as data in `Magento\Framework\DataObject` object (**modifiable**)

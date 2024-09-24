@@ -1,0 +1,239 @@
+---
+title: Troubleshooting relevance
+description: |-
+  Troubleshooting relevance: debugging, getting ranking info, using the dashboard.
+---
+
+## Troubleshooting Overview
+
+For this, we offer several strategies to help you troubleshoot:
+
+- **Get ranking information with the `getRankingInfo` parameter**. This parameter allows you to look at and analyze the criteria Algolia uses to rank results. For a given query it returns the value for each ranking criteria. By understanding those values you can understand why a result appears before or after another. See more [below](#the-engines-ranking-decisions).
+- **Reproducing a problem on a small dataset and solving it by process of elimination**. This strategy can be used alongside the `getRankingInfo` parameter. It helps you improve the results of specific queries. The idea is to create a very small index that mirrors your main index, and to test different configurations one-by-one until you've singled out the problem or inefficiency.
+- **Analytics and Insights**. This allows you to follow your users' behavior with [Analytics](/guides/search-analytics/overview/).
+
+## The Engine's Ranking Decisions
+
+You can find out why a record is ranked the way it is, and use this information to troubleshoot your data and relevance settings. You can do this in the Dashboard or via the API.
+
+### Troubleshooting in the dashboard
+
+If you go to your dashboard and search, you have a "Ranking Info" section that details how Algolia ranked this record.
+
+If you look at the second hit, you'll have the difference between this object and the one above it.
+
+### Troubleshoot via the API
+
+Ranking information can be retrieved via the API. For that, you need to use the parameter [`getRankingInfo`](/api-reference/api-parameters/getRankingInfo/) and set it to true.
+
+#### Initialize the client
+
+<CodeGroup>
+  ```csharp csharp
+  SearchClient client = new SearchClient("YourApplicationID", "YourWriteAPIKey");
+  SearchIndex index = client.InitIndex("your_index_name");
+  ```
+
+  ```go go
+  package main
+
+  import "github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
+  func main() {
+  	client := search.NewClient("YourApplicationID", "YourWriteAPIKey")
+  	index := client.InitIndex("your_index_name")
+  }
+  ```
+
+  ```java java
+  SearchClient client = DefaultSearchClient.create(
+    "YourApplicationID",
+    "YourWriteAPIKey"
+  );
+
+  SearchIndex index = client.initIndex("your_index_name");
+
+  ```
+
+  ```js js
+  // Default version
+  import algoliasearch from "algoliasearch";
+
+  // Search-only version
+  // import algoliasearch from 'algoliasearch/lite';
+
+  const client = algoliasearch("YourApplicationID", "YourWriteAPIKey");
+  const index = client.initIndex("your_index_name");
+  ```
+
+  ```kotlin kotlin
+  val client = ClientSearch(
+      applicationID = ApplicationID("YourApplicationID"),
+      apiKey = APIKey("YourWriteAPIKey")
+  )
+  val indexName = IndexName("your_index_name")
+
+  client.initIndex(indexName)
+  ```
+
+  ```php php
+  // composer autoload
+  require __DIR__ . '/vendor/autoload.php';
+
+  // if you are not using composer
+  // require_once 'path/to/algoliasearch.php';
+
+  $client = \Algolia\AlgoliaSearch\SearchClient::create(
+    'YourApplicationID',
+    'YourWriteAPIKey'
+  );
+
+  $index = $client->initIndex('your_index_name');
+  ```
+
+  ```python python
+  from algoliasearch.search_client import SearchClient
+
+  client = SearchClient.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```ruby ruby
+  require "algolia"
+
+  client = Algolia::Search::Client.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```scala scala
+  // No initIndex
+  val client = new AlgoliaClient("YourApplicationID", "YourWriteAPIKey")
+  ```
+
+  ```swift swift
+  let client = SearchClient(appID: "YourApplicationID", apiKey: "YourWriteAPIKey")
+  let index = client.index(withName: "your_index_name")
+  ```
+</CodeGroup>
+
+#### Search with getRankingInfo
+
+<CodeGroup>
+  ```csharp csharp
+  index.search(new Query("query").GetRankingInfo(true));
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"query",
+  	opt.GetRankingInfo(true),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("query")
+      .setGetRankingInfo(true)
+  );
+  ```
+
+  ```js js
+  index
+    .search("query", {
+      getRankingInfo: true,
+    })
+    .then(({ hits }) => {
+      console.log(hits.map((hit) => hit._rankingInfo));
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query("query") {
+      getRankingInfo = true
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('query', [
+    'getRankingInfo' => true
+  ]);
+
+  //foreach ($results['hits'] as $hit) {
+  //  var_dump($hit['_rankingInfo']);
+  //}
+  ```
+
+  ```python python
+  results = index.search("query", {"getRankingInfo": True})
+
+  # for hit in results['hits']:
+  #   print(hit['_rankingInfo'])
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "query",
+    {
+      getRankingInfo: true
+    }
+  )
+
+  # results['hits'].each do |hit|
+  #   puts hit['_rankingInfo']
+  # end
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("query"),
+      getRankingInfo = Some(true))
+  }
+  ```
+
+  ```swift swift
+  let query = Query("query")
+    .set(\.getRankingInfo, to: true)
+
+  index.search(query: query) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+#### This gives you ranking info
+
+Take a look at the following results in the `_rankingInfo` attribute:
+
+```json json
+{
+  "_rankingInfo": {
+    "nbTypos": 0,
+    "firstMatchedWord": 0,
+    "proximityDistance": 0,
+    "userScore": 7,
+    "geoDistance": 1600,
+    "geoPrecision": 1,
+    "nbExactWords": 0,
+    "words": 0,
+    "filters": 0,
+    "matchedGeoLocation": {
+      "lat": 37.3688,
+      "lng": -122.036,
+      "distance": 1600
+    }
+  }
+}
+```
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [\_rankingInfo Specs](/api-reference/api-methods/search/#method-response-_rankinginfo)
+</Info>
+
+{/* prettier-ignore-end */}

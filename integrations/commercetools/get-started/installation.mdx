@@ -1,0 +1,62 @@
+---
+title: Install Algolia for commercetools
+description: |-
+  Connect your commercetools store with Algolia in a few clicks without writing code.
+---
+
+Connect your commercetools store with Algolia in a few clicks.
+Index your products and keep your product data in sync with Algolia without writing code.
+
+The Algolia commercetools integration handles the data connection between your commercetools store and Algolia.
+To integrate Algolia in your frontend, you can use these UI libraries:
+
+- [Autocomplete](/ui-libraries/autocomplete/introduction/what-is-autocomplete/)
+- [InstantSearch](/guides/building-search-ui/what-is-instantsearch/js/)
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [commercetools](https://academy.algolia.com/guides/e8a39b10-596a-11ee-99e8-02ca231af8a7/tasks/de0f979a-bdc9-11ed-9626-067360dfb065)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Before you begin
+
+To connect commercetools and Algolia, you need a commercetools [account](https://docs.commercetools.com/merchant-center/accounts) and [store](https://docs.commercetools.com/api/projects/stores) with administrator access.
+
+You also need an Algolia app with administrator access.
+You can [create one for free](/guides/sending-and-managing-data/manage-indices-and-apps/manage-your-apps/).
+
+## Create a commercetools API client
+
+To let Algolia interact with your store, you must first set up a new commercetools API client:
+
+1. Sign in to the Merchant Center of your commercetools project, to which you want to add Algolia.
+
+1. On the sidebar, go to **Settings > Developer settings**.
+
+1. Click **Create new API client**.
+
+1. Enter a name for the API client.
+
+1. Select the API scopes for the new client. You need at least the following scopes:
+
+   - All items under the **View** column
+   - **View API clients**
+   - **Subscriptions**
+
+1. Click **Create API client**.
+
+1. Copy or save the curl command.
+   You need it to configure your commercetools integration in Algolia.
+
+For more information, see [Get your API client](https://docs.commercetools.com/getting-started/create-api-client) in the commercetools documentation.
+
+## Connect commercetools in the Algolia dashboard
+
+1. Sign in to the [Algolia dashboard](https://dashboard.algolia.com/users/sign_in).
+1. On the left sidebar, select **Data sources**.
+1. Click **Connectors**.
+1. Find the **commercetools** connector and click **Connect**.
+1. To start your [configuration](/integration/commercetools/get-started/configuration/), click **Get started**.

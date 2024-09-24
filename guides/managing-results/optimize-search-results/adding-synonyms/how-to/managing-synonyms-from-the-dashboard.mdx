@@ -1,0 +1,115 @@
+---
+title: Manage synonyms in the dashboard
+description: |-
+  Learn how to manage synonyms in the Algolia dashboard.
+---
+
+To add, delete, or edit synonyms in the Algolia dashboard, follow these steps:
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. On the **Configuration** tab, click **Synonyms**.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can also manage synonyms from the [Search API](/api-client/methods/synonyms/) or the [Algolia CLI](/tools/cli/commands/algolia-synonyms/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Regular synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/#regular-synonyms)
+  - [One-way synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/#one-way-synonyms)
+  - [Alternative corrections](/guides/managing-results/optimize-search-results/adding-synonyms/#alternative-corrections)
+  - [Placeholders](/guides/managing-results/optimize-search-results/adding-synonyms/#placeholders)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Add synonyms
+
+To add a new synonym, click **Add Synonyms** and choose the type:
+
+- Synonyms (regular synonyms)
+- One-way Synonyms
+- Placeholders
+- Alternative Corrections.
+
+### Synonyms (regular synonyms)
+
+In the **Synonyms** field, enter your [regular synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/#regular-synonyms): a comma-separated list of words or expressions that should be considered equivalent.
+
+### One-way synonyms
+
+In the **Search term** field, enter your [one-way synonym](/guides/managing-results/optimize-search-results/adding-synonyms/#one-way-synonyms): the text used in a query that should be substituted by the comma-separated list of terms in the **Alternatives** field ("top" and "hoodie"/"sweater" in the example).
+
+### Placeholders
+
+In the **Placeholder** field, enter your [placeholder synonym](/guides/managing-results/optimize-search-results/adding-synonyms/#placeholders): the text, enclosed in angle brackets, used by any query matching one of the **Replacements** (`<street>` for `street` and `st`, in the example).
+
+### Alternative corrections
+
+In the **Search term** field, enter your [alternative corrections synonym](/guides/managing-results/optimize-search-results/adding-synonyms/#alternative-corrections): the text used in the query that should be substituted by the comma-separated list of alternative words or expressions in the **Corrections** field ("tablet" for "ipad" in the example).
+
+In the **Typo** field, choose the number of typos allowed (1 or 2) when the search term matches one of the corrections.
+
+## Copy synonyms to other indices
+
+You can automatically copy any synonym that you create to other indices. Check the **Copy this expansion to other indices** option and choose your indices if you want this to happen.
+
+## Import synonyms from a file
+
+If you have many synonyms, perhaps sourced by a merchandising team or pulled from an external dictionary, adding them one by one would be time-consuming.
+A more straightforward method is to upload an entire file of synonyms at once.
+To do this, click the arrow next to **Add Synonyms** and then click **Upload**.
+
+JSON and CSV are the two supported data formats, but CSV is limited to regular synonyms (see below).
+
+### Import synonyms from JSON
+
+The file must contain an array of newline-delimited JSON objects. Each object must include:
+
+- A **unique objectID** value that identifies the synonym record. objectID isn't automatically generated if it's missing.
+- A **type** value. [Options are](/api-reference/api-methods/save-synonym/#parameters) `synonym`, `oneWaySynonym`, `altCorrection1`, `altCorrection2`, and `placeholder`.
+- All other fields required by [the chosen type](#add-synonyms).
+
+### Import synonyms from CSV
+
+You can only use CSV files to import regular synonyms (`synonym`). The file must contain one set of **comma-separated** synonyms per line.
+
+Algolia accepts CSV files exported by popular spreadsheet apps, including Microsoft Excel, Google Sheets, Apple Numbers, and LibreOffice Calc.
+However, you must ensure that the file uses commas as field separators. On a Mac, this choice of field separator is controlled by the system (in **System Preferences > Language & Region > Advanced > Number separators: Grouping**).
+
+## Export synonyms to a file
+
+To back up or take a snapshot of your synonyms, click the arrow next to **Add Synonyms** and click **Export as JSON** or **Export as CSV**.
+CSV export is limited to regular synonyms.
+
+## Delete one synonym
+
+To delete a specific synonym, click the **Delete synonym** (trash can icon).
+
+## Delete all synonyms
+
+To remove all synonyms from an index, click the arrow next to **Add Synonyms** and then click **Delete All**.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  You can't undo this operation.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+Check **Delete all these expansions on other indices** to propagate the deletion to all chosen indices.
+
+## Edit synonyms
+
+Click **Edit synonyms** (pencil icon).

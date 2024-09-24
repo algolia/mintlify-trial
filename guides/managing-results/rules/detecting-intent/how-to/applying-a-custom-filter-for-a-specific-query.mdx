@@ -1,0 +1,1008 @@
+---
+title: Adding filters based on the query
+description: |-
+  Applying a custom filter for a specific query.
+---
+
+Sometimes, specific terms can act as cues that you can use to filter search results. You can use positive, negative, or numerical filters:
+
+- [**Positive filters**](#positive-filters) include a specific subset of matching records in the results. For example, if a user types "diet" on a restaurant website, return every record that has "low-carb" or "low-fat".
+- [**Negative filters**](#negative-filters) exclude matching records from results. For example, if a user types "gluten-free" on a restaurant website, you could filter out any gluten-containing meal.
+- [**Numerical filters**](#numerical-filters) convert text queries into a numerical range. For example, if a user types "cheap" on a website for kitchen appliances, you could filter out anything costing more than $50.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Faceting](/guides/managing-results/refine-results/faceting/)
+  - [Filtering](/guides/managing-results/refine-results/filtering/)
+  - [Merchandising](/guides/managing-results/rules/merchandising-and-promoting/)
+  - [Filters and facets in site search](https://www.algolia.com/blog/ux/filters-vs-facets-in-site-search/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Positive filters
+
+If you want to filter out every non-diet-friendly meal whenever user's search queries contain the term "diet",
+you could use the [`_tags`](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-tags) attribute to categorize meals depending on their individual qualities:
+
+```json json
+[
+  {
+    "name": "Chicken Stuffed Baked Avocados",
+    "restaurant": "The Hive",
+    "_tags": ["low-carb"]
+  },
+  {
+    "name": "Spinach Quiche",
+    "restaurant": "Bert's Inn",
+    "_tags": ["low-carb", "vegetarian"]
+  },
+  {
+    "name": "Pizza Chicken Bake",
+    "restaurant": "Millbrook Deli",
+    "_tags": ["cheese"]
+  },
+  {
+    "name": "Strawberry Sorbet",
+    "restaurant": "The Hive",
+    "_tags": ["low-fat", "vegetarian", "vegan"]
+  }
+]
+```
+
+When users include the term "diet" in their search, you want to automatically return every record that has "low-carb" or "low-fat" in their `_tags` attribute. Because `_tags` is already optimized for filtering, you don't have to set it as an attribute for faceting. You can directly create a new Rule that detects the term "diet" in a query and applies a positive filter on tags "low-carb" and "low-fat".
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To use the term "diet" only for filtering and not as a search term,
+  add a consequence in your rule to remove the word from your query.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Using the API
+
+To add a rule, use the [`saveRule`](/api-reference/api-methods/save-rule/) method.
+When creating a rule, you must define a condition and a consequence.
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "diet-rule",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "diet" }
+      },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              Filters = "'low-carb' OR 'low-fat'",
+              Edits = new List<Edit>
+              {
+                  new Edit { Type = EditType.Remove, Delete = "diet" }
+              }
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:  "diet-rule",
+  	Condition: []search.RuleCondition{{Anchoring: search.Contains, Pattern: "diet"}},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{
+  						search.RemoveEdit("diet"),
+  					},
+  				},
+  			),
+  			QueryParams: search.QueryParams{
+  				Filters: opt.Filters("'low-carb' OR 'low-fat'"),
+  			},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition()
+          .setPattern("diet")
+          .setAnchoring("contains");
+
+  ConsequenceQuery consequenceQuery =
+          new ConsequenceQuery().setEdits(Collections.singletonList(new Edit().setType("remove").setDelete("diet")));
+
+  ConsequenceParams params = new ConsequenceParams();
+  params.setConsequenceQuery(consequenceQuery);
+  params.setFilters("'low-carb' OR 'low-fat'");
+
+  Consequence consequence = new Consequence().setParams(params);
+
+  Rule rule = new Rule()
+          .setObjectID("diet-rule")
+          .setCondition(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+  ```
+
+  ```js js
+  const rule = {
+    objectID: "diet-rule",
+    conditions: [
+      {
+        pattern: "diet",
+        anchoring: "contains",
+      },
+    ],
+    consequence: {
+      params: {
+        filters: '"low-carb" OR "low-fat"',
+        query: {
+          edits: [
+            {
+              type: "remove",
+              delete: "diet",
+            },
+          ],
+        },
+      },
+    },
+  };
+
+  index.saveRule(rule).then(() => {
+    // done
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          "diet-rule",
+          listOf(Condition(Contains, Literal("diet"))),
+          Consequence(
+              edits = edits { +"diet" },
+              query = query {
+                  filters {
+                      orTag {
+                          tag("low-carb")
+                          tag("low-fat")
+                      }
+                  }
+              }
+          )
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  $rule = [
+    'objectID' => 'diet-rule',
+    'conditions' => array(array(
+      'pattern'   => 'diet',
+      'anchoring' => 'contains',
+    )),
+    'consequence' => [
+      'params' => [
+        'filters' => '"low-carb" OR "low-fat"',
+        'query' => [
+          'edits' => [
+            [
+              'type' => 'remove',
+              'delete' => 'diet'
+            ]
+          ]
+        ]
+      ]
+    ]
+  ];
+
+  $response = $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "diet-rule",
+      "conditions": [
+          {"pattern": "diet", "anchoring": "contains"},
+      ],
+      "consequence": {
+          "params": {
+              "filters": '"low-carb" OR "low-fat"',
+              "query": {
+                  "edits": [
+                      {
+                          "type": "remove",
+                          "delete": "diet",
+                      }
+                  ],
+              },
+          },
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    objectID: "diet-rule",
+    conditions: [
+      {
+        pattern: "diet",
+        anchoring: "contains"
+      }
+    ],
+    consequence: {
+      params: {
+        filters: "\"low-carb\" OR \"low-fat\"",
+        query: {
+          edits: [
+            {
+              type: "remove",
+              delete: "diet"
+            }
+          ]
+        }
+      }
+    }
+  }
+
+  index.save_rule(rule)
+  ```
+
+  ```scala scala
+  val ruleToSave = Rule(
+    objectID = "diet-rule",
+    conditions = Some(Seq(Condition(
+      pattern = "diet",
+      anchoring = "contains"))),
+    consequence = Consequence(
+      params = Seq(
+        Map("filters" -> "'low-carb' OR 'low-fat'"),
+        Map(
+          "query" -> Map(
+            "edits" -> Seq(
+              Edit("remove", "diet")))))), )
+
+  client.execute {
+    save rule ruleToSave inIndex "index_name"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "diet-rule")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("diet"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(\.queryTextAlteration, to: .edits([.remove("diet")]))
+        .set(\.query, to: Query().set(\.filters, to: "\"low-carb\" OR \"low-fat\""))
+    )
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Using the dashboard
+
+You can also add rules from the Algolia dashboard.
+
+1. Select the **Search** product icon on your dashboard.
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index to which you're adding a Rule.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, select **Manual Editor**.
+
+1. In the **Condition(s)** sections, keep **Query contains** and enter "diet" in the input field.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button and select **Add Query Parameter**.
+   - In the input field that appears, enter the JSON search parameter you want to add. For example: `{ "filters": "'low-carb' OR 'low-fat'" }`.
+   - Click the **Add consequence** button again and select **Remove Word**.
+   - Type or select "diet" in the input field.
+
+1. Save your changes.
+
+## Negative filters
+
+To exclude gluten-containing foods from the search results,
+when a user searches for gluten-free meals:
+To do this:
+
+1. Create an `allergens` attribute (with "gluten" as one of the potential values).
+1. Create a rule that filters out records with "gluten" in that attribute.
+
+### Example records
+
+```json json
+[
+  {
+    "name": "Pasta Bolognese",
+    "restaurant": "Millbrook Deli",
+    "allergens": ["eggs", "lactose"]
+  },
+  {
+    "name": "Breakfast Waffles",
+    "restaurant": "The Hive",
+    "allergens": ["gluten", "lactose"]
+  }
+]
+```
+
+### Using the API
+
+Set `allergens` as an [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/) in your index:
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      AttributesForFaceting = new List<string> { "allergens" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributesForFaceting: opt.AttributesForFaceting("allergens"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(new IndexSettings().setAttributesForFaceting(Collections.singletonList("allergens")));
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributesForFaceting: ["allergens"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributesForFaceting {
+          +"allergens"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributesForFaceting' => [
+       "allergens"
+     ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "attributesForFaceting": [
+              "allergens",
+          ],
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      attributesForFaceting: [
+        "allergens"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributesForFaceting = Some(Seq(
+        "allergens")))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(\.attributesForFaceting, to: ["allergens"])
+
+  index.setSettings(settings) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+- Use the [`saveRule`](/api-reference/api-methods/save-rule/) method to create a rule that detects the term "gluten-free" in a query and applies a negative filter on facet value `allergens:gluten`.
+- Add a consequence in your rule to remove the word "gluten-free" from your query. This way, it won't be used as a search term, only for filtering purposes.
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "gluten-free-rule",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "gluten-free" }
+      },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              Filters = "NOT allergens:gluten",
+              Edits = new List<Edit>
+              {
+                  new Edit { Type = EditType.Remove, Delete = "gluten-free" }
+              }
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:   "gluten-free-rule",
+  	Conditions: []search.RuleCondition{{Anchoring: search.Contains, Pattern: "gluten-free"}},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{
+  						search.RemoveEdit("gluten-free"),
+  					},
+  				},
+  			),
+  			QueryParams: search.QueryParams{
+  				Filters: opt.Filters("NOT allergens:gluten"),
+  			},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition().setPattern("gluten-free").setAnchoring("contains");
+
+  ConsequenceQuery consequenceQuery =
+          new ConsequenceQuery().setEdits(Collections.singletonList(new Edit().setType("remove").setDelete("gluten-free")));
+
+  ConsequenceParams params = new ConsequenceParams();
+  params.setConsequenceQuery(consequenceQuery);
+  params.setFilters("NOT allergens:gluten");
+
+  Consequence consequence = new Consequence().setParams(params);
+
+  Rule rule =
+          new Rule()
+                  .setObjectID("gluten-free-rule")
+                  .setCondition(Collections.singletonList(condition))
+                  .setConsequence(consequence);
+
+  index.saveRule(rule);
+  ```
+
+  ```js js
+  const rule = {
+    objectID: "gluten-free-rule",
+    conditions: [
+      {
+        pattern: "gluten-free",
+        anchoring: "contains",
+      },
+    ],
+    consequence: {
+      params: {
+        filters: "NOT allergens:gluten",
+        query: {
+          edits: [
+            {
+              type: "remove",
+              delete: "gluten-free",
+            },
+          ],
+        },
+      },
+    },
+  };
+
+  index.saveRule(rule).then(() => {
+    // done
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          "gluten-free-rule",
+          listOf(Condition(Contains, Literal("gluten-free"))),
+          Consequence(
+              edits = edits { +"gluten-free" },
+              query = query {
+                  filters { and { facet("allergens", "gluten", isNegated = true) } }
+              }
+          )
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  $rule = [
+    'objectID' => 'gluten-free-rule',
+    'conditions' => array(array(
+      'pattern'   => 'gluten-free',
+      'anchoring' => 'contains',
+    ))
+    'consequence' => [
+      'params' => [
+        'filters' => 'NOT allergens:gluten',
+        'query' => [
+          'edits' => [
+            [
+              'type' => 'remove',
+              'delete' => 'gluten-free'
+            ]
+          ]
+        ]
+      ]
+    ]
+  ];
+
+  $response = $index->saveRule($rule['objectID'], $rule);
+  ```
+
+  ```python python
+  rule = (
+      {
+          "objectID": "gluten-free-rule",
+          "conditions": [
+              {
+                  "pattern": "gluten-free",
+                  "anchoring": "contains",
+              },
+          ],
+          "consequence": {
+              "params": {
+                  "filters": "NOT allergens:gluten",
+                  "query": {
+                      "edits": [
+                          {
+                              "type": "remove",
+                              "delete": "gluten-free",
+                          },
+                      ],
+                  },
+              },
+          },
+      },
+  )
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    objectID: "gluten-free-rule",
+    conditions: [
+      {
+        pattern: "gluten-free",
+        anchoring: "contains"
+      }
+    ],
+    consequence: {
+      params: {
+        filters: "NOT allergens:gluten",
+        query: {
+          edits: [
+            {
+              type: "remove",
+              delete: "gluten-free"
+            }
+          ]
+        }
+      }
+    }
+  }
+
+  index.save_rule(rule)
+  ```
+
+  ```scala scala
+  val ruleToSave = Rule(
+    objectID = "gluten-free-rule",
+    conditions = Some(Seq(Condition(
+      pattern = "gluten-free",
+      anchoring = "contains"))),
+    consequence = Consequence(
+      params = Seq(
+        Map("filters" -> "NOT allergens:gluten"),
+        Map(
+          "query" -> Map(
+            "edits" -> Seq(
+              Edit("remove", "gluten-free")))))), )
+
+  client.execute {
+    save rule ruleToSave inIndex "index_name"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "gluten-free-rule")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("gluten-free"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(\.queryTextAlteration, to: .edits([.remove("gluten-free")]))
+        .set(\.query, to: Query().set(\.filters, to: "NOT allergens:gluten"))
+    )
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Using the dashboard
+
+You can also add rules from the Algolia dashboard.
+
+1. Select the **Search** product icon on your dashboard and then select your index.
+
+1. Click the **Configuration** tab.
+
+1. In the **Facets** subsection of _Filtering and Faceting_, click the "Add an attribute" button and select the `allergens` attribute from the drop-down menu.
+
+1. Click the **Rules** tab.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, select **Manual Editor**.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** in the drop-down menu, and enter "gluten-free" in the input field.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button and select **Add Query Parameter**.
+   - In the input field that appears, enter the JSON search parameter you want to add. For example: `{ "filters": "NOT allergens:gluten" }`
+   - Click the **Add consequence** button again and select **Remove Word**.
+   - Type or select "gluten-free" in the input field.
+
+1. Save your changes.
+
+## Numerical filters
+
+Consider the query "cheap toaster 800w". You can use Rules to filter the results by "toaster" and "prices between 0 and 25" so that the only textual search is the remaining term, "800w", which could further be used to limit the results with that wattage.
+
+### Rule
+
+If query = "cheap toaster" then price \< 10 and type=toaster
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This requires two rules.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Using the API
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "cheap",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "cheap" }
+      },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              Filters = "price < 10",
+              Query = new ConsequenceQuery
+              {
+                  Edits = new List<Edit>
+                  {
+                      new Edit { Type = EditType.Remove, Delete = "cheap" }
+                  }
+              }
+          }
+      }
+  };
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:  "cheap",
+  	Condition: search.RuleCondition{Anchoring: search.Contains, Pattern: "cheap"},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{
+  						search.RemoveEdit("cheap"),
+  					},
+  				},
+  			),
+  			QueryParams: search.QueryParams{
+  				OptionalFilters: opt.Filter("price < 10"),
+  			},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition()
+      .setPattern("cheap")
+      .setAnchoring("contains");
+
+  ConsequenceQuery consequenceQuery = new ConsequenceQuery()
+          .setEdits(Collections.singletonList(new Edit().setType("remove").setDelete("cheap")));
+
+  ConsequenceParams params = new ConsequenceParams()
+      .setConsequenceQuery(consequenceQuery).setFilters("price < 10");
+
+  Consequence consequence = new Consequence()
+      .setParams(params);
+
+  Rule rule = new Rule()
+          .setObjectID("cheap")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  // Synchronous
+  index.saveRule(rule);
+
+  // Asynchronous
+  index.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  index.saveRule({
+    objectID: "cheap",
+    condition: {
+      pattern: "cheap",
+      anchoring: "contains",
+    },
+    consequence: {
+      params: {
+        query: {
+          remove: "cheap",
+        },
+      },
+      filters: "price < 10",
+    },
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          "cheap",
+          conditions {
+              +condition(Contains, Literal("cheap"))
+          },
+          consequence(
+              edits = edits { +"cheap" },
+              query = query {
+                  filters {
+                      and { comparison("price", Less, 10) }
+                  }
+              }
+          )
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  // Turn JSON into an array
+  $rules = array(
+    array(
+      'objectID' => 'cheap',
+      'condition' => array(
+        'pattern' => 'cheap',
+        'anchoring' => 'contains'
+      ),
+      'consequence' => array(
+        'params' => array(
+          'query' => array(
+            'remove' => 'cheap'
+          ),
+          'filters' => 'price < 10'
+        )
+      )
+    )
+  );
+
+  // Push Rule to index
+  $index->batchRules($rules);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "cheap",
+      "condition": {"pattern": "cheap", "anchoring": "contains"},
+      "consequence": {"params": {"query": {"remove": "cheap"}}},
+      "filters": "price < 10",
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    objectID: "cheap",
+    condition: {
+      pattern: "cheap",
+      anchoring: "contains"
+    },
+    consequence: {
+      params: {
+        query: {
+          remove: "cheap"
+        }
+      },
+      filters: "price < 10"
+    }
+  }
+
+  index.save_rule(rule["objectID"], rule)
+  ```
+
+  ```scala scala
+  val ruleToSave = Rule(
+    objectID = "cheap",
+    condition = Condition(
+      pattern = "cheap",
+      anchoring = "contains"),
+    consequence = Consequence(
+      params = Seq(
+        Map("Filters" -> "price < 10"),
+        Map(
+          "query" -> Map(
+            "edits" -> Seq(
+              Edit("remove", "cheap")))))), )
+
+  client.execute {
+    save rule ruleToSave inIndex "index_name"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "cheap")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("cheap"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(\.queryTextAlteration, to: .edits([.remove("cheap")]))
+        .set(\.query, to: Query().set(\.filters, to: "price < 10"))
+    )
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Using the dashboard
+
+Since there are two rules, you must set up both separately.
+
+#### Preparation
+
+1. Select the **Search** product icon on your dashboard and then select your index.
+1. Click the **Configuration** tab.
+1. In the **Facets** subsection of _Filtering and Faceting_, click the "Add an attribute" button and select the `product_type` attribute from the drop-down menu.
+
+#### For the first rule
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index to which you're adding a rule.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Manual Editor** option.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** in the drop-down menu, and enter "toaster" in the input field.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button and select **Add Query Parameter**.
+   - In the input field that appears, add the JSON parameters you want to apply when the user's query matches the Rule: `{ "filters": "product_type:toaster" }`
+   - Click the **Add consequence** button again and select **Remove Word**.
+   - Type or select "toaster" in the input field.
+
+1. Save your changes.
+
+#### For the second rule
+
+1. Go back to the **Rules** section.
+
+1. Select **New rule**. In the drop-down menu, click the **Manual Editor** option.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** in the drop-down menu, and enter "cheap" in the input field.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button and select **Add Query Parameter**.
+   - In the input field that appears, add the JSON parameters you want to apply when the user's query matches the Rule: `{ "filters": "price<10" }`
+   - Click the **Add consequence** button again and select **Remove Word**.
+   - Type or select "cheap" in the input field.
+
+1. Save your changes.

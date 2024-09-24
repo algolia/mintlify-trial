@@ -1,0 +1,613 @@
+---
+title: Adding search parameters dynamically
+description: |-
+  Applying search parameters based on the query using Rules.
+---
+
+Rules are a powerful tool that let you take decisions for users and improve their experience based on what they search for.
+When combined with query time settings, **you can use rules to make your search smarter**.
+
+Imagine you're developing an app to search for airports.
+Algolia geolocation feature ranks results based how far or distant an item is from a given point.
+The problem with this approach is that, depending on your search, the closest airport might not be the most relevant result.
+For example, for a user in Paris, with a geo-located search experience, the first result they may get is Le Bourget, a small airport near the center of the city that services private jets and air shows.
+This is an unlikely choice for a top result. Most users will be looking for Roissy CDG or Orly.
+
+Distance-based ranking is convenient when you're looking for airports based on your location.
+Yet, as soon as you start looking for specific cities or countries, distance-based ranking doesn't necessarily work anymore.
+What yoou want is to keep geo-located results, but turn it off as soon as users search for a specific city or country.
+In that case, you need to fall back on some other metric, like the number of liaisons.
+Because many Algolia settings, like [`aroundLatLngViaIP`](/api-reference/api-parameters/aroundLatLngViaIP/), are available at query time, **you can use rules to detect a search for a specific city or country and change search parameters on the fly**.
+
+## Dataset example
+
+Back to the airports example, using the following dataset:
+
+```json json
+[
+  {
+    "name": "Orly",
+    "city": "Paris",
+    "country": "France",
+    "_geoloc": { "lat": 48.725278, "lng": 2.359444 },
+    "nb_airline_liaisons": 404
+  },
+  {
+    "name": "Charles De Gaulle",
+    "city": "Paris",
+    "country": "France",
+    "_geoloc": { "lat": 49.012779, "lng": 2.55 },
+    "nb_airline_liaisons": 1041
+  },
+  {
+    "name": "Le Bourget",
+    "city": "Paris",
+    "country": "France",
+    "_geoloc": { "lat": 48.961487, "lng": 2.436966 },
+    "nb_airline_liaisons": 0
+  },
+  {
+    "name": "Ben Gurion",
+    "city": "Tel-Aviv",
+    "country": "Israel",
+    "_geoloc": { "lat": 32.011389, "lng": 34.886667 },
+    "nb_airline_liaisons": 271
+  },
+  {
+    "name": "Haifa",
+    "city": "Haifa",
+    "country": "Israel",
+    "_geoloc": { "lat": 32.809444, "lng": 35.043056 },
+    "nb_airline_liaisons": 4
+  },
+  {
+    "name": "Pudong",
+    "city": "Shanghai",
+    "country": "China",
+    "_geoloc": { "lat": 31.143378, "lng": 121.805214 },
+    "nb_airline_liaisons": 825
+  },
+  {
+    "name": "Hongqiao Intl",
+    "city": "Shanghai",
+    "country": "China",
+    "_geoloc": { "lat": 31.197875, "lng": 121.336319 },
+    "nb_airline_liaisons": 411
+  }
+]
+```
+
+The first thing you could do is use `nb_airline_liaisons` for [custom ranking](/guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking/) to prioritize airports with many liaisons.
+Yet, as soon as [`aroundLatLngViaIP`](/api-reference/api-parameters/aroundLatLngViaIP/) is set to `true` in your search code, this custom ranking would be overridden in favor of [geographical proximity](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#geo-if-applicable), which is part of ranking formula.
+
+In other words, you would still have the Paris problem because Le Bourget, even if it has the lowest number of liaisons, has the closest geographical proximity to the user.
+
+Other examples: if a user is in Paris and searches for "israel", they would first get Haifa airport, because this is the Israeli airport that's the closest to Paris. Yet, it wouldn't make sense, as Haifa airport is relatively small. "Ben Gurion" is a better choice. Same goes if they were looking for "shanghai". Hongqiao airport is geographically closer to Paris, but not as big as Pudong airport, which is only 30 km away from Hongqiao.
+
+Fix this by creating a rule that detects searches for a specific city or country and turns off [`aroundLatLngViaIP`](/api-reference/api-parameters/aroundLatLngViaIP/) as a consequence.
+Whenever a user specifically looks for a city or country name, like "paris", "israel", or "shanghai", the distance-based search would be turned off, falling back on custom ranking by number of liaisons.
+
+## Using the API
+
+To achieve this, you first need to use `nb_airline_liaisons` for custom ranking. You also need to set `city` and `country` as attributes for faceting, so you can detect whenever a query matches any of them.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      AttributesForFaceting = new List<string> { "city", "country" },
+      CustomRanking = new List<string> { "desc(nb_airline_liaisons)" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	CustomRanking:         opt.CustomRanking("desc(nb_airline_liaisons)"),
+  	AttributesForFaceting: opt.AttributesForFaceting("city", "country"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings()
+      .setCustomRanking(Collections.singletonList(
+        "desc(nb_airline_liaisons)"
+      ))
+      .setAttributesForFaceting(Arrays.asList(
+        "city", "country"
+      ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      customRanking: ["desc(nb_airline_liaisons)"],
+      attributesForFaceting: ["city, country"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      customRanking {
+          +Desc("nb_airline_liaisons")
+      }
+      attributesForFaceting {
+          +"city"
+          +"country"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'customRanking' => [
+      'desc(nb_airline_liaisons)'
+    ],
+    'attributesForFaceting' => [
+      'city', 'country'
+  ]);
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "customRanking": ["desc(nb_airline_liaisons)"],
+          "attributesForFaceting": ["city", "country"],
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      customRanking: [
+        "desc(nb_airline_liaisons)"
+      ],
+      attributesForFaceting: [
+        "city",
+        "country"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      customRanking = Some(Seq(
+        CustomRanking.desc("nb_airline_liaisons"))),
+      attributesForFaceting = Some(Seq(
+        "city",
+        "country")))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(\.customRanking, to: [.desc("nb_airline_liaisons")])
+    .set(\.attributesForFaceting, to: ["city", "country"])
+
+  index.setSettings(settings) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+Then, you can set a Rule that detects matches in facets `city` and `country`, and changes the search parameters accordingly. For this, you need to use the [`batchRules`](/api-reference/api-methods/batch-rules/) method.
+
+<CodeGroup>
+  ```csharp csharp
+  var rule1 = new Rule
+  {
+      ObjectID = "country",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "{facet:country}" }
+      },
+      Consequence = new Consequence { Params = new ConsequenceParams { AroundLatLngViaIP = false } }
+  };
+
+  var rule2 = new Rule
+  {
+      ObjectID = "city",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "{facet:city}" }
+      },
+      Consequence = new ConsequenceParams
+      {
+          Params = new ConsequenceParams { AroundLatLngViaIP = false }
+      }
+  };
+
+  index.SaveRules(new List<Rule> { rule1, rule2 });
+
+  // Asynchronous
+  await index.SaveRulesAsync(new List<Rule> { rule1, rule2 });
+  ```
+
+  ```go go
+  rules := []search.Rule{
+  	{
+  		ObjectID:  "country",
+  		Condition: []search.RuleCondition{{Anchoring: search.Contains, Pattern: "{facet:country}"}},
+  		Consequence: search.RuleConsequence{
+  			Params: &search.RuleParams{
+  				QueryParams: search.QueryParams{
+  					AroundLatLngViaIP: opt.AroundLatLngViaIP(true),
+  				},
+  			},
+  		},
+  	},
+  	{
+  		ObjectID:   "city",
+  		Conditions: []search.RuleCondition{{Anchoring: search.Contains, Pattern: "{facet:city}"}},
+  		Consequence: search.RuleConsequence{
+  			Params: &search.RuleParams{
+  				QueryParams: search.QueryParams{
+  					AroundLatLngViaIP: opt.AroundLatLngViaIP(true),
+  				},
+  			},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRules(rules)
+  ```
+
+  ```java java
+  ConsequenceParams params = new ConsequenceParams();
+  params.setAroundLatLngViaIP(false);
+
+  index.saveRules(
+      Arrays.asList(
+          new Rule()
+              .setObjectID("country")
+              .setConditions(Collections.singletonList(
+                  new Condition().setPattern("{facet:country}").setAnchoring("contains"))
+              )
+              .setConsequence(new Consequence().setParams(params)),
+          new Rule()
+              .setObjectID("city")
+              .setCondition(new Condition().setPattern("{facet:city}").setAnchoring("contains"))
+              .setConsequence(new Consequence().setParams(params))));
+  ```
+
+  ```js js
+  index
+    .saveRules([
+      {
+        objectID: "country",
+        conditions: [
+          {
+            pattern: "{facet:country}",
+            anchoring: "contains",
+          },
+        ],
+        consequence: {
+          params: {
+            aroundLatLngViaIP: false,
+          },
+        },
+      },
+      {
+        objectID: "city",
+        conditions: [
+          {
+            pattern: "{facet:city}",
+            anchoring: "contains",
+          },
+        ],
+        consequence: {
+          params: {
+            aroundLatLngViaIP: false,
+          },
+        },
+      },
+    ])
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val country = Attribute("country")
+  val city = Attribute("city")
+  val rules = listOf(
+      Rule(
+          objectID = ObjectID("country"),
+          conditions = listOf(Condition(Anchoring.Contains, Pattern.Facet(country))),
+          consequence = Consequence(
+              query = Query(aroundLatLngViaIP = false)
+          )
+      ),
+      Rule(
+          objectID = ObjectID("city"),
+          conditions = listOf(ondition(Anchoring.Contains, Pattern.Facet(city))),
+          consequence = Consequence(
+              query = Query(aroundLatLngViaIP = false)
+          )
+      )
+  )
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  $index->saveRules([
+    [
+      'objectID' => 'country',
+      'conditions' => array(array(
+        'pattern' => '{facet:country}',
+        'anchoring' => 'contains'
+      )),
+      'consequence' => [
+        'params' => [
+          'aroundLatLngViaIP' => false
+        ]
+      ]
+    ],
+    [
+      'objectID' => 'city',
+      'conditions' => array(array(
+        'pattern' => '{facet:city}',
+        'anchoring' => 'contains'
+      )),
+      'consequence' => [
+        'params' => [
+          'aroundLatLngViaIP' => false
+        ]
+      ]
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.save_rules(
+      [
+          {
+              "objectID": "country",
+              "conditions": [{"pattern": "{facet:country}", "anchoring": "contains"}],
+              "consequence": {"params": {"aroundLatLngViaIP": False}},
+          },
+          {
+              "objectID": "city",
+              "conditions": [{"pattern": "{facet:city}", "anchoring": "contains"}],
+              "consequence": {"params": {"aroundLatLngViaIP": False}},
+          },
+      ]
+  )
+  ```
+
+  ```ruby ruby
+  index.batch_rules(
+    [
+      {
+        objectID: "country",
+        conditions: [
+          {
+            pattern: "{facet:country}",
+            anchoring: "contains"
+          }
+        ],
+        consequence: {
+          params: {
+            aroundLatLngViaIP: false
+          }
+        }
+      },
+      {
+        objectID: "city",
+        conditions: [
+          {
+            pattern: "{facet:city}",
+            anchoring: "contains"
+          }
+        ],
+        consequence: {
+          params: {
+            aroundLatLngViaIP: false
+          }
+        }
+      }
+    ]
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    save rules Seq(
+      Rule(
+        objectID = "country",
+        conditions = Some(Seq(Condition(
+          pattern = "{facet:country}",
+          anchoring = "contains"))),
+        consequence = Consequence(
+          params = Some(Map("aroundLatLngViaIP" -> true)))),
+      Rule(
+        objectID = "city",
+        conditions = Some(Seq(Condition(
+          pattern = "{facet:city}",
+          anchoring = "contains"))),
+        consequence = Consequence(
+          params = Some(Map("aroundLatLngViaIP" -> true))))) inIndex "myIndex"
+  }
+  ```
+
+  ```swift swift
+  let rules: [Rule] = [
+    Rule(objectID: "country")
+      .set(
+        \.conditions,
+        to: [
+          Rule.Condition()
+            .set(\.anchoring, to: .contains)
+            .set(\.pattern, to: .facet("country"))
+        ]
+      )
+      .set(
+        \.consequence,
+        to: Rule.Consequence()
+          .set(
+            \.query,
+            to: Query()
+              .set(\.aroundLatLngViaIP, to: false)
+          )
+      ),
+    Rule(objectID: "country")
+      .set(
+        \.conditions,
+        to: [
+          Rule.Condition()
+            .set(\.anchoring, to: .contains)
+            .set(\.pattern, to: .facet("city"))
+        ]
+      )
+      .set(
+        \.consequence,
+        to: Rule.Consequence()
+          .set(
+            \.query,
+            to: Query()
+              .set(\.aroundLatLngViaIP, to: false)
+          )
+      ),
+  ]
+
+  index.saveRules(rules) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+## Using the dashboard
+
+You can also add your Rules in your Algolia dashboard.
+
+### Custom ranking
+
+1. Select the **Search** product icon on your dashboard and then select your index.
+1. Click on the **Configuration** tab.
+1. In the **Ranking and Sorting** section, click the "Add a Custom Ranking" button and select the `nb_airline_liaisons` attribute from the drop-down menu.
+1. In the **Facets** subsection of _Filtering and Faceting_, click the "Add an attribute" button and select the `country` and `city` attributes from the drop-down menu.
+1. Save your changes.
+
+### Rules
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Manual Editor** option.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** in the drop-down menu, and select the option **Add Facet "country"** from the input drop-down menu. `{facet:country}` should then be displayed in the input.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button and select **Add Query Parameter**.
+   - In the input field that appears, add the JSON parameters you want to apply when a user query matches the rule: `{ "aroundLatLngViaIP": false }`
+
+1. Save your changes.
+
+1. Click the **New Rule** button again and then **Manual Editor**.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** in the drop-down menu, and select the option **Add Facet "city"** from the input drop-down menu. `{facet:city}` should then be displayed in the input.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button again and select **Add Query Parameter**.
+   - In the input field that appears, add the JSON parameters you want to apply when a user query matches the rule: `{ "aroundLatLngViaIP": false }`
+
+1. Save your changes.
+
+## Query time
+
+Once your Rule is ready, you can search for airports, cities, and countries. When the query exactly matches a city or a country from your dataset, the Rule sets `aroundLatLngViaIP` to `false` regardless of the parameters you set in the query.
+
+Therefore, when a user searches for "paris" or "china", matching airports are ranked by `nb_airline_liaisons`.
+When not searching for either a city or a country, airports are ranked by distance to a user's current location.
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search(new Query("query") { AroundLatLngViaIP = false });
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"query",
+  	opt.AroundLatLngViaIP(true),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("query")
+      .setAroundLatLngViaIP(true),
+    new RequestOptions()
+      .addExtraHeader("X-Forwarded-For", "94.228.178.246"));
+  ```
+
+  ```js js
+  index
+    .search("", {
+      aroundLatLngViaIP: true,
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```php php
+  $results = $index->search('query', [
+    'aroundLatLngViaIP' => true
+  ]);
+  ```
+
+  ```python python
+  results = index.search("query", {"aroundLatLngViaIP": True})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "query",
+    {
+      aroundLatLngViaIP: true
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("query"),
+      aroundLatLngViaIP = Some(true))
+  }
+  ```
+
+  ```swift swift
+  let query = Query()
+    .set(\.query, to: "query")
+    .set(\.aroundLatLngViaIP, to: true)
+
+  index.search(query: query) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>

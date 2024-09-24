@@ -1,0 +1,231 @@
+---
+title: Implement Algolia's Query Suggestions
+description: |-
+  Learn how to implement Algolia's Query Suggestions.
+---
+
+Algolia offers you the possibility to set [Query Suggestions](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/), which is a powerful tool. It allows to suggest popular search terms to your users.
+By default, the extension allows you to index suggestions coming from the Magento search terms and display them inside the [autocomplete menu](/integration/magento-2/customize/autocomplete-menu/).
+This guide will show you how to replace the Magento suggestions with Algolia's query suggestions in the autocomplete menu.
+
+First, you have to enable the Magento query suggestions. After that, you need to create an Algolia suggestion index and replace the Magento suggestions with Algolia's suggestions.
+
+## Enable the suggestions in the Magento configuration
+
+### Enabling the suggestions for the Autocomplete menu
+
+You must first enable the suggestions inside the autocomplete menu.
+To do so, visit **Stores > Algolia Search > Autocomplete Menu** in your back-office.
+
+Suggestions can be changed with these settings:
+
+- **Number of queries** (0 by default): setting a value greater than 0 will automatically activate the feature. It is the maximum number of results shown in the autocomplete menu.
+- **Minimum query popularity** (1000 by default)
+- **Minimum number of results per query** (2 by default)
+
+The two last settings are related to Magento's suggestions, so you don't need to change these values for Algolia's Query Suggestions. The settings for Algolia's Query Suggestions are handled in the [Algolia dashboard](https://dashboard.algolia.com/dashboard/).
+
+### Get the Magento suggestions to work
+
+Once you've enabled query suggestions, clear the Magento cache and run a suggestions reindex:
+
+```bash bash
+php bin/magento indexer:reindex algolia_suggestions
+```
+
+You can now check your search to see if the Magento suggestions are showing up.
+
+After configuring Magento, create a Query Suggestions index from the Algolia dashboard.
+
+## Create the Query Suggestions index in the Algolia dashboard
+
+To create a Query Suggestions index, you need to go to your [Algolia dashboard](https://dashboard.algolia.com/dashboard/) and:
+
+- Click on **"Query suggestions"**
+- Click on **"New query suggestions"**
+
+First, choose an index name (this tutorial uses `query_suggestions_test`). Select the different languages you're using and the source index (for example, your main product index). You can click "Accept and Continue" to create the Query Suggestions index.
+
+After a few seconds, your new index will be available. You can navigate to the "indices" section in the Algolia dashboard to find it between your other indices.
+
+## Replace the default suggestions index with the Query Suggestions index
+
+To use Algolia's Query Suggestions, you will need to use the appropriate [frontend hooks](/integration/magento-2/customize/custom-front-end-events/#autocomplete-menu-events) provided by the extension.
+
+You can find some examples of frontend hooks usage in the [**custom extension guide**](/integration/magento-2/customize/custom-front-end-events/#autocomplete-menu-events).
+
+For details of how to turn off default suggestions, refer to [**Indexing suggestions**](/integration/magento-2/how-it-works/indexing/#indexing-suggestions).
+
+To contain the required frontend hooks, create a new Magento module (for example `Algolia_CustomAlgolia`) or install the freely available [starter extension](/integration/magento-2/guides/create-a-custom-extension/#customalgolia) that you can customize further for your application.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The Autocomplete library was upgraded from v0 to v1 as of `3.8.0` of the Algolia Search Integration for Magento extension. Depending on your installed version, a different approach to customization will be required. In general, Algolia recommends running on the very latest version of our extension.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Customizing on latest version
+
+Query suggestions are now implemented via a [plugin](/ui-libraries/autocomplete/core-concepts/plugins/).
+
+To customize, use the [`afterAutocompletePlugins` frontend hook](/integration/magento-2/customize/custom-front-end-events/#autocomplete-menu-events) provided by the extension.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To ensure your customized plugin loads, [enable query suggestions in the Magento configuration](#enable-the-suggestions-in-the-magento-configuration) by setting "Number of queries" to a value greater than 0 in
+  **Stores > Configuration > Algolia Search > Autocomplete Menu**.
+</Note>
+
+{/* prettier-ignore-end */}
+
+Create the `view/frontend/web/js/hooks.js` file and register it via `requirejs-config.js`:
+
+```js js
+const config = {
+  map: {
+    "*": {
+      algoliaHooks: "Algolia_CustomAlgolia/hooks",
+    },
+  },
+};
+```
+
+Create and customize the following hook to your needs:
+
+```js js
+algolia.registerHook("afterAutocompletePlugins", (plugins, searchClient) => {
+  // Obtain the index of the existing suggestions plugin
+  const pluginIndex = plugins.findIndex(
+    (plugin) => plugin.name === "aa.querySuggestionsPlugin",
+  );
+  if (pluginIndex > -1) {
+    // Replace the entire plugin
+    plugins[pluginIndex] =
+      algoliaBundle.createQuerySuggestionsPlugin.createQuerySuggestionsPlugin({
+        searchClient,
+
+        // Build your suggestions index per https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/#implementing-query-suggestions
+        indexName: "query_suggestions_test",
+
+        // Configuration options for the search performed against the index
+        getSearchParams() {
+          return {
+            hitsPerPage: algoliaConfig.autocomplete.nbOfProductsSuggestions,
+          };
+        },
+
+        // Be sure to pass your suggestionsHtml dependency via RequireJS in your hooks.js file
+        transformSource({ source }) {
+          return {
+            ...source,
+
+            // For keyboard navigation
+            getItemUrl({ item }) {
+              return algoliaConfig.resultPageUrl + `?q=${item.query}`;
+            },
+
+            // JavaScript templates to render your suggestion hits
+            templates: {
+              noResults({ html }) {
+                return suggestionsHtml.getNoResultHtml({ html });
+              },
+              header({ html, items }) {
+                return suggestionsHtml.getHeaderHtml({ html });
+              },
+              item({ item, components, html }) {
+                return suggestionsHtml.getItemHtml({ item, components, html });
+              },
+              footer({ html, items }) {
+                return suggestionsHtml.getFooterHtml({ html });
+              },
+            },
+          };
+        },
+      });
+  }
+
+  return plugins;
+});
+```
+
+This hook has three tasks:
+
+- Extract the index of the existing query suggestions plugin that needs replacing.
+- Instantiate a new plugin containing the new index for the Query Suggestions data (for example the `query_suggestions_test` index created previously).
+- Provide all definitions related to presentation and behavior (i.e. templates, search parameters and keyboard navigation).
+
+After this, clear the Magento cache and you should be able to see the Query Suggestions inside your Autocomplete Menu.
+
+### Customizing on versions `3.7.x` and below
+
+Use the [`beforeAutocompleteSources` frontend hook](/integration/magento-2/customize/custom-front-end-events/#autocomplete-menu-events) provided by the extension.
+
+In your custom module, create the `view/frontend/layout/algolia_search_handle.xml` file and add the following to the `<head>` section:
+
+```html html
+<script src="Algolia_CustomAlgolia::hooks.js" />
+```
+
+Create the `view/frontend/web/js/hooks.js` file and implement the logic for your hook there, or paste the contents of this [gist](https://gist.github.com/damcou/cabab5db4c3c1bc956b225dcd372e85c) in the file.
+
+```js js
+/**
+ * Documentation: https://community.algolia.com/magento/doc/m2/frontend-events/
+ **/
+
+/**
+ * Autocomplete hook method
+ * autocomplete.js documentation: https://github.com/algolia/autocomplete/tree/v0
+ **/
+
+algolia.registerHook(
+  "beforeAutocompleteSources",
+  function (sources, algoliaClient, algoliaBundle) {
+    // Parsing the different autocomplete source to find the suggestions one
+    for (var i = 0; i < sources.length; i++) {
+      if (sources[i].name === "suggestions") {
+        // Setting the new index containing the Algolia Query Suggestions
+        var index = algoliaClient.initIndex("query_suggestions_test"),
+          suggestionsSource = algoliaBundle.$.fn.autocomplete.sources.hits(
+            index,
+            {
+              hitsPerPage: algoliaConfig.autocomplete.nbOfQueriesSuggestions,
+            },
+          );
+
+        // Replacing the data for the suggestions source
+        sources[i] = {
+          source: suggestionsSource,
+          displayKey: "query",
+          name: "suggestions",
+          templates: {
+            suggestion: function (hit) {
+              hit.url =
+                algoliaConfig.baseUrl + "/catalogsearch/result/?q=" + hit.query;
+
+              return algoliaConfig.autocomplete.templates.suggestions.render(
+                hit,
+              );
+            },
+          },
+        };
+
+        break;
+      }
+    }
+
+    return sources;
+  },
+);
+```
+
+This hook has three tasks:
+
+- Map over the different sources of the Autocomplete menu, to find the Magento's default suggestions source that needs to be replaced.
+- Instantiating a new source containing the Query Suggestions data (inside the `query_suggestions_test` index created previously).
+- Overriding the source with the created data.
+
+After this, you have to clear the Magento cache one last time and you'll be able to see the Query Suggestions inside your Autocomplete Menu.

@@ -1,0 +1,487 @@
+---
+title: Optional filters
+description: |-
+  What optional filters are and how you can use filter scoring to improve relevance.
+---
+
+Unlike [filters](/guides/managing-results/refine-results/filtering/), **optional filters don't remove records from your search results when your query doesn't match them**. Instead, they divide your records into two sets: the results that match the optional filter and those that don't.
+
+Use this to [boost results](/guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-promote-with-optional-filters/) you want to show before others or "bury" results you want to show last.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Optional filters](https://www.algolia.com/blog/engineering/feature-spotlight-optional-filters/)
+  - [Optional filters and fuzzy matching](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Filter scoring
+
+You can add extra nuance to your ranking by [specifying scores](/guides/managing-results/refine-results/filtering/in-depth/filter-scoring/) for different optional filters. For example, you want to display your matching products in the following order:
+
+- Apple products first
+- Samsung products second
+- Huawei products last
+
+In this scenario, products from any other brand appear _after_ Apple and Samsung products and _before_ Huawei products. You can achieve this by using _scored optional filters_ to boost Apple and Samsung products and negative filters to bury Huawei products.
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search<Contact>(
+      new Query
+      {
+          SearchQuery = "phone",
+          OptionalFilters = new List<List<string>>
+          {
+              new List<string> { "brand:Apple<score=3>", "brand:Samsung<score=2>", "brand:-Huawei" }
+          }
+      }
+  );
+
+  // Asynchronous
+  await index.SearchAsync<Contact>(
+      new Query
+      {
+          SearchQuery = "phone",
+          OptionalFilters = new List<List<string>>
+          {
+              new List<string> { "brand:Apple<score=3>", "brand:Samsung<score=2>", "brand:-Huawei" }
+          }
+      }
+  );
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"phone",
+  	opt.OptionalFilterAnd(
+  		"brand:Apple<score=3>",
+  		"brand:Samsung<score=2>",
+  		"brand:-Huawei",
+  	),
+  )
+  ```
+
+  ```java java
+  List<List<String>> optionalFilters = Collections.singletonList(
+      Arrays.asList("brand:Apple<score=3>", "brand:Samsung<score=2>", "brand:-Huawei"));
+  Query query = new Query("phone")
+      .setOptionalFilters(optionalFilters);
+
+  index.search(query);
+
+  // Asynchronous
+  index.searchAsync(query);
+  ```
+
+  ```js js
+  index.search("phone", {
+    optionalFilters: [
+      "brand:Apple<score=3>",
+      "brand:Samsung<score=2>",
+      "brand:-Huawei",
+    ],
+  });
+  ```
+
+  ```kotlin kotlin
+  val query = query("phone") {
+      optionalFilters {
+          and {
+              facet("brand", "Apple", score = 3)
+              facet("brand", "Samsung", score = 2)
+              facet("brand", "-Huawei")
+          }
+      }
+  }
+  index.search(query = query)
+  ```
+
+  ```php php
+  $index->search('phone', array(
+      'optionalFilters' => array(
+          'brand:Apple<score=3>',
+          'brand:Samsung<score=2>',
+          'brand:-Huawei',
+      )
+  ));
+  ```
+
+  ```python python
+  index.search(
+      "phone",
+      {
+          "optionalFilters": [
+              "brand:Apple<score=3>",
+              "brand:Samsung<score=2>",
+              "brand:-Huawei",
+          ],
+      },
+  )
+  ```
+
+  ```ruby ruby
+  index.search(
+    "phone",
+    {
+      optionalFilters: [
+        "brand:Apple<score=3>",
+        "brand:Samsung<score=2>",
+        "brand:-Huawei"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  // Creating Rules isn't currently possible with this client.
+  // Please use the dashboard instead.
+  ```
+
+  ```swift swift
+  index.search(
+    query: Query("phone")
+      .set(
+        \.optionalFilters,
+        to: [
+          "brand:Apple<score=3>",
+          "brand:Samsung<score=2>",
+          "brand:-Huawei",
+        ])
+  ) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+When you don't specify a score for an optional filter, it defaults to 1.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  For performance reasons, **you shouldn't use filter scoring on searches that may return more than 100,000 results**.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Score calculation
+
+The engine has three ways of calculating scores:
+
+- Calculate the sum of optional filters
+- Calculate the maximum score for optional filters
+- A combination of both.
+
+By default, the engine sums the score of each optional filter. The engine determines this score by taking the maximum score of each optional filter.
+
+### Simple optional filters
+
+Here's an example of how the engine calculates an [`optionalFilters`](/api-reference/api-parameters/optionalFilters/) score:
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search<Contact>(
+      new Query
+      {
+          SearchQuery = "phone",
+          OptionalFilters = new List<List<string>>
+          {
+              new List<string> { "brand:Apple<score=2>", "type:table" }
+          }
+      }
+  );
+
+  // Asynchronous
+  await index.SearchAsync<Contact>(
+      new Query
+      {
+          SearchQuery = "phone",
+          OptionalFilters = new List<List<string>>
+          {
+              new List<string> { "brand:Apple<score=2>", "type:table" }
+          }
+      }
+  );
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"",
+  	opt.OptionalFilterAnd(
+  		"brand:Apple<score=2>",
+  		"type:tablet>",
+  	),
+  )
+  ```
+
+  ```java java
+  List<List<String>> optionalFilters = Collections.singletonList(
+      Arrays.asList("brand:Apple<score=2>", "type:tablet"));
+
+  Query query = new Query()
+      .setOptionalFilters(optionalFilters);
+
+  index.search(query);
+
+  // Asynchronous
+  index.searchAsync(query);
+  ```
+
+  ```js js
+  index.search("", {
+    optionalFilters: ["brand:Apple<score=2>", "type:tablet"],
+  });
+  ```
+
+  ```kotlin kotlin
+  val query = query {
+      optionalFilters {
+          and {
+              facet("brand", "Apple", score = 2)
+              facet("type", "tablet")
+          }
+      }
+  }
+  index.search(query = query)
+  ```
+
+  ```php php
+  $index->search('', array(
+      'optionalFilters' => array(
+          'brand:Apple<score=2>',
+          'type:tablet'
+      )
+  ));
+  ```
+
+  ```python python
+  index.search(
+      "phone",
+      {
+          "optionalFilters": [
+              "brand:Apple<score=2>",
+              "type:table",
+          ],
+      },
+  )
+  ```
+
+  ```ruby ruby
+  index.search(
+    "",
+    {
+      optionalFilters: [
+        "brand:Apple<score=2>",
+        "type:tablet"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  // Creating Rules isn't currently possible with this client.
+  // Please use the dashboard instead.
+  ```
+
+  ```swift swift
+  index.search(
+    query: Query("phone")
+      .set(
+        \.optionalFilters,
+        to: [
+          "brand:Apple<score=2>",
+          "type:Tablet",
+        ])
+  ) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+The engine starts by calculating the maximum score for each optional filter you send. In the preceding example, the engine first checks if a record's `brand` attribute has `Apple` as its value. If this is the case, the record gets a score of 2 on this filter and 0 otherwise. Finally, it checks the `type` attribute to see if it matches `tablet` and assigns a score of 1.
+
+In the following records, the first record matches both the `brand:Apple<score=2>` and `type:tablet` optional filters, which score 2 and 1 (for a total score of 3). However, the second record only matches the `brand:Apple<score=2>` optional filter, so the record gets a total score of 2. Therefore, the iPad Pro record shows up higher than the iPhone one.
+
+```json json
+[
+  {
+    "name": "iPad Pro",
+    "brand": "Apple",
+    "type": "tablet"
+  },
+  {
+    "name": "iPhone 11",
+    "brand": "Apple",
+    "type": "phone"
+  }
+]
+```
+
+With these optional filters, the engine ranks results as follows:
+
+1. Apple tablets (score: 3)
+1. Other Apple products (score: 2)
+1. Tablets by other brands (score: 1)
+1. Other products by other brands (score: 0)
+
+### Complex optional filters
+
+The engine calculates the maximum score for each element of your optional filters, so you can combine filters to perform more complex score calculations.
+
+For example, you want to promote red and blue products but avoid over-promoting products that are both red _and_ blue. To do so, use the following optional filters:
+
+```js js
+[["color:red<score=2>", "color:blue"], ["type:-jeans"]];
+```
+
+And the following record:
+
+```json json
+{
+  "name": "Long-sleeved shirt",
+  "type": "shirt",
+  "color": ["red", "blue"]
+}
+```
+
+1. The engine calculates the maximum score for the first optional filter. In this case, since it's an array (`["color:red<score=2>", "color:blue"]`), the engine checks all nested optional filters and uses the highest matching score.
+1. Since the record contains red and blue colors, it scores 2 (match on red) and 1 (match on blue). The engine uses the highest matching score instead of a sum, meaning **this record gets a score of 2 on this filter (not 3)**.
+1. The engine matches the second optional filter (`type:-jeans`). The record also matches (it's not "jeans"), so it scores 1. Adding this to the previous optional filter's score, the total score for this record is 3.
+
+With these optional filters, the engine ranks results as follows:
+
+1. Products that have "red" listed as color and aren't jeans (score: 3)
+1. Jeans that have "red" listed as color (score: 2), and products that have "blue" listed as color but aren't jeans (score: 2)
+1. Jeans that have "blue" listed as color (score: 1), and products that aren't jeans (score: 1)
+1. Jeans in colors other than "red" and "blue" (score: 0)
+
+{/* prettier-ignore-start */}
+
+<Note>
+  When several records have a similar score, the engine ranks them according to the ranking formula, as with any other search.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### `sumOrFiltersScores`
+
+The previous example used filter scoring to boost products that are either red or blue and not jeans. Records that are both red and blue are also prevented from getting a higher score than other records.
+
+You can change the engine's behavior by adding the [`sumOrFiltersScores`](/api-reference/api-parameters/sumOrFiltersScores/) parameter to a search. This makes the engine add all scores together, regardless of the structure of your filters.
+
+In the preceding example, this means that products that are both "red" and "blue" would show up even higher:
+
+1. Products that have "red" and "blue" listed as color and aren't jeans (score: 4)
+1. Products that have "red" and "blue" listed as color and are jeans (score: 3)
+1. Jeans that have only "red" listed as color (score: 2), and products that have only "blue" listed as color and aren't jeans (score: 2)
+1. Jeans that have only "blue" listed as color (score: 1), and products that aren't jeans (score: 1)
+1. Jeans in colors other than "red" and "blue" (score: 0)
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The [`sumOrFiltersScores`](/api-reference/api-parameters/sumOrFiltersScores/) parameter only changes the scoring for `OR` optional filters, which you create with a nested array of optional filters (`optionalFilters: [["attr:val"]]`). The engine always sums `AND` filter scores (`optionalFilters: ["attr:val1", "attr:val2"]`).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Performance
+
+Optional filters are powerful but have some significant performance limitations. Here are a few recommendations:
+
+- Define [`optionalFilters`](/api-reference/api-parameters/optionalFilters/) with the [`filterOnly`](/api-reference/api-parameters/attributesForFaceting/#parameter-option-filteronly) modifier, which tells the engine to treat the attribute as a filter instead of a facet. For example:
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      AttributesForFaceting = new List<string> { "filterOnly(brand)" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributesForFaceting: opt.AttributesForFaceting("filterOnly(brand)"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(new IndexSettings().setAttributesForFaceting(Collections.singletonList("allergens")));
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributesForFaceting: ["filterOnly(brand)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributesForFaceting {
+          +"filterOnly(brand)"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributesForFaceting' => [
+      "filterOnly(brand)"
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"attributesForFaceting": ["filterOnly(brand)"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      attributesForFaceting: [
+        "filterOnly(brand)"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributesForFaceting = Some(Seq(
+        "filterOnly(brand)")))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(\.attributesForFaceting, to: [.filterOnly("brand")])
+  index.setSettings(settings) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+- Prefer attributes with a low cardinality for your [`optionalFilters`](/api-reference/api-parameters/optionalFilters/). For example, it's preferable to use it with attributes like "brand" rather than "product\_name", as there are usually more unique product names than brands.
+- Minimize the number of [`optionalFilters`](/api-reference/api-parameters/optionalFilters/) as much as possible.
+- Aim for queries to return a smaller result set.
+- Depending on your plan, it may be possible to apply [sharding and other custom settings](/guides/scaling/scaling-to-larger-datasets/) to optimize your implementation. For more information, contact the [support team](https://www.algolia.com/contactus/).

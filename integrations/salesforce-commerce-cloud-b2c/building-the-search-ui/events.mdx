@@ -1,0 +1,86 @@
+---
+title: Click and conversion events
+description: |-
+  Send click and conversion events from your Salesforce B2C commerce store.
+---
+
+The integration can capture different [events](/guides/sending-events/getting-started/) and enable advanced [search features](/guides/sending-events/concepts/event-types/#events-by-features).
+Events are sent by the frontend cartridges:
+
+- **SFRA** sites emit events from the **int\_algolia\_sfra** cartridge.
+- **SiteGenesis** sites emit events from the **int\_algolia\_controllers** cartridge.
+
+Find statistics about these events in the [Algolia dashboard](https://dashboard.algolia.com/events?).
+
+Sending events enables you to use these features:
+
+- [NeuralSearch](/guides/getting-started/neuralsearch/)
+
+- [Algolia Recommend](/guides/algolia-recommend/overview/)
+
+- [Personalization](/guides/personalization/classic-personalization/what-is-personalization/)
+
+- [Dynamic Re-Ranking](/guides/algolia-ai/re-ranking/)
+
+- [Query Categorization](/guides/algolia-ai/query-categorization/)
+
+- [Search analytics](/guides/search-analytics/overview/)
+
+- [Revenue analytics](/guides/search-analytics/concepts/metrics/#revenue)
+
+- [A/B Testing](/guides/ab-testing/what-is-ab-testing/)
+
+## Default events
+
+By default, Algolia captures every keystroke in the search box to provide detailed [analytics](/guides/search-analytics/overview/).
+The cartridge can also capture `view`, `click`, and `conversion` events when users add a product to their cart or complete a purchase.
+
+To start capturing events, select **Enable insights events** in the integration's Business Manager module (**Business Manager > Merchant Tools > Algolia > Algolia**).
+Event behavior depends on the cartridge you use.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can also enable basic click and view events on InstantSearch and Autocomplete-powered pages and components such as search results, category landing pages, or the search box with an [Algolia dashboard setting](https://dashboard.algolia.com/events/settings). However, since this doesn't enable additional conversion events triggered on pages such as the product detail page or the cart, you should use the Salesforce B2C cartridge-specific setting on the Business Manager.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### SFRA
+
+When enabled, the SFRA cartridge sends the following events:
+
+- [`view`](/api-reference/api-methods/viewed-object-ids/) and [`click`](/api-reference/api-methods/clicked-object-ids-after-search/), sent from Autocomplete, category pages, and the search results page.
+- [`addedToCartObjectIDsAfterSearch`](/api-reference/api-methods/added-to-cart-object-ids-after-search/), sent when products are added to the cart.
+- [`purchasedObjectIDsAfterSearch`](/api-reference/api-methods/purchased-object-ids-after-search/), sends a `purchase` event, with the relevant purchased product IDs when users reach the order confirmation page.
+
+#### Keeping track of users and search queries for conversion events
+
+To provide better insights, the conversion events sent should ideally contain a [persistent `userToken`](/guides/sending-events/concepts/usertoken/#persistent-user-token) and the ID of the search query that led to them. The SFRA cartridge has mechanisms to keep track of those.
+
+##### `queryID`
+
+If the cartridge can get the `queryID` of the search that triggered a conversion event, it's sent in the event payload.
+
+- For **add-to-cart** events, there are two options:
+  - If the action is performed from the [Quickview](https://developer.salesforce.com/docs/commerce/sfra/guide/sfra-feature-list.html#quickview-capabilities), the `queryID` comes from the underlying InstantSearch instance.
+  - If users click a search result, leading to the product page, the cartridge adds a `queryID` to the query string URL and uses it when a user adds the product to their cart.
+- Since **purchase** events don't relate to a search, you must store each user's query IDs in their [browser's local storage](/guides/sending-events/guides/queryid/#track-the-queryid-in-cookies-or-local-storage) until the order confirmation page. The cartridge will only do this if a user has agreed to it, using [SFRA's system for tracking consent](https://developer.salesforce.com/docs/commerce/sfra/guide/b2c-sfra-consent-tracking.html).
+
+##### `userToken` and `authenticatedUserToken`
+
+The cartridge uses SFCC's default `dwanonymous_` cookie to [set the `userToken`](/api-reference/api-methods/set-user-token/) on insights events.
+For authenticated users, it also relies on the [session object](https://developer.salesforce.com/docs/commerce/b2c-commerce/guide/b2c-function-reference.html#object-dwsystemsession) to retrieve and [set the `authenticatedUserToken`](/api-reference/api-methods/set-authenticated-user-token/).
+
+### SiteGenesis
+
+When enabled, the SiteGenesis cartridge sends the following events:
+
+- `view` and `click`, sent from Autocomplete, category pages, and the search results page.
+- `addedToCartObjectIDsAfterSearch`, sent when products are added to the cart.
+
+To implement additional events such as **purchase**, refer to the [Insights client documentation](/api-client/methods/insights/).
+
+### PWA Kit
+
+If your frontend is built with the PWA Kit, implement events with [React InstantSearch](/guides/building-search-ui/events/react/).

@@ -1,0 +1,236 @@
+---
+title: Generate a sitemap from an Algolia index
+description: |-
+  Learn how to generate sitemaps from your Algolia indices dynamically.
+---
+
+A [sitemap](https://www.sitemaps.org/index.html) is an XML file that describes all pages of your website that are available for crawling by a search engine.
+Sitemaps contain the URLs of your pages along with metadata,
+such as when a page was last updated,
+how often a page is updated,
+or how important a page is relative to other pages.
+Sitemaps play a significant role in search engine optimization (SEO),
+especially when you're using Algolia in your frontend.
+
+Thanks to the flexibility of facets, Algolia can power navigation in addition to search results pages,
+which lets you implement dynamic category pages based on the data in your index.
+These are great candidates to add to your sitemap.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [What is the impact of Algolia on SEO?](https://support.algolia.com/hc/en-us/articles/4406975271057-What-is-the-impact-of-Algolia-on-SEO-)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Before you begin
+
+This tutorial assumes that you installed [Node.js](https://nodejs.org/en/) in your environment,
+and you understand how to create and run Node.js scripts.
+
+You also need an Algolia account. If you don't have one already,
+you can [create an account](https://dashboard.algolia.com/users/sign_up) for free.
+
+### Dataset
+
+For this tutorial, you'll use an ecommerce dataset where each result is a product.
+All records have a `categories` attribute with one or more categories.
+
+Download the dataset and import it into your Algolia application:
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Download dataset](https://github.com/algolia/datasets/blob/master/ecommerce/bestbuy_seo.json)
+  - [Importing from the dashboard](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Install dependencies
+
+Install the [`algolia-sitemap`](https://github.com/algolia/algolia-sitemap) as a dependency.
+This helper library lets you dynamically generate sitemaps from your Algolia indices.
+
+```sh sh
+npm install algolia-sitemap
+```
+
+## Create a sitemap of all the records in your index
+
+First, create a sitemap with all your products to let search engines know where to find them.
+You need your Algolia application ID and your [API key](https://dashboard.algolia.com/account/api-keys/).
+The API key must have [`browse` permission](/guides/security/api-keys/#access-control-list-acl).
+
+```js sitemap.js
+const sitemap = require("algolia-sitemap");
+
+// You need an API key with `browse` permission
+const algoliaConfig = {
+  appId: "YourApplicationID",
+  apiKey: "YourAPIKey",
+  indexName: "YourIndexName",
+};
+
+sitemap({
+  algoliaConfig,
+  // ...
+});
+```
+
+To the `sitemap` function, you need to add a `hitsToParams` callback function.
+This function turns a record from your index into a sitemap entry.
+The return value of the `hitsToParams` function must be an object with attributes
+that match an `<url>` entry of a sitemap file:
+
+- `loc` (required): the URL of the page for the record
+- `lastmod`: the last modified date (ISO 8601)
+- `priority`: the priority of this page compared to other pages on your site (between 0 and 1)
+- `changefreq`: describes how often the page is likely to change
+- `alternates`: alternate versions of this link
+- `alternates.languages`: an array of enabled languages for this link
+- `alternates.hitToURL`: a function that transforms a language into a URL
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Sitemaps XML format](https://www.sitemaps.org/protocol.html)
+</Info>
+
+{/* prettier-ignore-end */}
+
+In this tutorial, you'll create a simple sitemap, only specifying the `loc` attribute.
+
+```js sitemap.js
+// Turn a record into a sitemap entry
+function hitToParams({ url }) {
+  return { loc: url };
+}
+
+sitemap({
+  algoliaConfig,
+  hitToParams,
+  // The URL of the sitemaps directory
+  sitemapLoc: "https://example.com/sitemaps",
+  // The directory with all sitemaps (default: `sitemaps`)
+  outputFolder: "sitemaps",
+});
+```
+
+In your project directory, create a `sitemaps/` directory.
+Now, you can run the `sitemap.js` script:
+
+```sh sh
+node sitemap.js
+```
+
+The `/sitemaps` directory now has two types of files:
+
+- The `sitemap-index.xml` file with links to each sitemap file
+- The `sitemap.0.xml` file with links to your products
+
+You can validate your sitemaps with [external tools](https://www.xml-sitemaps.com/validate-xml-sitemap.html).
+To inspect the sitemap, you can use a tool like [`xmllint`](https://xmllint.com/).
+
+```sh sh
+xmllint --format sitemaps/sitemap.0.xml
+```
+
+## Create a sitemap for categories
+
+You should add your category pages to the sitemap.
+If you're using the sample dataset, use the `categories` attribute for the URL:
+
+```json json
+{
+  "categories": ["Mobile Phones", "Phones & Tablets"]
+}
+```
+
+In this example, the product belongs to two categories.
+Usually, category pages have URLs like the following: `https://example.com/{CATEGORY_NAME}`.
+
+You need to modify the `hitToParams` callback function to return an array of all categories that belong to a given record.
+Since categories apply to many records, you need to make sure to add them to your sitemaps only once.
+With ES6, you can use a [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set).
+
+```js sitemap.js
+// Turn categories into sitemap entries
+const alreadyAdded = {};
+
+function hitToParams({ categories }) {
+  const newCategories = categories.filter(
+    (category) =>
+      category !== null && category !== undefined && !alreadyAdded[category],
+  );
+
+  if (!newCategories.length) return;
+
+  const locs = newCategories.map((category) => {
+    alreadyAdded[category] = category;
+    return { loc: `https://example.com/${encodeURI(category)}` };
+  });
+
+  return locs;
+}
+// ...
+```
+
+Check each record to see if it contains categories that you didn't yet add to the sitemap, and add them.
+This lets you save all your category pages to your sitemap.
+
+## Create a sitemap for categories and all records
+
+You can modify the code for adding category pages to your sitemap to create a combined sitemap for both records and categories.
+
+```js sitemap.js
+// ...
+function hitToParams({ categories, url }) {
+  const newCategories = categories.filter(
+    (category) =>
+      category !== null && category !== undefined && !alreadyAdded[category],
+  );
+
+  if (!newCategories.length) return;
+
+  const locs = [];
+
+  newCategories.forEach((category) => {
+    alreadyAdded[category] = category;
+    alreadyAdded[url] = url;
+
+    locs.push(
+      ...[{ loc: `https://example.com/${encodeURI(category)}` }, { loc: url }],
+    );
+  });
+  return locs;
+}
+// ...
+```
+
+## Notify search engines of sitemap changes
+
+Finally, you can let search engines know that your sitemap has changed.
+Most search engines have a `ping` mechanism to inform them of a new sitemap,
+so you can perform this directly from your script.
+
+```js js
+const endpoints = [
+  "http://www.google.com/webmasters/sitemaps/ping?sitemap=http://example.com/sitemap.xml",
+  "http://www.bing.com/webmaster/ping.aspx?siteMap=http://example.com/sitemap.xml",
+];
+
+Promise.all(endpoints.map(fetch)).then(() => {
+  console.log("Done");
+});
+```
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Submit your sitemap to Google](https://developers.google.com/search/docs/advanced/sitemaps/build-sitemap#addsitemap)
+  - [Bing sitemaps](https://www.bing.com/webmasters/help/Sitemaps-3b5cf6ed)
+</Info>
+
+{/* prettier-ignore-end */}

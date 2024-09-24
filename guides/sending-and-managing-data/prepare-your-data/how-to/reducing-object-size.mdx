@@ -1,0 +1,77 @@
+---
+title: Reducing record size
+description: |-
+  How to reduce the size of your records by removing unused or unnecessary data.
+---
+
+To ensure good performance, there's a limit on record size of 10 KB to 100 KB—based on [your plan](https://www.algolia.com/pricing/) (10 KB maximum for the Build plan).
+If you exceed this limit, Algolia returns the error message `Record is too big`.
+
+Instead of upgrading your plan, make your records smaller _before_ [sending them to Algolia](/guides/sending-and-managing-data/send-and-update-your-data/). Do this by:
+
+- Only sending the necessary information by [removing unused attributes](#remove-unused-attributes)
+- [Splitting long documents into smaller parts](/guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents/).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you're using the Algolia Crawler and the [record size exceeds the limit](/tools/crawler/troubleshooting/indexing-issues/#records-exceed-the-maximum-for-your-algolia-plan), use the [`helpers.splitContentIntoRecords()`](/tools/crawler/apis/configuration/actions/#parameter-param-splitcontentintorecords) helper to split the page into smaller chunks.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Remove unused attributes
+
+**You might not need to index every attribute from your data sources**. For example, if you're developing a website to display tweets on specific topics, Twitter may send you a lot of data, but only some will help when searching. For example, an excerpt of the Twitter API response might look like this:
+
+```json json
+[
+  {
+    "text": "Good morning #LaraconEU ! Swing by the Algolia booth for some vintage video games, awesome stickers, and lightning-fast search 😎",
+    "truncated": false,
+    "in_reply_to_user_id": null,
+    "in_reply_to_status_id": null,
+    "pictures": true,
+    "pictures_urls": [
+      "https://pbs.twimg.com/media/Dl1UftbX4AAF1Fj.jpg",
+      "https://pbs.twimg.com/media/Dl1Um6OXsAAa1JS.jpg"
+    ],
+    "source": "<a href=\"http://twitter.com/\" rel=\"nofollow\">Twitter for Web</a>",
+    "in_reply_to_screen_name": null,
+    "in_reply_to_status_id_str": null,
+    "retweeted": true,
+    "retweet_count": 10,
+    "like_count": 24,
+    "place": null,
+    "geolocated": false
+  }
+]
+```
+
+You can reduce this record's size by:
+
+- Only indexing attributes that help build your search experience
+- Reusing an attribute for different purposes. For example, `retweeted=false` is the same as `retweet_count=0`
+- Adding attributes that rely on others. For example, if you want to use the `pictures` attribute to display a gallery (in the `pictures_url` array), only include it when the `pictures_urls` array isn't empty.
+
+### After removing attributes
+
+Choose only the information you need for searching, displaying, and ranking. Leave everything else out.
+
+For example, after transforming the previous Twitter data, your record might look like this:
+
+```json json
+[
+  {
+    "text": "Good morning #LaraconEU ! Swing by the Algolia booth for some vintage video games, awesome stickers, and lightning-fast search 😎",
+    "pictures_urls": [
+      "https://pbs.twimg.com/media/Dl1UftbX4AAF1Fj.jpg",
+      "https://pbs.twimg.com/media/Dl1Um6OXsAAa1JS.jpg"
+    ],
+    "retweet_count": 10,
+    "like_count": 24
+  }
+]
+```
+
+Selecting only the necessary data reduces the number of attributes and record size without hurting search quality.

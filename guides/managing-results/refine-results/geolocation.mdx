@@ -1,0 +1,184 @@
+---
+title: Geo location
+description: |-
+  Geo searching is a way to search around a specific location or area and rank results based on their distance.
+---
+
+Geo-searching is a way to filter and sort results by distance or around specific geographical locations. You can limit your results to a street, a city, or parts of the world. You can sort your results according to how near or far they are from a defined location.
+
+## Geo-search
+
+Geo-searching lets you:
+
+- Filter and sort around a set of latitude and longitude coordinates
+- Filter and sort around user location based on their IP address (IPv4 only)
+- Filter by one or more box-shaped geographical areas (bounded boxes)
+- Filter by one or more freely drawn geographical areas (polygons)
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Airport search demo](https://preview.algolia.com/geo-search/)
+  - [How geo-searching improves search and discovery](https://www.algolia.com/blog/product/how-geo-search-improves-search-and-discovery/)
+  - [Geo-searching on mobile devices](https://www.algolia.com/blog/engineering/geo-spatial-search-on-mobile/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Enabling geo-search by adding geolocation data to records
+
+To enable geo-searching, you must have geolocation data in your records as a `_geoloc` attribute that contains latitude and longitude (`lat` and `lng` properties). The coordinates must be numbers, not strings.
+
+Here's an example of a record with one geolocation:
+
+```json json
+{
+  "_geoloc": {
+    "lat": 40.639751,
+    "lng": -73.778925
+  }
+}
+```
+
+Here's an example of a record with multiple locations:
+
+```json json
+{
+  "_geoloc": [
+    { "lat": 47.27943, "lng": 5.10645 },
+    { "lat": 47.293228, "lng": 5.00457 },
+    { "lat": 47.316669, "lng": 5.01667 }
+  ]
+}
+```
+
+Once your records contain geographical information, you can do two things:
+
+- [Geographical filtering](#geographical-filtering-and-sorting)
+- [Geographical ranking](#geographical-ranking)
+
+## Geographical filtering and sorting
+
+Geo-searching filters results based on a set of geographic coordinates. You can define one or more geographic areas: the engine will only return records within that area. You can refine this behavior by changing boundaries, distance, or precision.
+
+### Filter around a central point
+
+You can define a central geographical point and show only records within a certain radius of that point. This central point is defined in one of two ways:
+
+- Sent with the query
+- Derived from user IP address (supports only IPv4)
+
+You should determine the size of this radius depending on the density of hits around the central point. The radius should be small if many hits are close to the center—the fewer hits near the center, the larger the radius.
+
+Radius-based filtering creates a _circle_ within which all results fall. It also **creates a ranking based on the distance from the central point** - records closest to the center rank higher than records further away.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Filter results around a location](/guides/managing-results/refine-results/geolocation/how-to/filter-results-around-a-location/)
+  - [Understand the engine's geographical ranking](/guides/managing-results/refine-results/geolocation/how-to/geo-ranking-info/)
+  - [`aroundLatLng`](/api-reference/api-parameters/aroundLatLng/)
+  - [`aroundLatLngViaIP`](/api-reference/api-parameters/aroundLatLngViaIP/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+#### Increase the search radius
+
+The default behavior is to stop finding records after approximately 1,000 matching records. Therefore, your search radius could be quite small in dense areas. Imagine the number of cafés in Paris: 1,000 matching records wouldn't be enough to list them all. You can override this behavior by forcing a larger radius, either by using [`aroundRadius`](/api-reference/api-parameters/aroundRadius/) or [`minimumAroundRadius`](/api-reference/api-parameters/minimumAroundRadius/). This override only applies to radius-based searches, not area-based ones like rectangles and polygons.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Even with a larger radius, the results still match any applied query or filter. The number of results can be low if the query or filters are restrictive, even if you set a huge radius.
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [`aroundRadius`](/api-reference/api-parameters/aroundRadius/)
+  - [`minimumAroundRadius`](/api-reference/api-parameters/minimumAroundRadius/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Sorting by distance
+
+If you want to sort _but not filter_ results based on radial distance, set the [`aroundRadius`](/api-reference/api-parameters/aroundRadius/) parameter to `all`. This means your records are **ordered but not restricted** based on distance from a provided point.
+
+### Filtering inside rectangular or polygonal areas
+
+You can restrict results to a given area by setting geometric boundaries in either the shape of a rectangle or other polygon. To restrict results within a given area, you should include the `lat` and `lng` of a bounding shape in the search parameters. The engine excludes all results outside of the shape.
+
+**Filtering within or around an area doesn't affect the ranking of results.** Additionally, area-based geo-searching doesn't work in combination with radius-based geo-searching. When filtering on rectangular or polygonal areas, the engine considers all results within the area as being geographically equal.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Filter results inside a rectangle](/guides/managing-results/refine-results/geolocation/how-to/filter-results-inside-a-rectangle-area/)
+  - [Filter results inside a polygon](/guides/managing-results/refine-results/geolocation/how-to/filter-results-inside-a-polygonal-area/)
+  - [How to solve the 180th meridian issue](/guides/managing-results/refine-results/geolocation/how-to/how-to-resolve-180-meridian-issue/)
+  - [`insideBoundingBox`](/api-reference/api-parameters/insideBoundingBox/)
+  - [`insidePolygon`](/api-reference/api-parameters/insidePolygon/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Don't mix bounding boxes and polygons
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can't use [`insideBoundingBox`](/api-reference/api-parameters/insideBoundingBox/) and [`insidePolygon`](/api-reference/api-parameters/insidePolygon/) together. If you provide both, only `insideBoundingBox` actions will run.
+</Note>
+
+{/* prettier-ignore-end */}
+
+For example, you have created an app for a chain of restaurants in the South West US, and you want to show the locations of your restaurants on a map:
+
+- You use a rectangular bounding box to display the South West region of the US. Blue pins could indicate cities where you have restaurants.
+- As users zoom in, you want polygons to mark the boundaries of these cities. Red pins could mark the locations of individual restaurants within the polygons.
+
+However, since `insideBoundingBox` takes precedence, you'll only see blue pins on the map.
+
+**For this reason, using a mix of bounding boxes and polygons isn't recommended.**
+
+## Geographical ranking
+
+Geographical ranking is based on the distance between the geolocation in the search query and the best-matching geolocation in the record. For example, when searching around a location, the results can be sorted by distance - the closer the record is to the `lat`/ `lng` you provided, the higher it ranks in the results.
+
+### `Geo` criterion in the ranking formula
+
+Algolia's ranking criteria contain a [`Geo` criterion](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#geo-if-applicable), which by default is the second-ranking criterion. This criterion is only meaningful when records contain the `_geoloc` attribute with the corresponding `lat` and `lng` properties.
+
+### Changing precision
+
+By default, results are ranked by distance in 10 m increments.
+Records within 10 m to the center rank higher than records that are 20 m away.
+In some cases, this might be too precise.
+Consider searching for the best restaurants within walking distance.
+Here, larger increments, such as 200 m might be more appropriate.
+
+Change the `geo` criterion's _precision_ setting to alter the default.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Geographical ranking precision](/guides/managing-results/refine-results/geolocation/in-depth/geo-ranking-precision/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Displaying results on a map
+
+Use your results' latitude and longitude values to plot each record on a map.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Displaying results in Google Maps with InstantSearch](/guides/building-search-ui/ui-and-ux-patterns/geo-search/js/)
+</Info>
+
+{/* prettier-ignore-end */}

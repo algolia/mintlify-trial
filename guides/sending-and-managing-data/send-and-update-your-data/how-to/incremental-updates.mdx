@@ -1,0 +1,760 @@
+---
+title: Incremental updates
+description: |-
+  How to keep your data in sync with Algolia.
+---
+
+Once you've first indexed your data, **you need to keep your index up to date as the data changes**.
+
+One way of doing so is via incremental updates, by tracking changes and forwarding them to Algolia. Whenever you add, edit, or delete data from your source, you want to update the corresponding records so they reflect the latest state of your data.
+
+## Tracking each record with a unique identifier
+
+To perform incremental updates, you need to declare a unique identifier for each record so you can track what data matches what record. This identifier should map to a "key" you store on your side. For instance, if you're selling books and you have one Algolia record per book, you could use the ISBN.
+
+You need to store the unique identifier in the `objectID` attribute so you can leverage it to perform updates or deletions.
+
+## Adding records
+
+Whenever you add new data in your data source, you can add them to Algolia with a regular call to [`saveObjects`](/api-reference/api-methods/save-objects/).
+
+<CodeGroup>
+  ```csharp csharp
+  List<Contact> contacts = new List<Contact>
+  {
+      new Contact
+      {
+          ObjectID = "myID1",
+          Firstname = "Jimmie",
+          Lastname = "Barninger"
+      },
+      new Contact
+      {
+          ObjectID = "myID2",
+          Firstname = "Warren",
+          Lastname = "Speach"
+      }
+  };
+
+  index.SaveObjects(contacts);
+
+  // Asynchronous
+  await index.SaveObjectsAsync(contacts);
+  ```
+
+  ```go go
+  type Contact struct {
+  	ObjectID  string `json:"objectID"`
+  	Firstname string `json:"firstname"`
+  	Lastname  string `json:"lastname"`
+  }
+
+  contacts := []Contact{
+  	{ObjectID: "myID1", Firstname: "Jimmie", Lastname: "Barninger"},
+  	{ObjectID: "myID2", Firstname: "Ray", Lastname: "Charles"},
+  }
+
+  res, err := index.SaveObjects(contacts)
+  ```
+
+  ```java java
+  // Sync version
+  index.saveObjects(Arrays.asList(
+      new Contact()
+      .setFirstName("Jimmie")
+      .setLastName("Barninger")
+      .setObjectID("myID"),
+
+      new Contact()
+      .setFirstName("Warren")
+      .setLastName("Speach")
+      .setObjectID("myID2")
+  ));
+
+  // Async version
+  index.saveObjectsAsync(Arrays.asList(
+      new Contact()
+      .setFirstName("Jimmie")
+      .setLastName("Barninger")
+      .setObjectID("myID"),
+
+      new Contact()
+      .setFirstName("Warren")
+      .setLastName("Speach")
+      .setObjectID("myID2")
+  ));
+  ```
+
+  ```js js
+  const objects = [
+    {
+      firstname: "Jimmie",
+      lastname: "Barninger",
+      objectID: "myID1",
+    },
+    {
+      firstname: "Warren",
+      lastname: "Speach",
+      objectID: "myID2",
+    },
+  ];
+
+  index.saveObjects(objects).then(({ objectIDs }) => {
+    console.log(objectIDs);
+  });
+  ```
+
+  ```kotlin kotlin
+  // With JsonObject
+  val json = listOf(
+      buildJsonObject {
+          put("firstname", "Jimmie")
+          put("lastname", "Barninger")
+          put("objectID", "myID1")
+      },
+      buildJsonObject {
+          put("firstname", "Warren")
+          put("lastname", "Speach")
+          put("objectID", "myID2")
+      }
+  )
+  index.saveObjects(json)
+
+  // With serializable class
+  val contacts = listOf(
+      MyContact("Jimmie", "Barninger", "myID1"),
+      MyContact("Warren", "Speach", "myID2")
+  )
+
+  index.saveObjects(MyContact.serializer(), contacts)
+  ```
+
+  ```php php
+  $res = $index->saveObjects(
+    [
+      [
+        'objectID'  => 'myID1',
+        'firstname' => 'Jimmie',
+        'lastname'  => 'Barninger'
+      ],
+      [
+        'objectID'  => 'myID2',
+        'firstname' => 'Warren',
+        'lastname'  => 'Speach'
+      ]
+    ]
+  );
+  ```
+
+  ```python python
+  res = index.save_objects(
+      [
+          {"firstname": "Jimmie", "lastname": "Barninger", "objectID": "myID1"},
+          {"firstname": "Warren", "lastname": "Speach", "objectID": "myID2"},
+      ]
+  )
+  ```
+
+  ```ruby ruby
+  res = index.save_objects(
+    [
+      {
+        firstname: "Jimmie",
+        lastname: "Barninger",
+        objectID: "myID1"
+      },
+      {
+        firstname: "Warren",
+        lastname: "Speach",
+        objectID: "myID2"
+      }
+    ]
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    index into "index1" objects Seq(
+      Contact("myID1", "Jimmie", "Barninger"),
+      Contact("myID2", "Warren", "Speach"))
+  }
+  ```
+
+  ```sh CLI
+  # Add new records from a new-line delimited JSON file
+  algolia objects import --file records.ndjson
+
+  # Add new records from the command line
+  echo '{ "objectID": "myID1", "firstName": "Jimmie", "lastName": "Barninger" }\n{ "objectID": "myID2", "firstName": "Warren", "lastName": "Speach" }\n' |
+    algolia objects import - <INDEX >--file
+
+  # Add new records from a JSON (array) file; format with `jq`
+  cat records.json | jq '.[]' | algolia objects import - <INDEX >--file
+  ```
+
+  ```swift swift
+  struct Contact: Encodable {
+    let objectID: ObjectID
+    let firstname: String
+    let lastname: String
+  }
+
+  let contacts: [Contact] = [
+    .init(objectID: "myID1", firstname: "Jimmie", lastname: "Barninger"),
+    .init(objectID: "myID2", firstname: "Warren", lastname: "Speach"),
+  ]
+
+  index.saveObjects(contacts) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Note that every record has a custom `objectID`.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Updating records
+
+There are two ways to incrementally update records in Algolia:
+
+- **Fully replacing the old record** with a new one
+- **Updating only a subset of the existing record** with the changed data
+
+### Replacing the old record
+
+When saving a record in Algolia, if a record with the specified `objectID` already exists in the index, the engine replaces it. You can replace an existing record by using the method and specifying the `objectID`. This technique is useful when you're updating data in a single place in your system, or when you don't know what changed.
+
+<CodeGroup>
+  ```csharp csharp
+  List<Contact> contacts = new List<Contact>
+  {
+      new Contact
+      {
+          ObjectID = "myID1",
+          Firstname = "Jimmie",
+          Lastname = "Barninger"
+      },
+      new Contact
+      {
+          ObjectID = "myID2",
+          Firstname = "Warren",
+          Lastname = "Speach"
+      }
+  };
+
+  index.SaveObjects(contacts);
+
+  // Asynchronous
+  await index.SaveObjectsAsync(contacts);
+  ```
+
+  ```go go
+  type Contact struct {
+  	ObjectID  string `json:"objectID"`
+  	Firstname string `json:"firstname"`
+  	Lastname  string `json:"lastname"`
+  }
+
+  contacts := []Contact{
+  	{ObjectID: "myID1", Firstname: "Jimmie", Lastname: "Barninger"},
+  	{ObjectID: "myID2", Firstname: "Ray", Lastname: "Charles"},
+  }
+
+  res, err := index.SaveObjects(contacts)
+  ```
+
+  ```java java
+  // Sync version
+  index.saveObjects(Arrays.asList(
+      new Contact()
+      .setFirstName("Jimmie")
+      .setLastName("Barninger")
+      .setObjectID("myID"),
+
+      new Contact()
+      .setFirstName("Warren")
+      .setLastName("Speach")
+      .setObjectID("myID2")
+  ));
+
+  // Async version
+  index.saveObjectsAsync(Arrays.asList(
+      new Contact()
+      .setFirstName("Jimmie")
+      .setLastName("Barninger")
+      .setObjectID("myID"),
+
+      new Contact()
+      .setFirstName("Warren")
+      .setLastName("Speach")
+      .setObjectID("myID2")
+  ));
+  ```
+
+  ```js js
+  const objects = [
+    {
+      firstname: "Jimmie",
+      lastname: "Barninger",
+      objectID: "myID1",
+    },
+    {
+      firstname: "Warren",
+      lastname: "Speach",
+      objectID: "myID2",
+    },
+  ];
+
+  index.saveObjects(objects).then(({ objectIDs }) => {
+    console.log(objectIDs);
+  });
+  ```
+
+  ```kotlin kotlin
+  // With JsonObject
+  val json = listOf(
+      buildJsonObject {
+          put("firstname", "Jimmie")
+          put("lastname", "Barninger")
+          put("objectID", "myID1")
+      },
+      buildJsonObject {
+          put("firstname", "Warren")
+          put("lastname", "Speach")
+          put("objectID", "myID2")
+      }
+  )
+  index.saveObjects(json)
+
+  // With serializable class
+  val contacts = listOf(
+      MyContact("Jimmie", "Barninger", "myID1"),
+      MyContact("Warren", "Speach", "myID2")
+  )
+
+  index.saveObjects(MyContact.serializer(), contacts)
+  ```
+
+  ```php php
+  $res = $index->saveObjects(
+    [
+      [
+        'objectID'  => 'myID1',
+        'firstname' => 'Jimmie',
+        'lastname'  => 'Barninger'
+      ],
+      [
+        'objectID'  => 'myID2',
+        'firstname' => 'Warren',
+        'lastname'  => 'Speach'
+      ]
+    ]
+  );
+  ```
+
+  ```python python
+  res = index.save_objects(
+      [
+          {"firstname": "Jimmie", "lastname": "Barninger", "objectID": "myID1"},
+          {"firstname": "Warren", "lastname": "Speach", "objectID": "myID2"},
+      ]
+  )
+  ```
+
+  ```ruby ruby
+  res = index.save_objects(
+    [
+      {
+        firstname: "Jimmie",
+        lastname: "Barninger",
+        objectID: "myID1"
+      },
+      {
+        firstname: "Warren",
+        lastname: "Speach",
+        objectID: "myID2"
+      }
+    ]
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    index into "index1" objects Seq(
+      Contact("myID1", "Jimmie", "Barninger"),
+      Contact("myID2", "Warren", "Speach"))
+  }
+  ```
+
+  ```sh CLI
+  # Add new records from a new-line delimited JSON file
+  algolia objects import --file records.ndjson
+
+  # Add new records from the command line
+  echo '{ "objectID": "myID1", "firstName": "Jimmie", "lastName": "Barninger" }\n{ "objectID": "myID2", "firstName": "Warren", "lastName": "Speach" }\n' |
+    algolia objects import - <INDEX >--file
+
+  # Add new records from a JSON (array) file; format with `jq`
+  cat records.json | jq '.[]' | algolia objects import - <INDEX >--file
+  ```
+
+  ```swift swift
+  struct Contact: Encodable {
+    let objectID: ObjectID
+    let firstname: String
+    let lastname: String
+  }
+
+  let contacts: [Contact] = [
+    .init(objectID: "myID1", firstname: "Jimmie", lastname: "Barninger"),
+    .init(objectID: "myID2", firstname: "Warren", lastname: "Speach"),
+  ]
+
+  index.saveObjects(contacts) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Note that every record contains the `objectID` and you can use it to find the record that you want to update.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Updating a subset of the record
+
+Sometimes, you may want to update a subset of the attributes of a record and leave the rest untouched. This is useful when you update data in multiple places. With the books example, you may have two different systems to handle metadata and to manage stock, both updating the index, with no knowledge about the rest of the data.
+
+For this, you can use the [`partialUpdateObjects`](/api-reference/api-methods/partial-update-objects/) method and only pass the changed data. Anything you don't specify remains untouched.
+
+<CodeGroup>
+  ```csharp csharp
+  List<Contact> contacts = new List<Contact>
+  {
+      new Contact { ObjectID = "myID1", Firstname = "Jimmie" },
+      new Contact { ObjectID = "myID2", Firstname = "Warren" }
+  };
+
+  index.PartialUpdateObjects(contacts);
+
+  // Asynchronous
+  await index.PartialUpdateObjectsAsync(contacts);
+  ```
+
+  ```go go
+  objects := []map[string]string{
+  	{"objectID": "myID1", "lastname": "Barninger"},
+  	{"objectID": "myID2", "firstname": "Ray"},
+  }
+
+  res, err := index.PartialUpdateObjects(objects)
+  ```
+
+  ```java java
+  List<Contact> contacts = Arrays.asList(
+    new Contact().setCity("San Francisco").setObjectID("MyID"),
+    new Contact().setCity("Paris").setObjectID("MyID2")
+  );
+
+  // Sync version
+  index.partialUpdateObjects(contacts);
+
+  // Async version
+  index.partialUpdateObjectsAsync(contacts);
+  ```
+
+  ```js js
+  const objects = [
+    {
+      firstname: "Jimmie",
+      objectID: "myID1",
+    },
+    {
+      firstname: "Warren",
+      objectID: "myID2",
+    },
+  ];
+
+  index.partialUpdateObjects(objects).then(({ objectIDs }) => {
+    console.log(objectIDs);
+  });
+  ```
+
+  ```kotlin kotlin
+  val firstname = Attribute("firstname")
+  val partials = listOf(
+      ObjectID("myID1") to Partial.Update(firstname, "Jimmie"),
+      ObjectID("myID2") to Partial.Update(firstname, "Warren")
+  )
+
+  index.partialUpdateObjects(partials)
+  ```
+
+  ```php php
+  $index->partialUpdateObjects(
+      [
+          [
+              'objectID'  => 'myID1',
+              'firstname' => 'Jimmie'
+          ],
+          [
+              'objectID'  => 'myID2',
+              'firstname' => 'Warren'
+          ]
+      ]
+  );
+  ```
+
+  ```python python
+  index.partial_update_objects(
+      [
+          {"objectID": "myID1", "firstname": "Jimmie"},
+          {"objectID": "myID2", "firstname": "Warren"},
+      ]
+  )
+  ```
+
+  ```ruby ruby
+  index.partial_update_objects(
+    [
+      {
+        firstname: "Jimmie",
+        objectID: "myID"
+      },
+      {
+        firstname: "Warren",
+        objectID: "myID2"
+      }
+    ]
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    partialUpdate from "index" objects Seq(
+      Contact("myID", "Jimmie", "Barninger"),
+      Contact("myID", "Speach"))
+  }
+  ```
+
+  ```swift swift
+  let updates: [(ObjectID, PartialUpdate)] = [
+    ("myID1", .update(attribute: "firstname", value: "Jimmie")),
+    ("myID2", .update(attribute: "firstname", value: "Warren")),
+  ]
+
+  index.partialUpdateObjects(updates: updates) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Every record has a unique `objectID`. You can use it to find the record that you want to update.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Deleting records
+
+Whenever you delete data in your data source, you can delete the corresponding record from Algolia with [`deleteObjects`](/api-reference/api-methods/delete-objects/).
+
+<CodeGroup>
+  ```csharp csharp
+  List<string> ids = new List<string> { "myID1", "myID2" };
+
+  index.DeleteObjects(ids);
+
+  // Asynchronous
+  await index.DeleteObjectsAsync(ids);
+  ```
+
+  ```go go
+  res, err := index.DeleteObjects(
+  	[]string{"myID1", "myID2"},
+  )
+  ```
+
+  ```java java
+  index.deleteObjects(Arrays.asList("myID1", "myID2"));
+
+  // Asynchronous
+  index.deleteObjectsAsync(Arrays.asList("myID1", "myID2"));
+  ```
+
+  ```js js
+  index.deleteObjects(["myID1", "myID2"]).then(({ objectIDs }) => {
+    console.log(objectIDs);
+  });
+  ```
+
+  ```kotlin kotlin
+  val objectIDS = listOf(ObjectID("myID1"), ObjectID("myID2"))
+
+  index.deleteObjects(objectIDS)
+  ```
+
+  ```php php
+  $index->deleteObjects(["myID1", "myID2"]);
+  ```
+
+  ```python python
+  index.delete_objects(["myID1", "myID2"])
+  ```
+
+  ```ruby ruby
+  index.delete_objects(["myID1", "myID2"])
+  ```
+
+  ```scala scala
+  client.execute {
+    delete from "test1" objectIds Seq("myID1", "myID2")
+  }
+  ```
+
+  ```sh CLI
+  algolia objects delete "myID1,myID2" <INDEX >--object-ids
+  ```
+
+  ```swift swift
+  index.deleteObjects(withIDs: ["myID1", "myID2"]) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Every record has a unique `objectID`. You can use it to find the record that you want to delete.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Delete by query
+
+Sometimes, you may need to delete all records matching a certain filter. Back to the book example, if you stop selling books from a specific publisher, you might want to delete all records matching this `publisher` in your index. To do this, you can use the [`deleteBy`](/api-reference/api-methods/delete-by/) method.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The [`deleteBy`](/api-reference/api-methods/delete-by/) method is an expensive operation for the engine. For better performance, use the [`deleteObjects`](/api-reference/api-methods/delete-objects/) method instead.
+</Note>
+
+{/* prettier-ignore-end */}
+
+<CodeGroup>
+  ```csharp csharp
+  var query = new Query { Filters = "category:cars", AroundLatLng = "40.71, -74.01" };
+
+  index.DeleteBy(query);
+
+  // Asynchronous
+  await index.DeleteByAsync(query);
+  ```
+
+  ```go go
+  res, err := index.DeleteBy(
+  	opt.Filters("category:cars"),
+  	opt.AroundLatLng("40.71, -74.01"),
+  )
+  ```
+
+  ```java java
+  Query query = new Query("query")
+    .setFilters("category:cars")
+    .setAroundLatLng("40.71, -74.01")
+
+  // Sync version
+  index.deleteBy(query);
+
+  // Async version
+  index.deleteByAsync(query);
+  ```
+
+  ```js js
+  index
+    .deleteBy({
+      filters: "category:cars",
+      aroundLatLng: "40.71, -74.01",
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = DeleteByQuery(
+      filters = "category:car",
+      aroundLatLng = Point(40.71f, -74.01f)
+  )
+
+  index.deleteObjectsBy(query)
+  ```
+
+  ```php php
+  $index->deleteBy([
+    'filters' => 'category:cars',
+    'aroundLatLng' => '40.71, -74.01'
+    /* add any filter parameters */
+  ]);
+  ```
+
+  ```python python
+  index.delete_by({"filters": "category:cars", "aroundLatLng": "40.71, -74.01"})
+  ```
+
+  ```ruby ruby
+  params = {
+    filters: "category:cars",
+    aroundLatLng: "40.71, -74.01"
+  }
+  index.delete_by(params)
+  ```
+
+  ```scala scala
+  delete from "testDeleteBy" by Query(
+    filters = Some("price > 10"),
+    aroundLatLng = Some(
+      AroundLatLng("40.71, -74.01")))
+  ```
+
+  ```swift swift
+  var query = DeleteByQuery()
+
+  query.filters = "category:cars"
+  query.aroundLatLng = .init(latitude: 40.71, longitude: -74.01)
+
+  index.deleteObjects(byQuery: query) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Any attribute you're using to delete by needs to be in your [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/).
+</Note>
+
+{/* prettier-ignore-end */}

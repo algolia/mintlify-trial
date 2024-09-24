@@ -1,0 +1,171 @@
+---
+title: Handling natural languages
+description: |-
+  Learn how Algolia supports the different languages from all over the world.
+---
+
+{/* prettier-ignore-start */}
+
+<Info />
+
+{/* prettier-ignore-end */}
+
+## Algolia supports many languages
+
+**[The Algolia engine supports many languages out of the box](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages/)**. It's language agnostic and matches the text in the search box with the text in the index—this is called textual matching.
+
+For example, suppose you have an index with only English text, and a user searches in Japanese. In that case, the engine won't return any results because the Latin alphabet doesn't match Japanese characters. If your users search in Japanese, your index should likely contain Japanese text. If you want to support multiple languages, **the most common solution is to create one index per language**.
+
+Algolia uses a wide array of natural language techniques, ranging from general, such as finding words or using Unicode, to specific, including distinguishing letters from logograms, breaking down compound words, and using single-language dictionaries for vocabulary.
+
+The following is split into several natural language understanding strategies:
+
+- [Engine-level processing (normalization)](#how-the-engine-normalizes-data)
+- [Dictionaries](#adding-language-specificity-using-dictionaries)
+- [Configuring typo tolerance](#typo-tolerance-and-languages)
+- [Natural language processing (NLP) with Rules](#natural-language-processing-with-rules)
+
+Some language-based techniques (such as normalization) play an integral role in the engine and are performed with every indexing and search operation. These are usually not configurable. Other techniques rely on specialized dictionaries, which facilitate word and word-root detection, and these _do_ come with several configurable options. Finally, according to the use case, Algolia offers many other techniques (like typo tolerance, Rules) that can be turned on, turned off, or fine-tuned. These are also configurable using Algolia's API settings
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Multilingual search](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/multilingual-search/)
+  - [Set an index's query language](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/how-to-set-an-index-query-language/)
+  - [Normalization](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/normalization/)
+  - [Configuring language settings](https://www.algolia.com/ecommerce-merchandising-playbook/configuring-language-settings/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## How the engine normalizes data
+
+The engine performs normalization during indexing _and_ at query time, ensuring consistency in how your data is represented and matched.
+
+You can't globally turn off normalization, but you can do it for certain special characters. Additionally, the normalization process is language-agnostic and applies equally to all supported languages.
+
+### What does normalization mean?
+
+- Turns all characters to lowercase
+- Removes special characters (diacritics) such as accents, umlauts, and Arabic short vowels. However, you can keep diacritics with the [`keepDiacriticsOnCharacters`](/api-reference/api-parameters/keepDiacriticsOnCharacters/) index setting
+- Removes punctuation within words, for example, apostrophes
+- Manages punctuation between words
+- Uses word separators, such as spaces or other characters
+- Includes or excludes non-alphanumeric characters ([separatorsToIndex](/guides/managing-results/optimize-search-results/override-search-engine-defaults/#enable-search-on-non-alphanumeric-characters))
+- Transforms traditional Chinese into modern
+
+Some of these actions are part of the [tokenization](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization/) process.
+
+Understanding this process will help you understand how Algolia [concatenates and splits](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/) words.
+
+## Adding language specificity using dictionaries
+
+Some of these automated techniques only work in some languages.
+
+### No automatic language detection
+
+Algolia doesn't attempt to detect the language of your records or your users as they type in queries.
+
+Therefore, to benefit from language-specific algorithms, you need to tell the engine in what language you want your records to be interpreted.
+
+- If you don't pick a language, the engine assumes you want to cover all supported languages. The drawback here is that you create ambiguities by mixing every language's peculiarities. For example, plurals in Italian are applied to plurals in English, causing problems such as the following: "paste", the plural of "pasta" in Italian, will also be considered the plural of "pasta" in English, which isn't the case, as "paste" in English is a word in its own right (to spread).
+- It's okay to mix two or three languages in a single index and specify them in your settings. However, you should prepare your indices and records appropriately. For more on this, refer to the [multiple languages tutorial](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/multilingual-search/).
+
+Even though the engine can do most tasks without knowing the language of an index, [some tasks require knowledge of the language](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/language-specific-configurations/). For example, the engine can only compare plural to singular forms by knowing the language. The same applies to removing small words like "to" and "the" (stop words).
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Because the default language of an index is all supported languages, enabling the [`removeStopWords`](/api-reference/api-parameters/removeStopWords/) or [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) parameters without setting an index's language will ignore the wrong plurals and remove the wrong stop words. It's, therefore, essential to set the query languages of all your indices.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+### Using dictionaries
+
+Several language-related methods require the use of dictionaries.
+With dictionaries, the engine can apply language-specific, word-based logic to your data and your user's queries.
+Algolia maintains separate, language-specific dictionaries for:
+
+- Removing stop words
+- Detecting pluralized and other declined forms (alternative forms of words due to number, case, or gender)
+- Splitting compound words (also known as decompounding)
+- Handling Asian logograms (CJK)
+
+Algolia provides default dictionaries for all [supported languages](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages/). While Algolia regularly updates these dictionaries, you can customize the stop words, declensions, and decompounding dictionaries for your needs.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Normalization](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/normalization/)
+  - [Language-specific configurations](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/language-specific-configurations/)
+  - [Customize stop words](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-stop-words/)
+  - [Customize plurals and other declensions](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-plurals-and-other-declensions/)
+  - [Customize word segmentation](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-segmentation/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Typo tolerance and languages
+
+### What's a typo?
+
+- A missing letter in a word, "hllo" → "hello"
+- An extraneous letter, "heello" → "hello"
+- Inverted letters: "hlelo" → "hello"
+- Substituted letter: "heilo" → "hello"
+
+**Typo tolerance allows users to make mistakes while typing** and still find the words they're looking for. This is done by matching words that are close in spelling.
+
+### Other spelling errors
+
+Extra or missing spaces and punctuation doesn't count as typos. Algolia only handles them if [`typoTolerance`](/api-reference/api-parameters/typoTolerance/) is enabled (set to `true`, `min`, or `strict`). For example:
+
+- A missing space between two words is handled with [splitting](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/): "helloworld" → "hello world"
+- An extraneous space or punctuation is handled with [concatenation](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/): "hel lo" → "hello"
+
+### Typos as language-dependent
+
+To illustrate the principle, English is a suitable language because it's phonemic: it uses single characters to represent sounds to form a word. It makes spelling errors possible.
+
+Algolia doesn't support typo tolerance for logogram-based languages (like Chinese and Japanese), as these languages use pictorial characters to represent partial or complete words instead of single letters to represent sounds.
+
+For alphabet-based and phonemic languages (like English, French, and Russian), you can configure the engine in these ways to improve typo tolerance:
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [`typoTolerance`](/api-reference/api-parameters/typoTolerance/)
+  - [`minWordSizefor1Typo`](/api-reference/api-parameters/minWordSizefor1Typo/)
+  - [`minWordSizefor2Typos`](/api-reference/api-parameters/minWordSizefor2Typos/)
+  - [`disableTypoToleranceOnAttributes`](/api-reference/api-parameters/disableTypoToleranceOnAttributes/)
+  - [`disableTypoToleranceOnWords`](/api-reference/api-parameters/disableTypoToleranceOnWords/)
+  - [`allowTyposOnNumericTokens`](/api-reference/api-parameters/allowTyposOnNumericTokens/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Disabling typo tolerance and prefix search on specific words
+
+The [`advancedSyntax`](/api-reference/api-parameters/advancedSyntax/) parameter lets you turn off typo tolerance on specific words in a query by using double quotes. For example, the query "foot problems" is typo tolerant on both query words, while "foot" problems" is only typo tolerant on "problems".
+
+This parameter also disables prefix searching on words inside the double quotes.
+
+## Natural language processing with rules
+
+You can set up [Rules](/guides/managing-results/rules/rules-overview/) to tell the engine to look for specific words or phrases in a query and take a specific action or change its default behavior when it finds them.
+
+For example, the engine can convert some query terms into filters. If a user types in a filter value—say, "red"—you can use this term as a filter instead of a search term. With the query "red dress", then the engine could, therefore, only look at the "red" records (based on a filter attribute) for the word "dress". The process of removing filter values from the query string and using them directly as filters is called dynamic filtering.
+
+Dynamic filtering is only one way that Rules can understand and detect the user's intent.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Detecting intent](/guides/managing-results/rules/detecting-intent/)
+  - [Adding search parameters dynamically](/guides/managing-results/rules/detecting-intent/how-to/applying-search-parameters-for-a-specific-query/)
+  - [Detecting keywords](/guides/managing-results/rules/detecting-intent/how-to/detecting-keywords/)
+  - [Adding filters based on the query](/guides/managing-results/rules/detecting-intent/how-to/applying-a-custom-filter-for-a-specific-query/)
+</Info>
+
+{/* prettier-ignore-end */}

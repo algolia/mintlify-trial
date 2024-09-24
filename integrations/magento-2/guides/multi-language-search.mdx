@@ -1,0 +1,116 @@
+---
+title: Implement multi-language search in a single store
+description: |-
+  Learn how to implement multi-language search on a single store view with the Algolia for Magento 2 extension.
+---
+
+A step-by-step guide on how to perform a search in several languages simultaneously on a single store view using Algolia's extension for Magento.
+
+By default, the extension places each store view's data in a separate index: each store view has a dedicated index in a specific language.
+For example, searching for _Hemd_ in an English store won't return any results.
+To show the correct results when searching for _Hemd_,
+customize the extension to merge those indices.
+
+## Examples of default records
+
+- **Index name:** `magento2_products_en`
+
+  ```jsonc jsonc
+  {
+    "name": "Shirt"
+    "description": "Very nice blue shirt",
+    // ... other attributes
+  }
+  ```
+
+- **Index name:** `magento2_products_de`
+
+  ```jsonc jsonc
+  {
+    "name": "Hemd"
+    "description": "Sehr schönes blaues Hemd",
+    // ... other attributes
+  }
+  ```
+
+- **Index name:** `magento2_products_es`
+
+  ```jsonc jsonc
+  {
+    "name": "Camisa"
+    "description": "Muy bonita camisa azul",
+   // ... other attributes
+  }
+  ```
+
+## Implement multi-language search
+
+The records must contain values in all [supported languages](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages/) to search on one store view in those languages.
+
+### Create a record in the extension
+
+1. [Create a custom extension](/integration/magento-2/guides/create-a-custom-extension/), which lets you listen to the extension's custom events.
+1. Create an event listener for the [`algolia_after_create_product_object`](/integration/magento-2/customize/custom-back-end-events/#dispatched-after-fetching-products-attributes-for-indexing) event,
+   the same way as written in the [custom event extension](https://github.com/algolia/algoliasearch-custom-algolia-magento-2/blob/master/etc/events.xml#L6-L8) [`algolia_products_index_before_set_settings`](https://github.com/algolia/algoliasearch-custom-algolia-magento-2/blob/master/Observer/UpdateProductsSettings.php).
+1. From the `$observer` variable passed to the `execute()` method, fetch:
+   - `custom_data`
+   - `productObject`
+   - `subProducts`
+1. The Algolia record is an `array` in the `custom_data` object and can be modified like any other PHP array.
+1. Fetch searchable attributes, such as name, description, or manufacturer, in all other languages and add it to the record in `custom_data`.
+   Structure the data according to the [example record](#showcase-record).
+
+### Example of an observer's `execute()` method
+
+```php php
+public function execute(Observer $observer)
+{
+    /* @var \Magento\Catalog\Model\Product $product */
+    $product = $observer->getData('productObject');
+
+    /*
+     * Fetch language-specific values based on $product
+     */
+
+    $productRecord = $observer->getData('custom_data');
+
+    $originalName = $productRecord['name'];
+    $originalDescription = $productRecord['description'];
+
+    $productRecord['name'] = [
+        'en' => $originalName,
+        'de' => $germanName,
+        'es' => $spanishName,
+    ];
+
+    $productRecord['description'] = [
+        'en' => $originalDescription,
+        'de' => $germanDescription,
+        'es' => $spanishDescription,
+    ];
+}
+```
+
+## Index settings
+
+If your records are structured like the [example record](/integration/magento-2/guides/multi-language-search/#showcase-record),
+you don't need to send specific settings to Algolia because you only need to make _parent_ attributes, such as name, description, or manufacturer, searchable.
+You can do this in the Magento Admin.
+
+## Showcase record
+
+```jsonc jsonc
+{
+  "name": {
+    "en": "Shirt",
+    "de": "Hemd",
+    "es": "Camisa",
+  },
+  "description": {
+    "en": "Very nice blue shirt",
+    "de": "Sehr schönes blaues Hemd",
+    "es": "Muy bonita camisa azul",
+  },
+  // ... other attributes
+}
+```

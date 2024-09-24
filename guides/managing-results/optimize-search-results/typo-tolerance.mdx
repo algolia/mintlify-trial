@@ -1,0 +1,68 @@
+---
+title: Typo tolerance
+description: |-
+  How Algolia handles typos, typing mistakes, and spelling errors.
+---
+
+## What's a typo?
+
+- A missing letter: "hllo" → "hello"
+- An extraneous letter: "heello" → "hello"
+- Inverted letters: "hlelo" → "hello"
+- Substituted letter: "heilo" → "hello"
+
+## What's typo tolerance?
+
+Typo tolerance allows users to make mistakes while typing and still find the records they're looking for. This is done by matching words that are close in spelling.
+
+Tolerating typos is fundamental to modern search experiences for two reasons.
+First of all, typos are inevitable on mobile devices. Secondly, because products and services are growing in both complexity and global reach, not everyone knows the right way to spell a word.
+
+Algolia provides typo tolerance out-of-the-box, along with some important ways to customize just how tolerant a search experience should be.
+
+## How typos are calculated
+
+Algolia's algorithm for dealing with typos is based on **the difference in spelling between a query word and its exact match in the index (the "distance").** Algolia doesn't consider words with four or more typos. Three typos are only considered, when the first typo is on the first letter. For an example, see [Calculating distance](#calculating-distance).
+
+### Calculating distance
+
+_Distance_ is the count of operations (additions, deletions, substitutions, or transpositions) needed to change one word into another.
+
+For example, the query "strm" might mean "storm" or "strum" (distance=1), "star" or "warm" (distance=2). The following examples are calculations of distances of different queries agaisnt the word _Michael_:
+
+- **michael** = 0. Algolia's engine isn't case-sensitive ("michael" = "Michael")
+- **mickael** = 1 (substitution: h → k)
+- **micael** = 1 (deletion: h)
+- **mickhael** = 1 (addition: k)
+- **micheal** = 1 (transposition: a ⇄ e)
+- **mickaell** = 2 (substitution: h → k, addition: l)
+- **Tichael** = 2 (substitution: m → T, first letter)
+- **Tickael** = 3 (substitution: m → T, first letter, substitution h → k).
+
+The final example ("Tickael") illustrates an exception to Algolia's maximum of two typos. If a typo is on the first letter of a query (this is uncommon), up to three typos are allowed for that word.
+
+**Typo tolerance is ignored for:**
+
+- Logogram-based languages, such as Chinese and Japanese, rely on pictures to represent words (or partial words). Typo tolerance only applies to phonemic languages (such as English, French, and Russian), where characters represent sounds to form words.
+- Punctuation and special characters
+- [Splits and concatenations](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/) (insertion or removal of spaces between two words)
+- Any user query between quotes (if you've enabled [`advancedSyntax`](/api-reference/api-parameters/advancedSyntax/)).
+
+## Impact of typos on the ranking formula
+
+**Typo count** is the first criterion in [Algolia's ranking formula](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/). This means that words with perfect matches (no typos) rank higher than words with one typo, and one-typo words rank higher than words with two typos.
+
+## Configuring typo tolerance
+
+Since every search experience and audience is different, it's essential to be able to configure the engine to improve typo tolerance. Usually, it's sufficient just to enable it, but for some queries or data sets, you need to fine-tune the typo tolerance settings. The [Configuring typo tolerance guide](/guides/managing-results/optimize-search-results/typo-tolerance/in-depth/configuring-typo-tolerance/) walks you through each of these settings.
+
+## Further reading
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Fuzzy search using typo tolerance](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+  - [Mobile typos](https://www.algolia.com/blog/ux/mobile-search-ux-best-practices/)
+</Info>
+
+{/* prettier-ignore-end */}

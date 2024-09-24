@@ -1,0 +1,24 @@
+---
+title: Rename a replica index
+description: |-
+  Rename a replica index by detaching it from the primary index first.
+---
+
+**You can't rename replica indices directly.**
+
+- Before renaming a **standard replica index**, first, detach it from its primary index. You can then rename it.
+- You can't rename [**virtual replicas**](/guides/managing-results/refine-results/sorting/in-depth/replicas/#standard-and-virtual-replicas). You need to delete the virtual replica and create a new one.
+
+To rename a replica index in the Algolia dashboard:
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse/) and select the **primary index** whose replica you want to rename. Alternatively, select the **replica index** you want to rename and click the name of its associated primary index under the **Index** heading.
+
+1. With the **primary index** selected, go to the **Replica** tab,
+   select the replica index you want to unlink,
+   and click **Unlink Replica**.
+
+   The index is now a regular index.
+
+1. Select the (former) replica index and [rename the index](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/move-indices/#rename-indices-in-the-algolia-dashboard).
+
+1. To reattach the renamed replica index, [create a new replica index](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/) and enter the name of the renamed replica index.

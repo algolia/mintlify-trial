@@ -1,0 +1,140 @@
+---
+title: MySQL
+description: |-
+  Index your data from a MySQL database.
+---
+
+The MySQL connector lets you read data from a MySQL database and store it in an Algolia index.
+
+## Grant Algolia access to your MySQL database
+
+Your MySQL server must allow remote connections.
+Any firewall or security group rules must allow traffic from Algolia's IP address to reach your MySQL server on the appropriate port (by default 3306).
+
+The connector authenticates as a MySQL user.
+
+### Create a dedicated user account
+
+It's best to create a dedicated read-only user account for replicating data:
+
+```sql sql
+CREATE USER <username> IDENTIFIED BY '<password>';
+```
+
+Replace `<username>` and `<password>` with the credentials
+you want the connector to use for authentication.
+
+### Grant permissions to the user account
+
+Use the `GRANT` statement to provide the new user account with read-only access to your schemas and tables:
+
+```sql sql
+GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO <username>;
+```
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you're using the STANDARD replication method (not recommended),
+  you only need to grant SELECT permissions.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Configure MySQL server binary logging
+
+Enable binary logging in your MySQL server configuration file.
+
+```
+server-id                  = 223344
+log_bin                    = mysql-bin
+binlog_format              = ROW
+binlog_row_image           = FULL
+binlog_expire_logs_seconds  = 864000
+```
+
+- `server-id`.
+  The server ID must be a unique integer for each server and replication client in the MySQL cluster, between 1 and 4294967295.
+  If your configuration file already has a valid `server-id` entry, you don't need to change it.
+  For more information, see [`server-id`](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id) in the MySQL documentation.
+
+- `log_bin`.
+  The base name of the sequence of the binary log files.
+  If your configuration file already has a `log_bin` entry, you don't need to change it.
+  For more information, see [`log_bin`](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_log_bin) in the MySQL documentation.
+
+- `binlog_format`.
+  The format of the binary log. This must be set to `ROW`.
+  For more information, see [Binary Logging Formats](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format) in the MySQL documentation.
+
+- `binlog_row_image`.
+  Determines how row images are written to the binary log. This must be set to `FULL`.
+  For more information, see [`binlog_row_image`](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_row_image) in the MySQL documentation.
+
+- `binlog_expire_logs_seconds`.
+  Binary log expiration period in seconds, after which binary log files can be automatically removed.
+  We recommend setting this to 864000 seconds (10 days).
+  This would allow the connector to resume from the last point in an incremental sync,
+  in case a sync fails or is paused.
+  For more information, see [`binlog_expire_logs_seconds`](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_row_image) in the MySQL documentation.
+  We also recommend setting frequent syncs for CDC.
+
+### Configure your data source
+
+First, set up your MySQL database as **source** for the connector.
+
+1. In the Algolia dashboard, select the [**MySQL** connector](https://dashboard.algolia.com/connectors/mysql/create) and click **Connect**.
+1. Enter the details for your MySQL database, such as the host, port, database name, and user account.
+1. Make sure that the **SSL Connection** option is selected and choose the SSL mode:
+   - **disable** turns off encrypted communication between Airbyte and the source
+   - **allow** turns on encrypted communication only if required by the source
+   - **prefer** allows unencrypted communication only if the source doesn't support encryption
+   - **require** requires encryption and fails if the source doesn't support encryption
+   - **verify-ca** requires encryption and verify that the source has a valid SSL certificate
+   - **verify-full** requires encryption and verifies the identity of the source
+1. Select your SSH tunnel method.
+   When using an SSH tunnel, Airbyte connects to an intermediate server (bastion or jump server) that has direct access to your database. Airbyte connects to the bastion and then asks the bastion to connect directly to the database server.
+
+   Select how you want to authenticate the SSH connection:
+
+   - **SSH Key Authentication**. Add the private key you want to use for authentication.
+   - **Password Authentication**. Enter the password for connecting to the bastion server. This is the operating system's user account password for the SSH user, **not** the MySQL password.
+
+The connector expects an RSA key in PEM format. To create a private key for SSH tunneling, run the following command:
+
+```
+ssh-keygen -t rsa -m PEM -f myuser_rsa
+```
+
+This creates the private key in PEM format. The public key remains in the standard format used by the `authorized_keys` file on your bastion host. Add this public key to the user on your bastion server, which you want to use with Airbyte. Copy the private key and add it to the Airbyte connector configuration screen so that it can connect to your bastion server.
+
+5. Enter a name for this source so that you can easily identify it in the dashboard.
+5. Click **Create source**. The connector tries to connect to the source and lets you continue if it succeeds.
+
+### Configure your destination
+
+The destination is where your extracted MySQL data will be stored within Algolia.
+
+1. Select an existing index or create a new one for your data.
+1. Provide an existing API key or create a new one for the index.
+1. Assign a recognizable and descriptive name to your index.
+1. Click **Create destination**.
+
+### Configure your task
+
+Tasks determine how and when your data gets transferred from ElasticSearch to Algolia.
+
+1. Decide if you want to fetch your data on a schedule or on demand.
+1. If you select a schedule, you can choose from a list of popular schedules or enter a custom cron expression.
+1. In the **What should we do with your data** section, select between **Replace**, **Save**, or **Partial Update**.
+1. Select the tables you want to import into Algolia. All columns will be imported.
+1. Finalize the configuration and click **Create task**.
+
+#### Manage your tasks
+
+Go to the **Tasks** page in the Algolia dashboard to view the status of your tasks and manage them accordingly:
+
+- Change how tasks operate
+- Temporarily stop tasks from running
+- Delete tasks
+- Run tasks on demand

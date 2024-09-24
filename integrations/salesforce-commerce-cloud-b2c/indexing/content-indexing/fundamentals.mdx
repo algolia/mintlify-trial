@@ -1,0 +1,37 @@
+---
+title: Content indexing
+description: |-
+  Learn how content indexing works with the Algolia Salesforce B2C Commerce cartridge.
+---
+
+With the Algolia cartridge for Salesforce B2C Commerce, you can index content,
+including content assets and Page Designer components.
+
+## Concepts
+
+- **Content Types:** you can index these types of Salesforce B2C Commerce content: `Content Assets` and `Page Designer Pages`.
+
+- **Splitting:** before indexing your content, Algolia splits your content into smaller chunks. For more details, see [Splitting](#splitting).
+
+- **Monitoring:** you can monitor the status of your content indexing jobs with the Algolia BM Module. For more details, see [Monitoring](/integration/salesforce-commerce-cloud-b2c/troubleshooting/monitoring/).
+
+## Content indexing jobs
+
+### `AlgoliaContentIndex_v2`
+
+This job performs full content indexing. It has two steps: `SFCCContentSearchIndex` and `algoliaContentIndex`. It extracts Salesforce B2C content data and sends it for indexing to Algolia.
+
+For more details, see [Configuration](/integration/salesforce-commerce-cloud-b2c/indexing/content-indexing/configuration/).
+
+## Splitting
+
+Because content can be lengthy and Algolia records have a [size limit](https://support.algolia.com/hc/en-us/articles/4406981897617-Is-there-a-size-limit-for-my-index-records-/), Algolia splits your content into smaller chunks before indexing.
+
+### Splitting for content assets
+
+First, Algolia can split your content assets on HTML tags. This step is optional. You can configure a `splittingTag` HTML tag as a job-level parameter. For example, if you set the `splittingTag` to `h1`, the job will generate at least one record per `<h1>` section. If one of the section is too big, it will be split even more (see below).
+
+### Record size splitting
+
+With the second layer of splitting, the content job's indexing logic ensures that each record will be within the [record size limit](https://support.algolia.com/hc/en-us/articles/4406981897617-Is-there-a-size-limit-for-my-index-records-/). The maximum record size can be defined at the code level by adjusting `DEFAULT_MAX_RECORD_BYTES`.
+The default value is 10,000 bytes.

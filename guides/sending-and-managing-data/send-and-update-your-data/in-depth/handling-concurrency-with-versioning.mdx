@@ -1,0 +1,38 @@
+---
+title: Handling concurrency with versioning
+description: |-
+  Learn how you can leverage versioning and optimistic locking in your indexing pipeline to guarantee data consistency, even in concurrent environments.
+---
+
+If you have multiple indexing processes running, one process could try to update an object at the same time as another. **If this happens, your record might turn out differently than expected.**
+
+Imagine you have an ecommerce website, and your backend runs two processes to index its changes to Algolia with the [`partialUpdateObjects`](/api-reference/api-methods/partial-update-objects/) method. One process sends an update to set the stock of a product from `10` to `20`, because you just received ten new items in a shipment. Simultaneously, another process sets the stock for this product from `10` to `9` because of an order that just came in.
+
+Depending on which job wins the race condition, the stock is now either `9` or `20`, even though the correct stock is `19`.
+
+## Versioning
+
+The first way to handle concurrency is the [`IncrementSet`](/api-reference/api-methods/partial-update-objects/#update-only-if-the-value-is-greater-than-a-numeric-attribute) [operation](/api-reference/api-methods/partial-update-objects/#built-in-operations). It lets you update an object only if you provide a higher numerical value than already exists in the record, or a value higher than 0 if the record doesn't exist.
+
+A great use-case for this is adding a Unix timestamp to your records. With [`IncrementSet`](/api-reference/api-methods/partial-update-objects/#update-only-if-the-value-is-greater-than-a-numeric-attribute), the engine only updates your record if the timestamp you sent is more recent than the existing one. If you update in the meantime, you prevent the engine from overriding your record again; **only the latest update is taken into account**.
+
+## Optimistic locking
+
+Another way to handle concurrency is with the [`IncrementFrom`](/api-reference/api-methods/partial-update-objects/#update-only-if-the-value-matches-a-numeric-attribute) [operation](/api-reference/api-methods/partial-update-objects/#built-in-operations). It lets you update an object only if you provide the current version of the object, or 0 if the record doesn't exist.
+
+A typical use-case is when you perform a read-modify-write sequence:
+
+- you read an object from your index,
+- you make the changes you want to make,
+- you provide the [`IncrementFrom`](/api-reference/api-methods/partial-update-objects/#update-only-if-the-value-matches-a-numeric-attribute) operation with the old value of your versioning attribute.
+
+With this approach, the engine only updates your record if the value from your [`IncrementFrom`](/api-reference/api-methods/partial-update-objects/#update-only-if-the-value-matches-a-numeric-attribute) operation matches the current value currently in the record, and increments it. **If another process incremented this value in the meantime, the engine ignores the update.**
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The engine doesn't provide feedback when it rejects an update because of versioning or optimistic locking. You have to wait for the indexing operation to complete, then fetch the object to compare it to the desired result.
+  An ignored operation won't necessarily show up as _published_ with the [`waitTask`](/api-reference/api-methods/wait-task/) API method.
+</Note>
+
+{/* prettier-ignore-end */}

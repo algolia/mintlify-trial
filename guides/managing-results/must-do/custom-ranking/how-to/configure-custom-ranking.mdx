@@ -1,0 +1,218 @@
+---
+title: Create custom ranking attributes
+description: |-
+  How to create custom ranking attributes according to your business needs, based on your own metrics, like sales or popularity.
+---
+
+Algolia offers good relevance out-of-the-box. Yet, what makes search great is fine-tuning it according to business relevance.
+Consider you're developing an app based on Twitter feeds. When searching, you want to rank results by relevance and the custom attributes `likes` and `retweets`.
+
+You can do this by using Algolia's [custom ranking feature](/guides/managing-results/must-do/custom-ranking/) to specify what attributes to rank on. You can configure these attributes at indexing time with the [`customRanking`](/api-reference/api-parameters/customRanking/) parameter or through Algolia's dashboard.
+
+## Example dataset
+
+In this example, you're developing an app based on Twitter feeds and want to rank tweets by the number of likes and retweets. Here's what the dataset would look like:
+
+```json json
+[
+  {
+    "tweet": "🎈 We're introducing Create InstantSearch App today: a CLI to bootstrap InstantSearch apps from the terminal. Read more in this blog post by @FrancoisChlfr!",
+    "retweets": 13,
+    "likes": 27
+  },
+  {
+    "tweet": "Designers from all horizons, don't forget to register for next #ParisDesignMeetup, taking place on Sept 25th!",
+    "retweets": 9,
+    "likes": 13
+  },
+  {
+    "tweet": "Are you ready for GSA to be a thing of the past? Register now for our webinar, where we'll help you with migration options, tips, and tricks to make your move as painless as possible. https://go.algolia.com/gsa-migration",
+    "retweets": 4,
+    "likes": 6
+  }
+]
+```
+
+## Configure custom ranking in the dashboard
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. On the **Configuration** tab, go to **Ranking and Sorting**.
+
+1. Click **Add custom ranking attribute** and select the attributes "retweets" and then "likes".
+
+1. Save your changes.
+
+## Configure custom ranking with the API
+
+To rank on retweets and likes, you first need to set [`customRanking`](/api-reference/api-parameters/customRanking/) during indexing time.
+You can set custom ranking criteria to be in ascending or descending order.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      CustomRanking = new List<string> { "desc(retweets)", "desc(likes)", }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	CustomRanking: opt.CustomRanking(
+  		"desc(retweets)",
+  		"desc(likes)",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setCustomRanking(Arrays.asList(
+      "desc(retweets)",
+      "desc(likes)"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      customRanking: ["desc(retweets)", "desc(likes)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      customRanking {
+          +Desc("retweets")
+          +Desc("likes")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'customRanking' => [
+      'desc(retweets)',
+      'desc(likes)'
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"customRanking": ["desc(retweets)", "desc(likes)"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      customRanking: [
+        "desc(retweets)",
+        "desc(likes)"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      customRanking = Some(Seq(
+        CustomRanking.desc("retweets"),
+        CustomRanking.desc("likes"))))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "customRanking": [
+      "desc(retweets)",
+      "desc(likes)",
+    ]
+  ])
+  ```
+</CodeGroup>
+
+Custom ranking criteria are applied in order (in this example, first retweets and then likes).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Configure custom ranking with the API clients](https://academy.algolia.com/guides/7fc35276-c43a-11ee-87dd-06c28b757225/tasks/cf7923d8-afe8-11ee-90ae-06f9363c70d5)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Custom ranking on different attributes
+
+**Custom ranking applies at the index level**. This means records that don't have an attribute that's in the [`customRanking`](/api-reference/api-parameters/customRanking/) list are pushed to the bottom. For example, say you want to add Facebook posts to your dataset, and they have attributes `likes` and `comments`. Because `retweets` are a custom ranking attribute, and Facebook posts don't have a `retweets` attribute, they're unlikely to win the tie-break against a tweet.
+
+You could solve this by creating a _computed attribute_. For example, you could compute a single popularity attribute instead of having `likes` and `retweets` on one side and `likes` and `comments` on the other.
+
+## Computed attributes
+
+You might want to create a custom ranking attribute based on the calculated value of other attributes. In other words, a _computed attribute_. For example:
+
+- [A Bayesian average of product ratings](/guides/solutions/ecommerce/relevance-optimization/tutorials/bayesian-average/)
+- A simple, combined score of other attributes (such as `popularity` being the sum of `likes` and `retweets`).
+- A boolean value set to true or false based on whether another attribute is `null`.
+
+To implement a computed attribute, you must create it as an attribute in your records. To populate the record with values for the computed attribute:
+
+1. Retrieve every record in the index, using the [`browse`](/api-reference/api-methods/browse/) method.
+1. For each record, calculate the computed attribute value.
+1. Update each record's computed attribute in the index with the calculated value, using the [`partialUpdateObjects`](/api-reference/api-methods/partial-update-objects/) method.
+
+The regularity of these updates depends on your use case: it might be once a month, every week, daily, or even more frequently.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [A Bayesian average computed attribute](/guides/solutions/ecommerce/relevance-optimization/tutorials/bayesian-average/)
+  - [How Amazon ranking works](https://www.feedbackwhiz.com/blog/how-does-amazon-calculate-product-ratings/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Metric types
+
+The custom ranking field accepts any numerical or boolean value that represents the relative relevance of your records.
+
+The attribute type can be a raw value like the number of sales, views, or likes.
+The field can also be a computed value such as a popularity score that you calculated before adding the record to Algolia.
+
+What you set as your [`customRanking`](/api-reference/api-parameters/customRanking/) depends on your use case and what data you have available. Some retail metrics commonly used in [`customRanking`](/api-reference/api-parameters/customRanking/) include sales rank, stock levels, free shipping (boolean), on sale (boolean), and rating. Publish date (as a [timestamp](/guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record/#dates)), page views, and likes are often used in media applications.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Check that the numeric attributes used in [`customRanking`](/api-reference/api-parameters/customRanking/) aren't formatted as a string, as this would cause the records to be ranked alphabetically.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Boolean values
+
+When using a boolean value attribute within the custom ranking, the ascending and descending setting uses the alphabetical value of the _true_ or _false_ text.
+
+For instance, if you need the _true_ values ranked higher, set it to be _descending_. If you need the _false_ values ranked higher, set it to be _ascending_.
+
+### String and null or absent values
+
+If a custom ranking attribute is missing from a record or has a null value, that record is always ordered last, regardless of its ascending or descending setting. Records with null or missing values are considered equal.
+
+Strings are sorted after numbers and before null or absent values. Strings are also compared by lexicographical order.

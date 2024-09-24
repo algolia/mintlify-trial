@@ -1,0 +1,401 @@
+---
+title: Combining multiple consequences
+description: |-
+  How to combine multiple Rules on the same query.
+---
+
+When creating a Rule, **it's not uncommon to set more than one consequence**. A good example is when you want to use a search term as a filter or a facet value but not for textual search.
+
+Consider a website where users can search for movies by title, actor, or director. Some actors, like
+Clint Eastwood are also directors: people searching for "clint eastwood" might not be looking for the same thing. For example, people looking only for movies directed by Clint Eastwood might search for "clint eastwood director",
+hoping to filter out every movie that Clint Eastwood plays in but didn't direct.
+
+In this case, you wouldn't be interested in the word "director for textual search purposes, but as a cue to set a filter. You would therefore want to remove the word "director" from the search query so that the engine doesn't textually look for records matching that word. You can achieve this by **combining several consequences in your Rule**.
+
+## Dataset example
+
+In the following dataset, some movies have Clint Eastwood as an actor, some as a director, and some have both.
+
+```json json
+[
+  {
+    "title": "The Good, the Bad and the Ugly",
+    "director": "Sergio Leone",
+    "actors": ["Clint Eastwood", "Lee Van Cleef", "Elli Wallach"]
+  },
+  {
+    "title": "Dirty Harry",
+    "director": "Don Siegel",
+    "actors": ["Clint Eastwood", "Andy Robinson", "Harry Guardino"]
+  },
+  {
+    "title": "Million Dollar Baby",
+    "director": "Clint Eastwood",
+    "actors": ["Clint Eastwood", "Hilary Swank", "Morgan Freeman"]
+  },
+  {
+    "title": "Invictus",
+    "director": "Clint Eastwood",
+    "actors": ["Morgan Freeman", "Matt Damon", "Tony Kgoroge"]
+  }
+]
+```
+
+If someone searches for
+"clint eastwood", they would retrieve all movies by or with Clint Eastwood, even if they were only interested in movies with Clint Eastwood as the director. You could solve this problem with faceting, by setting `director` as an attribute for faceting and providing a refinement list with its own search input on your frontend.
+
+Yet, an even better way of helping your users would be to make your search _smart_ and look only for movies where `director` is equal to "Clint Eastwood" whenever they type "clint eastwood director". To achieve this, you first need to set `director` in your list of attributes for faceting. Then, you can create a new Rule that filters on matching attributes.
+
+You need to create two consequences whenever a user types in "clint eastwood director":
+
+- Filter all results with "director"
+- Remove the word "director" from the search
+
+## Using the API
+
+1. Set `director` as [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/). This happens at indexing time.
+1. Set a Rule that:
+
+   - Detects the term "director" in a query whenever it comes after a term that matches the name of a director
+   - Applies a filter on facet value `director:'Clint Eastwood'`.
+
+To do this, use the [`saveRule`](/api-reference/api-methods/save-rule/) method.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings { AttributeForDistinct = "director" };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributesForFaceting: opt.AttributesForFaceting("director"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(new IndexSettings()
+                .setAttributesForFaceting(Collections.singletonList("director")));
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributesForFaceting: ["director"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributesForFaceting {
+          +"director"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributesForFaceting' => [
+      "director"
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"attributesForFaceting": ["director"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      attributesForFaceting: [
+        "director"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributesForFaceting = Some(Seq(
+        "director")))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(\.attributesForFaceting, to: ["director"])
+  index.setSettings(settings) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+However, setting the Rule isn't enough. Even when you set a Rule, the engine still tries to match the terms in the query. If a user searches for
+"clint eastwood director",
+even if your Rule applies, the engine will look for the word "director" in the records. With the example dataset, this would return no results at all. This is where combining consequences comes in handy.
+
+When this Rule applies, you can add another consequence to remove the word "director" from the query. This way, the engine will only use it for filtering, not search.
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "director-rule",
+      Conditions = new List<Condition>
+      {
+          Anchoring = "contains",
+          Pattern = "{facet:director} director"
+      },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              AutomaticFacetFilters = new List<AutomaticFacetFilter>
+              {
+                  new AutomaticFacetFilter { Facet = "director" }
+              },
+              Query = new ConsequenceQuery
+              {
+                  Edits = new List<Edit>
+                  {
+                      new Edit { Type = EditType.Remove, Delete = "director" }
+                  }
+              }
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:   "director-rule",
+  	Conditions: []search.RuleCondition{{Anchoring: search.Contains, Pattern: "{facet:director} director"}},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			AutomaticFacetFilters: []search.AutomaticFacetFilter{{Facet: "director"}},
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{search.RemoveEdit("director")},
+  				},
+  			),
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition =
+          new Condition().setPattern("{facet:director} director").setAnchoring("contains");
+
+  ConsequenceParams params =
+          new ConsequenceParams()
+                  .setAutomaticFacetFilters(Collections.singletonList(new AutomaticFacetFilter("director")))
+                  .setConsequenceQuery(
+                          new ConsequenceQuery()
+                                  .setEdits(Collections.singletonList(new Edit().setDelete("director"))));
+
+  Consequence consequence = new Consequence().setParams(params);
+
+  Rule rule =
+          new Rule().setObjectID("director-rule").setConditions(Collections.singletonList(condition)).setConsequence(consequence);
+
+  index.saveRule(rule);
+  ```
+
+  ```js js
+  const rule = {
+    objectID: "director-rule",
+    conditions: [
+      {
+        pattern: "{facet:director} director",
+        anchoring: "contains",
+      },
+    ],
+    consequence: {
+      params: {
+        automaticFacetFilters: ["director"],
+        query: {
+          edits: [
+            {
+              type: "remove",
+              delete: "director",
+            },
+          ],
+        },
+      },
+    },
+  };
+
+  index.saveRule(rule, (err, content) => {
+    if (err) throw err;
+    console.log(content);
+  });
+  ```
+
+  ```kotlin kotlin
+  val director = Attribute("director")
+  val rules = rules {
+      rule(
+          "director_rule",
+          Condition(Contains, Facet(director)),
+          Consequence(
+              automaticFacetFilters { +director },
+              edits = edits { +"director" }
+          )
+      )
+  }
+
+  index.saveRules(rules).then(() => {
+    // done
+  });
+  ```
+
+  ```php php
+  $rule = [
+    'objectID' => 'director-rule',
+    'condition' => [
+      'pattern'   => '{facet:director} director',
+      'anchoring' => 'contains',
+    ],
+    'consequence' => [
+      'params' => [
+        'automaticFacetFilters' => ['director'],
+        'query' => [
+          'edits' => [
+            [
+              'type' => 'remove',
+              'delete' => 'director'
+            ]
+          ]
+        ]
+      ]
+    ]
+  ];
+
+  $response = $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "director-rule",
+      "conditions": [{"pattern": "{facet:director} director", "anchoring": "contains"}],
+      "consequence": {
+          "params": {
+              "automaticFacetFilters": ["director"],
+              "query": {"edits": [{"type": "remove", "delete": "director"}]},
+          }
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    objectID: "director-rule",
+    conditions: [
+      {
+        pattern: "{facet:director} director",
+        anchoring: "contains"
+      }
+    ],
+    consequence: {
+      params: {
+        automaticFacetFilters: ["director"],
+        query: {
+          edits: [
+            {
+              type: "remove",
+              delete: "director"
+            }
+          ]
+        }
+      }
+    }
+  }
+
+  index.save_rule(rule)
+  ```
+
+  ```scala scala
+  val ruleToSave = Rule(
+    objectID = "director-rule",
+    conditions = Some(Seq(Condition(
+      pattern = "{facet:director} director",
+      anchoring = "contains"))),
+    consequence = Consequence(
+      params = Seq(
+        Map("automaticFacetFilters" -> Seq(
+          AutomaticFacetFilters("director"))),
+        Map(
+          "query" -> Map(
+            "edits" -> Seq(
+              Edit("remove", "director")))))), )
+
+  client.execute {
+    save rule ruleToSave inIndex "index_name"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "director-rule")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("{facet:director} director"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(\.automaticFacetFilters, to: [.init(attribute: "director")])
+        .set(\.queryTextAlteration, to: .edits([.remove("director")]))
+    )
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+## Using the dashboard
+
+You can also add your Rules in Algolia's dashboard.
+
+1. Select the **Search** product icon on your dashboard and then select your index.
+1. Click the **Configuration** tab.
+1. In the **Facets** subsection of _Filtering and Faceting_, click the "Add an attribute" button and select the `director` attribute from the dropdown.
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+1. Under the heading **Rules**, select the index to which you're adding a Rule.
+1. Select **Create your first rule** or **New rule**. In the dro-down menu, click the **Manual Editor** option.
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** in the drop-down menu, and select the option **Add Facet "director"** from the input box. `{facet:director}` should then be displayed.
+1. In the **Consequence(s)** section:
+   - Click the **Add consequence** button and select **Filter Matching Attributes** (or **Filter/Boost Matching Attributes**).
+   - In the **Filter** input that appears, select the option **Add Facet "director"** in the dropdown.
+   - Click the **Add consequence** button again and select **Remove Word**.
+   - In the input that appears, select **Remove `{facet:director}`**.
+1. Save your changes.

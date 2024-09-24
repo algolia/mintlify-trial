@@ -1,0 +1,135 @@
+---
+title: Merchandising facets
+description: |-
+  Learn how to create Rules that tweak the display of facets in your UI.
+---
+
+Depending on the query or category, which facets to display in the UI and how to organize values can vary significantly.
+For example, for an ecommerce platform selling both clothes and tech products, in the "clothing" category you might want to display the facets "brand", "size", and "color", while for TVs, you might want to show "brand", "screen type", and "screen size".
+
+Algolia lets you control which facets to display and how to order their values for a given query or category.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This feature requires a [specific UI implementation](/guides/building-search-ui/ui-and-ux-patterns/facet-display/how-to/building-ui-for-facet-display/js/) that relies on the latest version of InstantSearch, or with some custom logic built-in.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Merchandise facets in the Visual Editor
+
+Consider the earlier example, where an ecommerce platform sells clothes _and_ tech products.
+
+First, you need to [set a default facet display](/guides/building-search-ui/ui-and-ux-patterns/facet-display/js/) so that if a user lands on anything but tech products, they see the facets "brand", "size", and "color".
+
+With the default order set, you need to set a rule to override this default order for the tech products category.
+
+1. Select [Rules](https://dashboard.algolia.com/rules) in the Algolia dashboard.
+1. Under the **Rules** header, select the index you are adding a Rule to.
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, select the Visual Editor option.
+1. To set the condition, check whether you have category pages configured on your Visual Editor. You would follow separate steps, depending on whether it's configured or not:
+   - If category pages are configured on your Visual Editor:
+     - Click the "Choose category page",
+     - Select "Tech Products",
+     - Click "Apply".
+   - If category pages aren't configured:
+     - Click "Set query condition",
+     - Toggle on "Filters" and Toggle off "Query",
+     - In "Filter name" enter "Brand" and in "Filter value" enter "Tech Products",
+     - Click "Apply".
+1. In the "What do you want to do?" section:
+   - Click the **Order facets** button.
+   - Import the default order defined for your facet display by selecting **Import default order**.
+   - Click the trash icon next to the facets "size" and "color" so they're not displayed anymore in this category.
+   - Click the **Add facets** button and select "screen type" and "screen size" to add them to the list of facets to display.
+   - Use the `=` icon to reorder the facets by dragging and dropping them. The order in the UI is the same as the order in the dashboard.
+1. Review and publish your changes.
+
+## Merchandise facet values in the Visual Editor
+
+Selecting which facets to display and in which order is one aspect of facet merchandising. The other aspect is about facets values.
+
+By default, the values within each facet are ordered by count: the values with the highest number of matching results appear at the top.
+You can tweak this order in several ways:
+
+- You can pin some values to the top of the list. For example, you might have a partnership with a specific brand that you always want to display at the top of the list.
+- The non-pinned values can then be ordered by count, alphabetically, or hidden so that only pinned values are displayed.
+
+Going back to the earlier example, now on top of displaying the facets "brand", "screen type", and "screen size" in the category "tech products", you also want:
+
+- To pin the brand "Sony" at the top of the list of brands
+- Have the other brands ordered alphabetically
+- Have the "screen type" values ordered by count
+- Only display the three most common values for "screen size": 32, 55, and 65 inches.
+
+1. Select [Rules](https://dashboard.algolia.com/rules) in the Algolia dashboard.
+1. Under the **Rules** header, select the index to which you're adding a rule.
+1. Identify the rule created in the earlier example, click the three dots (ellipsis), and select the option "Edit this Rule".
+1. In the strategy section, click the pen icon to edit the facet display strategy.
+1. To set the strategy for the "brand" facet:
+   - Click the pen icon to edit the "brand" facet.
+   - Click "pin facet value" and select the brand "Sony" to pin it to the top of the list.
+   - To order subsequent values, in the drop-down menu, click "alphabetically".
+1. For the "screen type" facet, the order should already be by count, so you should have nothing to change here.
+1. To set the strategy for the "screen size" facet:
+   - Click the pen icon to edit the "screen size" facet.
+   - Click "pin facet value" and select the values 32in, 55in, 65in to pin them at the top of the list.
+   - Use the `=` icon to drag the values into the correct order.
+   - To order subsequent values, in the drop-down menu, select "do not display" to ensure that only the three selected values are displayed.
+1. Review and publish your changes.
+   - Click the pen icon to edit the "screen size" facet.
+   - Click "pin facet value" and select the values 32in, 55in, 65in to pin them at the top of the list.
+   - Use the `=` icon to drag the values into the right order.
+   - In the drop-down menu to order subsequent values, select "do not display" to make sure that only the 3 selected values get displayed.
+1. Review and publish your changes.
+
+## Merchandise facets and their values in the Manual Editor
+
+Merchandising facets and their values is also possible using the Manual Editor but requires an understanding of the setting `renderingContent`.
+
+1. Select [Rules](https://dashboard.algolia.com/rules) in the Algolia dashboard.
+1. Under the **Rules** header, select the index you are adding a Rule to.
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, select the Manual Editor option.
+1. In the Condition(s) section, toggle **Filters** to on. Select "screen type" in the attribute name field, and "tech products" in the attribute value field.
+1. Still in the Condition(s) section, toggle **Query** to off.
+1. In the Consequence(s) section:
+   - Click the **Add consequence** button and select **Add query** parameter.
+   - In the input field, enter the JSON to customize the `renderingContent` parameter. For example, to match the same example as described for the Visual Editor, the JSON would look like this:
+
+```json json
+{
+  "renderingContent": {
+    "facetOrdering": {
+      "facets": {
+        "order": ["brand", "screen type", "screen size"]
+      },
+      "values": {
+        "brand": {
+          "order": ["Sony"],
+          "sortRemainingBy": "alpha"
+        },
+        "screen type": {
+          "sortRemainingBy": "count"
+        },
+        "screen size": {
+          "order": ["32in", "55in", "65in"],
+          "sortRemainingBy": "hidden"
+        }
+      }
+    }
+  }
+}
+```
+
+7. Save your changes.
+
+## Further reading
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Merchandising facets on category pages](https://www.algolia.com/ecommerce-merchandising-playbook/merchandis-facets-on-category-pages/)
+</Info>
+
+{/* prettier-ignore-end */}

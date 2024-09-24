@@ -1,0 +1,603 @@
+---
+title: Redirect searches to a URL
+description: |-
+  Learn how to redirect a query to a URL using Rules.
+---
+
+Search isn't only about retrieving results. Sometimes, depending on what users search for, you might want to redirect them to a specific page of your website or mobile app.
+
+Redirecting searches to a URL helps users in these cases:
+
+- **Improve user experience and navigation**. For example, searching for "help" or "return policy" redirects users to a support page.
+- **Display category pages for related keywords** to guarantee a consistent user experience and boost SEO by driving more traffic to category pages. For example, searching for a category keyword, such as, "TV" redirects users directly to the corresponding category page.
+- **Promotional campaigns**. For example, searching for a specific artist name or brand redirects users to a landing page created specifically to support a promotional operation.
+- **Crisis management**. Provide relevant answers to queries related to sudden events. For example, if you detect that your users suddenly start searching for "masks", redirect them to a specific landing page.
+
+Algolia lets you easily create redirects to specific URLs with the
+[Autocomplete redirect plugin](/ui-libraries/autocomplete/guides/redirect/) or a [custom implementation](/guides/building-search-ui/ui-and-ux-patterns/redirects/js/)
+
+## Algolia out-of-the-box redirect solution
+
+The easiest way to redirect search queries to a URL is by adding a rule with the [Visual Editor](/guides/managing-results/rules/merchandising-and-promoting/).
+The rule adds additional data to the search response, which you can [handle in your frontend](#handle-the-redirect-data-in-your-user-interface).
+
+The examples on this page add a redirect for the keyword "help" to a support page.
+You can discover potential redirects by looking at your [search analytics](/guides/search-analytics/overview/).
+For example, users searching for "help" and not getting any results.
+
+### Create a rule in the Visual Editor
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select the Algolia index to which you want to add a rule:
+
+1. Go to the [**Rules**](https://dashboard.algolia.com/rules) page.
+
+1. Click **Create your first Rule** or **New rule** and select **Visual Editor**.
+
+1. In the **It all starts here** section, click **Set query conditions**.
+
+1. In the **Your query** input, enter `help` and click **Apply**.
+
+1. In the **What do you want to do?** section, click **Redirect**.
+
+1. Enter the URL for your redirect—for example, the URL of your support page and click **Apply**.
+
+1. Confirm your changes by clicking **Review and Publish**.
+
+### Create a rule with the API
+
+To add a rule with the API, use the [`saveRule`](/api-reference/api-methods/save-rule/) method. When adding a rule, you need to define a condition and a consequence. In the consequence, [add a search parameters](/guides/managing-results/rules/rules-overview/how-to/add-default-search-parameters-with-rules/) and configure [`renderingContent`](/api-reference/api-parameters/renderingContent/) using the following template:
+
+```json json
+{
+  "renderingContent": {
+    "redirect": {
+      "url": "https://www.algolia.com/support"
+    }
+  }
+}
+```
+
+### Handle the redirect data in your user interface
+
+After adding the rule, you can trigger the redirect in your UI when the `renderingContent.redirect` property is present in the API response. You have two options:
+
+- Using the [redirect plugin](/ui-libraries/autocomplete/guides/redirect/) for the Autocomplete UI library
+- Implement [your own logic](/guides/building-search-ui/ui-and-ux-patterns/redirects/js/)
+
+## Extend the out-of-the-box approach or create custom redirection
+
+If you want to define your own redirection format, or if you need to add additional attributes to the [default redirect rule format](#algolia-out-of-the-box-redirect-solution), you can create a rule with the **Manual Editor** that returns custom data.
+
+### Create a rule for returning custom data
+
+You can set a rule that contains the [custom data](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#return-user-data) you need to build your custom redirect.
+
+This example redirects users to your support page whenever the query contains "help".
+
+#### Create a rule in the Manual Editor
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select the Algolia index to which you want to add a rule:
+
+1. Go to the [**Rules**](https://dashboard.algolia.com/rules) page.
+
+1. Click **Create your first Rule** or **New rule** and select **Manual Editor**.
+
+1. In the **Condition(s)** section, keep the **Query** option selected, and enter `help` in the input.
+
+1. In the **Consequence(s)** section, click **Add consequence** and select **Return Custom Data**.
+
+1. In the **Custom JSON data** input, add the data you want to return when the query matches the rule's condition. For example if you want to create a complete custom redirection, enter the following JSON object: `{"redirect": "https://www.algolia.com/support"}`
+
+1. Optional: add a description for the rule, that helps you and your team distinguish it from other rules.
+
+1. Click **Save**.
+
+#### Create a rule with the API
+
+To add a rule with the API, use the [`saveRule`](/api-reference/api-methods/save-rule/) method. When setting a rule, you need to define a condition and a consequence.
+
+<CodeGroup>
+  ```csharp csharp
+  JObject data = new JObject();
+  data.Add("redirect", "https://www.algolia.com/support");
+
+  var rule = new Rule
+  {
+      ObjectID = "a-rule-id",
+      Enabled = false,
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "help" }
+      },
+      Consequence = new Consequence { UserData = data }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:   "redirect-help-rule",
+  	Conditions: []search.RuleCondition{{Anchoring: search.Contains, Pattern: "help"}},
+  	Consequence: search.RuleConsequence{
+  		UserData: map[string]string{
+  			"redirect": "https://www.algolia.com/support",
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Map<String, Object> userData = new HashMap<>();
+  userData.put("redirect", "https://www.algolia.com/support");
+
+  Condition condition = new Condition()
+          .setPattern("help")
+          .setAnchoring("contains");
+  Consequence consequence = new Consequence()
+          .setUserData(userData);
+
+  Rule rule = new Rule()
+          .setObjectID("redirect-help-rule")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+  ```
+
+  ```js js
+  const rule = {
+    objectID: "redirect-help-rule",
+    conditions: [
+      {
+        pattern: "help",
+        anchoring: "contains",
+      },
+    ],
+    consequence: {
+      userData: {
+        redirect: "https://www.algolia.com/support",
+      },
+    },
+  };
+
+  index.saveRule(rule).then(() => {
+    // done
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          "redirect-help-rule",
+          Condition(Contains, Literal("help")),
+          Consequence(userData = json { "redirect" to "https://www.algolia.com/support" }),
+          enabled = false
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  $rule = array(
+    'objectID' => 'redirect-help-rule',
+    'condition' => array(
+      'pattern'   => 'help',
+      'anchoring' => 'contains',
+    ),
+    'consequence' => array(
+      'userData' => array(
+        'redirect' => 'https://www.algolia.com/support'
+      )
+    )
+  );
+
+  $response = $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "redirect-help-rule",
+      "conditions": [{"pattern": "help", "anchoring": "contains"}],
+      "consequence": {"userData": {"redirect": "https://www.algolia.com/support"}},
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    objectID: "redirect-help-rule",
+    conditions: [
+      {
+        pattern: "help",
+        anchoring: "contains"
+      }
+    ],
+    consequence: {
+      userData: {
+        redirect: "https://www.algolia.com/support"
+      }
+    }
+  }
+
+  index.save_rule(rule)
+  ```
+
+  ```scala scala
+  val ruleToSave = Rule(
+    objectID = "redirect-help-rule",
+    conditions = Some(Seq(Condition(
+      pattern = "help",
+      anchoring = "contains"))),
+    consequence = Consequence(
+      userData = Some(Map("redirect" -> "https://www.algolia.com/support"))), )
+
+  client.execute {
+    save rule ruleToSave inIndex "index_name"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "redirect-help-rule")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("help"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(
+          \.userData,
+          to: [
+            "title": "https://www.algolia.com/support"
+          ])
+    )
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+#### Handle the redirect data in your user interface
+
+After adding the rule, you can trigger the redirect in your UI when the `userData` property is present in the API response.
+If you're using one of the InstantSearch UI libraries, see [Redirects in InstantSearch](/guides/building-search-ui/ui-and-ux-patterns/redirects/js/).
+
+## Add redirects using a dedicated index
+
+You can set up redirects by creating a separate index with the list of redirects **and** the queries that trigger them. Whenever a user performs a search, you have to look in two indices: the regular index to search for items, and the redirect index that determines whether users should be redirected.
+
+This technique is useful if you can't use Rules, or if you want to use other Algolia Search features with your redirect queries, such as typo tolerance, synonyms, or filters.
+
+### Dataset
+
+```json json
+[
+  {
+    "url": "https://www.google.com/#q=star+wars",
+    "query_terms": ["star wars"]
+  },
+  {
+    "url": "https://www.google.com/#q=star+wars+actors",
+    "query_terms": ["george lucas", "luke skywalker"]
+  }
+]
+```
+
+Each record in this dataset has a `url` to redirect the queries, and a list of `query_terms`, that trigger the redirect.
+
+For example, the query "star wars" should redirect to `https://www.google.com/#q=star+wars`.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can download [the dataset](https://raw.githubusercontent.com/algolia/datasets/master/small/redirects.json) on GitHub.
+  To learn how you can import this dataset in Algolia, see [Importing from the dashboard](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard/)
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Configure the redirect index
+
+To trigger the redirect only if the query exactly matches one of the query terms,
+add `query_terms` to the list of [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/),
+so that you can filter on it:
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      AttributesForFaceting = new List<string> { "query_terms" }
+  };
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributesForFaceting: opt.AttributesForFaceting("query_terms"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(new IndexSettings()
+            .setAttributesForFaceting(Collections.singletonList("query_terms")));
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributesForFaceting: ["query_terms"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributesForFaceting {
+          +"query_terms"
+      }
+  }
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributesForFaceting' => [
+      'query_terms'
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"attributesForFaceting": ["query_terms"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    attributesForFaceting: [
+      "query_terms"
+    ]
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributesForFaceting = Some(Seq(
+        "query_terms")))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings(Settings().set(\.attributesForFaceting, to: ["query_terms"])) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Create a custom search client
+
+You need to create a [custom search client](/guides/building-search-ui/going-further/backend-search/js/) that **simultaneously sends requests to the regular and redirect indices**.
+
+The request to the redirect index is sent with:
+
+- An empty query, so it doesn't filter with it
+- A filter on `query_terms` with the content of the current query, to match only records that contain the current query exactly
+- `hitsPerPage=1`, as you only need the first record
+
+Whenever a record matches in the redirect index, a redirect is triggered:
+
+<CodeGroup>
+  ```js js
+  const algoliaClient = algoliasearch(
+    "YourApplicationID",
+    "YourSearchOnlyAPIKey",
+  );
+
+  const customSearchClient = {
+    ...algoliaClient,
+    async search(requests) {
+      if (requests[0].params.query) {
+        const { results } = await algoliaClient.search([
+          ...requests,
+          {
+            indexName: "your_redirect_index_name",
+            params: {
+              hitsPerPage: 1,
+              facetFilters: [`query_terms:${requests[0].params.query}`],
+            },
+          },
+        ]);
+
+        const redirect = results.pop();
+
+        if (redirect.hits.length) {
+          window.location.href = redirect.hits[0].url;
+        }
+
+        return { results };
+      } else {
+        return algoliaClient.search(requests);
+      }
+    },
+  };
+
+  const search = instantsearch({
+    indexName: "instant_search",
+    searchClient: customSearchClient,
+  });
+  ```
+
+  ```jsx react
+  const algoliaClient = algoliasearch(
+    "YourApplicationID",
+    "YourSearchOnlyAPIKey",
+  );
+
+  const customSearchClient = {
+    ...algoliaClient,
+    async search(requests) {
+      if (requests[0].params.query) {
+        const { results } = await algoliaClient.search([
+          ...requests,
+          {
+            indexName: "your_redirect_index_name",
+            params: {
+              hitsPerPage: 1,
+              facetFilters: [`query_terms:${requests[0].params.query}`],
+            },
+          },
+        ]);
+
+        const redirect = results.pop();
+
+        if (redirect.hits.length) {
+          window.location.href = redirect.hits[0].url;
+        }
+
+        return { results };
+      } else {
+        return algoliaClient.search(requests);
+      }
+    },
+  };
+
+  const App = () => (
+    <InstantSearch indexName="instant_search" searchClient={customSearchClient}>
+      {/* Widgets */}
+    </InstantSearch>
+  );
+  ```
+
+  ```ts angular
+  import algoliasearch from "algoliasearch/lite";
+
+  const algoliaClient = algoliasearch(
+    "YourApplicationID",
+    "YourSearchOnlyAPIKey",
+  );
+
+  const customSearchClient = {
+    ...algoliaClient,
+    async search(requests) {
+      if (requests[0].params.query) {
+        const { results } = await algoliaClient.search([
+          ...requests,
+          {
+            indexName: "your_redirect_index_name",
+            params: {
+              hitsPerPage: 1,
+              facetFilters: [`query_terms:${requests[0].params.query}`],
+            },
+          },
+        ]);
+
+        const redirect = results.pop();
+
+        if (redirect.hits.length) {
+          window.location.href = redirect.hits[0].url;
+        }
+
+        return { results };
+      } else {
+        return algoliaClient.search(requests);
+      }
+    },
+  };
+
+  @Component({
+    template: `
+      <ais-instantsearch [config]="config">
+        <!-- Widgets -->
+      </ais-instantsearch>
+    `,
+  })
+  export class AppComponent {
+    config = {
+      indexName: "instant_search",
+      searchClient: customSearchClient,
+    };
+  }
+  ```
+
+  ```vue vue
+  <template>
+    <ais-instant-search
+      index-name="instant_search"
+      :search-client="customSearchClient"
+    >
+      <!-- Widgets -->
+    </ais-instant-search>
+  </template>
+
+  <script>
+  import algoliasearch from "algoliasearch/lite";
+
+  const algoliaClient = algoliasearch(
+    "YourApplicationID",
+    "YourSearchOnlyAPIKey",
+  );
+
+  const customSearchClient = {
+    ...algoliaClient,
+    async search(requests) {
+      if (requests[0].params.query) {
+        const { results } = await algoliaClient.search([
+          ...requests,
+          {
+            indexName: "your_redirect_index_name",
+            params: {
+              hitsPerPage: 1,
+              facetFilters: [`query_terms:${requests[0].params.query}`],
+            },
+          },
+        ]);
+
+        const redirect = results.pop();
+
+        if (redirect.hits.length) {
+          window.location.href = redirect.hits[0].url;
+        }
+
+        return { results };
+      } else {
+        return algoliaClient.search(requests);
+      }
+    },
+  };
+
+  export default {
+    data() {
+      return {
+        customSearchClient,
+      };
+    },
+  };
+  </script>
+  ```
+</CodeGroup>

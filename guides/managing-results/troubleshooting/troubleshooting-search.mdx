@@ -1,0 +1,93 @@
+---
+title: Troubleshooting search
+description: |-
+  Troubleshoot your search experience by determining search parameters and reproducing them on the Algolia dashboard.
+---
+
+If search results aren't what you expect them to be, you can investigate what's happening with a two-step approach:
+
+1. Find out [which search parameters are in use](#retrieve-search-parameters).
+1. [Reproduce those search parameters](#reproduce-the-search-in-algolias-dashboard) in the dashboard.
+
+This approach helps you understand why your search behaves a certain way and lets you test improvements and fixes.
+
+## Retrieve search parameters
+
+The first step in troubleshooting is to clarify precisely the search parameters you sent to Algolia, to see what's returned and ensure it matches your intent.
+Use your browser's developer tools to check what data you sent in your search requests.
+
+Open your browser's [developer tools](https://developer.mozilla.org/en-US/docs/Learn/Common_questions/Tools_and_setup/What_are_browser_developer_tools) and click **Network**.
+The next steps differ depending on your browser:
+
+### Chrome
+
+1. Set "algolia" as a filter.
+1. Enter your search request. You should see network requests to Algolia.
+1. Click the latest request.
+1. Click **Payload**
+1. Scroll to **Form Data**
+
+### Safari
+
+1. Change the network request type to **XHR/Fetch** (the default is **All**)
+1. Set "algolia" as a filter.
+1. Enter your search request. You should see network requests to Algolia.
+1. Click the latest **queries** request.
+1. Scroll to **Request Data**
+
+### Edge and Opera
+
+1. Change the network request type to **Fetch/XHR** (the default is **All**)
+1. Set "algolia" as a filter.
+1. Enter your search request. You should see network requests to Algolia.
+1. Click the latest **queries...** request.
+1. Click **Payload**
+1. Scroll to **Form Data**
+
+### Firefox
+
+1. Change the network request type to **XHR** (the default is **All**)
+1. Set "algolia" as a filter.
+1. Enter your search request. You should see network requests to Algolia.
+1. Click the latest **POST** request.
+1. Click **Request**
+
+### Check parameters in the browser developer tools
+
+1. **Check the index name.** Is it correct?
+1. **Check the query.** Has your search app incorrectly changed it?
+1. **Investigate parameters that can alter search results**, for example, [`facetFilters`](/api-reference/api-parameters/facetFilters/). Check [`ruleContexts`](/api-reference/api-parameters/ruleContexts/) and [`filters`](/api-reference/api-parameters/filters/) which are other commonly used parameters that can alter search results. See the API documentation for [the complete list of parameters](/api-reference/api-parameters/).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  With backend search, check the [parameters sent with your request](/api-reference/api-methods/search/#method-param-searchparameters) and the [URL-encoded search parameters](/api-reference/api-methods/search/#method-response-params) in the response.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Reproduce the search in Algolia's dashboard
+
+Use the dashboard to reproduce the same search queries and parameters that you tested in the browser. This process:
+
+- Helps determine if your code is changing search in an undesirable way by comparing results between your app and the dashboard.
+- Lets you test potential improvements on the dashboard.
+
+### How to reproduce search queries and parameters
+
+Go to your index in the Algolia dashboard and click **Add Query Parameter** in the **Browse** tab.
+
+- Add tag, facet, and numeric filters in the **Filters** tab.
+- Add other search parameters as JSON in the **Custom** tab.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Troubleshooting relevance](/guides/managing-results/troubleshooting/troubleshooting-relevance/)
+  - [How do I configure display preferences in the dashboard?](https://support.algolia.com/hc/en-us/articles/4406981890833-How-do-I-configure-display-preferences-in-the-dashboard-#troubleshooting-problems-with-your-images)
+  - [Troubleshoot Query Suggestions](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/how-to/troubleshooting-query-suggestions-with-logs/js/)
+  - [How can I troubleshoot with Search API Logs in the dashboard?](https://support.algolia.com/hc/en-us/articles/4406981928081)
+  - [Support policies (including troubleshooting services)](https://www.algolia.com/policies/support/)
+</Info>
+
+{/* prettier-ignore-end */}

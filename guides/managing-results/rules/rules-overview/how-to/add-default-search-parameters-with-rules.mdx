@@ -1,0 +1,239 @@
+---
+title: Adding default search parameters with Rules
+description: |-
+  Learn how to use an API client or the dashboard to add search parameters using always active Rules.
+---
+
+You can create Rules to add default parameters to every search made to the associated index. This is most useful when applied with a [validity period](/guides/managing-results/rules/rules-overview/#validity-period). If you want to add always active parameters for an indefinite period of time, you should [change your index's settings](/guides/managing-results/relevance-overview/#index-settings-and-query-parameters).
+
+This guide shows you how to create a Rule that sets the:
+
+- [`aroundRadius`](/api-reference/api-parameters/aroundRadius/) search parameter, for all queries, to 1,000 meters,
+- and validity period of this Rule to one month.
+
+This Rule is an example of a [conditionless Rule](/guides/managing-results/rules/rules-overview/#conditionless-rules).
+
+## Using the API
+
+To create a Rule with an API client, use the [`saveRule`](/api-reference/api-methods/save-rule/) method on a Rule object without a condition.
+
+<CodeGroup>
+  ```csharp csharp
+  Rule ruleToSave = new Rule
+  {
+      ObjectID = "a-rule-id",
+      Consequence = new Consequence { Params = new ConsequenceParams { AroundRadius = 1000 } },
+      {
+          new TimeRange // set validity to 30 days
+          {
+              From = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds(),
+              Until = new DateTimeOffset(DateTime.UtcNow.AddDays(30)).ToUnixTimeSeconds()
+          }
+      }
+  };
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID: "a-rule-id",
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			QueryParams: search.QueryParams{
+  				AroundRadius: opt.AroundRadius(1000),
+  			},
+  		},
+  	},
+  	// set validity to 30 days
+  	Validity: []search.TimeRange{
+  		{
+  			From:  time.Now(),
+  			Until: time.Now().AddDate(0, 0, 30),
+  		},
+  	},
+  }
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Consequence consequence =
+      new Consequence()
+          .setParams(
+              new ConsequenceParams()
+                  .setAroundRadius(1000));
+
+  // set validity to 30 days
+  List<TimeRange> validity =
+          Collections.singletonList(
+                  new TimeRange(
+                          OffsetDateTime.now(ZoneOffset.UTC),
+                          OffsetDateTime.now(ZoneOffset.UTC).plusDays(30));
+
+  Rule rule = new Rule()
+          .setObjectID("a-unique-identifier")
+          .setConsequence(consequence);
+          .setValidity(validity);
+
+  index.saveRule(rule);
+  // Asynchronous
+  index.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  const rule = {
+    objectID: "a-rule-id",
+    consequence: {
+      params: {
+        aroundRadius: 1000,
+      },
+    },
+  };
+
+  // set valitidy to 30 days
+  rule["validity"] = [
+    {
+      from: Math.floor(Date.now() / 1000),
+      until: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+    },
+  ];
+  index.saveRule(rule).then(() => {
+    // done
+  });
+  ```
+
+  ```kotlin kotlin
+  val rule = Rule(
+      objectID = ObjectID("a-rule-id"),
+      consequence = Consequence(
+          query = Query(aroundRadius = 1000)
+      ),
+      // set validity to 30 days
+      validity = listOf(TimeRange(0, 30))
+  )
+  index.saveRule(rule)
+  ```
+
+  ```php php
+  $rule = array(
+      'objectID' => 'a-rule-id',
+      'consequence' => array(
+          'params' => array(
+              'aroundRadius' => 1000,
+          )
+      )
+  );
+
+  // set validity to 30 days
+  $rule['validity'] = array(
+    array(
+      'from' => time(),
+      'until' => time() + 30*24*60*60,
+    )
+  );
+  $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {"objectID": "a-rule-id", "consequence": {"params": {"aroundRadius": 1000}}}
+
+  # set validity to 30 days
+  # Python 2 (with `time` and `datetime.timedelta` imports)
+  rule["validity"] = [
+      {
+          "from": int(time.time()),
+          "until": int(time.time() + timedelta(days=30).total_seconds()),
+      }
+  ]
+
+  # Python 3 (with `datetime.{datetime,timedelta}` imports)
+  rule["validity"] = [
+      {
+          "from": int((datetime.datetime.utcnow().timestamp())),
+          "until": int((datetime.datetime.utcnow() + timedelta(days=30)).timestamp()),
+      }
+  ]
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    objectID: "a-rule-id",
+    consequence: {
+      params: {
+        aroundRadius: 1000
+      }
+    }
+  }
+
+  # set validity to 30 days
+  # (with `require 'date'`)
+  rule["validity"] = [
+    {
+      from: Time.now.to_i,
+      until: (DateTime.now + 30).to_time.to_i
+    }
+  ]
+
+  index.save_rule(rule)
+  ```
+
+  ```scala scala
+  // Creating conditionless Rules isn't currently possible with this client.
+  // Please use the dashboard instead.
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "a-rule-id")
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(
+          \.query,
+          to: Query()
+            .set(\.aroundRadius, to: .meters(1000))
+        )
+    )
+    // set validity to 30 days
+    .set(\.validity, to: [.init(from: Date(), until: Date().addingTimeInterval(30 * 24 * 60 * 60))])
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+## Using the dashboard
+
+1. Select the **Search** product icon on your dashboard.
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, select the **Manual Editor** option.
+
+1. In the **Condition(s)** section, click the **Remove** button with the trash can icon at the top right of the condition.
+
+1. In the **Consequence(s)** section, click **Add consequence** and select **Add Query Parameter**.
+
+1. In the input field that appears, enter the JSON search parameter you want to add followed by a colon and the value you want to add.
+   For example: `{ "aroundRadius": 1000 }`
+
+1. In the **Additional Settings**, under the **Timeframe in UTC** header, select a time range of one month.
+
+1. If you want to forward the Rule to replicas or other indices, toggle **Copy this rule to other indices**, and enter the relevant indices.
+
+1. Save your changes.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  In JSON, you must write string values inside quotation marks, and number values and booleans without quotations. To get further details on JSON syntax, checkout the [record structure guidance](/guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record/).
+</Note>
+
+{/* prettier-ignore-end */}

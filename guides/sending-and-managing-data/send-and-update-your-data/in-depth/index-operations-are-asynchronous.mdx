@@ -1,0 +1,24 @@
+---
+title: Index operations are asynchronous
+description: |-
+  Understand that all indexing operations are asynchronous and learn how to wait for a task to finish.
+---
+
+**All indexing operations are asynchronous.** When calling indexing methods or endpoints, you're adding a new job to a queue: it's this job, and not the API method, that performs the desired action.
+
+A job usually finishes within seconds, if not milliseconds. Yet, it all depends on what's in the queue. **When the queue has many pending tasks, the new job needs to wait its turn**.
+
+## When to wait for tasks
+
+To help manage asynchronous jobs, each method returns a unique `taskId` which you can use with the [`waitTask`](/api-reference/api-methods/wait-task/) method. Using this method guarantees that a job has finished before proceeding with a new request. There are a few situations when this comes in handy:
+
+- **Managing dependencies**: you want to use [`waitTask`](/api-reference/api-methods/wait-task/) to manage dependencies, for example, when deleting an index before creating a new index with the same name or clearing an index before adding new objects.
+- **Atomic reindexing**: atomic reindexing is a way to update all your records without any downtime, by populating a temporary index and replacing the destination index with it. **You don't need to implement this by yourself.** Instead, you can use the [`replaceAllObjects`](/api-reference/api-methods/replace-all-objects/) method which does it all for you.
+- **Frontend events**: if you're building a frontend interface that performs indexing operations, you may want to react to completed tasks. For example, you may want to display a success message when an indexing operation has completed, or refresh a page, or move on with some following, co-dependant operations, etc.
+- **Debugging**: You also most often need [`waitTask`](/api-reference/api-methods/wait-task/) in debugging scenarios, when you're testing a search immediately after updating an index.
+
+## When not to wait for tasks
+
+**In most scenarios, you don't need to wait for tasks to complete before moving on with new ones.** Using [`waitTask`](/api-reference/api-methods/wait-task/) makes your indexing operations synchronous, thus slows them down.
+
+Conversely, you don't need to use [`waitTask`](/api-reference/api-methods/wait-task/) in place of the asynchronous mechanisms of your programming language. You can ensure that tasks are queued in order by using promises or callbacks.

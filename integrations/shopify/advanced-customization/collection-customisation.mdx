@@ -1,0 +1,76 @@
+---
+title: Collection customization
+description: |-
+  Customize individual collection pages in Shopify with the Algolia AI Search & Discovery app.
+---
+
+Algolia AI Search & Discovery lets you customize the sort order and facets of individual collection pages.
+If you're using the [Collection Search Page](/integration/shopify/advanced-customization/collection-search-page/)
+feature of Algolia AI Search & Discovery, you can customize collections.
+
+## Enable customization for a collection
+
+Go to **Collection Pages** and scroll down to the list of collections.
+
+Select a collection, click **Customise** and click **Enable**.
+
+## Configure sort orders and facets
+
+Once the customization is enabled, active sort orders and facets from the **Collection Pages** feature are copied over for the selected collection.
+It will then be possible to customize them for the collection.
+
+### Sort orders
+
+You can choose which sort orders you want to activate for this particular collection, how you want to call them, and which ones you want to display first.
+
+Each index has one ranking formula. This means, for each sort order, you'll create a new index.
+Make sure that the increased number of records **won't exceed your [plan's quota](https://www.algolia.com/pricing/)**.
+If you activated the same sort order in **Search options** and **Collection Pages**,
+a new index isn't created. The duplicate index previously created is used instead.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Sorting results](/guides/managing-results/refine-results/sorting/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Facets
+
+You can choose which facets to activate for this particular collection, how you want to call them, and which ones you want to display first.
+
+Facets are primarily used to refine searches.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Faceting](/guides/managing-results/refine-results/faceting/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Merchandising
+
+You can either create a new merchandising Rule for the collection, or edit a previously created rule.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This section is only available if you're on the [Build or Premium plan](https://www.algolia.com/pricing/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Visual merchandising tool](/integration/shopify/going-further/merchandising-tool/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Turn off Collection customization
+
+To turn off customization for a particular collection, go to the bottom of the page and click **Disable**.
+The collection reverts to using the sort orders and facets defined in **Collection pages**.

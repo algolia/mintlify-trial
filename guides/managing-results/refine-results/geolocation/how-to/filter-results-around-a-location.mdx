@@ -1,0 +1,592 @@
+---
+title: Filter results around a location
+description: |-
+  Use Algolia's geo search capabilities to filter results around a location.
+---
+
+This guide shows you how to filter results _around_ a location.
+This location can be set manually or taken from the a user's current position.
+
+## Dataset
+
+The guide uses a dataset of the 3,000+ biggest airports in the world.
+
+```json json
+[
+  {
+    "objectID": "3797",
+    "name": "John F Kennedy Intl",
+    "city": "New York",
+    "country": "United States",
+    "iata_code": "JFK",
+    "_geoloc": {
+      "lat": 40.639751,
+      "lng": -73.778925
+    },
+    "links_count": 911
+  }
+]
+```
+
+Store each record's location (latitude and longitude) in the `_geoloc` attribute.
+
+First, [download the airport dataset](https://github.com/algolia/datasets/blob/master/airports/airports.json) and then [import it into Algolia](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard/).
+
+## Initialize the client
+
+<CodeGroup>
+  ```csharp csharp
+  SearchClient client = new SearchClient("YourApplicationID", "YourWriteAPIKey");
+  SearchIndex index = client.InitIndex("your_index_name");
+  ```
+
+  ```go go
+  package main
+
+  import "github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
+  func main() {
+  	client := search.NewClient("YourApplicationID", "YourWriteAPIKey")
+  	index := client.InitIndex("your_index_name")
+  }
+  ```
+
+  ```java java
+  SearchClient client = DefaultSearchClient.create(
+    "YourApplicationID",
+    "YourWriteAPIKey"
+  );
+
+  SearchIndex index = client.initIndex("your_index_name");
+
+  ```
+
+  ```js js
+  // Default version
+  import algoliasearch from "algoliasearch";
+
+  // Search-only version
+  // import algoliasearch from 'algoliasearch/lite';
+
+  const client = algoliasearch("YourApplicationID", "YourWriteAPIKey");
+  const index = client.initIndex("your_index_name");
+  ```
+
+  ```kotlin kotlin
+  val client = ClientSearch(
+      applicationID = ApplicationID("YourApplicationID"),
+      apiKey = APIKey("YourWriteAPIKey")
+  )
+  val indexName = IndexName("your_index_name")
+
+  client.initIndex(indexName)
+  ```
+
+  ```php php
+  // composer autoload
+  require __DIR__ . '/vendor/autoload.php';
+
+  // if you are not using composer
+  // require_once 'path/to/algoliasearch.php';
+
+  $client = \Algolia\AlgoliaSearch\SearchClient::create(
+    'YourApplicationID',
+    'YourWriteAPIKey'
+  );
+
+  $index = $client->initIndex('your_index_name');
+  ```
+
+  ```python python
+  from algoliasearch.search_client import SearchClient
+
+  client = SearchClient.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```ruby ruby
+  require "algolia"
+
+  client = Algolia::Search::Client.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```scala scala
+  // No initIndex
+  val client = new AlgoliaClient("YourApplicationID", "YourWriteAPIKey")
+  ```
+
+  ```swift swift
+  let client = SearchClient(appID: "YourApplicationID", apiKey: "YourWriteAPIKey")
+  let index = client.index(withName: "your_index_name")
+  ```
+</CodeGroup>
+
+## Configure index settings
+
+Even if you just want to sort by distance to a location, your textual relevance should also be good so that users can refine the search with a query.
+To do that, you must configure the index.
+
+The searchable attributes are: `name`, `city`, `country`, and `iata_code`.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string> { "name", "city", "country", "iata_code" },
+      CustomRanking = new List<string> { "desc(links_count)" }
+  };
+
+  index.SetSettings(setting);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		"name",
+  		"city",
+  		"country",
+  		"iata_code",
+  	),
+  	CustomRanking: opt.CustomRanking("desc(links_count)"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(new IndexSettings()
+          .setSearchableAttributes(Arrays.asList("name", "city", "country", "iata_code"))
+          .setCustomRanking(Collections.singletonList("desc(links_count"))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      searchableAttributes: ["name", "city", "country", "iata_code"],
+      customRanking: ["desc(links_count)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+          +"name"
+          +"city"
+          +"country"
+          +"iata_code"
+      }
+      customRanking {
+          +Desc("links_count")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'searchableAttributes' => [
+      'name',
+      'city',
+      'country',
+      'iata_code'
+    ],
+    'customRanking' => [
+      'desc(links_count)'
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "searchableAttributes": [
+              "name",
+              "city",
+              "country",
+              "iata_code",
+          ],
+          "customRanking": ["desc(links_count)"],
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    searchableAttributes: [
+      "name",
+      "city",
+      "country",
+      "iata_code"
+    ],
+    customRanking: [
+      "desc(links_count)"
+    ]
+  )
+  ```
+
+  ```scala scala
+  val result: Future[Task] = client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(Seq(
+        SearchableAttributes.attributes("name"),
+        SearchableAttributes.attribute("city"),
+        SearchableAttributes.unordered("country"),
+        SearchableAttributes.attribute("iata_code"), )) customRanking = Some(Seq(
+        CustomRanking.desc("links_count"))))
+  }
+  ```
+
+  ```swift swift
+  let settings = [
+    "searchableAttributes": [
+      "name",
+      "city",
+      "country",
+      "iata_code",
+    ],
+    "customRanking": [
+      "desc(links_count)"
+    ],
+  ]
+  index.setSettings(
+    settings,
+    completionHandler: { (content, error) -> Void in
+      // [...]
+    }
+  )
+  ```
+</CodeGroup>
+
+### Custom ranking
+
+The engine will use an airport's **number of connected airports** as a ranking metric. The more connections, the better.
+
+### Ranking
+
+When filtering around a location, Algolia can also sort the results by distance from this location. This _sorting by distance_ happens in the ranking formula's `geo` criterion. If `geo` isn't active, you can't sort by distance.
+
+## Filtering around a given location
+
+To filter airports around New York City (latitude 40.71 and longitude -74.01), use the [`aroundLatLng`](/api-reference/api-parameters/aroundLatLng/) parameter.
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search<T>(new Query("") { AroundLatLng = new List<string> { "40.71, -74.01" } });
+  ```
+
+  ```go go
+  res, err := index.Search("", opt.AroundLatLng("40.71, -74.01"))
+  ```
+
+  ```java java
+  index.search(new Query().setAroundLatLng("40.71, -74.01"));
+  ```
+
+  ```js js
+  index
+    .search("", {
+      aroundLatLng: "40.71, -74.01",
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query {
+      aroundLatLng = Point(40.71f, -74.01f)
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('', [
+    'aroundLatLng' => '40.71, -74.01'
+  ]);
+  ```
+
+  ```python python
+  results = index.search(
+      "",
+      {
+          "aroundLatLng": "40.71, -74.01",
+      },
+  )
+  ```
+
+  ```ruby ruby
+  results = index.search("", {aroundLatLng: "40.71, -74.01"})
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some(""),
+      aroundLatLng = Some(
+        AroundLatLng("40.71, -74.01")))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "")
+  query.aroundLatLng = LatLng(lat: 40.71, lng: -74.01)
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+An empty query (`''`) tells Algolia to retrieve all airports
+
+## Filtering around the user's current location
+
+As you don't know your user's coordinates in advance, you can retrieve their IP address's associated location with the [`aroundLatLngViaIP`](/api-reference/api-parameters/aroundLatLngViaIP/) parameter.
+
+<CodeGroup>
+  ```csharp csharp
+  // '94.228.178.246' should be replaced with the actual IP you would like to search around.
+  // Depending on your stack there are multiple ways to get this information.
+
+  var configuration = new SearchConfig("YourApplicationID", "YourWriteAPIKey")
+  {
+      DefaultHeaders = new Dictionary<string, string> { { "X-Forwarded-For", "94.228.178.246" } }
+  };
+
+  SearchClient client = new SearchClient(configuration);
+
+  index.Search<T>(new Query("") { AroundLatLngViaIP = true });
+  ```
+
+  ```go go
+  // "94.228.178.246" should be replaced with the actual IP you would like to search around.
+  // Depending on your stack there are multiple ways to get this information.
+
+  extraHeaders := opt.ExtraHeaders(map[string]string{
+  	"X-Forwarded-For": "94.228.178.246",
+  })
+
+  res, err := index.Search("", opt.AroundLatLngViaIP(true), extraHeaders)
+  ```
+
+  ```java java
+  // '94.228.178.246' should be replaced with the actual IP you would like to search around.
+  // Depending on your stack there are multiple ways to get this information.
+
+  index.search(
+    new Query()
+      .setAroundLatLngViaIP(true),
+    new RequestOptions()
+      .addExtraHeader("X-Forwarded-For", "94.228.178.246")
+  );
+  ```
+
+  ```js js
+  /**
+   * '94.228.178.246' should be replaced with the actual IP you would like to search around.
+   * Depending on your stack there are multiple ways to get this information.
+   */
+
+  index
+    .search("", {
+      aroundLatLngViaIP: true,
+      headers: {
+        "X-Forwarded-For": "94.228.178.246",
+      },
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  /**
+   * '94.228.178.246' should be replaced with the actual IP you would like to search around.
+   * Depending on your stack there are multiple ways to get this information.
+   */
+
+  val query = query {
+      aroundLatLngViaIP = true
+  }
+
+  index.search(query, requestOptions { headerForwardedFor("94.228.178.246") })
+  ```
+
+  ```php php
+  /**
+   * '94.228.178.246' should be replaced with the actual IP you would like to search around.
+   * Depending on your stack there are multiple ways to get this information.
+   */
+
+  $ip = '94.228.178.246';
+
+  $results = $index->search('', [
+    'aroundLatLngViaIP' => true,
+    'X-Forwarded-For' => $ip
+  ]);
+  ```
+
+  ```python python
+  # '94.228.178.246' should be replaced with the actual IP you would like to search around.
+  # Depending on your stack there are multiple ways to get this information.
+
+  ip = "94.228.178.246"
+
+  results = index.search("", {"aroundLatLngViaIP": True, "X-Forwarded-For": ip})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "",
+    {
+      aroundLatLngViaIP: true,
+      headers: {
+        # '94.228.178.246' should be replaced with the actual IP you would like to search around.
+        # Depending on your stack there are multiple ways to get this information.
+        :"X-Forwarded-For" => "94.228.178.246"
+      }
+    }
+  )
+  ```
+
+  ```scala scala
+  // '94.228.178.246' should be replaced with the actual IP you would like to search around.
+  // Depending on your stack there are multiple ways to get this information.
+
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some(""),
+      aroundLatLngViaIP = Some(true)) options RequestsOptions(
+        extraHeaders = Some(Map("X-Forwarded-For" -> "94.228.178.246")))
+  }
+  ```
+
+  ```swift swift
+  /// '94.228.178.246' should be replaced with the actual IP you would like to search around.
+  /// Depending on your stack there are multiple ways to get this information.
+
+  client.setHeader(withName: "X-Forwarded-For", to: "94.228.178.246")
+
+  let query = Query()
+  query.aroundLatLngViaIP = true
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+## Filtering by radius
+
+By default, the engine automatically defines a radius to filter on depending on the population density of the user's location.
+
+To define the radius yourself, use the [`aroundRadius`](/api-reference/api-parameters/aroundRadius/) parameter. The bigger the radius, the less filtering you have.
+
+This example sorts by distance to New York City, with a radius of 1,000 km.
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search<T>(
+      new Query("")
+      {
+          AroundLatLng = new List<string> { "40.71, -74.01" },
+          AroundRadius = 1000000 // 1,000 km
+      }
+  );
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"",
+  	opt.AroundLatLng("40.71, -74.01"),
+  	opt.AroundRadius(1000000), // 1,000 km
+  )
+  ```
+
+  ```java java
+  index.search(new Query()
+        .setAroundLatLng("40.71, -74.01")
+        .setAroundRadius(AroundRadius.of(1000000)) // 1,000 km
+  );
+  ```
+
+  ```js js
+  index
+    .search("", {
+      aroundLatLng: "40.71, -74.01",
+      aroundRadius: 1000000, // 1,000 km
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query {
+      aroundLatLng = Point(40.71f, -74.01f)
+      aroundRadius = AroundRadius.InMeters(1000000) // 1,000 km
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('', [
+    'aroundLatLng' => '40.71, -74.01'
+    'aroundRadius' => 1000000 // 1,000 km
+  ]);
+  ```
+
+  ```python python
+  results = index.search(
+      "", {"aroundLatLng": "40.71, -74.01", "aroundRadius": 1_000_000}  # 1,000 km
+  )
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "",
+    {
+      aroundLatLng: "40.71, -74.01",
+      # 1,000 km
+      aroundRadius: 1000000
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some(""),
+      aroundLatLng = Some(
+        AroundLatLng("40.71, -74.01")),
+      aroundRadius = Some(
+        AroundRadius.integer(1000000)) // 1,000 km
+    )
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "")
+  query.aroundLatLng = LatLng(lat: 40.71, lng: -74.01)
+  query.aroundRadius = .explicit(1_000_000)  // 1,000 km
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>

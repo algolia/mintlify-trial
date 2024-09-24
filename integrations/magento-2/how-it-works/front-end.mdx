@@ -1,0 +1,70 @@
+---
+title: Frontend (UI/UX)
+description: |-
+  Learn how the frontend code works in Algolia extension for Magento Open Source and Adobe Commerce.
+---
+
+The Algolia extension for Magento Open Source and Adobe Commerce comes with an Autocomplete search-as-you-type menu
+and an InstantSearch results page. This guide explains how you can configure both components in your Magento Admin panel.
+
+## Autocomplete menu
+
+The Algolia extension uses the [`autocomplete`](/api-reference/widgets/autocomplete/js/) InstantSearch widget. By default, this Autocomplete menu suggests products, categories, and pages when a user is searching.
+To configure which and how many items are displayed, go to **Stores > Algolia Search > Autocomplete Menu**.
+
+For deeper customization of the Autocomplete menu, you can edit the template.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Customize the Autocomplete menu](/integration/magento-2/customize/autocomplete-menu/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Results page
+
+For displaying search results, the Algolia extension uses [InstantSearch.js](/api-reference/widgets/js/).
+
+By default, the results page isn't shown.
+If you want to use the results page, your theme must provide a `top.search` and a `content` block.
+You may have to adjust the design of your theme to integrate the results page.
+
+To enable the results page, go to **Stores > Algolia Search > InstantSearch Results Page**.
+
+By default, the following widgets are enabled:
+
+- **Hits**. A list of products matching user queries
+- **Pagination**. Navigation links between the results pages
+- **Sorting**. A switch to toggle between different ways of sorting products
+- **Price Range Slider**. A slider to refine the price range of the products
+- **Hierarchical Menu**. A menu to refine the category of the products
+
+To add other widgets to the results page, edit the template.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Customize the InstantSearch results page](/integration/magento-2/customize/instant-search-page/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+To configure the displayed data and refinements, go to **Stores > Algolia Search > InstantSearch Results Page**.
+
+On this page, you can configure the **attributes used as facets**:
+
+These determine which filters are available for users.
+
+You can also configure the **attributes available for sorting** on this page:
+
+Each sorting attribute in Magento generates either a standard or virtual [replica index](/guides/managing-results/refine-results/sorting/in-depth/replicas/) in Algolia, based on whether the **Enable Virtual Replica?** setting is selected.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Filtering](/guides/managing-results/refine-results/filtering/)
+  - [Sorting results](/guides/managing-results/refine-results/sorting/)
+</Info>
+
+{/* prettier-ignore-end */}

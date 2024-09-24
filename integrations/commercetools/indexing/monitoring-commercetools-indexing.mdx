@@ -1,0 +1,34 @@
+---
+title: Monitor indexing
+description: |-
+  Learn how to check the status of indexing operations for Algolia's commercetools connector.
+---
+
+After triggering a [full reindex](/integration/commercetools/get-started/configuration/#trigger-a-full-reindex) in the tasks list, you can check the progress of an indexing operation
+in the [Connector Debugger](https://dashboard.algolia.com/connectors/debugger).
+
+## Run overview
+
+The **Runs** list shows details, such as the status, the source, the destination, and a time for each run.
+
+## Run details
+
+Select a run from the list by clicking on its row to open the **Details** panel, which shows the progress and details of an individual run including:
+
+- The identifiers of the run and the task
+- The **Status** and the **Outcome** of the run
+- When the run has started and finished
+- A panel with records and errors details
+
+## Record/Error details
+
+Select a record or an error in the **Events** panel to display more information about it.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The number of products you can index depends on your [Algolia subscription](https://www.algolia.com/pricing/).
+  If you run into _Record quota exceeded_ errors, check your [Algolia account](https://dashboard.algolia.com/account/billing/overview).
+</Note>
+
+{/* prettier-ignore-end */}

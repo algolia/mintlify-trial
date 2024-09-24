@@ -1,0 +1,89 @@
+---
+title: Server-side rendering (SSR) and caching
+description: |-
+  Learn how to implement server-side rendering (SSR) and caching in Salesforce B2C Commerce using the SFRA cartridge to enhance SEO, improve performance, and optimize server load.
+---
+
+SSR enhances SEO and your site's ranking by ensuring search bots from Google, Bing, DuckDuckGo, and similar can access your content.
+
+Caching reduces server load and response times.
+
+This guide covers SSR and caching configuration in Salesforce B2C Commerce when using Algolia's SFRA cartridge (versions 24.3.2 and later) for rendering search and browse results.
+
+## Disadvantages of SSR
+
+Despite the benefits of better indexing and ranking on public search engines, there are some trade-offs you need to consider:
+
+- **Increased rendering time** since each SSR request requires an Algolia API call.
+- **Search volume impact**. SSR may increase Algolia search usage, depending on the traffic from search engine bots.
+- **May affect the Salesforce Commerce Cloud quota usage**. Ensure you have enough service [`api.dw.net.HTTPClient.send()`](https://salesforcecommercecloud.github.io/b2c-dev-doc/docs/current/quota/html/API_Quotas.html) quota to handle SSR requests. This shouldn't be a major concern because SSR is only enabled for search engine crawler bots and doesn't usually generate as much traffic as user queries.
+
+## Server-side rendering implementation
+
+To enable and customize SSR with caching:
+
+1. **Enable SSR**. Set the `EnableSSR` custom preference to `true` in the Algolia Business Manager module [custom preferences](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/).
+1. **Declare `__primary_category` as an [attribute for faceting](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting-with-dashboard/)** in the Algolia dashboard to support SSR for category pages.
+1. **Configure SSR triggers**. By default, search engine bots trigger SSR for search result and category listing pages.
+   You can customize this behavior and trigger SSR based on specific conditions.
+   For example, you can enable SSR for specific user agents or request headers.
+
+   ```js js
+   // Disable SSR for specific IP addresses
+   var restrictedIPS = ["xxx.xxx.xxx.xxx", "yyy.yyy.yyy.yyy"];
+   var clientIp = request.httpHeaders.get("true-client-ip");
+   if (
+     algoliaData.getPreference("EnableSSR") &&
+     searchEngineBots.test(req.httpHeaders.get("user-agent")) &&
+     restrictedIPS.indexOf(clientIp) === -1
+   ) {
+     // Fetch and transform server-side results
+     var hits =
+       require("*/cartridge/scripts/algoliaSearchAPI").getServerSideHits(
+         query,
+         type,
+         "products",
+       );
+     hits =
+       require("*/cartridge/scripts/algolia/helper/ssrHelper").transformItems(
+         hits,
+       );
+   }
+   ```
+
+## Cache
+
+Effective caching mitigates SSR performance costs, reducing server load and improving response times.
+
+The SFRA cartridge caches pages and Algolia SSR responses with the [SearchController](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/master/cartridges/int_algolia_sfra/cartridge/controllers/Search.js).
+
+### With cache
+
+- **Improved response times** due to faster serving of cached pages
+- **Reduced server load** because of a minimized load for frequently accessed pages
+- **Lower search volume impact** by reducing SSR search requests to Algolia.
+
+### Without cache
+
+- **Increased server load** due to per-request page rendering
+- **May increase Algolia search volume** depending on the crawler requests traffic on your site.
+
+### Cache implementation
+
+1. Use the [SearchController page cache](#cache)
+1. **Optimize Cache Invalidation**: Ensure that cached pages are properly invalidated and updated when your content changes. This means the cache is always up-to-date and search engine bots can retrieve the latest content from your site.
+1. **Cache Invalidation**. Use the [`invalidateCache`](https://salesforcecommercecloud.github.io/b2c-dev-doc/docs/current/jobstepapi/html/index.html?target=jobstep.InvalidateCache.html) job step to invalidate the cache for specific pages or all pages by adding it before indexing steps in the job.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Don't use the [`CacheMgr` Class](https://salesforcecommercecloud.github.io/b2c-dev-doc/docs/current/scriptapi/html/index.html?target=class_dw_system_CacheMgr.html) for caching `Algolia Results`.
+  Use the [SearchController page cache](#cache) instead to simplify caching and invalidation.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Events and analytics
+
+- **Event Tracking**. SSR requests don't contain user tokens. This means SSR doesn't trigger events that would influence the training of AI models for user-facing search ranking optimizations.
+- **Analytics**: `enableAnalytics` is `false` by default to avoid including crawler bot requests in events tracking and analytics.

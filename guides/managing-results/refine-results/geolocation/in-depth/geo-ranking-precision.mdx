@@ -1,0 +1,32 @@
+---
+title: Geographical ranking precision
+description: |-
+  Grouping results according to a geographical range instead of a single point.
+---
+
+Precision (using the search query parameter `aroundPrecision`) is used to group results that have more or less the same distance from a central point.
+
+Algolia's default precision is 10 meters.
+However, a 10-meter difference might not be significant: intervals of 200 meters may make more sense.
+By creating 200-meter intervals, you rank all records that fall within that interval the same.
+They're ranked higher than all records between 200 and 400 meters.
+
+If you set `aroundPrecision` to 200, you'll have the following search results:
+
+- Group of results in the 0-200 meters range will be the best ranked (ranked equally)
+- Group of results in the 200-400 meters range will be ranked a bit lower
+- Group of results in the 400-600 meters range will be ranked even lower
+
+Another example is when users are looking for nearby recommended restaurants.
+The goal is to display results that are a good mix of nearby and highly rated restaurants.
+
+If there are two restaurants within 200 meters of a user's location:
+
+- Restaurant A with a 5 star rating and distance of 150 meters (farther)
+- Restaurant B with a 3 star rating and distance of 100 meters (closer)
+
+If you're only sorting by geographical distance, restaurant B will be ranked higher since it's closer to the user.
+
+But by setting `aroundPrecision` to 200, restaurant A and B will be ranked equally: the distances of 150 and 100 will be considered equal to 0 (and distances of 250 and 210 will be equal to 200, and so on).
+
+Going further, since the results of A and B are tied under the `Geo` criterion, the search engine will examine the other criteria in the ranking formula to further sort the results. Restaurant A will therefore be ranked higher in the result due to its higher rating.

@@ -1,0 +1,72 @@
+---
+title: Magento features compatibility
+description: |-
+  Discover the external (and optional) modules available in addition to the extension.
+---
+
+The Algolia extension for Magento Open Source and Adobe Commerce is compatible with these external modules.
+
+## Magento Inventory (MSI)
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The code for the `Algolia_AlgoliaSearchInventory` module is a community-developed module available on [GitHub](https://github.com/algolia/algoliasearch-inventory-magento-2). Though Algolia is a contributor to this repository, there is no product roadmap for this module and it's not aligned with the Algolia/Magento integration product releases.
+</Note>
+
+{/* prettier-ignore-end */}
+
+The Algolia extension supports the [Magento Inventory](https://developer.adobe.com/commerce/php/module-reference/module-inventory/) module,
+also known as Multi-Source Inventory (MSI).
+
+See [Inventory Management](https://devdocs.magento.com/guides/v2.4/inventory/) in the Magento developer documentation for more information.
+
+The MSI features include:
+
+- Different configurations for merchants whose inventory originates from single or multiple sources
+- Stock tracking through assigned sources
+- Concurrent checkout protection
+- Shipment matching algorithms
+
+As a consequence, you can create multiple inventory sources and stocks to manage the availability of products in your stores.
+
+### Compatibility
+
+MSI changed the way a product is determined to be in stock or not.
+To support the new behavior and to keep backwards compatibility with older versions of the Magento 2 integration,
+Algolia provides an optional module, `Algolia_AlgoliaSearchInventory`.
+
+You can download this module separately with Composer and use it in addition to the Algolia extension.
+
+You can use the `Algolia_AlgoliaSearchInventory` module with version 1.12 or later of the Algolia extension.
+To decide which version of the `Algolia_AlgoliaSearchInventory` you need to install,
+check the [compatibility](https://github.com/algolia/algoliasearch-inventory-magento-2#compatibility) on GitHub.
+
+### Requirements
+
+You can use `Algolia_AlgoliaSearchInventory` if:
+
+- You're using Magento version 2.3 or later
+- You're using multiple sources/stocks to manage your inventory
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you don't use MSI, adding the `Algolia_AlgoliaSearchInventory` module won't break your indexing process,
+  but it may slow it down. You should only install the module if you're using MSI.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Installing the Algolia\_AlgoliaSearchInventory module
+
+Install the `Algolia_AlgoliaSearchInventory` module with Composer:
+
+```sh sh
+composer require algolia/algoliasearch-inventory-magento-2
+php bin/magento module:enable Algolia_AlgoliaSearchInventory
+php bin/magento setup:upgrade
+php bin/magento setup:static-content:deploy # in case you're on production mode
+```
+
+Now, your multiple sources and stocks are handled as you expect and you can continue to use the Algolia extension.

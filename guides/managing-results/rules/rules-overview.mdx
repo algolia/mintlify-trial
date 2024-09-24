@@ -1,0 +1,314 @@
+---
+title: Rules overview
+description: |-
+  How to use Algolia's Rules feature to create flexible and dynamic search results.
+---
+
+Search needs to be flexible. When you hold a promotion, you shouldn't need to reconfigure search settings or modify individual records. If one of your products isn't appearing where you want it to in your search results, you should be able to reposition it quickly.
+
+Rules let you make precise and (if desired) temporary modifications to your search results.
+
+Relevance and index settings provide the general structure for your search results.
+**Rules let you optimize and dynamically adjust that structure.**
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Rules don't replace a good index configuration.
+  Make sure you [adjust your general relevance](/guides/managing-results/relevance-overview/) before adding rules.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## What are rules used for?
+
+Rules let you make precise, predetermined changes to your search results. For example,
+you can pin or hide items, boost or bury categories, or filter results based on the query.
+You can also enable rules for a fixed time, making rules a great way of implementing sales or promotions.
+
+**Rules are typically used either for merchandising or fine-tuning your search and relevance.**
+
+To see some typical applications for rules, check out the sections on [merchandising with rules](/guides/managing-results/rules/merchandising-and-promoting/) and [detecting user intent with rules](/guides/managing-results/rules/detecting-intent/).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The maximum number of rules per index depends on your [Algolia plan](https://www.algolia.com/pricing/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Rule structure
+
+Rules consist of three parts: conditions, consequences, and a validity period.
+Of these three parts, only the consequence is required.
+**If one of a rule's conditions is met, Algolia applies its consequences**.
+If a rule has no conditions, Algolia always applies its consequences.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Rules target specific indices, but can be copied to [replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/) or other indices.
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Implementing Rules](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/)
+  - [Debugging Rules](/guides/managing-results/rules/rules-overview/in-depth/debugging-rules/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Conditions
+
+A rule can have up to 25 conditions.
+If a rule has multiple conditions, it gets activated as soon as one of its conditions is met.
+In other words, conditions have an `or` relationship to one another.
+Conditions can contain a pattern string, anchoring, a context, or filters, though none are required.
+
+To decide if a rule's consequences should be applied, Algolia:
+
+- Compares the condition's pattern string with a user's query.
+
+- Bases the comparison on the condition's anchoring. Values for anchoring are: `is`, `contains`, `starts with`, and `ends with`. The anchoring determines what part of the query the pattern must match: all of it, part of it, the beginning, or the end.
+
+- If you enable [`alternatives`](/api-reference/api-methods/save-rule/#method-param-alternatives) in the condition, user queries can match the condition's pattern, even if the query is a plural, synonym, or typo of the pattern. If you don't enable [`alternatives`](/api-reference/api-methods/save-rule/#method-param-alternatives), user queries must exactly match the condition's pattern string and anchoring.
+
+- It compares the condition's filters to the [filters](/guides/managing-results/refine-results/filtering/how-to/filter-by-string/) applied to the search.
+
+- It compares the condition's context to the search's [`ruleContexts`](/api-reference/api-parameters/ruleContexts/).
+
+If a [single condition includes a pattern string, filters, and a context](#using-pattern-filters-and-context), a search must match all three for the condition to be met.
+If you create three different conditions for each, only one must be met for Algolia to activate the rule.
+
+If a condition has a pattern string that set to an empty string with `is` anchoring, Algolia applies the rule if users haven't yet entered a query.
+
+If a condition has neither pattern, anchoring, context, or filters, it's a _conditionless rule_, and Algolia applies it to every search.
+
+Rules can respond to different types of conditions:
+
+- [Query patterns](#rules-responding-to-user-queries)
+- [Filters](#rules-responding-to-applied-filters)
+- [Context-only](#context-only-rules)
+- [Conditionless](#conditionless-rules).
+
+### Example conditions
+
+#### Using a pattern with `is` anchoring
+
+```json json
+{
+  "pattern": "sale",
+  "anchoring": "is"
+}
+```
+
+Trigger a rule with this condition whenever the query string is the word `sale` and nothing else.
+If the query contains other words, the rule isn't triggered.
+
+#### Using a pattern with `contains` anchoring
+
+```json json
+{
+  "pattern": "featured",
+  "anchoring": "contains"
+}
+```
+
+Trigger a rule with this condition whenever the query string contains the word `featured`.
+The query can include other words.
+
+#### Using context
+
+```json json
+{
+  "context": "mobile"
+}
+```
+
+Trigger a rule with this condition whenever the search includes `mobile` in the [`ruleContexts`](/api-reference/api-parameters/ruleContexts/).
+
+#### Using filters
+
+```json json
+{
+  "filters": "category:TV"
+}
+```
+
+Trigger a rule with this condition whenever the filter `{ "filters": "category:TV" }` is applied to the query.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The filters condition rejects an `OR` combination of different attributes. For example, `"filters": "brand:Guess OR color:orange"` returns an error.
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### Using pattern, filters, and context
+
+```json json
+{
+  "pattern": "featured",
+  "anchoring": "contains",
+  "filters": "category:TV",
+  "context": "mobile"
+}
+```
+
+Trigger a rule with this condition whenever the query string contains the word `featured`, the search includes `category:TV` in its [`filters`](/api-reference/api-parameters/filters/), and includes `mobile` in its [`ruleContexts`](/api-reference/api-parameters/ruleContexts/).
+
+#### Using an empty string pattern
+
+```json json
+{
+  "pattern": "",
+  "anchoring": "is"
+}
+```
+
+Trigges a rule with this condition whenever there is an empty search.
+The rule is turned off as soon as a user starts typing.
+
+## Consequences
+
+Though conditions aren't required, rules must have at least one consequence.
+Consequences modify the results returned by a search.
+The possible consequences are:
+
+- **Pin an Item**: Inserts an item at a specific position. If the item is already in the list of results, this item is moved to that position.
+- **Hide an Item**: Removes a specific result from the list of results.
+- **Add a Query Parameter**: Adds a query parameter to your user's search. For example, you could decrease the [`aroundRadius`](/api-reference/api-parameters/aroundRadius/) if your user's query includes the words "near me".
+- **Remove Word**: Removes a specific word from your user's search query (for search, not display purposes).
+- **Replace Word**: Replaces a word from your user's search query with another word (for search, not display purposes).
+- **Replace Query**: Replaces the entire user search query with another query (for search, not display purposes).
+- **Return Custom Data**: Adds custom JSON data to the search response.
+- **Filter/Boost Matching Attributes**: Applies [`filters`](/api-reference/api-parameters/filters/) or [`optionalFilters`](/api-reference/api-parameters/optionalFilters/) matching the query to the results.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Rules consequences](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#consequence---adapting-the-results--relevance)
+  - [Merchandising](/guides/managing-results/rules/merchandising-and-promoting/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Validity period
+
+If you want to apply a rule temporarily, you can set a validity period.
+The validity period determines how long a rule remains active.
+You can use this to automatically end promotions or sales on a specific date.
+
+## Rules responding to user queries
+
+Rules can parse your users' queries and apply a consequence if the query matches the rule's condition.
+Queries are matched with conditions in the following ways:
+
+- **is**: the entire query matches the condition string.
+- **contains**: the entire query contains the condition string
+- **starts with**: the query starts with the condition string.
+- **ends with**: the query ends with the condition string.
+
+If you would like to [trigger a rule on an empty query](/guides/managing-results/rules/detecting-intent/) use a [context-only-rule](#context-only-rules), use `is` anchoring, but set the text to be an empty string, or leave it blank in the dashboard.
+
+## Rules responding to applied filters
+
+If a rule's condition includes filters, Algolia applies that rule's consequences only if the filters in a search's query parameters _exactly_ match the condition's filters.
+
+For example, Algolia only triggers a rule with the condition `{"filters": "category:TV"}`, if `category` is filtered on the value `TV`, and on this value only.
+Other filters like `"category:Smartphone"` or `"category:TV OR category:Smartphone"` _don't_ trigger the rule.
+
+**The primary goal of this condition is to create rules that are triggered on specific category pages or when a user applies specific filters.**
+For example, you can define a rule with the condition `{"filters": "category:TV"}` and a consequence to promote specific items.
+The rule would be triggered when a user lands on the TV category page.
+
+For more information, see [Filters can trigger rules](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#filters-can-trigger-rules).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To use an attribute in a Rule condition with filters, you must first [declare it in `attributesForFaceting`](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Context-only rules
+
+If a rule's condition includes only a context, then that rule's consequence applies only if the rule's context exactly matches a value in the [`ruleContexts`](/api-reference/api-parameters/ruleContexts/) parameter of a user's search.
+
+### What are contexts?
+
+Contexts provide information about your user's search environment: for example, what section of a website they're currently visiting or what device they're using. A context can be any string value that doesn't include whitespace characters. The search condition it specifies must be identifiable at search time. You must implement the logic to conditionally send contexts with your users' queries. You can pass contexts through the [`ruleContexts`](/api-reference/api-parameters/ruleContexts/) search parameter.
+
+### Implementation
+
+To implement a rule with a context condition, you must:
+
+1. Create the rule with the dashboard or the API.
+1. Conditionally assign its associated context to your user's searches.
+
+To clarify the process, consider this example. Suppose you own an electronics store. Using [analytics tags](/guides/search-analytics/guides/segments/), you've discovered that mobile users rarely find what they're looking for on the first page of search results. With some testing, you realize that this is because vague searches for accessories like "chargers" or "cases" return laptop chargers and cases first.
+
+You want to add a rule that promotes all items in your catalog with the "phone" tag, but only if a user is searching from a mobile platform.
+Hence, if mobile users search for cases, you can assume that they prefer phone cases over laptop cases.
+If they search for chargers, phone chargers should show up first.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Using rules to customize search results by device](/guides/managing-results/rules/rules-overview/how-to/customize-search-results-by-platform/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Conditionless rules
+
+Rules without conditions apply to every search on the index. They're an effective way of temporarily modifying your site's search for a predefined time, for example, for seasonal promotions.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Using conditionless Rules](/guides/managing-results/rules/rules-overview/how-to/use-conditionless-rules/)
+  - [Adding default search parameters with Rules](/guides/managing-results/rules/rules-overview/how-to/add-default-search-parameters-with-rules/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Context-only and conditionless rules deactivate consequences
+
+Since conditionless and context-only rules don't include a query as a condition, these consequences are deactivated.
+
+| Consequence                               | Why is it deactivated?                                                                                                                                                                                                                                           |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pin an item                               | The same item would always appear in the same position, usually at the top, for all queries and all users. Instead, consider [adding a banner](/guides/managing-results/rules/merchandising-and-promoting/how-to/add-banners/) to promote items you want to pin. |
+| Remove Word, Replace Word, Replace Query. | Since there's no query, there are no words to remove or replace.                                                                                                                                                                                                 |
+| Filter/Boost Matching Attributes          | Rules that filter and boost facets require users to type a facet attribute into the query. Since there's no query or facet in the condition, there's no filter for the rule to boost                                                                             |
+
+{/* prettier-ignore-start */}
+
+<Note>
+  These limitations only apply to context-only and conditionless rules.
+  Other rules can use the full range of consequences.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Visual Editor vs Manual Editor
+
+You can use the **Visual Editor** or **Manual Editor** to create rules.
+
+- **The Visual Editor** has the most _visual_ way of configuring rules but doesn't offer all capabilities.
+- **The Manual Editor** has more capabilities but is less visual.
+
+Both editors use the [Rules API](/api-client/methods/rules/).
+
+| Option            | Capabilities                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Visual Editor** | • [Promote](/guides/managing-results/rules/merchandising-and-promoting/how-to/promote-hits/) and [hide](/guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-hide-hits/) items<br />• Boost, bury, and filter [categories](/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/)<br />• Set priority on category ordering<br />• Ban categories of items<br />• [Merchandise](/guides/managing-results/rules/merchandising-and-promoting/) on filter selection<br />• Merchandise based on date range, for time-limited promotions<br />• Merchandise based on geolocation, device, and user segment<br />• [Facet merchandising](/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-facets/) (facet type and value reordering)<br />• [Display banners](/guides/managing-results/rules/merchandising-and-promoting/how-to/add-banners/)<br />• Configurable preview UI |
+| **Manual Editor** | • Merchandise on filter selection<br />• Add custom data to rules<br />• Display advanced banners                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Rules API**     | • Explore the Rules API<br />• Build a custom merchandising UI                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |

@@ -1,0 +1,113 @@
+---
+title: Filters and facet filters
+description: |-
+  Learn about the relationship between filters and facetFilters.
+---
+
+For most uses, the `filters` parameter is the best choice for filtering.
+However, `numericFilters` and `facetFilters` also offer comparable capabilities and can be used to suit different filtering needs.
+
+## Differences between filtering parameters
+
+Whatever filtering parameter you use, the aim is to filter records based on their attributes.
+To exclude results, use the NOT [operator](/guides/managing-results/refine-results/filtering/in-depth/combining-boolean-operators/).
+However, there are some differences:
+
+### `filters`
+
+|            | Notes                                                                      |
+| ---------- | -------------------------------------------------------------------------- |
+| Parameter  | [`filters`](/api-reference/api-parameters/filters/)                        |
+| Syntax     | String                                                                     |
+| Best for   | Filtering with a mix of string and numeric filters                         |
+| Key points | A familiar SQL syntax. You can use boolean logical operators: AND, OR, NOT |
+
+#### Examples
+
+Find all books written by Stephen King:
+
+```js js
+index.search("", {
+  filters: 'author:"Stephen King"',
+});
+```
+
+Exclude all non-fiction books (based on their [tag](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-tags)):
+
+```js js
+index.search("", {
+  filters: "NOT _tags:non-fiction",
+});
+```
+
+### `numericFilters`
+
+|            | Notes                                                             |
+| ---------- | ----------------------------------------------------------------- |
+| Parameter  | [`numericFilters`](/api-reference/api-parameters/numericFilters/) |
+| Syntax     | String                                                            |
+| Best for   | Filtering dates and numeric values                                |
+| Key points | Like `filters` but limited to numeric data                        |
+
+#### Example
+
+Find all books that cost more than $20:
+
+```js js
+index.search("", {
+  numericFilters: "price>20",
+});
+```
+
+### `facetFilters`
+
+|            | Notes                                                         |
+| ---------- | ------------------------------------------------------------- |
+| Parameter  | [`facetFilters`](/api-reference/api-parameters/facetFilters/) |
+| Syntax     | String or string array                                        |
+| Best for   | Filtering with a mix of strings and complex boolean logic     |
+| Key points | Can't be used for numeric filtering                           |
+
+#### Examples
+
+Find books written by Stephen King _or_ belonging to the horror genre, _and_ also published by Penguin.
+
+```js js
+index.search("", {
+  facetFilters: [["author:Stephen King", "genre:Horror"], "publisher:Penguin"],
+});
+```
+
+Exclude eBooks from the results:
+
+```js js
+index.search("", {
+  facetFilters: "category:-Ebook",
+});
+```
+
+## Combining `filters` and `facetFilters`
+
+You can combine filter and facet filters in the same search query. For example:
+
+```js js
+index.search("", {
+  filters: '(author:"Stephen King" OR genre:"Horror")',
+  facetFilters: ["publisher:Penguin"],
+});
+```
+
+In this case, the results of this are the same as the preceding [example for `facetFilters`](#examples) but more generally may prove to be more flexible.
+For example, you can use `filters` programmatically to create a reduced set of records based on a user's profile, and then apply `facetFilters` to reflect the facets that users have chosen.
+
+## Limits and performance
+
+Since each filter adds complexity to queries, there's a limit on the total number of combined filters you can use of 1,000.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Faceting on unique or uncommon attributes [may degrade search performance and relevance](/api-reference/api-parameters/facets/#usage-notes).
+</Note>
+
+{/* prettier-ignore-end */}

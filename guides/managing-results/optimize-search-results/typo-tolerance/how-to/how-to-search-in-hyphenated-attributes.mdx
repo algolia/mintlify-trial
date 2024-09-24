@@ -1,0 +1,656 @@
+---
+title: Searching in hyphenated attributes
+description: |-
+  Learn the best practices for searching in hyphenated attributes that can have multiple formats, such as SKUs, ISBNs, phone numbers, and serial numbers.
+---
+
+Indexing hyphenated attributes like SKUs, ISBNs, phone numbers, and serial numbers is tricky because your users may search for them in many different ways. For example, your users might search for an item with the serial number `1234-XYZ-B5` with any of these queries:
+
+- `1234-XYZ-B5`
+- `1234XYZB5`
+- `1234XYZ-B5`
+- `1234-XYZ`
+- `XYZ-B5`
+
+To ensure your users find what they're looking for, you need to consider the following steps:
+
+- Formatting the numbers in your records
+- Configuring the relevance
+
+The following guidelines are equally applicable for any hyphenated attributes such as SKUs, ISBNs, phone numbers, or serial numbers.
+
+## Formatting records
+
+### Formatting non-alphanumeric characters
+
+Searching through hyphenated attributes is tricky, and it's not just because users search with different formats. It's also tricky because these attributes include non-alphanumeric characters, such as hyphens (`-`), pound signs (`#`), or plus signs (`+`).
+
+By default, [Algolia doesn't index non-alphanumeric characters](/guides/managing-results/optimize-search-results/override-search-engine-defaults/#enable-search-on-non-alphanumeric-characters), or "separators", meaning they aren't searchable. They're, however, essential for [tokenization](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization/).
+
+For example, the string `1234-XYZ-B5` is tokenized as `1234`, `-`, `XYZ`, `-`, `B5`, because the hyphen (`-`) is a separator, and all the other characters aren't. Then, by default, Algolia only indexes the non-separator tokens `1234`, `XYZ`, `B5`. The same is true for the string `1234 XYZ B5`, since a space is also a separator. That's why `1234-XYZ-B5` and `1234 XYZ B5` are functionally the same for the engine. Both would be a match, whether your user searches for `1234-XYZ-B5` or `1234 XYZ B5`.
+
+```json json
+{
+  "serial_number": "1234-XYZ-B5"
+}
+```
+
+```json json
+{
+  "serial_number": "1234 XYZ B5"
+}
+```
+
+**There is no need to index special characters, unless they distinguish important differences between records**. For example, you should only do this if the results for `1234-XYZ-B5` must be different than the results or `1234 XYZ B5`. This is very rarely the case for ISBN, SKU, phone number, or serial number use cases, but could be true for other use cases, such as when searching for the programming languages `C` vs. `C++`.
+
+### Include all possible formats
+
+Difficulties can arise when users search with a format that removes spaces or special characters, for example, `1234XYZB5`. While Algolia handles some [splitting and concatenation](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/), there are [special considerations when numbers are involved](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/#concatenation-with-numbers), and Algolia may not handle several concatenations at once. For that reason, **index all possible formats your users search with, not counting using different separators.**
+
+For example, this indexing format includes all different formats but only uses spaces and doesn't include any versions with hyphens:
+
+```json json
+{
+  "serial_number": [
+    "1234 XYZ B5",
+    "1234XYZB5",
+    "1234XYZ B5",
+    "1234 XYZB5",
+    "1234 XYZ",
+    "XYZ B5"
+  ]
+}
+```
+
+This format will make the record a match when users search for any of these variants:
+
+- `1234-XYZ-B5`
+- `1234 XYZ B5`
+- `1234XYZB5`
+- `1234XYZ-B5`
+- `1234XYZ B5`
+- `1234-XYZB5`
+- `1234 XYZB5`
+- `1234-XYZ`
+- `1234 XYZ`
+- `XYZ-B5`
+- `XYZ B5`
+
+There is some redundancy in this formatting. The following tokens are indexed for each element:
+
+```jsonc jsonc
+{
+  "serial_number": [
+    "1234 XYZ B5", // tokens: ["1234", "XYZ", "B5"]
+    "1234XYZB5", // tokens: ["1234XYZB5"]
+    "1234XYZ B5", // tokens: ["1234XYZ", "B5"]
+    "1234 XYZB5", // tokens: ["1234", "XYZB5"]
+    "1234 XYZ", // tokens: ["1234", "XYZ"]
+    "XYZ B5", // tokens: ["XYZ", "B5"]
+  ],
+}
+```
+
+Since the unique tokens are `["1234", "XYZ", "B5", "1234XYZB5", "1234XYZ", "XYZB5"]`, these are the only ones that need indexing.
+
+That said, you may not want to undertake the work necessary to deduplicate redundant tokens. Additionally, having all variants allows for a more accurate [proximity score](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#proximity), if your users tend to search with tokens in the same order as the original unformatted version. For example, while a user may search for `1234 XYZB5`, they probably won't search for `XYZB5 1234`.
+
+### Suffix search
+
+By design, Algolia doesn't support [infix/suffix matching](/guides/managing-results/optimize-search-results/override-search-engine-defaults/how-to/how-can-i-make-queries-within-the-middle-of-a-word/); therefore, Algolia doesn't find substrings in the middle or the end of a string. If you want users to be able to search on suffixes, you need to index them.
+
+```json json
+{
+  "serial_number": "1234XYZB5",
+  "serial_number_suffixes": [
+    "234XYZB5",
+    "34XYZB5",
+    "4XYZB5",
+    "XYZB5",
+    "YZB5",
+    "ZB5",
+    "B5"
+  ]
+}
+```
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Algolia is optimized to search in textual attributes. Therefore, make sure to store numerical attributes used for search (as opposed to [filtering](/guides/managing-results/refine-results/filtering/how-to/filter-by-numeric-value/), [ranking](/guides/managing-results/must-do/custom-ranking/#custom-ranking), or [sorting](/guides/managing-results/refine-results/sorting/)) as strings, not numbers.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### One format for search and another for display
+
+If you want to display one particular format, you need to include another attribute for the display value.
+
+```json json
+{
+  "serial_number": [
+    "1234 XYZ B5",
+    "1234XYZB5",
+    "1234XYZ B5",
+    "1234XYZ B5",
+    "1234 XYZ",
+    "XYZ B5"
+  ],
+  "serial_number_for_display": "1234-XYZ-B5"
+}
+```
+
+To make the response payload more lightweight, you can exclude the non-display version from the response using [`attributesToRetrieve`](/api-reference/api-parameters/attributesToRetrieve/).
+
+## Configuring the relevance
+
+### Configuring `searchableAttributes`
+
+To ensure that various formats are searchable, you first need to add the formatted attribute to the [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/). These attributes can be either strings or arrays.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string>
+      {
+          // ...
+          "serial_number",
+          // ...
+      }
+  };
+
+  index.SetSettings(setting);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  settings := search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		// ...
+  		"serial_number",
+  	// ...
+  	),
+  }
+  res, err := index.SetSettings(settings)
+  ```
+
+  ```java java
+  // Sync version
+  index.setSettings(
+    new IndexSettings()
+      .setSearchableAttributes(Arrays.asList(
+        // ...
+        "serial_number",
+        // ...
+      ))
+  );
+
+  // Async version
+  index.setSettingsAsync(
+    new IndexSettings()
+      .setSearchableAttributes(Arrays.asList(
+        // ...
+        "serial_number",
+        // ...
+        ))
+  );
+
+  // To add a custom setting for an index,
+  // extend the class `IndexSettings` and add your getter/setter.
+  // The new settings will be automatically serialized by jackson.
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      searchableAttributes: [
+        // ...
+        "serial_number",
+        // ...
+      ],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+          //+ ...
+          +"serial_number"
+          //+ ...
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings(
+    [
+      'searchableAttributes' => [
+        // ...
+        'serial_number',
+        // ...
+      ]
+    ]
+  );
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "searchableAttributes": [
+              # ...
+              "serial_number",
+              # ...
+          ]
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    searchableAttributes: [
+      # ...
+      "serial_number"
+      # ...
+    ]
+  )
+  ```
+
+  ```scala scala
+  val result: Future[Task] = client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(Seq(
+        // ...
+        SearchableAttributes.attributes("serial_number"),
+      // ...
+      )))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "searchableAttributes": [
+      // ...
+      "serial_number"
+      // ...
+    ]
+  ])
+  ```
+</CodeGroup>
+
+If you added alternative forms in a separate attribute, you should also include it in [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/).
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string>
+      {
+          // ...
+          "serial_number",
+          "serial_number_suffixes",
+          // ...
+      }
+  };
+
+  index.SetSettings(setting);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  settings := search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		// ...
+  		"serial_number",
+  		"serial_number_suffixes",
+  		// ...
+  	),
+  }
+  res, err := index.SetSettings(settings)
+  ```
+
+  ```java java
+  // Sync version
+  index.setSettings(
+    new IndexSettings()
+      .setSearchableAttributes(Arrays.asList(
+        // ...
+        "serial_number",
+        "serial_number_suffixes",
+        // ...
+        ))
+  );
+
+  // Async version
+  index.setSettingsAsync(
+    new IndexSettings()
+      .setSearchableAttributes(Arrays.asList(
+        // ...
+        "serial_number",
+        "serial_number_suffixes",
+        // ...
+        ))
+  );
+
+  // To add a custom setting for an index,
+  // extend the class `IndexSettings` and add your getter/setter.
+  // The new settings will be automatically serialized by jackson.
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      searchableAttributes: [
+        // ...
+        "serial_number",
+        "serial_number_suffixes",
+        // ...
+      ],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+          //+ ...
+          +"serial_number"
+          +"serial_number_suffixes"
+          //+ ...
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings(
+    [
+      'searchableAttributes' => [
+        // ...,
+        'serial_number',
+        'serial_number_suffixes',
+        // ...
+      ]
+    ]
+  );
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "searchableAttributes": [
+              # ...,
+              "serial_number",
+              "serial_number_suffixes",
+              # ...
+          ]
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    searchableAttributes: [
+      # ...
+      "serial_number",
+      "serial_number_suffixes"
+      # ...
+    ]
+  )
+  ```
+
+  ```scala scala
+  val result: Future[Task] = client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(Seq(
+        // ...
+        SearchableAttributes.attributes("serial_number"),
+        SearchableAttributes.attributes("serial_number_suffixes"),
+      // ...
+      )))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "searchableAttributes": [
+      // ...
+      "serial_number",
+      "serial_number_suffixes",
+      // ...
+    ]
+  ])
+  ```
+</CodeGroup>
+
+If you added a [display attribute](/guides/sending-and-managing-data/prepare-your-data/#attributes-for-displaying), you **shouldn't** include it in [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/).
+
+### Hyphenated attributes need to match _exactly_ (without typos)
+
+Often, when a user searches for a particular number, they're looking for only that record and aren't interested in close matches. In that case, you can turn off [typo tolerance](/guides/managing-results/optimize-search-results/typo-tolerance/#whats-a-typo) on the hyphenated number attribute using [`disableTypoToleranceOnAttributes`](/api-reference/api-parameters/disableTypoToleranceOnAttributes/).
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      DisableTypoToleranceOnAttributes = new List<string> { "serial_number", }
+  };
+
+  index.SetSettings(setting);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  settings := search.Settings{
+  	DisableTypoToleranceOnAttributes: opt.DisableTypoToleranceOnAttributes(
+  		"serial_number",
+  	),
+  }
+  res, err := index.SetSettings(settings)
+  ```
+
+  ```java java
+  // Sync version
+  index.setSettings(
+    new IndexSettings()
+      .setDisableTypoToleranceOnAttributes(Arrays.asList(
+        "serial_number",
+        ))
+  );
+
+  // Async version
+  index.setSettingsAsync(
+    new IndexSettings()
+      .setDisableTypoToleranceOnAttributes(Arrays.asList(
+        "serial_number",
+        ))
+  );
+
+  // To add a custom setting for an index,
+  // extend the class `IndexSettings` and add your getter/setter.
+  // The new settings will be automatically serialized by jackson.
+  ```
+
+  ```js js
+  index
+    .setSettings({ disableTypoToleranceOnAttributes: ["serial_number"] })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      disableTypoToleranceOnAttributes {
+          +"serial_number"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings(
+    [
+      'disableTypoToleranceOnAttributes' => [
+        'serial_number',
+      ]
+    ]
+  );
+  ```
+
+  ```python python
+  index.set_settings({"disableTypoToleranceOnAttributes": ["serial_number"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(disableTypoToleranceOnAttributes: ["serial_number"])
+  ```
+
+  ```scala scala
+  val result: Future[Task] = client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      disableTypoToleranceOnAttributes = Some(Seq(
+        "serial_number", )))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "disableTypoToleranceOnAttributes": [
+      "serial_number"
+    ]
+  ])
+  ```
+</CodeGroup>
+
+### Hyphenated attributes need to match entirely (without prefix)
+
+Similarly, if you would like to display results only on complete (and not prefixed) matches, you can turn off prefix matching on the hyphenated attribute using [`disablePrefixOnAttributes`](/api-reference/api-parameters/disablePrefixOnAttributes/).
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      DisablePrefixOnAttributes = new List<string> { "serial_number", }
+  };
+
+  index.SetSettings(setting);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  settings := search.Settings{
+  	DisablePrefixOnAttributes: opt.DisablePrefixOnAttributes(
+  		"serial_number",
+  	),
+  }
+  res, err := index.SetSettings(settings)
+  ```
+
+  ```java java
+  // Sync version
+  index.setSettings(
+    new IndexSettings()
+      .setDisablePrefixOnAttributes(Arrays.asList(
+        "serial_number",
+        ))
+  );
+
+  // Async version
+  index.setSettingsAsync(
+    new IndexSettings()
+      .setDisablePrefixOnAttributes(Arrays.asList(
+        "serial_number",
+        ))
+  );
+
+  // To add a custom setting for an index,
+  // extend the class `IndexSettings` and add your getter/setter.
+  // The new settings will be automatically serialized by jackson.
+  ```
+
+  ```js js
+  index.setSettings({ disablePrefixOnAttributes: ["serial_number"] }).then(() => {
+    // done
+  });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      disablePrefixOnAttributes {
+          +"serial_number"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings(
+    [
+      'disablePrefixOnAttributes' => [
+        'serial_number',
+      ]
+    ]
+  );
+  ```
+
+  ```python python
+  index.set_settings({"disablePrefixOnAttributes": ["serial_number"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(disablePrefixOnAttributes: ["serial_number"])
+  ```
+
+  ```scala scala
+  val result: Future[Task] = client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      disablePrefixOnAttributes = Some(Seq(
+        "serial_number", )))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "disablePrefixOnAttributes": [
+      "serial_number"
+    ]
+  ])
+  ```
+</CodeGroup>
+
+### Handling non-alphanumeric characters
+
+By default, the engine ignores non-alphanumeric characters like hyphen (`-`), plus (`+`), and parentheses (`(`, `)`). Whether these characters are in the query or the index, Algolia won't search for them.
+
+This is by design: searching for `+33` returns all records with an attribute starting with `+33` or `33`, because the engine ignores the plus sign (`+`). If you would like users to search with special characters, you must let the engine know to index these characters. You can do so with [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/).
+
+For example, if you include `+` in [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/), searching for `+33` will only return records containing both `+` and `33`. Since adding [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/) can make a search more restrictive and complex, it's generally not desirable to do so for these use cases.
+
+**Don't include a character as a [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/) unless its presence distinguishes between different records.** For example, if searches for `1234-XYZ-B5` and `1234 XYZ B5` should return different results. This is rarely true for SKU, ISBN, phone numbers, and serial number use cases.
+
+### Searching with `removeWordsIfNoResults` enabled
+
+The setting [`removeWordsIfNoResults`](/api-reference/api-parameters/removeWordsIfNoResults/) relaxes the query criteria when the engine initially doesn't find any results.
+Due to the [special treatment](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/#concatenation-during-indexing) of special characters,
+this parameter might not work as expected when searching for hyphenated attributes.
+
+Refer to the guide on [using `removeWordsIfNoResults` with non-alphanumeric characters](/guides/managing-results/optimize-search-results/empty-or-insufficient-results/in-depth/why-use-remove-words-if-no-results/#removing-words-with-non-alphanumeric-characters) for more information.

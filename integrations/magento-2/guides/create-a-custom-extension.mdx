@@ -1,0 +1,257 @@
+---
+title: How to Customize the Extension
+description: |-
+  Learn how to create a custom Magento 2 extension to modify behavior of Algolia extension for Magento 2.
+---
+
+## Introduction
+
+Our extension can be a powerful out-of-the-box tool for a variety of search features.
+However, sometimes our plug-in needs to be customized in order to change the look or behavior to perfectly suit any use case.
+Keep in mind that any changes you make to the extension will be removed when installing any new versions of the extension.
+
+In this guide, we will look at how you can safely create a custom implementation of our extension for Magento, without any danger of it being overwritten with future versioning of the extension.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Please make sure you have our extension [installed](/integration/magento-2/getting-started/quick-start/#installation) on your Magento 2 website.
+</Note>
+
+{/* prettier-ignore-end */}
+
+The best way to change any default style or behavior in Magento is to override it.
+For instance, when a template needs to be modified, it's not supposed to be modified directly; a new template has to be created, and Magento needs to be told to use this new template instead of the old one.
+The new template will then be a new custom extension.
+
+## CustomAlgolia
+
+In order to avoid having to bootstrap a lot of code to create a custom extension for our engine, we created [a boilerplate for anyone to use](https://github.com/algolia/algoliasearch-custom-algolia-magento-2).
+The boilerplate, named [CustomAlgolia](https://github.com/algolia/algoliasearch-custom-algolia-magento-2), is shipped with a few code samples to get started quickly.
+
+## Installation
+
+The `CustomAlgolia` boilerplate can be installed with [Composer](https://getcomposer.org/) by running the following commands in the command line:
+
+```bash bash
+composer require algolia/algoliasearch-custom-algolia-magento-2
+php bin/magento setup:upgrade
+```
+
+The boilerplate will be installed into the `app/code` directory in your Magento 2 base directory where you can make further modifications to the implementation and commit to your own project repository.
+
+## Boilerplate Structure
+
+To keep things simple, the boilerplate uses the same data structure as is convention for Magento 2 extensions.
+
+Look for these files under `app/code/Algolia/CustomAlgolia`:
+
+```filesystem filesystem
+├── etc
+│   ├── events.xml
+│   └── module.xml
+├── Observer
+│   ├── UpdateFrontendConfiguration.php
+│   └── UpdateProductsSettings.php
+├── view
+│   └── frontend
+│       ├── layout
+│       │   └── algolia_search_handle.xml
+│       ├── web
+│       │   ├── template
+|       |   |   ├── additional-section-mixin.js
+|       |   |   ├── categories-mixin.js
+|       |   |   ├── pages-mixin.js
+|       |   |   ├── products-mixin.js
+|       |   |   └── suggestions-mixin.js
+│       │   ├── customalgolia.css
+│       │   └── hooks.js
+│       ├── templates
+│       │   └── instant
+│       │       └── facet.phtml
+|       └── requirejs-config.js
+├── composer.json
+└── registration.php
+```
+
+## Customizing Looks
+
+For this example, we'll override the `facet.phtml` template.
+This template is used for the _InstantSearch_ feature, to display facets for hits matching the query.
+
+### Create a new template
+
+Copy the chosen template from our **original** extension (`view/frontend/templates/instant/facet.phtml`) to the exact same path in the `CustomAlgolia` extension.
+The file can now be modified as needed.
+
+### Register the new template
+
+With the new template in place, Magento needs to know that it has to use this template instead of the original one.
+To do this, open the configuration file `algolia_search_handle.xml` and add the following code block to it:
+
+```xml xml
+<referenceBlock name="algolia.instant.facet" template="Algolia_CustomAlgolia::instant/facet.phtml"/>
+```
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  It is important to use the correct template name in the snippet above. If unsure, please check the **original** extension's layout file for the template names.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Customizing frontend behavior
+
+### Overriding existing behavior
+
+In order to customize some of the extensions' behavior, you might need to override the JavaScript file.
+You should use RequireJS to override the JavaScript files, because it correctly handles the dependencies within your customizations.
+
+This example overrides the `autocomplete.js` file, which implements the autocomplete menu.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Click [here](/integration/magento-2/customize/autocomplete-menu/?client=php#javascript-mixins-with-requirejs) to read more about customizing the autocomplete feature.
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### Create a new script
+
+Copy the chosen template from our **original** extension (`view/frontend/web/js/autocomplete.js`) to the exact same path in the `CustomAlgolia` extension.
+The file can now be modified as needed.
+
+#### Register the new script
+
+With the new script in place, Magento needs to know it has to use this script instead of the original one.
+To do this, open or create the configuration file `requirejs-config.js` and add the following code block to the `config` object.
+
+```js js
+var config = {
+  map: {
+    "*": {
+      autocomplete: "Algolia_CustomAlgolia/autocomplete",
+    },
+  },
+};
+```
+
+### Adding custom behavior
+
+To add functionality on top of the default behavior, a new JavaScript file needs to be added.
+In this file, [custom methods](/integration/magento-2/customize/custom-front-end-events/) can be used to modify any InstantSearch or Autocomplete features.
+
+#### Create a new script
+
+Create a new file named `view/frontend/web/js/hooks.js`.
+
+Specify any dependencies of your hooks. For example:
+
+```js js
+define(["jquery", "algoliaAnalytics", "algoliaBundle"], function (
+  $,
+  algoliaAnalyticsWrapper,
+  algoliaBundle,
+) {
+  // Add your custom code here
+});
+```
+
+The file can now be modified as needed.
+
+#### Register the new script
+
+With the new script in place, Magento needs to know how to find it and when to load it.
+To do this, open or create the configuration file `requirejs-config.js` and add the following code block to the `config` object.
+
+```js js
+var config = {
+  map: {
+    "*": {
+      algoliaHooks: "Algolia_CustomAlgolia/hooks",
+    },
+  },
+};
+```
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  It is important to use the module id `algoliaHooks` to ensure that your hooks are registered **prior** to loading the InstantSearch and Autocomplete libraries that will ultimately invoke them.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+If you have a script that you wish to load on every page in your store front but load order is not essential then you can use the [`deps`](https://requirejs.org/docs/api.html#config-deps) configuration.
+
+For example:
+
+```js js
+var config = {
+  deps: ["myCustomAlgoliaHooks"],
+};
+```
+
+You can learn more about this configuration in the [RequireJS](https://requirejs.org/docs/api.html) documentation.
+
+Another way to load your JavaScript is via Magento's declarative convention. This can conditionally load your scripts based on logic from your backend application.
+
+You can use these two approaches for implementing this:
+
+1. The `data-mage-init` attribute
+1. The `<script type="text/x-magento-init">` tag
+
+For more information, see the [Adobe Commerce documentation](https://developer.adobe.com/commerce/frontend-core/javascript/init/).
+
+## Customizing backend behavior
+
+To override backend behavior like indexing or settings, you need to add a listener on a backend [custom event](/integration/magento-2/customize/custom-back-end-events/).
+
+The listener is composed from an Observer PHP class and it needs to be registered in the `etc/events.xml` file.
+
+For this example, we will create a listener on the [`algolia_products_index_before_set_settings`](/integration/magento-2/customize/custom-back-end-events/#dispatched-before-sending-products-index-settings-to-algolia) event to modify [Algolia's index settings](/api-reference/api-parameters/) for your products' index.
+
+### Register the observer
+
+To register the observer, add the following snippet to the [`etc/events.xml`](https://github.com/algolia/algoliasearch-custom-algolia-magento-2/blob/master/etc/events.xml) file:
+
+```xml xml
+<event name="algolia_products_index_before_set_settings">
+    <observer name="customalgolia_products_settings" instance="Algolia\CustomAlgolia\Observer\UpdateProductsSettings" />
+</event>
+```
+
+### Create observer
+
+Create the `Observer/UpdateProductsSettings.php` file, and add a new Observer class to it.
+
+```php php
+namespace Algolia\CustomAlgolia\Observer;
+
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+
+class UpdateProductsSettings implements ObserverInterface
+{
+  public function execute(Observer $observer)
+  {
+    // Observer execution code...
+
+    // Here you can modify frontend configuration
+
+    // Example:
+    // $productsSettings = $observer->getData('index_settings');
+    // $productsSettings['snippetEllipsisText'] = '...';
+  }
+}
+```
+
+The code in the `execute` block can be modified as needed. In this example, the [`snippetEllipsisText`](/api-reference/api-parameters/snippetEllipsisText/) setting is modified.
+
+## Updating
+
+When files are overridden, they will not receive updates from our original extension.
+If a bug fix needs to be integrated into the custom code, this will need to be done manually.
+Please make sure you read the [change log of each release](https://github.com/algolia/algoliasearch-magento-2/releases) to see if there was any change to the file that was overridden.

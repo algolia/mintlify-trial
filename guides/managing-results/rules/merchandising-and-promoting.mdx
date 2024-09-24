@@ -1,0 +1,106 @@
+---
+title: Merchandising
+description: |-
+  Merchandise search results, facets, and category pages with Algolia. Apply Rules to influence the ranking of individual records or whole categories.
+---
+
+Merchandising is the promotion of specific products or categories of products.
+Depending on your goals, merchandising lets you:
+
+- Offer recommendations to your users
+- Highlight your best products
+- Follow trends
+- Improve conversion rates
+
+Algolia offers multiple merchandising capabilities, all powered by Rules.
+In the Algolia dashboard, you can create and configure rules with the Manual Editor or Visual Editor:
+
+- The **Visual Editor** lets you create rules and set search results for specific queries without code, giving you direct control over search results and promotions.
+- The **Manual Editor** is more powerful, but you have to enter the rules as JSON.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Rules overview](/guides/managing-results/rules/rules-overview/)
+  - [Merchandising category pages](https://www.algolia.com/ecommerce-merchandising-playbook/merchandise-category-pages/)
+  - [Merchandising search results pages](https://www.algolia.com/ecommerce-merchandising-playbook/merchandise-search-results-page/)
+  - [What can I do with the Visual Editor?](https://support.algolia.com/hc/en-us/articles/4406981935761)
+  - [Enable Rules with the API](/api-reference/api-parameters/enableRules/)
+  - [Merchandising can help your business](https://www.algolia.com/blog/algolia/how-searchandising-can-help-your-business/)
+  - [Estimating conversion rates](https://www.algolia.com/blog/product/measuring-ecommerce-conversion-rates-and-revenue-with-a-profit-calculator/)
+  - [12 tips to increase conversion rates](https://www.algolia.com/blog/ecommerce/12-tips-to-increase-ecommerce-conversion-rates/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Merchandising Studio
+
+[Algolia's Merchandising Studio](https://www.algolia.com/industries-and-solutions/ecommerce/digital-merchandising/) is an optimized, no-code interface for digital merchandisers.
+It allows ecommerce users to focus on search merchandising, category merchandising, and facet merchandising.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Merchandising Studio](https://academy.algolia.com/guides/70f10de2-c1b6-11ed-918c-06cf503dca07/tasks/bab7c90a-c1b3-11ed-94fe-067360dfb065)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Promote hits
+
+[Promoting a hit](/guides/managing-results/rules/merchandising-and-promoting/how-to/promote-hits/) means you want it to appear first in results for a specific query. For example:
+
+- A bookstore may want to recommend a Harry Potter box set whenever the term "Harry Potter" appears in the search.
+- You may want to manage new releases for the latest iPhone. With custom ranking, you've placed best-selling items at the top of your search results. Unfortunately, this doesn't work well with new releases, which have no sales yet (meaning they're probably listed last). With Rules, you can force new releases to the top of the results list without changing your custom ranking.
+
+You can promote up to 300 hits in a single rule.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Promoting hits](/guides/managing-results/rules/merchandising-and-promoting/how-to/promote-hits/)
+  - [Custom ranking](/guides/managing-results/must-do/custom-ranking/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Hide hits
+
+You can [hide hits](/guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-hide-hits/) if required. Your index may contain records relevant only to a specific search. For example, imagine you have a website where people can search for dishes from restaurants with home-delivery service. If someone types "gluten free", you don't want to show items with gluten (even though gluten is in the query). Hiding hits lets you remove all gluten items from the results.
+
+## Redirect to URL
+
+You can [add a redirect](/guides/managing-results/rules/merchandising-and-promoting/how-to/redirects/) to a specific URL. For example, consider that you find in your search analytics that a lot of your users are searching for "help" but don't get any results. You can add a redirect for this query to your website's FAQ or support page. This improves the user experience and reduces the no-results rate.
+Other examples include searching for a category. For example the query "TV" redirects users to the corresponding category page. Or, searching for a specific product or brand redirects users to a seasonal promotional page for it.
+
+## Display banners
+
+You can [display a banner](/guides/managing-results/rules/merchandising-and-promoting/how-to/add-banners/) to promote an item, a group of products, a business-wide sale, and so on. Using the same logic as hits promotion (looking for specific keywords in a query), you can create a rule with the necessary data to display a banner: the text, HTML, CSS, and associated images.
+
+## Dynamically promote filters
+
+You can promote filters with Rules. This is covered in more detail as part of [intent detection](/guides/managing-results/rules/detecting-intent/), but it's worth noting here as part of an overall merchandising strategy. If you detect that a user wants to see an important product category, you can promote these products using dynamically generated filters. You can also dynamically generate optional filters.
+
+### Use optional filters
+
+Optional filters let you favor some filters over others.
+They behave like regular filters, except that with optional filtering, **results that don't match a filter aren't excluded altogether**: they're only ranked lower in the results.
+For example, if you know a user is interested in the brand Samsung, you can promote that brand with optional filters: when users type "phone", all Samsung phones will be returned first, followed by all other phones.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Promote records with optional filters](/guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-promote-with-optional-filters/)
+  - [Optional filters](/guides/managing-results/rules/merchandising-and-promoting/in-depth/optional-filters/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Combine rules
+
+You can use the merchandising techniques individually or [in combination](/guides/managing-results/rules/merchandising-and-promoting/how-to/combining-multiple-consequences/): one condition can have more than one consequence.
+For example, if a user types "Harry Potter", you can simultaneously:
+
+- Promote movies over books
+- Set the most recent Harry Potter box set as the first result
+- Add filters for J. K. Rowling, children's novels, or the fantasy genre.

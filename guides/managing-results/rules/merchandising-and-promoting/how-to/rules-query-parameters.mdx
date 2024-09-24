@@ -1,0 +1,151 @@
+---
+title: Add search parameters with JSON
+description: |-
+  Learn how to write JSON templates for adding query parameters to a search when applying rules.
+---
+
+The Visual Editor lets you apply filters with [Rules](/guides/managing-results/rules/rules-overview/).
+If you want to apply [optional filters](/guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-promote-with-optional-filters/)
+or other API parameters, you need to add them in the Manual Editor as JSON.
+
+In this guide, `FACET:VALUE` refers to a [facet-value pair](/glossary/#facet-value-pair), such as, `author:shakespeare`.
+
+## Filters
+
+Filters excludes records that don't match the filter.
+
+| Scenario                      | JSON template                                         |
+| ----------------------------- | ----------------------------------------------------- |
+| **Select a category**         | `{ "filters":"FACET:VALUE" }`                         |
+| **Remove a category**         | `{ "filters":"NOT FACET:VALUE" }`                     |
+| **Remove several categories** | `{ "filters":"NOT FACET:VALUE AND NOT FACET:VALUE" }` |
+
+If you have a multi-word `VALUE` (such as William Shakespeare), wrap it in single quotes. For example:
+
+```json json
+{
+  "filters": "NOT author:'William Shakespeare' AND NOT author:Plato"
+}
+```
+
+If your `VALUE` contains an apostrophe (such as Tony d'Arbon), escape the apostrophe with double backslashes and wrap the whole string in single quotes. For example:
+
+```json json
+{
+  "filters": "NOT author:'William Shakespeare' AND NOT author:'Tony d\\'Arbon'"
+}
+```
+
+## Optional filters
+
+[Optional filters](/guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-promote-with-optional-filters/) don't remove records from the results,
+but they promote or demote matching records.
+You can fine-tune the behavior of optional filters with [filter scores](/guides/managing-results/refine-results/filtering/in-depth/filter-scoring/).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Any attribute you want to use as an optional filter must be [declared as a facet](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Examples for optional filters
+
+The following examples show different use cases for optional filters, their JSON representation, and the effect on filter scoring.
+
+### Promote a category
+
+**Filter scoring:** +1 for all matching records
+
+```json json
+{
+  "optionalFilters": ["FACET:VALUE"]
+}
+```
+
+### Promote several categories with equal weight
+
+**Filter scoring:** +1 for all records matching one or more filter
+
+```json json
+{
+  "optionalFilters": ["FACET1:VALUE1", "FACET2:VALUE2"]
+}
+```
+
+### Promote several categories with different weights per category
+
+**Filter scoring:** +X or +Y, whichever matches and has the highest value
+
+```json json
+{
+  "optionalFilters": ["FACET1:VALUE1<score=X>", "FACET2:VALUE2<score=Y>"]
+}
+```
+
+### Promote several categories with a combined score
+
+**Filter scoring:** +1 or +2, depending on the number of matching filters
+
+```json json
+{
+  "optionalFilters": ["FACET1:VALUE1", "FACET2:VALUE2"],
+  "sumOrFiltersScores": true
+}
+```
+
+### Promote several categories with combined weighting
+
+**Filter scoring:** +X, +Y, or +X+Y, depending on the matching filters
+
+```json json
+{
+  "optionalFilters": ["FACET1:VALUE1<score=X>", "FACET2:VALUE2<score=Y>"],
+  "sumOrFiltersScores": true
+}
+```
+
+### Demote a category
+
+**Filter scoring:** +1 for all records that don't match the filter
+
+```json json
+{
+  "optionalFilters": ["FACET:-VALUE"]
+}
+```
+
+### Demote several categories equally
+
+**Filter scoring:** +1 for all records that don't match any of the filters
+
+```json json
+{
+  "optionalFilters": ["FACET1:-VALUE1", "FACET2:-VALUE2"]
+}
+```
+
+### Optional filters with multiple words
+
+Unlike filters, you don't need to wrap a multi-word `VALUE` with single quotes if it contains spaces.
+For example:
+
+```json json
+{
+  "optionalFilters": [
+    ["author:William Shakespeare<score=3>", "author:John Doe<score=2>"]
+  ],
+  "sumOrFiltersScores": true
+}
+```
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Debugging rules and preventing issues](/guides/managing-results/rules/rules-overview/in-depth/debugging-rules/)
+  - [The optionalFilters API parameter](/api-reference/api-parameters/optionalFilters/)
+  - [How to combine optional filter scores](/guides/managing-results/rules/merchandising-and-promoting/in-depth/optional-filters/#sumorfiltersscores)
+</Info>
+
+{/* prettier-ignore-end */}

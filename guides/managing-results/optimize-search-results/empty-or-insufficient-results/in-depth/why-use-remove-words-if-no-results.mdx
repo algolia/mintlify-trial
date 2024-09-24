@@ -1,0 +1,97 @@
+---
+title: Removing words to improve results
+description: |-
+  An Overview of the features you can use to expand a query, thereby avoiding no or insufficient results.
+---
+
+## Why remove words?
+
+Removing words is the progressive loosening of query constraints to include more results when none are initially found.
+
+For example, imagine an online shop that sold a limited inventory of iPhones in only 16 GB and 32 GB varieties. Users searching for "iphone 5 64gb" would see no results. This isn't ideal behavior; it would be far better to show users _some_ iPhone 5 results instead of a blank page. That's where query expansion comes in.
+
+## Remove words if no results
+
+The [`removeWordsIfNoResults`](/api-reference/api-parameters/removeWordsIfNoResults/) parameter helps you make an initial query less and less specific until results are found. The right value to choose for a given use case may depend on the language searched as well as usage patterns.
+
+You can choose one of these four behaviors: `none` (default), `lastWords`, `firstWords`, `allOptional`.
+
+### `none`
+
+This is the engine's default behavior. The engine doesn't do any additional processing when a query has no results.
+
+### `lastWords`
+
+This value treats a query's last word as optional, and if there are _still_ no results, it repeats the operation until either there _are_ results, or the beginning of the query string has been reached.
+
+For example, imagine a search for **sparkly blue iPhone cases**:
+
+- The first query is **sparkly blue iPhone cases**.
+- The second query is **sparkly blue iPhone**.
+- The third query is **sparkly blue**.
+- The fourth query is **sparkly**.
+
+### `firstWords`
+
+This value treats a query's _first_ word as optional, and repeats the operation until either there _are_ results, or the end of the query string has been reached.
+
+- The first query is **sparkly blue iPhone cases**.
+- The second query is **blue iPhone cases**.
+- The third query is **iPhone cases**.
+- The fourth query is **cases**.
+
+It's important to consider typical search patterns when deciding between **firstWords** and **lastWords**. For example, **firstWords** would be more suitable than **lastWords** in queries similar to the preceding example. However, this isn't always the case. For example, take a look at the query "iphone 5 32gb."
+
+#### Expanding "iphone 5 32gb" with **firstWords**
+
+```txt txt
+"iphone 5 32gb" => "5 32gb" => "32gb"
+```
+
+Here, the most relevant part of the query is actually at the front; discarding those words makes the query irrelevant. Compare to the use of **lastWords**:
+
+#### Expanding "iphone 5 32gb" with **lastWords**
+
+```txt txt
+"iphone 5 32gb" => "iphone 5" => "iphone"
+```
+
+This is much better—stripping away detailed descriptors expands the result set without making the query irrelevant.
+
+## `allOptional`
+
+If there are no results for the initial query, **allOptional** specifies a second search in which _all_ words are treated as optional. This is essentially changing the implicit `AND` operator between words to **OR**:
+
+```txt txt
+"blue AND iPhone AND cases" => "blue OR iPhone OR cases"
+```
+
+In an ecommerce shop selling a wide range of products, using `allOptional` as before would return a far wider range of results— **blue** towels, books on **iPhone** development, and camera **cases**. Breadth would come at the expense of relevance, so it's best to use this parameter cautiously.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This last option works exactly like [`optionalWords`](/api-reference/api-parameters/optionalWords/), which is sent at query time. See [Creating a list of optional words](/guides/managing-results/optimize-search-results/empty-or-insufficient-results/#creating-a-list-of-optional-words) for more information.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Removing words with non-alphanumeric characters
+
+When your query contains non-alphanumeric characters, you may notice some unexpected behavior when changing [`removeWordsIfNoResults`](/api-reference/api-parameters/removeWordsIfNoResults/) from the default setting of `none`.
+
+Some non-alphanumeric characters, or "separators", trigger special behavior in the engine. Specifically, they trigger the [concatenation](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/) of the surrounding alphanumeric characters. For example, the query `t-shirt`, matches on `tshirt` as well as `t shirt`. Additionally, the search looks for the parts in order. Looking for particular parts in a specific order is called a [sequence expression](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization/#sequence-expressions). This means the query `t-shirt` matches `t-shirt`, `t shirt`, or `tshirt`, but not `shirt t`.
+
+Therefore, if you've enabled [`removeWordsIfNoResults`](/api-reference/api-parameters/removeWordsIfNoResults/), and a user searches for a term like `XYZ-b5`, you may expect the query to match records containing only `XYZ`, if there are no results for `XYZ-b5`. This isn't the case; because of concatenation and the subsequent sequence expression, the query matches `XYZ b5` or `XYZb5`, not only `XYZ`.
+
+Please refer to the guide on searching in hyphenated attributes SKUs, ISBNs, phone, and serial numbers for best practices when performing this kind of search. The documentation also has in-depth guides on tokenization, splitting, and concatenation, if you're interested in learning more on these topics.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Searching in hyphenated attributes](/guides/managing-results/optimize-search-results/typo-tolerance/how-to/how-to-search-in-hyphenated-attributes/)
+  - [Tokenization](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization/)
+  - [Splitting and concatenation](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/)
+</Info>
+
+{/* prettier-ignore-end */}

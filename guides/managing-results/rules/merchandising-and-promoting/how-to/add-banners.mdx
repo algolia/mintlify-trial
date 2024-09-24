@@ -1,0 +1,479 @@
+---
+title: Adding banners
+description: |-
+  Learn how to add banners to your results using Rules.
+---
+
+Search isn't only about retrieving results.
+Sometimes, depending on what users search for, you may want to **display custom data in your UI, like ads or promotional banners**.
+
+For example, consider an online bookstore that wants to display a discount for users looking for Harry Potter titles. With Algolia's Rules, they can display a banner for specific queries.
+
+## Algolia out-of-the-box banner solution
+
+The easiest way to display a banner above your search results is by adding a rule with the Visual Editor in the Algolia dashboard.
+The rule adds data to the search response which the InstantSearch UI library uses to display the banner.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This requires either the [`Hits` widget](/api-reference/widgets/hits/js/) or [`InfiniteHits` widget](/api-reference/widgets/infinite-hits/js/) from one of the following: InstantSearch.js version 4.73.0 or later, React InstantSearch version 7.12.0 or later, or Vue InstantSearch version 4.19.0 or later.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Create a rule with a banner consequence in the Visual Editor
+
+1. Click **Create your first Rule** or **New rule** and select **Visual Editor**.
+
+1. In the **It all starts here** section, click **Set query conditions**.
+
+1. In the **Your query** input, enter `harry potter` and click **Apply**.
+
+1. In the **What do you want to do?** section, click **Add Banner**.
+
+1. Enter the required content for your banner—the URL for your banner image and click **Apply**.
+
+1. Review your banner preview now displayed above the hits.
+
+1. Confirm your changes by clicking **Review and Publish**.
+
+### Create a rule with a banner consequence using the API
+
+To add a rule with a banner consequence using the API, use the [`saveRule`](/api-reference/api-methods/save-rule/) method.
+When adding a rule, you need to define a condition and a consequence.
+In the consequence, [add search parameters](/guides/managing-results/rules/rules-overview/how-to/add-default-search-parameters-with-rules/) and configure [`renderingContent`](/api-reference/api-parameters/renderingContent/) using the following template:
+
+```json json
+{
+  "renderingContent": {
+    "widgets": {
+      "banners": [
+        {
+          "image": {
+            "urls": [
+              "url": "https://www.algolia.com/banner.jpg"
+            ]
+            title: "20% OFF on all Harry Potter books!"
+          },
+          "link": {
+            "url": "https://www.algolia.com/harry-potter-promo",
+            "target": "_blank"
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+### Display the banner with InstantSearch
+
+After adding the rule, you can display the banner in your UI if the `renderingContent.widgets.banners` property is present in the API response.
+You can use the `Hits` or `InfiniteHits` widgets from InstantSearch.js, React InstantSearch, or Vue InstantSearch to display the banner.
+The banner renders automatically unless you have configured the widget to hide it.
+
+<CodeGroup>
+  ```html vue
+  <!-- Do not display the banner in the Hits widget -->
+  <ais-hits :showBanner="false" />
+  ```
+
+  ```js instantsearch.js
+  // Do not display the banner in the Hits widget
+  search.addWidgets([
+    instantsearch.widgets.hits({
+      container: "#hits",
+      templates: {
+        banner: (_results) => null,
+      },
+    }),
+  ]);
+  ```
+
+  ```jsx react
+  // Do not display the banner in the Hits widget
+  <Hits bannerComponent={false} />
+  ```
+</CodeGroup>
+
+## Custom banner solution
+
+### Create a rule for returning custom data
+
+If you want to motivate users to buy Harry Potter books, you could display a special promotion banner at the top of search results whenever their search query contains "harry potter": "20% OFF on all Harry Potter books!"
+
+For this, first need to set a rule that returns the custom data you want to display. Then, you need to display this data whenever it comes up.
+
+You can add the rule [using the API](#create-a-rule-with-the-api) or the [Algolia dashboard](#create-a-rule-in-the-dashboard). Then, you can activate it in your frontend code to [retrieve the banner](#retrieve-the-banner-data-in-your-ui).
+
+#### Create a rule with the API
+
+To add a rule, you need to use the [`saveRule`](/api-reference/api-methods/save-rule/) method. When setting a rule, you need to define a condition and a consequence.
+
+For the preceding example, you want to show the banner whenever the query contains "harry potter". You don't need it to be exact.
+
+If the query is "harry potter azkaban" or "books harry potter", you still want to display the promotion.
+
+<CodeGroup>
+  ```csharp csharp
+  JObject data = new JObject();
+  data.Add("promo_content", "20% OFF on all Harry Potter books!");
+
+  var rule = new Rule
+  {
+      ObjectID = "a-rule-id",
+      Enabled = false,
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "harry potter" }
+      },
+      Consequence = new Consequence { UserData = data }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:   "harry-potter-rule",
+  	Conditions: []search.RuleCondition{{Anchoring: search.Contains, Pattern: "harry potter"}},
+  	Consequence: search.RuleConsequence{
+  		UserData: map[string]string{
+  			"promo_content": "20% OFF on all Harry Potter books!",
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Map<String, Object> userData = new HashMap<>();
+  userData.put("promo_content", "20% OFF on all Harry Potter books!");
+
+  Condition condition = new Condition()
+          .setPattern("harry potter")
+          .setAnchoring("contains");
+  Consequence consequence = new Consequence()
+          .setUserData(userData);
+
+  Rule rule = new Rule()
+          .setObjectID("harry-potter-rule")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+  ```
+
+  ```js js
+  const rule = {
+    objectID: "harry-potter-rule",
+    conditions: [
+      {
+        pattern: "harry potter",
+        anchoring: "contains",
+      },
+    ],
+    consequence: {
+      userData: {
+        promo_content: "20% OFF on all Harry Potter books!",
+      },
+    },
+  };
+
+  index.saveRule(rule).then(() => {
+    // done
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          "a-rule-id",
+          Condition(Contains, Literal("harry potter")),
+          Consequence(userData = json { "promo_content" to "20% OFF on all Harry Potter books!" }),
+          enabled = false
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  $rule = array(
+    'objectID' => 'harry-potter-rule',
+    'condition' => array(
+      'pattern'   => 'harry potter',
+      'anchoring' => 'contains',
+    ),
+    'consequence' => array(
+      'userData' => array(
+        'promo_content' => '20% OFF on all Harry Potter books!'
+      )
+    )
+  );
+
+  $response = $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "harry-potter-rule",
+      "conditions": [{"pattern": "harry potter", "anchoring": "contains"}],
+      "consequence": {
+          "userData": {"promo_content": "20% OFF on all Harry Potter books!"}
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    objectID: "harry-potter-rule",
+    conditions: [
+      {
+        pattern: "harry potter",
+        anchoring: "contains"
+      }
+    ],
+    consequence: {
+      userData: {
+        promo_content: "20% OFF on all Harry Potter books!"
+      }
+    }
+  }
+
+  index.save_rule(rule)
+  ```
+
+  ```scala scala
+  val ruleToSave = Rule(
+    objectID = "harry-potter-rule",
+    conditions = Some(Seq(Condition(
+      pattern = "harry potter",
+      anchoring = "contains"))),
+    consequence = Consequence(
+      userData = Some(Map("promo_content" -> "20% OFF on all Harry Potter books!"))), )
+
+  client.execute {
+    save rule ruleToSave inIndex "index_name"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "harry-potter-rule")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("harry potter"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(
+          \.userData,
+          to: [
+            "title": "20% OFF on all Harry Potter books!"
+          ])
+    )
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+#### Create a rule in the dashboard
+
+To add rules in the Algolia dashboard:
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. Open the [**Rules**](https://dashboard.algolia.com/rules) page in the Algolia dashboard.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Manual Editor** option.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** from the drop-down menu, and enter "harry potter" in the input field.
+
+1. In the **Consequence(s)** section:
+   1. Click **Add consequence** and select **Return Custom Data**.
+   1. In the input field, add the data to return when a search query matches the rule: `{ "promo_content": "20% OFF on all Harry Potter books!" }`
+
+1. Save your changes.
+
+#### Duplicate rules to adapt to user search patterns
+
+To ensure that the _Samsung Galaxy Note 20 Ultra_ banner displays for the search term "note" in the preceding example:
+
+1. Duplicate the existing _Samsung Galaxy Note 20 Ultra_ rule.
+1. Edit the rule to change the Query search phrase to "Note".
+
+The newly duplicated rule now matches the first [precedence logic](/guides/managing-results/rules/rules-overview/in-depth/rule-matching-algorithm/#precedence-logic) criterion (_Position_) and displays the desired banner.
+
+### Retrieve the banner data in your UI
+
+Now that your rule is ready, you can display a banner in your search UI if the `userData` property is present in the API response. For example, with InstantSearch:
+
+<CodeGroup>
+  ```html vue
+  <ais-query-rule-custom-data>
+    <template v-slot:item="{ item }">
+      <p>{{ item.promo_content }}</p>
+    </template>
+  </ais-query-rule-custom-data>
+  ```
+
+  ```html angular
+  <ais-query-rule-custom-data>
+    <ng-template let-items="items">
+      <div *ngFor="let item of items">
+        <p>{{ item.promo_content }}</p>
+      </div>
+    </ng-template>
+  </ais-query-rule-custom-data>
+  ```
+
+  ```js instantsearch.js
+  search.addWidgets([
+    instantsearch.widgets.queryRuleCustomData({
+      container: "#banner",
+      templates: {
+        default: ({ items }, { html }) =>
+          items.map((item) => html`<p>${item.promo_content}</p>`),
+      },
+    }),
+  ]);
+  ```
+
+  ```jsx react
+  import { QueryRuleCustomData } from "react-instantsearch-dom";
+
+  const Banner = (
+    <QueryRuleCustomData>
+      {({ items }) =>
+        items.map((item) => <p key={item.promo_content}>{item.promo_content}</p>)
+      }
+    </QueryRuleCustomData>
+  );
+  ```
+
+  ```kotlin android
+  @Serializable
+  data class Banner(val title: String)
+
+  class MyActivity : AppCompatActivity() {
+
+      val searcher = HitsSearcher(applicationID = ApplicationID("YourApplicationID"), apiKey = APIKey("YourSearchOnlyAPIKey"), indexName = IndexName("YourIndexName"))
+      val searchBox = SearchBoxConnector(searcher, searchMode = SearchMode.AsYouType)
+      val queryRuleCustomData = QueryRuleCustomDataConnector<Banner>(searcher)
+      val connection = ConnectionHandler(searchBox, queryRuleCustomData)
+
+      override fun onCreate(savedInstanceState: Bundle?) {
+          super.onCreate(savedInstanceState)
+
+          val bannerView = TextView(this)
+          queryRuleCustomData.subscribe { banner ->
+              bannerView.text = banner?.title
+          }
+
+          searcher.searchAsync()
+      }
+
+      override fun onDestroy() {
+          super.onDestroy()
+          searcher.cancel()
+          connection.clear()
+      }
+  }
+  ```
+
+  ```swift ios
+  struct Banner: Decodable {
+    let title: String
+  }
+
+  class BannerViewController: UIViewController, ItemController {
+
+    let titleLabel: UILabel = .init()
+
+    override func viewDidLoad() {
+      super.viewDidLoad()
+      // some layout code
+    }
+
+    func setItem(_ item: Banner?) {
+      titleLabel.text = item?.title
+    }
+
+  }
+
+  func setupWidget() {
+    let searcher = HitsSearcher(
+      appID: "YourApplicationID",
+      apiKey: "YourSearchOnlyAPIKey",
+      indexName: "YourIndexName")
+    let bannerViewController = BannerViewController()
+    let queryRuleCustomDataConnector = QueryRuleCustomDataConnector<Banner>(
+      searcher: searcher,
+      controller: bannerViewController)
+
+    searcher.search()
+  }
+  ```
+</CodeGroup>
+
+You can learn more about this widget in the InstantSearch API reference:
+
+- [`queryRuleCustomData`](/api-reference/widgets/query-rule-custom-data/js/) for InstantSearch.js
+- [`<QueryRulesCustomData>`](/api-reference/widgets/query-rule-custom-data/react/) for React InstantSearch
+- [`ais-query-rule-custom-data`](/api-reference/widgets/query-rule-custom-data/vue/) for Vue InstantSearch
+
+### Apply rules with context conditions
+
+If you want to apply rules based on context, see:
+
+- [`queryRuleContext`](/api-reference/widgets/query-rule-context/js/) for InstantSearch.js
+- [`<QueryRuleContext>`](/api-reference/widgets/query-rule-context/react/) for React InstantSearch
+- [`ais-query-rule-context`](/api-reference/widgets/query-rule-context/vue/) for Vue InstantSearch
+
+## Determining priority when you have multiple banners
+
+You may have quite a few [semi-permanent promotional banners](/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/#example-display-banners-on-category-pages) for specific [product categories](/guides/solutions/ecommerce/browse/tutorials/category-pages/), as well as some time-limited, temporary banners for certain products.
+
+For instance, an online IT hardware store has banners for the following categories:
+
+- Phones
+- Tablet computers
+- Laptop computers
+- Desktop computers
+
+They also have temporary offers and associated banners for the phrases/products:
+
+- Huawei Honor Note 10
+- Xiaomi Redmi Note 10 Pro
+- Samsung Galaxy Note 20 Ultra
+- Samsung Galaxy Tab S7+
+- Samsung Galaxy Book Pro 360
+
+**Since Algolia can only apply one rule at a time (and, hence, display one banner),**
+**[tie-breaking precedence logic](/guides/managing-results/rules/rules-overview/in-depth/rule-matching-algorithm/#precedence-logic) is used** to determine which one to use.
+
+Using the preceding example, users starts on the _Phones_ page (and can see the appropriate banner for that), then search for "note".
+For most stages, _Huawei Honor Note 10_, _Xiaomi Redmi Note 10 Pro_, and _Samsung Galaxy Note 20 Ultra_ are tied and take precedence over the category banners.
+The final tie-breaking stage, invoked in this case, is **rule ID**: this looks for the rule with the smallest `objectID`, which in this case just happens to be for the _Huawei Honor Note 10_.
+
+**Don't assume that a rule that was created some time ago will have a smaller `objectID` than a more recent rule.** It's best to not rely on `objectID` to determine precedence but to [manually set it](/guides/sending-and-managing-data/send-and-update-your-data/#unique-object-identifiers).

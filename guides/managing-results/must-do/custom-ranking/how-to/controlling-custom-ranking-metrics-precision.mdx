@@ -1,0 +1,277 @@
+---
+title: Controlling precision of custom ranking metrics
+description: |-
+  Improve your custom ranking by reducing granularity, so that similar records are ranked equally.
+---
+
+When you rank records with business metrics, you want to make sure the difference between those values is significant. Sometimes, the difference is too small to be taken into account. Yet, when the engine performs tie-breaking between two records, it doesn't make a difference whether you have 1,000 or 1,003 more views on a blog article. If one has more than the other, it goes first. Therefore, **you want to make sure that the values you use for custom ranking are properly weighted to avoid false positives**.
+
+To fix that issue, what you can do is **reduce precision**. An example is when you have blog articles, ranked per different attributes like unique page views and number of comments. You may have two posts with a close number of unique page views (1,000 and 1,003). Therefore, you don't want the engine to break the tie on this attribute. Instead, you want to move on to the next criteria to get better tie-breaking and more relevant results.
+
+## Modifying the data: an example
+
+### Before
+
+Let's say we're adding search to a blog. Besides Algolia's default ranking formula, we've set two custom ranking attributes: `pageviews` first, followed by `comments`. Here's what the dataset would look like:
+
+```json json
+[
+  {
+    "title": "Algolia + SeaUrchin.IO",
+    "author": "Nicolas Dessaigne",
+    "pageviews": 1023,
+    "comments": 23
+  },
+  {
+    "title": "Search Analytics: Gain Insights from User Search Data",
+    "author": "Nicolas Baissas",
+    "pageviews": 508,
+    "comments": 42
+  },
+  {
+    "title": "Algolia Vault – Bringing Physical & Digital Data Security to Search",
+    "author": "Liam Boogar",
+    "pageviews": 1022,
+    "comments": 54
+  }
+]
+```
+
+And here's the setting:
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      CustomRanking = new List<string> { "desc(pageviews)", "desc(comments)" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	CustomRanking: opt.CustomRanking(
+  		"desc(pageviews)",
+  		"desc(comments)",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setCustomRanking(Arrays.asList(
+      "desc(pageviews)",
+      "desc(comments)"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      customRanking: ["desc(pageviews)", "desc(comments)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      customRanking {
+          +Desc("pageviews")
+          +Desc("comments")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'customRanking' => [
+      'desc(pageviews)',
+      'desc(comments)'
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"customRanking": ["desc(pageviews)", "desc(comments)"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      customRanking: [
+        "desc(pageviews)",
+        "desc(comments)"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      customRanking = Some(Seq(
+        CustomRanking.desc("pageviews"),
+        CustomRanking.desc("comments"))))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "customRanking": [
+      "desc(pageviews)",
+      "desc(comments)",
+    ]
+  ])
+  ```
+</CodeGroup>
+
+Because [custom ranking](/guides/managing-results/must-do/custom-ranking/) applies it's criteria sequentially, `pageviews` has more weight than `comments`. When we search for "algolia", the "Algolia + SeaUrchin.IO" article comes before "Algolia Vault" only because it has one more unique pageview. However, this additional view is not meaningful. It doesn't make the article more relevant. Nonetheless, the engine ignores the next custom ranking attribute because of it.
+
+For these two records, it would be better if the article with the most comments appeared first: namely, that "Algolia Vault" article should come first because it has significantly more comments.
+
+But changing the order of the attributes in the [`customRanking`](/api-reference/api-parameters/customRanking/) parameter isn't a good solution:
+
+- it doesn't necessarily make sense business-wise (in our case, we generally care more about unique page views than number of comments),
+- we may face the same issue with number of comments, so we're not solving anything.
+
+For those reasons, we recommend that you **reduce precision so you can effectively leverage tie-breaking**.
+
+### After
+
+We can solve the issue by adding a `rounded_pageviews` attribute where we reduce the precision of `pageviews`, and use it for custom ranking instead. In our case, one way of doing it could be to round page views to the nearest hundred.
+
+```json json
+[
+  {
+    "title": "Algolia + SeaUrchin.IO",
+    "author": "Nicolas Dessaigne",
+    "pageviews": 1023,
+    "rounded_pageviews": 1000,
+    "comments": 23
+  },
+  {
+    "title": "Search Analytics: Gain Insights from User Search Data",
+    "author": "Nicolas Baissas",
+    "pageviews": 508,
+    "rounded_pageviews": 500,
+    "comments": 42
+  },
+  {
+    "title": "Algolia Vault – Bringing Physical & Digital Data Security to Search",
+    "author": "Liam Boogar",
+    "pageviews": 1022,
+    "rounded_pageviews": 1000,
+    "comments": 54
+  }
+]
+```
+
+Then, you would use the `rounded_pageviews` attribute for custom ranking instead of `pageviews`. Now, searching for "algolia" would return the "Algolia Vault" article first, based on the `comments` attribute.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      CustomRanking = new List<string> { "desc(rounded_pageviews))", "desc(comments)", }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	CustomRanking: opt.CustomRanking(
+  		"desc(rounded_pageviews)",
+  		"desc(comments)",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setCustomRanking(Arrays.asList(
+      "desc(rounded_pageviews)",
+      "desc(comments)"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      customRanking: ["desc(rounded_pageviews)", "desc(comments)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      customRanking {
+          +Desc("rounded_pageviews")
+          +Desc("comments")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'customRanking' => [
+      'desc(rounded_pageviews)',
+      'desc(comments)'
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"customRanking": ["desc(rounded_pageviews)", "desc(comments)"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      customRanking: [
+        "desc(rounded_pageviews)",
+        "desc(comments)"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      customRanking = Some(Seq(
+        CustomRanking.desc("rounded_pageviews"),
+        CustomRanking.desc("comments"))))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "customRanking": [
+      "desc(rounded_pageviews)",
+      "desc(comments)",
+    ]
+  ])
+  ```
+</CodeGroup>
+
+Note that we didn't remove `pageviews` from the dataset; you might want to keep it for display purposes.
+
+To know more on how to rank per custom attributes, [check our guide](/guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking/).

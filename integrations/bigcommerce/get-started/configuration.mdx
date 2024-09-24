@@ -1,0 +1,54 @@
+---
+title: Configuration
+description: |-
+  Learn how to configure the sources for Algolia's BigCommerce integration.
+---
+
+A _source_ is a combination of:
+
+- An Algolia index name (must be unique)
+- A BigCommerce channel (sources are per channel - each store can have multiple channels)
+- A set of BigCommerce product data with currencies
+
+You already set up a source during [installation](/integration/bigcommerce/get-started/installation/).
+You can edit it and add or delete others.
+
+## Trigger a full reindex
+
+After [installing a BigCommerce source](/integration/bigcommerce/get-started/installation/),
+you need to trigger a full reindex at least once to retrieve your products from BigCommerce.
+You should also reindex if you change, add, or delete a source.
+
+To trigger a full reindex:
+
+1. Select the **Blue cloud icon** for the source you want to reindex.
+
+1. To check the progress and reindexing progress, see [Monitor BigCommerce indexing](/integration/bigcommerce/indexing/monitoring-bigcommerce-indexing/).
+
+## Custom fields
+
+To index custom fields, you must first [trigger a full reindex](#trigger-a-full-reindex).
+
+To configure a source for custom fields:
+
+1. Select the **three dots icon** on the source and select **Edit Source**.
+1. Select **Custom Fields**.
+1. Enter a comma-separated list of custom field names to index.
+
+## Metafields
+
+To index metafields, you must first [trigger a full reindex](#trigger-a-full-reindex).
+
+To configure a source for metafields:
+
+1. Select the **three dots icon** on the source and select **Edit Source**.
+1. Select **Metafields**.
+1. Enter a key and namespace for either a **Product Metafield** or **Variant Metafield**, or both.
+
+## Attributes to exclude
+
+To exclude attributes from a [reindex](#trigger-a-full-reindex):
+
+1. Select the **three dots icon** on the source and select **Edit Source**.
+1. Select **Attributes to Exclude**.
+1. Enter a comma-separated list of attributes to exclude from the Algolia index.

@@ -1,0 +1,37 @@
+---
+title: Headless storefronts
+description: |-
+  Connect Algolia to a headless Salesforce B2C Commerce storefront.
+---
+
+This guide describes the common steps for setting up Algolia for a headless Salesforce B2C Commerce storefront.
+
+## Install the Algolia cartridge
+
+The Algolia cartridge contains four sub-cartridges that work together to fit in various uses cases.
+
+Headless architectures use the server-side cartridges:
+
+- `int_algolia`. Handles importing product information from Salesforce B2C Commerce to Algolia
+- `bm_algolia`. Configure and monitor Algolia indexing from your Business Manager
+
+To install the cartridges, see [Set up the Algolia cartridge](/integration/salesforce-commerce-cloud-b2c/getting-started/set-up-the-algolia-cartridge/#install-the-cartridge).
+
+## Index your catalogs
+
+To index your catalogs, see [Start indexing your data](/integration/salesforce-commerce-cloud-b2c/getting-started/start-indexing-your-data/).
+
+After running the indexing jobs,
+go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/indices) to check that catalogs are properly indexed.
+
+## Integrate Algolia into your frontend
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [PWA Kit demo and starter code](/integration/salesforce-commerce-cloud-b2c/guides/pwa-kit/)
+  - [Integrate Algolia with a custom React frontend](/integration/salesforce-commerce-cloud-b2c/guides/custom-react-frontend/)
+  - [Integrate Algolia into the storefront sample app](/integration/salesforce-commerce-cloud-b2c/guides/storefront-sample-app/)
+</Info>
+
+{/* prettier-ignore-end */}

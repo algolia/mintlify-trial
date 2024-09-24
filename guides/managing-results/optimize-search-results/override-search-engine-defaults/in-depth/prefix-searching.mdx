@@ -1,0 +1,41 @@
+---
+title: Prefix search
+description: |-
+  Determine how Algolia matches records against partial words.
+---
+
+Prefix search returns results when the query matches the beginning of words in your records. This is central to Algolia's as-you-type search experience.
+For example, search results for `apricot` appear as soon as a user types `a`, `ap`, `apr`.
+
+Change this prefix search behavior with [`queryType`](/api-reference/api-parameters/queryType/) parameter:
+
+- `prefixLast` (default). Only the last word in the query is treated as a prefix. Other words in the query must be complete matches.
+- `prefixAll`. Every word in the query is a prefix.
+- `prefixNone`. Prefix search is turned off. Only matches with full words are considered.
+
+For example, given the following sentences (attributes in a record) and queries, the following sentences will be returned in the results.
+
+1. "Let's play Jenga tomorrow."
+1. "Check out the fighter jets flying over my town!"
+1. "Beef jerky is a great source of protein."
+1. "Jack and Jill went up the hill."
+1. "Jacqueline bought me a jet black iPhone."
+
+| Query     | `prefixLast` (default)                                                         | `prefixAll`                                                                                  | `prefixNone`                           |
+| --------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | -------------------------------------- |
+| j         | All sentences (matched words: Jenga, jets, jerky, Jack, Jill, Jacqueline, jet) | All sentences (matched words: Jenga, jets, jerky, Jack, Jill, Jacqueline, jet)               | _No results_                           |
+| je b      | Sentences 3 and 5 (matched words: beef, black)                                 | All sentences (matched words: Jenga, jets, beef, jerky, Jack, Jill, Jacqueline, jet, black ) | _No results_                           |
+| jet black | Sentence 5 (matched words: jet, black)                                         | Sentence 5 (matched words: jet, black)                                                       | Sentence 5 (matched words: jet, black) |
+
+# Which option to use
+
+**`prefixLast`** is the default setting and is usually the best choice but consider:
+
+- **`prefixAll`**. Choose this setting if your site or app contains many abbreviations. For instance, "spec" instead of "specification". Be cautious with this setting because it decreases search performance and can produce unexpected results, as it considers all prefixes in a word (see the example below). A better solution might be to use [synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/), such as defining "spec" as a synonym for "specification". However, maintaining a complete list of synonyms for every abbreviation can be time-consuming and requires ongoing effort.
+- **`prefixNone`**. Choose this setting if exact matches are crucial, such as when searching for SKUs or phone numbers. Avoid using this setting unless all [searchable attributes](/guides/managing-results/must-do/searchable-attributes/) in your index are such data types. Instead, consider using `disablePrefixOnAttributes` to turn off prefix search for specific attributes.
+
+## Per attribute prefix behavior
+
+To turn off prefix search for specific attributes,
+use the [`disablePrefixOnAttributes`](/api-reference/api-parameters/disablePrefixOnAttributes/) parameter.
+This lets you use as-you-type search for most attributes, such as a product title or description, but lets you search complete matches for attributes like the SKU.

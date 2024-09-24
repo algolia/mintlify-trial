@@ -1,0 +1,169 @@
+---
+title: Merchandise category pages
+description: |-
+  Create rules and apply them to merchandise category pages.
+---
+
+With Algolia, you can [merchandise products](/guides/managing-results/rules/merchandising-and-promoting/) by creating category pages.
+For example, you could organize products into categories such as on-sale items, new arrivals, specific brands, product types (like smartphones), or colors.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To use an attribute in a Rule condition with filters, you must first [declare it in `attributesForFaceting`](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Add Dynamic Re-Ranking to category pages](/guides/algolia-ai/re-ranking/tutorials/re-rank-category-pages/)
+  - [Category Pages](/guides/solutions/ecommerce/browse/tutorials/category-pages/)
+  - [Filters can trigger rules](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#filters-can-trigger-rules)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Before you begin
+
+1. [Ensure the attribute you want to use to define categories is searchable](/guides/managing-results/must-do/searchable-attributes/).
+1. [Declare the category page identifier as a searchable attributes for faceting](/guides/solutions/ecommerce/browse/tutorials/category-pages/#configure-your-index).
+
+## Merchandise category pages
+
+Merchandise category pages by configuring an identifier, setting a trigger (a condition), and selecting a strategy (a consequence).
+
+### Configure a category page identifier
+
+1. Go to the [**Rules**](https://dashboard.algolia.com/rules/) section in the Algolia dashboard. Select the index to which you want to add a rule.
+1. Select **Create your first Rule** and select **Visual Editor**.
+1. In the **It all starts here** section, select **Choose category page**.
+1. Click **Configure**, then **I'm good, let's go**.
+1. Select a [searchable facet](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/) as your **Category page identifier**.
+1. Optional: add a **Custom subcategory separator** if you're using [hierarchical categories](/guides/managing-results/refine-results/faceting/#hierarchical-facets). For example, for the hierarchical category: `Women / Coat / Raincoat`, enter `/` as the custom separator.
+1. **Save** your changes.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To update these settings later, click the gear icon in the top-right corner of the Visual Editor and select **Category page identifiers**.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Create a trigger
+
+1. Go to the [**Rules**](https://dashboard.algolia.com/rules/) section in the Algolia dashboard. Select the index to which you want to add a rule.
+1. Select **Create your first Rule** and select **Visual Editor**.
+1. In the **It all starts here** (trigger) section, select **Choose category page**.
+1. Choose a **Category name**: this is a value from your category page identifier.
+1. Click **Apply**.
+
+### Determine a consequence
+
+In the **What do you want to do?** section, select [_how_ you want to merchandise](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#consequence---adapting-the-results--relevance) the category page.
+
+- Click **Review and Publish** to enable the category page rule.
+- Click **Save as Draft** if you don't want the rule to take effect yet.
+
+## Example: promote items on category pages until users start search searching
+
+To promote items on category pages before users start searching, create a rule that's triggered if:
+
+- A user visits the category page
+- The query is empty.
+
+### Create the rule in the Visual Editor
+
+1. Go to the [**Rules**](https://dashboard.algolia.com/rules/) section in the Algolia dashboard. Select the index to which you want to add a rule.
+1. Select **Create your first Rule** or **New Rule** and select **Visual Editor**.
+1. In the **It all starts here** section, click **Set query condition(s)**. In the **Define the condition that triggers the rule**:
+   1. Toggle the **Query** option on.
+   1. For **Your Search**, select **Is** and leave the text input empty.
+   1. Toggle the **Filters** option on.
+   1. Select a **Filter name**, for example, `category`.
+   1. Select a **Value**, for example, `Smartphone`.
+   1. Click **Apply**.
+1. In the **What do you want to do?** section, select **Pin items**. The **Choose items to pin** pane opens:
+   1. Under **Pinned items**, search for the item you wish to pin and enter a number as the **Position** to which you want to pin the item.
+   1. Optional: click **Pin another item** and repeat this step.
+   1. Click **Apply**.
+1. Save your changes.
+
+- Click **Review and Publish** to enable the category page rule.
+- Click **Save as Draft** if you don't want the rule to take effect yet.
+
+### Create the rule in the Manual Editor
+
+1. Go to the [**Rules**](https://dashboard.algolia.com/rules/) section in the Algolia dashboard. Select the index to which you want to add a rule.
+1. Select **Create your first Rule** or **New Rule** and select **Manual Editor**.
+1. In the **Condition(s)** section:
+   1. Toggle the **Query** option on.
+   1. Select **Is** from the menu and leave the text input empty.
+   1. Toggle the **Filters** option on.
+   1. In the **Attribute name** field, select the category page identifier, for example, `category`.
+   1. In the **Attribute value** field, select the category you want to merchandise, for example, `Smartphone`.
+1. In the **Consequence(s)** section:
+   1. Click **Add consequence > Pin an item**.
+   1. Search for an **Item** you want to pin and define its **Position**.
+   1. Optional: click **Add consequence** to pin more items.
+1. Optional: enter a description that describes what the rule does and enter a period during which the rule is valid.
+1. **Save** your changes.
+
+## Example: display banners on category pages
+
+Category page banners operate similarly to search results [banners](/guides/managing-results/rules/merchandising-and-promoting/how-to/add-banners/), but a filter rather than a search query triggers them.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This example requires a UI that uses the [`Hits` widget](/api-reference/widgets/hits/js/) from InstantSearch.js version 4.68.1 or later or Reach InstantSearch version 7.8.0 or later.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Create the rule in the Visual Editor
+
+1. Create a [trigger](#create-a-trigger)
+
+1. In the **What do you want to do?** section:
+
+1. Click **Display banner**.
+
+1. Enter the **Image URL** for your banner and click **Apply**.
+
+1. Optional: enter a description that describes what the rule does and enter a period during which the rule is valid.
+
+1. **Apply** your changes.
+
+A banner now displays on every visit to this category page.
+
+### Create the rule in the Manual Editor
+
+1. Go to the [**Rules**](https://dashboard.algolia.com/rules/) section in the Algolia dashboard. Select the index to which you want to add a rule.
+
+1. Select **Create your first Rule** or **New Rule** and select **Manual Editor**.
+
+1. In the **Condition(s)** section:
+
+1. Toggle the **Filters** option on.
+
+1. Toggle the **Query** option off.
+
+1. In the **Attribute name** field, add your category page identifier, for example, `category`.
+
+1. In the **Attribute value** field, add the category for which you want to show a banner, for example, `Smartphone`.
+
+1. In the **Consequence(s)** section:
+
+1. Select **Add consequence > Return Custom Data.**
+
+1. In the input field, enter a JSON object, for example, `{ "banner": "iPhone" }`.
+
+1. Optional: enter a description that describes what the rule does and enter a period during which the rule is valid.
+
+1. **Save** your changes.
+
+Now, every time a user visits the category page, the rule triggers and returns a JSON object as custom data.
+You can [display this custom data](/guides/managing-results/rules/merchandising-and-promoting/how-to/add-banners/#retrieve-the-banner-data-in-your-ui) in your UI as a banner.

@@ -1,0 +1,104 @@
+---
+title: Configure your search
+description: |-
+  Learn how to tailor Algolia for Salesforce B2C Commerce to your needs.
+---
+
+After you have [synchronized your data to Algolia](/integration/salesforce-commerce-cloud-b2c/getting-started/start-indexing-your-data/), you can configure your search for optimal relevancy.
+
+You can do this in the [Algolia dashboard](https://dashboard.algolia.com/explorer/), on the details page of your indices.
+You should see your newly created indices, with the following naming pattern:
+
+- `${hostname}__${site-id}__products__${locale}`
+- `${hostname}__${site-id}__categories__${locale}`
+- `${hostname}__${site-id}__contents__${locale}` (optional)
+
+The total number of indices created depends on the number of locales your site supports.
+
+When you assign Algolia cartridges to a site, they automatically support all the locales the site uses.
+You can customize the list of locales with the `Locales for indexing` [custom preference](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/) or the `localesForIndexing` job step parameter.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Be aware that indexing many locales can [affect performances](/integration/salesforce-commerce-cloud-b2c/guides/performance-considerations/#number-of-currencies-and-locales-affects-run-time).
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Configure your searchable attributes
+
+When setting up and configuring your index, the first step is to decide which attributes you want to use for searching.
+Add them by going to **Configuration > Searchable attributes**.
+For more information, see [Searchable attributes](/guides/managing-results/must-do/searchable-attributes/).
+
+To begin with, you may consider adding the following attributes: `name`, `short_description`, and `long_description`.
+
+## Configure your facets
+
+First, define the attributes you want to be available as [facets](/guides/managing-results/refine-results/faceting/) in the **Configuration > Facets** tab on the Algolia dashboard. We recommend to add at least the following attributes:
+
+- The Algolia cartridges support all the currencies your site uses. The `price` attribute relates to each currency. For example, if your site is using USD and EUR, add `price.USD` and `price.EUR`.
+- `__primary_category.0`, `__primary_category.1`, `__primary_category.2`
+- Facets relevant to your products, such as `brand`, `size`, and `color`.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  The actual facets depend on your attribute names and your [record model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#default-records).
+  For example, if you choose the product-level record model, some facets would become `variants.price.USD`, `variants.size`, `variants.color`.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+Different category levels are represented by the corresponding `__primary_category` attributes. These attributes are suitable for [hierarchical faceting](/guides/managing-results/refine-results/faceting/#hierarchical-facets) in Algolia, such as `Women > Dresses > Evening Dresses`: `__primary_category.0`, `__primary_category.1`, and `__primary_category.2`.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  With faceting, Algolia offers capabilities that are similar to [Salesforce product variation grouping](https://help.salesforce.com/s/articleView?id=sf.comm_var_group_overview.htm\&type=5).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Configure results grouping
+
+Results are grouped by default when you use the [product-level record model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#product-level-default-model).
+
+For the [variant-level record model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#variant-level-default-model), if your catalog is large, it's common practice to [group](/guides/managing-results/refine-results/grouping/) related variants in the results by displaying _one_ result per base product.
+To do that:
+
+- Add the `masterID` attribute to the list of **Additional Product Attributes**.
+- [Enable the `distinct` feature](/guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents/#how-to-enable-the-distinct-feature) on the `masterID` attribute.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you enable results grouping, you should add [color swatches](/integration/salesforce-commerce-cloud-b2c/building-the-search-ui/front-end/#display-color-swatches) so users can see the different color variations.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Configure your replicas
+
+You can use [replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/) to let your users sort search results in different ways,
+such as sorting by price in ascending and descending order.
+To create the replicas for sorting on price:
+
+1. Select your products index and go to **Replicas**.
+1. Create two replicas:
+
+   - `hostname__site-id__products__price_USD_asc`
+   - `hostname__site-id__products__price_USD_desc`
+
+This adds two new indices to your app.
+
+3. Configure each replica to sort by price.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can add as many replicas as you need, depending on the number of locales your site supports or other sorting strategies you want to offer. Just make sure your usage of Algolia falls within the limits of your plan.
+</Note>
+
+{/* prettier-ignore-end */}

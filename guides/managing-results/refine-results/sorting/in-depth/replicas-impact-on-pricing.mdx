@@ -1,0 +1,37 @@
+---
+title: What is the effect of a replica on the number of records?
+description: |-
+  Find out how replicas impact the number of records. Standard replicas increase the number of records; virtual replicas don't.
+---
+
+## Number of records
+
+Algolia counts the number of records differently depending on the [type of replica](/guides/managing-results/refine-results/sorting/in-depth/replicas/) - that is whether it's standard or virtual replica.
+
+### Standard replicas
+
+Standard replica indices "replicate" or copy the primary index's records.
+Standard replicas have the same content but can have their own configuration.
+
+Because of this, if your primary has 1,000 records and you create two standard replicas, you end up with 3,000 Algolia records.
+
+Essentially, the total number of records stored for a specific index equals the number of records in its primary index multiplied by its replica count.
+
+- total records size = number of records in primary index \* (1 + number of standard replicas).
+
+### Virtual replicas
+
+As virtual replicas are a "view" of their primary indices they _don't_ increase the number of records.
+
+## Indexing operations
+
+Whether you are using standard or virtual replicas, only operations on the primary index counts as indexing operations.
+
+- When you send data to a primary index, or update existing data, the changes are automatically forwarded to your replica indices. The changes on the replica indices don't add anything to your operation count.
+- Forwarding settings from your primary index to your replicas using the `forwardToReplicas` setting won't add additional operation counts.
+- Adding settings directly to your standard or virtual replicas count as one operation.
+- Adding synonyms and Rules to your standard or virtual replicas count as operations.
+
+## What happens when you detach a replica from its primary?
+
+If you turn a standard or virtual replica into a regular index by [separating it from its primary index](/guides/managing-results/refine-results/sorting/in-depth/replicas/#delete-or-unlink-a-replica), all indexing operations from that point forward are counted and added to your monthly operations count.

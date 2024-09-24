@@ -1,0 +1,202 @@
+---
+title: Quickstart
+description: |-
+  Get started using Algolia for your Shopify or Shopify Plus store.
+---
+
+The Algolia AI Search & Discovery app replaces Shopify's built-in search with Algolia's fast and configurable search.
+Algolia connects to your Shopify store and indexes your products and collections.
+Your users can immediately find results thanks to Algolia's autocomplete menu on every page.
+For more filtering options, you can add full search results pages.
+
+Algolia Search and Discovery is a **Shopify Plus certified app**.
+You can use it with your Shopify Plus or Shopify stores.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Algolia for Shopify](https://academy.algolia.com/guides/49002106-065c-11ef-8d28-02c06323a01b/tasks/38f8aa3e-063a-11ef-a872-06ed93d039b7)
+</Info>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Algolia AI Search & Discovery FAQ](https://support.algolia.com/hc/en-us/sections/4406117723793-Shopify-FAQs)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Install Algolia AI Search & Discovery in your store
+
+To install **Algolia AI Search & Discovery**:
+
+1. Install the app in Shopify
+1. Link your Algolia account
+1. Configure the app
+
+### Install the app in Shopify
+
+1. Go to [https://shopify.algolia.com/install](https://shopify.algolia.com/install), enter your Shopify domain, and click **Install app**. For more information, see Shopify's [Installing apps](https://help.shopify.com/en/manual/apps/installing-apps) documentation.
+1. Optional: in the sidebar of your Shopify admin, click **Pin to your navigation** for the Algolia AI Search & Discovery app to always have quick access to your search settings.
+
+### Link your Algolia account
+
+Click **Get Started** to continue with the [automatic setup](#automatic-setup).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If the automatic setup fails, click **Use manual setup instead** to continue with the [manual setup](#manual-setup).
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Configure the app
+
+- Click **Let's get started!** to continue with the [quickstart setup](#quickstart-setup)
+- Click **Take me to the Dashboard!** to configure [manually](#manual-setup).
+
+### Quickstart setup
+
+1. Select a theme from your library using the drop-down menu. **Use a duplicated version of your theme.**
+
+1. Click **Next**
+
+1. Click **Enable Algolia Search** to add Algolia Autocomplete to your theme.
+
+1. You'll be taken to the Theme Customizer, where the Autocomplete block will be added automatically. Click **Save** in the top right corner to finalize the changes
+
+1. Click **Next**
+
+1. Click **Enable InstantSearch** to add Algolia InstantSearch to your theme.
+
+1. You'll be taken to the Theme Customizer, where the InstantSearch block will be added automatically.
+
+1. Click the eye icon to turn off the default Shopify search results template.
+
+1. Click **Save**
+
+1. Optional: click **Edit** to change the CSS selector. This is the CSS selector that Algolia uses to inject the Autocomplete block. By default, it's `form[action="/search"]`. If your CSS selector is different, update it here.
+
+1. Click **Try Algolia Search** to try your new search experience.
+
+### Automatic setup
+
+1. Sign in to your Algolia account or create a new one.
+
+   After signing in, the **Credentials** page of the Algolia Search and Discovery app opens in your Shopify admin.
+
+1. Select the Algolia application for your Shopify store.
+   The Algolia AI Search & Discovery app creates new API keys in your Algolia account and automatically adds them to this page.
+
+1. Optional: change the prefix for your indices (default: `shopify_`).
+   This is useful, if you want to connect multiple Shopify stores to the same Algolia application.
+   This prefix is added to your index names, such as `shopify_products`.
+
+1. Click **Save**.
+
+Continue with the setup in the [Configure a live store](#configure-a-live-store) section.
+
+### Manual setup
+
+1. Open the [API Keys](https://dashboard.algolia.com//account/api-keys) page in the Algolia dashboard.
+
+1. Select the Algolia application, where you want to store the indices from your Shopify store.
+
+1. From the **API Keys** page, copy the following credentials:
+
+   - **Application ID**
+   - **Search-Only API Key**
+   - **Admin API Key**
+
+1. On the **Credentials** page in the Algolia AI Search & Discovery app,
+   paste the credentials you copied from the Algolia dashboard.
+
+1. Optional: change the prefix for your indices (default: `shopify_`).
+   This is useful, if you want to connect multiple Shopify stores to the same Algolia application.
+   This prefix is added to your index names, such as `shopify_products`.
+
+1. Click **Save**.
+
+Continue in the [Configure a live store](#configure-a-live-store) section.
+
+## Configure a live store
+
+If you want to add the Algolia AI Search & Discovery app to a live store,
+you should duplicate your theme, and add Algolia to the copy of the theme instead.
+This lets you preview changes, tweak your site's CSS, and test that everything is working correctly.
+
+### Duplicate your theme
+
+1. [Duplicate your theme](https://help.shopify.com/en/manual/online-store/themes/managing-themes/duplicating-themes). The copy is added to your **Theme library**.
+
+1. When the duplication is completed, go to the duplicate theme and click **Customize**.
+
+### Enable Algolia on your theme
+
+To enable Algolia in your theme, you must add the Algolia Search theme extension to your store.
+
+Algolia Autocomplete embedded blocks are required to use Algolia InstantSearch: they contain necessary configurations and scripts.
+
+- Algolia Autocomplete uses [embedded blocks](https://shopify.dev/docs/apps/online-store/theme-app-extensions/extensions-framework#benefits-of-app-embed-blocks) to replace the default search box.
+- Algolia InstantSearch uses [app blocks](https://shopify.dev/docs/apps/online-store/theme-app-extensions/extensions-framework#app-blocks-for-themes) to add a full search results page to your store.
+
+#### Enable Autocomplete
+
+1. In the theme customizer, click the **Embed apps** icon.
+
+1. Switch on **Algolia Search** to enable Algolia for the theme.
+
+1. Click **Save**
+
+1. To preview the theme, click the three dots and then **Preview**.
+
+The default search box is now replaced with an
+[Algolia autocomplete](/integration/shopify/building-search-ui/autocomplete/) search box.
+
+[Configure](/integration/shopify/getting-started/configuration/) the Algolia settings and test them with your preview theme.
+
+#### Enable InstantSearch
+
+1. In the theme customizer, click the **Home page** drop-down menu.
+
+1. In the input field, type "search" so that it finds the search page, and then click **Search**.
+
+1. Click the "eye" icon to turn off the theme's default **Search results**.
+
+1. To add the Algolia InstantSearch app block to your theme, click **Add section**, **Apps**, and then **Algolia InstantSearch**.
+
+1. Optional. To remove extra padding, click **Apps** and then clear **Make section margins the same as theme**.
+
+### Compare Algolia search with and without extra padding
+
+Without extra padding:
+
+With extra padding:
+
+#### Enable InstantSearch for collection pages
+
+1. In the theme customizer, click the **Home page** drop-down menu and then click **Collections**.
+
+1. Click the collection template to which you want to add Algolia InstantSearch: **Default collection** in the screenshot.
+
+1. Click the "eye" icon to turn off the theme's default **Product grid**.
+
+1. Follow the instructions from step 4 forwards in the [Enable InstantSearch](#enable-instantsearch) guidance.
+
+#### Enable Algolia InstantSearch for collection list page
+
+1. In the theme customizer, click the **Home page** drop-down menu and then click **Collections list**.
+
+1. Click the "eye" icon to turn off the theme's default **Collections list page**.
+
+1. Follow the instructions from step 4 forwards in the [Enable InstantSearch](#enable-instantsearch) guidance.
+
+### Publish your theme
+
+1. After testing your changes, go back to **Online Stores > Themes** in your Shopify admin.
+1. Select the theme with Algolia and click **Publish**.
+
+Your live store now uses a version of your theme with Algolia providing your search experience.

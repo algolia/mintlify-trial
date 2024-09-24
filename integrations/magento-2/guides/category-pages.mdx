@@ -1,0 +1,53 @@
+---
+title: Category pages
+description: |-
+  Showcase a single category of your catalog, combining Magento 2 and Algolia features.
+---
+
+Category pages are **product listing pages** that are already filtered on. The product listing page is a gateway to the product detail page.
+
+With Algolia, you can create category pages for your Magento Open Source or Adobe Commerce store with:
+
+- **Flexible UI widgets.** Algolia's Magento 2 extension offers Price Range, Sorting, Pagination, Hierarchical menu, and Filters out of the box. You can easily customize the UI.
+- **Merchandising.** Use the Visual and Manual Editor in the Algolia dashboard to pin, hide, boost, bury, and filter products, and create banners.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Merchandising](/guides/managing-results/rules/merchandising-and-promoting/)
+  - [Merchandise category pages](/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+If you plan to use the API directly or build a custom frontend for your Magento 2 store,
+see [category pages](/guides/solutions/ecommerce/browse/tutorials/category-pages/) for more information.
+
+## Implementation steps
+
+There are two steps to implement this solution.
+
+1. Go to **Stores > Configuration > Algolia Search > InstantSearch Results Page**.
+
+1. Set **Replace categories page** to **Yes**.
+
+If you enabled Algolia for category pages, the following changes occur:
+
+- During indexing, Algolia adds a new `categoryId` attribute for each record.
+  This array contains all category page IDs for each product. You can use this ID to create Rules for category merchandising.
+- Algolia powers all category pages using InstantSearch.
+- When rendering the category page, you send an empty string as a query and the relevant categories as `facetFilters` in the frontend code during query time.
+
+## Next steps
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Landing Page Builder](/integration/magento-2/merchandising/landing-page-builder/)
+  - [Visual category merchandising](/integration/magento-2/merchandising/category-merchandising/)
+  - [Merchandising Studio](/integration/magento-2/merchandising/merchandising-studio/)
+  - [Add Dynamic Re-Ranking to category pages](/guides/algolia-ai/re-ranking/tutorials/re-rank-category-pages/)
+  - [Personalizing results](/guides/personalization/classic-personalization/personalizing-results/)
+</Info>
+
+{/* prettier-ignore-end */}

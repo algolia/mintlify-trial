@@ -1,0 +1,77 @@
+---
+title: Detecting intent
+description: |-
+  Use Rules to detect user intent by looking at the keywords they use in their queries.
+---
+
+**Keywords** in queries are crucial terms that show user intent.
+They vary depending on the data in your index.
+For example, if a user types "red":
+
+- On a clothing site, they're probably looking for red clothes.
+- On a movie site, "red" might not refer to color.
+
+Once you understand what specific keywords mean in queries, you can [use rules to adjust the search results](/guides/managing-results/rules/rules-overview/#rules-responding-to-user-queries) users get when they use those keywords.
+For example, you can:
+
+- Dynamically filter
+- Change the entire query
+- Category searches
+- Dynamically change search parameters.
+
+## Dynamically filter based on the query
+
+Dynamic filtering applies filters based on keywords.
+For example, if someone searches for "cheap toaster 800w," you could create a rule to filter on toasters priced under $25 with an 800w power rating.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Adding filters based on the query](/guides/managing-results/rules/detecting-intent/how-to/applying-a-custom-filter-for-a-specific-query/)
+  - [Dynamic filtering with Rules](/guides/managing-results/rules/detecting-intent/how-to/applying-a-filter-if-the-query-match-a-facet-value/)
+  - [Merchandising](/guides/managing-results/rules/merchandising-and-promoting/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Change the entire query
+
+Sometimes, users may search using informal terms not in your records.
+For example, "iwatch" instead of "apple watch".
+
+To handle this, you can create rules to replace an entire query with an alternative set of words.
+
+For example, to replace queries containing "iwatch" with an "apple watch" query:
+
+```json json
+{
+  "conditions": [
+    {
+      "anchoring": "is",
+      "pattern": "iwatch",
+      "alternatives": false
+    }
+  ],
+  "consequence": {
+    "params": {
+      "query": "apple watch"
+    }
+  }
+}
+```
+
+To help determine these informal terms, review your [Search analytics](/guides/search-analytics/overview/).
+
+## Category searches
+
+You can use rules to recognize [categories](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/tutorial/generate-sitemap-from-index/#create-a-sitemap-for-categories) in queries and refine the results based on that.
+For example, on a document library site, in the query "article ref21," "article" is a category.
+
+- Without a rule, the search probably fails since it searches for the terms "article" and "ref21" but it's unlikely that your records contain the category name "article".
+- With a rule that [recognizes and removes](/guides/managing-results/rules/detecting-intent/how-to/detecting-keywords/) the "article" category, the search succeeds ("ref21" replaces "article ref21").
+
+## Dynamically change search parameters
+
+After parsing a query, you can use a rule to determine which [parameters best apply to the search](/guides/managing-results/rules/detecting-intent/how-to/applying-search-parameters-for-a-specific-query/).
+
+For example, you can turn typo tolerance on or off, change geolocation settings, search for only certain types of attributes, or add filters.

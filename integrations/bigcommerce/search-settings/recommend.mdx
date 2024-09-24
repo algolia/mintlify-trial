@@ -1,0 +1,49 @@
+---
+title: Recommend for BigCommerce
+description: |-
+  Learn how to configure Algolia Recommend for BigCommerce.
+---
+
+The Algolia integration for BigCommerce includes a widget template built with [Algolia Recommend](/guides/algolia-recommend/overview/) that you can add to your store's pages to show product recommendations.
+
+## Before you begin
+
+Before you can show recommendations in your store, check that you've set up Recommend:
+
+- You're sending [click and conversion events](/integration/bigcommerce/search-settings/events/).
+  Algolia Recommend relies on click and conversion events to continuously improve its recommendations.
+  You can also [upload events via CSV](/guides/algolia-recommend/how-to/csv-upload/) to get started.
+- You have a [Recommend model](/guides/algolia-recommend/how-to/set-up/#train-the-recommend-models/) trained in your Algolia dashboard.
+
+## Configuration
+
+To configure the Recommend widget, select a channel in your BigCommerce app and go to the **Recommend** tab.
+
+The source you select must have models trained for [Algolia Recommend](/guides/algolia-recommend/how-to/set-up/#train-the-recommend-models).
+
+## Adding the Recommend widget to your store
+
+To add the Recommend widget to your store, you need to place the widget template on your store's pages.
+
+1. In the BigCommerce dashboard, go to **Channel Manager** and click **Edit Theme** to access the **Page Builder**.
+
+1. From the **Page Builder** widgets, go to **Custom** and drag the **Algolia Recommend** widget to where you want to show the recommendations on your page.
+
+1. Open the **Algolia Recommend** widget settings and select the **Recommend Model** you want to use.
+
+Available models are:
+
+- **Trending Items** (for use on any page)
+- **Frequently bought together** (for use on product pages)
+- **Related products** (for use on product pages)
+- **Looking Similar** (for use on product pages)
+
+## Customize the Recommend widget
+
+You can edit the widget's CSS to match your store's theme in the widget's settings.
+
+Save your changes by clicking **Save HTML**.
+
+To customize the title of the widget, edit the **Title** field in the widget's settings.
+
+To customize the number of recommendations shown, edit the **Number of results** field in the widget's settings. The default setting is 0, which shows all recommendations.

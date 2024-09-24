@@ -1,0 +1,103 @@
+---
+title: Migrate third-party libraries
+description: |-
+  Learn how to migrate our third-party libraries from jsDelivr CDN to Shopify Assets Management.
+---
+
+If you installed the Algolia AI Search & Discovery app _after_ **November 8, 2018**, your assets are managed by the Shopify CDN.
+
+If you installed the app _before_ November 8, 2018, consider migrating the assets from jsDelivr to the Shopify CDN.
+
+Depending on your implementation, you can migrate:
+
+- Automatically, in the Shopify admin
+- Manually, if you have a custom implementation
+
+## Automatic migration in the Shopify admin
+
+To automatically migrate the third-party libraries, reinstall Algolia into your theme.
+This overrides the third-party libraries and scripts with up-to-date versions.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  If you have changed or customized your theme by editing the scripts provided by the Algolia AI Search & Discovery app,
+  proceed with a manual migration. **Otherwise, you will lose your changes**.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+To automatically update the Algolia dependencies of your theme, go to your Algolia AI Search & Discovery app's settings and follow these steps:
+
+1. Open the **Display** tab.
+
+1. Click **Install to a new theme**.
+
+1. Select the theme you want to update.
+
+1. You will see a migration notice explaining that the wizard will migrate the third-party assets for you.
+
+1. Click **Finish installation**.
+
+## Manual migration
+
+If your shop has a custom theme or relies on non-standard versions of external libraries, you have to manually update your theme.
+
+### Migrate libraries in your theme
+
+1. Open the theme code editor.
+
+1. Open the `layout/theme.liquid` file.
+
+1. For each asset with a `jsdelivr.net` URL:
+
+   - Open the URL in your browser, and copy the content
+   - In **Assets**, click **Add a new asset**, and select **Create a blank file** (use the same filename as the opened file)
+   - Paste the copied content in the newly created asset
+
+1. Once you have created assets from each `jsdelivr.net` URL, update their associated URLs in the `theme.liquid` file.
+
+   Change `{{ '//cdn.jsdelivr.net/folder/filename.js' | script_tag }}` to `{{ 'filename.js' | asset_url | script_tag }}`.
+   `filename.js` is the name of the newly created asset.
+
+1. Save the file.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Make sure to **maintain the file order**.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+### Migrate third-party web fonts
+
+The InstantSearch widget uses the Font Awesome icon pack.
+This icon pack uses custom web fonts that are hosted on jsDelivr.
+
+To migrate the libraries to the Shopify CDN, please follow these steps:
+
+1. Download the following files on your computer with the associated new name:
+   - [`algolia_dependency_fontawesome-webfont.eot`](https://cdn.jsdelivr.net/fontawesome/4.4.0/fonts/fontawesome-webfont.eot?v=4.4.0)
+   - [`algolia_dependency_fontawesome-webfont-ie-fix.eot`](https://cdn.jsdelivr.net/fontawesome/4.4.0/fonts/fontawesome-webfont.eot?#iefix\&v=4.4.0)
+   - [`algolia_dependency_fontawesome-webfont.woff2`](https://cdn.jsdelivr.net/fontawesome/4.4.0/fonts/fontawesome-webfont.woff2?v=4.4.0)
+   - [`algolia_dependency_fontawesome-webfont.woff`](https://cdn.jsdelivr.net/fontawesome/4.4.0/fonts/fontawesome-webfont.woff?v=4.4.0)
+   - [`algolia_dependency_fontawesome-webfont.ttf`](https://cdn.jsdelivr.net/fontawesome/4.4.0/fonts/fontawesome-webfont.ttf?v=4.4.0)
+   - [`algolia_dependency_fontawesome-webfont.svg`](https://cdn.jsdelivr.net/fontawesome/4.4.0/fonts/fontawesome-webfont.svg?v=4.4.0#fontawesomeregular)
+
+1. Create 6 new assets files.
+
+1. In the Shopify Theme Editor, in **Assets**, click **Add a new asset** and select **Upload a file**
+   Upload the 6 downloaded files.
+
+1. In the Theme Editor, open `algolia_dependency_font-awesome-4-4-0.min.css.liquid`.
+   In this file:
+
+   - Replace all occurrences of `../fonts` by `./algolia_dependency`
+   - Replace:
+     `./algolia_dependency_fontawesome-webfont.eot?#iefix&v=4.4.0`
+     by
+     `./algolia_dependency_fontawesome-webfont-ie-fix.eot?#iefix&v=4.4.0`
+   - Save the file
+
+Your web font files are now hosted on Shopify's CDN.

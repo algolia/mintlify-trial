@@ -1,0 +1,366 @@
+---
+title: Click and conversion events
+description: |-
+  Send click and conversion events to increase discovery and conversions.
+---
+
+The Algolia AI Search & Discovery app lets you track [click and conversion events](/guides/sending-events/getting-started/#what-are-events) from your Shopify store.
+
+Sending events enables you to use these features:
+
+- [NeuralSearch](/guides/getting-started/neuralsearch/)
+
+- [Algolia Recommend](/guides/algolia-recommend/overview/)
+
+- [Personalization](/guides/personalization/classic-personalization/what-is-personalization/)
+
+- [Dynamic Re-Ranking](/guides/algolia-ai/re-ranking/)
+
+- [Query Categorization](/guides/algolia-ai/query-categorization/)
+
+- [Search analytics](/guides/search-analytics/overview/)
+
+- [Revenue analytics](/guides/search-analytics/concepts/metrics/#revenue)
+
+- [A/B Testing](/guides/ab-testing/what-is-ab-testing/)
+
+## Before you begin
+
+Algolia AI Search & Discovery supports the **default widgets** provided by the app.
+If you're using custom widgets, see [Sending events](/guides/sending-events/getting-started/) for more information.
+
+Algolia Search must be enabled on your theme,
+to get started, see [Enable Algolia on your theme](/integration/shopify/getting-started/quick-start/#enable-algolia-on-your-theme).
+
+## User token strategy
+
+Events represent an interaction of a user with your store.
+Algolia relates a user profile to an event through a [user token](/guides/sending-events/concepts/usertoken/).
+
+You can choose how you want to set the user token:
+
+- With a random alphanumeric string at every page refresh
+- Using cookies.
+
+### `userToken` is set with a random alphanumeric string at every page refresh
+
+This option doesn't use cookies.
+Because every page refresh generates a new user token,
+you can't identify user profiles across sessions.
+
+### `userToken` is set using cookies depending on the user's approval
+
+This option stores the user token in a cookie on the user's device.
+You must use Shopify's [Customer Privacy API](https://shopify.dev/docs/api/consent-tracking) or enable Shopify's Cookie Consent Banner in your Shopify admin settings.
+
+If the user hasn't consented, a random alphanumeric string is used as user token.
+
+Algolia uses Shopify's [`loadFeatures` method](https://shopify.dev/docs/api/consent-tracking#loading-the-customer-privacy-api) to check if the user has consented.
+
+### User token for Personalization
+
+To [personalize your search experience](/guides/personalization/classic-personalization/what-is-personalization/),
+you need to provide a way to identify user profiles across sessions with a _stable_ user token.
+For example, you can use the user's account ID after they signed in to your shop.
+
+To add a stable user token, use [custom hooks](/integration/shopify/building-search-ui/frontend-custom-events/#insights-hooks).
+
+## Send events
+
+To track user interactions in your Shopify store and send them to Algolia,
+you can choose between:
+
+- **Use Essentials Analytics**: automatically send "click", "view", and "search" events to Algolia.
+- **Use Conversion Analytics**: using Shopify web pixels, send "addToCart" and "purchase" conversion events to Algolia.
+
+## Shopify web pixels
+
+Shopify web pixels are JavaScript snippets that you can install in your Shopify store to track user interactions and improve your search results.
+The web pixels collect data about your users' interactions with your store, such as add-to-cart and purchase events.
+You can use the data to improve the relevance of your search results and gain insights into your users' behavior.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  To capture events with web pixels, you need to enable the [app embed for Algolia Search](/integration/shopify/getting-started/quick-start/?client=ruby#enable-algolia-on-your-theme).
+</Warning>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Shopify Pixel](https://academy.algolia.com/guides/fca4962e-00da-11ef-9daa-066e9d94e5fb/tasks/ab8f3420-00d9-11ef-a270-06ed93d039b7)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Install Shopify web pixels
+
+1. Go to your Shopify admin and click **Settings**.
+
+1. Open the **Customer events** tab.
+
+1. Click **Add custom pixel**.
+
+1. Name your pixel and click **Add pixel**.
+
+1. Copy the pixel code and paste it into the **Algolia web pixels** area in the **Code** section provided by Shopify.
+
+   ```js js
+   // Add Algolia Insights cdn
+   const ALGOLIA_INSIGHTS_SRC =
+     "https://cdn.jsdelivr.net/npm/search-insights@2.16.3/dist/search-insights.min.js";
+   !(function (e, a, t, n, s, i, c) {
+     (e.AlgoliaAnalyticsObject = s),
+       (e[s] =
+         e[s] ||
+         function () {
+           (e[s].queue = e[s].queue || []).push(arguments);
+         }),
+       (e[s].version = (n.match(/@([^\/]+)\/?/) || [])[1]),
+       (i = a.createElement(t)),
+       (c = a.getElementsByTagName(t)[0]),
+       (i.async = 1),
+       (i.src = n),
+       c.parentNode.insertBefore(i, c);
+   })(window, document, "script", ALGOLIA_INSIGHTS_SRC, "aa");
+
+   // Enrich line items with queryID
+   const enrichLineItemsWithQueryID = (items, purchases) =>
+     items.map((item) => {
+       const purchaseItem = purchases.find((purchase) =>
+         purchase.objectIDs.includes(item.variant.id),
+       );
+       if (purchaseItem) {
+         return {
+           ...item,
+           variant: {
+             ...item.variant,
+             queryID: purchaseItem.queryID,
+           },
+         };
+       }
+       return item;
+     });
+
+   // Filter items with and without queryID
+   const filterItemsWithQueryID = (enrichedItems) =>
+     enrichedItems.filter((item) => !!item.variant.queryID);
+   const filterItemsWithoutQueryID = (enrichedItems) =>
+     enrichedItems.filter((item) => !item.variant.queryID);
+
+   // Function to create random user token if one isn't found
+   function createRandomUserToken() {
+     return Array.from(Array(20), () =>
+       Math.floor(Math.random() * 36).toString(36),
+     ).join("");
+   }
+
+   // Constant Storage keys
+   const CONFIG_STORAGE_KEY = "algolia_config";
+   const ANALYTICS_STORAGE_KEY = "algolia_analytics_options";
+   const CLICK_STORAGE_KEY = "algolia_analytics_clicked_objects";
+   const PURCHASE_STORAGE_KEY = "algolia_analytics_purchase_objects";
+
+   analytics.subscribe("product_added_to_cart", async (event) => {
+     try {
+       // Get all stored data from the Shopping session
+       const analyticsData = await browser.localStorage.getItem(
+         ANALYTICS_STORAGE_KEY,
+       );
+       const analyticsOptions = analyticsData ? JSON.parse(analyticsData) : {};
+
+       const config = await browser.localStorage.getItem(CONFIG_STORAGE_KEY);
+       const algoliaConfig = JSON.parse(config);
+       const { app_id, search_api_key, index_name, user_token } = algoliaConfig;
+
+       const clickedObjects =
+         await browser.localStorage.getItem(CLICK_STORAGE_KEY);
+       const previousClickItems = clickedObjects
+         ? JSON.parse(clickedObjects)
+         : [];
+
+       const cartLine = event.data.cartLine;
+       const variant = cartLine.merchandise;
+       const product = variant.product;
+       const cartLineCostCurrency = cartLine.cost.totalAmount.currencyCode;
+
+       let selectedRecord = previousClickItems.find((record) =>
+         record.objectIDs.includes(variant.id),
+       );
+       let algoliaInsightMethod = "addedToCartObjectIDsAfterSearch";
+
+       // Look for the parent (product) if the variant is not found.
+       if (!selectedRecord) {
+         const productIdClicked = previousClickItems.find(
+           (record) => record.productId == product.id,
+         );
+
+         // Reassign the objectIDs to the variant id if the parent is found.
+         if (productIdClicked) {
+           productIdClicked.objectIDs = [variant.id];
+           selectedRecord = productIdClicked;
+         }
+       }
+
+       // If the variant is not found we send what we have
+       if (!selectedRecord) {
+         algoliaInsightMethod = "addedToCartObjectIDs";
+         selectedRecord = {
+           index: index_name,
+           objectIDs: [variant.id],
+         };
+       }
+
+       selectedRecord.currency = cartLineCostCurrency;
+       selectedRecord.eventName = "Add To Cart";
+
+       aa("init", {
+         appId: app_id,
+         apiKey: search_api_key,
+         partial: true,
+         userToken: user_token || createRandomUserToken(),
+         ...analyticsOptions,
+       });
+       aa("addAlgoliaAgent", "Shopify Web Pixels");
+
+       delete selectedRecord.positions;
+       aa(algoliaInsightMethod, selectedRecord);
+
+       // Remove the item from local storage
+       const updatedClickItems = previousClickItems.filter(
+         (item) => !item.objectIDs.includes(variant.id),
+       );
+
+       await browser.localStorage.setItem(
+         CLICK_STORAGE_KEY,
+         JSON.stringify(updatedClickItems),
+       );
+
+       // Add clicked event to the purchase cookie
+       const purchaseStorage =
+         await browser.localStorage.getItem(PURCHASE_STORAGE_KEY);
+       const purchaseObjects = purchaseStorage
+         ? JSON.parse(purchaseStorage)
+         : [];
+       purchaseObjects.push(selectedRecord);
+       await browser.localStorage.setItem(
+         PURCHASE_STORAGE_KEY,
+         JSON.stringify(purchaseObjects),
+       );
+     } catch (error) {
+       console.error(error);
+     }
+   });
+
+   analytics.subscribe("checkout_completed", async (event) => {
+     try {
+       // Get all stored data from the Shopping session
+       const analyticsData = await browser.localStorage.getItem(
+         ANALYTICS_STORAGE_KEY,
+       );
+       const analyticsOptions = analyticsData ? JSON.parse(analyticsData) : {};
+
+       const config = await browser.localStorage.getItem(CONFIG_STORAGE_KEY);
+       const algoliaConfig = JSON.parse(config);
+       const { app_id, search_api_key, index_name, user_token } = algoliaConfig;
+
+       const purchaseDataStorage =
+         await browser.localStorage.getItem(PURCHASE_STORAGE_KEY);
+       const purchaseData = purchaseDataStorage
+         ? JSON.parse(purchaseDataStorage)
+         : [];
+
+       const lineItems = event.data.checkout.lineItems;
+
+       // Combine the purchase data with the line items
+       // Filter out the line items that don't have a queryID and the ones that do
+       const allEnrichedPurchaseObjects = enrichLineItemsWithQueryID(
+         lineItems,
+         purchaseData,
+       );
+       const purchaseObjectWithQueryID = filterItemsWithQueryID(
+         allEnrichedPurchaseObjects,
+       );
+       const purchaseObjectsWithOutQueryID = filterItemsWithoutQueryID(
+         allEnrichedPurchaseObjects,
+       );
+
+       aa("init", {
+         appId: app_id,
+         apiKey: search_api_key,
+         partial: true,
+         userToken: user_token || createRandomUserToken(),
+         ...analyticsOptions,
+       });
+       aa("addAlgoliaAgent", "Shopify Web Pixels");
+
+       // Add all the items purchased objects with query IDs
+       if (purchaseObjectWithQueryID.length > 0) {
+         const purchasedObjectIDsAfterSearch = {
+           eventName: "Checkout Completed",
+           index: index_name,
+           objectIDs: purchaseObjectWithQueryID.map((item) => item.variant.id),
+           objectData: purchaseObjectWithQueryID.map((item) => ({
+             queryID: item.variant.queryID,
+             price: item.variant.price.amount,
+             discount: item.discountAllocations[0]
+               ? item.discountAllocations[0].amount.amount
+               : 0,
+             quantity: item.quantity,
+           })),
+           value: event.data.checkout.subtotalPrice.amount,
+           currency: event.data.checkout.subtotalPrice.currencyCode,
+         };
+
+         aa("purchasedObjectIDsAfterSearch", {
+           ...purchasedObjectIDsAfterSearch,
+         });
+       }
+
+       if (purchaseObjectsWithOutQueryID.length > 0) {
+         const purchasedObjectIDs = {
+           eventName: "Checkout Completed",
+           index: index_name,
+           objectIDs: purchaseObjectsWithOutQueryID.map(
+             (item) => item.variant.id,
+           ),
+           objectData: purchaseObjectsWithOutQueryID.map((item) => ({
+             price: item.variant.price.amount,
+             discount: item.discountAllocations[0]
+               ? item.discountAllocations[0].amount.amount
+               : 0,
+             quantity: item.quantity,
+           })),
+           value: event.data.checkout.subtotalPrice.amount,
+           currency: event.data.checkout.subtotalPrice.currencyCode,
+         };
+
+         aa("purchasedObjectIDs", {
+           ...purchasedObjectIDs,
+         });
+       }
+
+       // Clear the purchase data from the storage
+       const updatePurchaseItems = purchaseData.filter(
+         (purchase) =>
+           !lineItems.some((item) => item.variant.id === purchase.objectIDs[0]),
+       );
+
+       await browser.localStorage.setItem(
+         PURCHASE_STORAGE_KEY,
+         JSON.stringify(updatePurchaseItems),
+       );
+     } catch (error) {
+       console.error(error);
+     }
+   });
+   ```
+
+1. Click **Save**, then **Connect**.
+
+   Your Shopify web pixels are now installed and can start tracking user interactions on your store.
+   Make sure that your web pixels show **Connected** in their status.
+
+1. Go back to your Shopify admin and complete the setup by clicking **Activate & Continue**.

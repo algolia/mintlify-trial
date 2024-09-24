@@ -1,0 +1,167 @@
+---
+title: Multilingual search
+description: |-
+  Learn how to implement search that can handle multiple languages.
+---
+
+Algolia's search engine supports all writing systems and [many languages](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages/), including symbol-based languages such as Chinese and Japanese. Algolia also handles multiple languages on the same website/app, meaning some users could search in French and some in English, using the same Algolia account.
+
+The purpose of this guide is to explain how to organize your indices to enable multi-language search.
+
+## Using one or multiple indices to handle multi-language search
+
+Depending on your use case, you can use either one index for each language or one for all languages. The following questions can help you decide which approach is best for your use case:
+
+- [Use multiple indices, one for each language](#one-index-per-language), if:
+  - You need a [custom ranking](/guides/managing-results/must-do/custom-ranking/) per language/country. For example, you want to sort by price, and there are different pricing structures in different countries.
+  - You want to support many languages.
+- [Use one index for all languages](#one-index-for-all-records), if:
+  - You want to support querying in multiple languages. For example, an Arabic-speaking user might use Arabic text for some words and the Roman alphabet for brand names.
+
+## One index per language
+
+This approach simplifies:
+
+- Index configuration
+- Per-language analytics (otherwise, you need to [use analyticsTags](/api-reference/api-parameters/analyticsTags/))
+- Creation of per-language [query suggestions](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/).
+
+In this solution, you create one index per language:
+
+```json json
+[
+  {
+    "objectID": 1,
+    "title": "The Wolf of Wall Street"
+  }
+]
+```
+
+```json json
+[
+  {
+    "objectID": 1,
+    "title": "Le loup de Wall Street"
+  }
+]
+```
+
+```json json
+[
+  {
+    "objectID": 1,
+    "title": "El lobo de Wall Street"
+  }
+]
+```
+
+Once your records are in different indices, you can select which index to target from the frontend.
+
+## One index for all records
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Before deciding on this approach, find out if all the text you require from your list of supported languages will exceed
+  [Algolia's record size limits](https://support.algolia.com/hc/en-us/articles/4406981897617-Is-there-a-size-limit-for-my-index-records-). If they do exceed the limit, **use [one index per language](#one-index-per-language)**.
+</Note>
+
+{/* prettier-ignore-end */}
+
+In this solution, you create one index for all languages. Your records contain text for each language and look like this:
+
+```json json
+[
+  {
+    "objectID": 1,
+    "title_eng": "The Wolf of Wall Street",
+    "title_fr": "Le Loup de Wall Street",
+    "title_es": "El lobo de Wall Street"
+  }
+]
+```
+
+You now need to set the searchable attributes for all languages using `searchableAttributes`.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string> { "title_eng", "title_fr", "title_es" }
+  };
+  ```
+
+  ```go go
+  res, err := client.InitIndex("movies").SetSettings(search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes("title_eng", "title_fr", "title_es"),
+  })
+  ```
+
+  ```java java
+  client.initIndex("movies").setSettings(
+    new IndexSettings()
+      .setSearchableAttributes(Arrays.asList("title_eng", "title_fr", "title_es"))
+  );
+  ```
+
+  ```js js
+  client.initIndex("movies").setSettings({
+    searchableAttributes: ["title_eng", "title_fr", "title_es"],
+  });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+          +"title_eng"
+          +"title_fr"
+          +"title_es"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $client->initIndex("movies")->setSettings(array(
+    "searchableAttributes" => array(
+      "title_eng", "title_fr", "title_es"
+    )
+  ));
+  ```
+
+  ```python python
+  client.init_index("movies").set_settings(
+      {"searchableAttributes": ["title_eng", "title_fr", "title_es"]}
+  )
+  ```
+
+  ```ruby ruby
+  client.init_index("movies").set_settings(
+    {
+      searchableAttributes: ["title_eng", "title_fr", "title_es"]
+    }
+  )
+  ```
+
+  ```scala scala
+  val result: Future[Task] = client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(
+        Seq(AttributesToIndex.attributes("title_eng", "title_fr", "title_es"))), )
+  }
+  ```
+</CodeGroup>
+
+Then at query time you must specify which attributes you want to be searchable, depending on the user's language. Here's how to do this with the JavaScript API client:
+
+```js js
+// search only in the French titles
+index
+  .search("wolf", {
+    restrictSearchableAttributes: "title_fr",
+  })
+  .then(({ hits }) => {
+    console.log(hits);
+  });
+```

@@ -1,0 +1,263 @@
+---
+title: Boosting or penalizing records
+description: |-
+  How to boost or penalize a subset of records in the search results.
+---
+
+To boost a subset of results, you need an attribute in the record specifying if the record should to be boosted or not: the `boosted` attribute in the following [dataset](https://github.com/algolia/datasets/blob/master/small/fruits.json).
+
+```json json
+[
+  {
+    "name": "Apricot",
+    "boosted": false
+  },
+  {
+    "name": "Apple",
+    "boosted": false
+  },
+  {
+    "name": "Almonds",
+    "boosted": true
+  }
+]
+```
+
+For more information, see [Importing from the dashboard](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard/)
+
+## Data types of the `boosted` attribute
+
+Attributes for boosting need to be either a **boolean** or **numeric** value.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Ensure that the numeric value is not inside a string (Example: `"32"`).
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Initialize client
+
+<CodeGroup>
+  ```csharp csharp
+  SearchClient client = new SearchClient("YourApplicationID", "YourWriteAPIKey");
+  SearchIndex index = client.InitIndex("your_index_name");
+  ```
+
+  ```go go
+  package main
+
+  import "github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
+  func main() {
+  	client := search.NewClient("YourApplicationID", "YourWriteAPIKey")
+  	index := client.InitIndex("your_index_name")
+  }
+  ```
+
+  ```java java
+  SearchClient client = DefaultSearchClient.create(
+    "YourApplicationID",
+    "YourWriteAPIKey"
+  );
+
+  SearchIndex index = client.initIndex("your_index_name");
+
+  ```
+
+  ```js js
+  // Default version
+  import algoliasearch from "algoliasearch";
+
+  // Search-only version
+  // import algoliasearch from 'algoliasearch/lite';
+
+  const client = algoliasearch("YourApplicationID", "YourWriteAPIKey");
+  const index = client.initIndex("your_index_name");
+  ```
+
+  ```kotlin kotlin
+  val client = ClientSearch(
+      applicationID = ApplicationID("YourApplicationID"),
+      apiKey = APIKey("YourWriteAPIKey")
+  )
+  val indexName = IndexName("your_index_name")
+
+  client.initIndex(indexName)
+  ```
+
+  ```php php
+  // composer autoload
+  require __DIR__ . '/vendor/autoload.php';
+
+  // if you are not using composer
+  // require_once 'path/to/algoliasearch.php';
+
+  $client = \Algolia\AlgoliaSearch\SearchClient::create(
+    'YourApplicationID',
+    'YourWriteAPIKey'
+  );
+
+  $index = $client->initIndex('your_index_name');
+  ```
+
+  ```python python
+  from algoliasearch.search_client import SearchClient
+
+  client = SearchClient.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```ruby ruby
+  require "algolia"
+
+  client = Algolia::Search::Client.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```scala scala
+  // No initIndex
+  val client = new AlgoliaClient("YourApplicationID", "YourWriteAPIKey")
+  ```
+
+  ```swift swift
+  let client = SearchClient(appID: "YourApplicationID", apiKey: "YourWriteAPIKey")
+  let index = client.index(withName: "your_index_name")
+  ```
+</CodeGroup>
+
+## Update the custom ranking
+
+The last criterion of [Algolia's ranking formula](/guides/managing-results/must-do/custom-ranking/) is `customRanking`. It lets you define a list of attributes used to rank the results in the case of textual relevance equality.
+
+To boost featured fruits, you need to add the `boosted` attribute to the custom ranking from the dashboard or the API.
+
+### Using the dashboard
+
+On the [ranking and sorting tab](https://dashboard.algolia.com/explorer/configuration/ranking-and-sorting/), add a new custom ranking attribute.
+
+### Using the API
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings { CustomRanking = new List<string> { "desc(boosted)" } };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	CustomRanking: opt.CustomRanking("desc(boosted)"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+        new IndexSettings().setCustomRanking(Collections.singletonList(
+                "desc(boosted)"
+        ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      customRanking: ["desc(boosted)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      customRanking {
+          +Desc("boosted")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $customRanking = ['desc(boosted)']; // We add our `boosted` attribute
+
+  $index->setSettings([
+    'customRanking' => $customRanking
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"customRanking": ["desc(boosted)"]})
+  ```
+
+  ```ruby ruby
+  # We add our `boosted` attribute
+  custom_ranking = ["desc(boosted)"]
+
+  index.set_settings({customRanking: custom_ranking})
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      customRanking = Some(Seq(
+        CustomRanking.desc("boosted"))))
+  }
+  ```
+
+  ```swift swift
+  let customRanking = ["desc(boosted)"]
+  let settings = ["customRanking": customRanking]
+  index.setSettings(settings)
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  When your `boosted` attribute is a `boolean` data type, ensure you have set the order of the custom ranking attribute to descending.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## More granular boosts
+
+Now that the `customRanking` is set, querying `a` will return "almonds" first, as it matches both textually AND is a featured record.
+
+If more granularity is necessary, a similar method can be used. Instead of a boolean attribute, you will need to specify a numeric attribute that maps to a boosted "level".
+
+In this case, the dataset might look like this:
+
+```json json
+[
+  {
+    "name": "Apricot",
+    "boosted": 0
+  },
+  {
+    "name": "Apple",
+    "boosted": 4
+  },
+  {
+    "name": "Almonds",
+    "boosted": 1
+  }
+]
+```
+
+You don't have to update `customRanking` as it's already set to rank by the `boosted` attribute in descending order.
+
+In this example, the query `a` it will return "apple" first because it has the highest `boosted` value.
+
+## Boosting or bucketing groups of items with sorting
+
+You can also shift the order of the logic and put an attribute **preceding** the ranking formula. This has the effect of [sorting](/guides/managing-results/refine-results/sorting/) in the classic sense: the attribute sorts the results first before applying any ranking formula.
+
+Sometimes you may want your results to appear in groups, or buckets - say 3 buckets of prices: high-priced, medium-priced, low-priced. To do this, you'll need to first sort the results into 3 groups, and then apply the ranking strategy for each group individually.
+You can use an attribute with numbers 1, 2, and 3, which will be used for the 3 groups, and then Algolia will tie-break group 1 first, then group 2, then group 3.
+To do this, you'll use the **Sort-By feature** (not custom ranking), which occurs _before_, not after, the tie-breaking.

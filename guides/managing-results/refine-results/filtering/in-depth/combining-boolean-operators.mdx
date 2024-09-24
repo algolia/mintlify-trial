@@ -1,0 +1,60 @@
+---
+title: Filters and boolean operators
+description: |-
+  How to combine filters and facetFilters using boolean operators.
+---
+
+Algolia supports the following operators, which must be in capital letters:
+
+- **`OR`**: must match any of the combined conditions
+- **`AND`**: must match all the combined conditions
+- **`NOT`**: negates a filter
+
+## Use of parentheses
+
+Use parentheses `(` and `)` to combine several OR conditions.
+These rules apply:
+
+- Don't group ANDs within ORs. For example, `A OR (B AND C) OR (D AND E)` isn't allowed
+- Top-level AND conditions don't require parentheses. For example, `(A AND (B OR C))` and `(A AND B)` aren't allowed.
+- Don't use parentheses to negate a group of expressions. For example, `NOT (filter1 OR filter2)` isn't allowed.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Use the [filter syntax validator](#filters-syntax-validator) to help you verify and build filter statements.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Examples of correct usage
+
+- `A AND (B OR C)`
+- `(A OR B) AND C`
+- `A AND (B OR C) AND (D OR E)`
+- `A AND B AND (C OR D) AND (E OR F)`
+- `(A OR B) AND (C OR D) AND E`
+
+#### Example scenarios
+
+- Find books _not_ written by a specific author: `(category:Book OR category:Ebook) AND NOT author:"JK Rowling"`
+- Filter products by price range and category: `price:10 TO 50 AND (category:Electronics OR category:Accessories)`
+- Complex filter with several conditions: `inStock:true AND (category:Phones OR category:Tablets) AND (brand:Apple OR brand:Samsung) AND price>500`
+
+## Don't mix filter types in OR conditions
+
+You can't compare different filter types (string, numeric, tags) with an `OR`.
+For example, `num=3 OR tag1 OR facet:value` isn't allowed.
+
+## Apps and user actions change filter expressions
+
+If a user or app selects a filter, Algolia omits the filters that don't apply from the expression.
+
+For example, if the original filter expression is `((category:Electronics OR category:Home) AND NOT brand:LG) AND NOT price:100 TO 500` and the user selects the Electronics category, the expression simplifies to `(category:Electronics AND NOT brand:LG) AND NOT price:100 TO 500`.
+
+## Filters syntax validator
+
+Type your filter to validate it:
+
+```
+```

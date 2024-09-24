@@ -1,0 +1,335 @@
+---
+title: How to declare attributes for faceting with the API
+description: |-
+  How to declare attributes for faceting with the API.
+---
+
+Algolia lets you create categories based on specific attributes so users can filter search results by those categories. For example, if you have an index of books, you could categorize them by author and genre. This allows users to filter search results by their favorite author or discover new genres.
+
+To enable this categorization, first declare the attributes `genre` and `author` as [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/):
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      AttributesForFaceting = new List<string> { "category", "author" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributesForFaceting: opt.AttributesForFaceting(
+  		"category",
+  		"author",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setAttributesForFaceting(Arrays.asList(
+      "category",
+      "author"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributesForFaceting: ["category", "author"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributesForFaceting {
+          +"category"
+          +"author"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributesForFaceting' => [
+      "category",
+      "author"
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"attributesForFaceting": ["category", "author"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      attributesForFaceting: [
+        "category",
+        "author"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributesForFaceting = Some(Seq(
+        "author",
+        "category", )))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(
+      \.attributesForFaceting,
+      to: [
+        "category",
+        "author",
+      ])
+
+  index.setSettings(settings) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+Sometimes, you may have _many_ facet values. For instance, if you have a book index, you may also have a lot of different authors. [The engine can't return more than 1,000 values per facet](/api-reference/api-parameters/maxValuesPerFacet/), so if you have more than that, you may want to let your users search for them. Do this by using the `searchable` modifier.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      AttributesForFaceting = new List<string> { "category", "searchable(author)" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributesForFaceting: opt.AttributesForFaceting(
+  		"category",
+  		"searchable(author)",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setAttributesForFaceting(Arrays.asList(
+      "category",
+      "searchable(author)"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributesForFaceting: ["category", "searchable(author)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributesForFaceting {
+          +"category"
+          +Searchable("author")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributesForFaceting' => [
+      "category",
+      "searchable(author)"
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"attributesForFaceting": ["category", "searchable(author)"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      attributesForFaceting: [
+        "category",
+        "searchable(author)"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributesForFaceting = Some(Seq(
+        "category",
+        "searchable(author)", )))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(
+      \.attributesForFaceting,
+      to: [
+        "category",
+        .searchable("author"),
+      ])
+
+  index.setSettings(settings) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+If you only need the filtering feature, use `filterOnly` to reduce the index size and improve search speed. For example, you could automatically filter what genre the users can search based on the section of your website they're on(without displaying genre as a clickable filter).
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      AttributesForFaceting = new List<string> { "filterOnly(category)", "author" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	AttributesForFaceting: opt.AttributesForFaceting(
+  		"filterOnly(category)",
+  		"author",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setAttributesForFaceting(Arrays.asList(
+      "filterOnly(category)",
+      "author"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      attributesForFaceting: ["filterOnly(category)", "author"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      attributesForFaceting {
+          +FilterOnly("category")
+          +"author"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'attributesForFaceting' => [
+      "filterOnly(category)",
+      "author"
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"attributesForFaceting": ["filterOnly(category)", "author"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      attributesForFaceting: [
+        "filterOnly(category)",
+        "author"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      attributesForFaceting = Some(Seq(
+        "filterOnly(category)",
+        "author", )))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(
+      \.attributesForFaceting,
+      to: [
+        .filterOnly("category"),
+        "author",
+      ])
+
+  index.setSettings(settings) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+**Don't include colons (`:`) in attribute names that you want to use for faceting because the [`filters`](/api-reference/api-parameters/filters/) syntax relies on that character as a delimiter.**
+
+## See also
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [How to declare attributes for faceting in the dashboard](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting-with-dashboard/)
+  - [Auto-selected facets](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/auto-selected-facets/)
+  - [Filter suggestions](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/filter-suggestions/)
+  - [Guided search](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/guided-search/)
+  - [Visual facets](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/visual-facets/)
+</Info>
+
+{/* prettier-ignore-end */}

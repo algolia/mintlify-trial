@@ -1,0 +1,353 @@
+---
+title: Index schema
+description: |-
+  Understand the schema Algolia uses to index your Shopify data.
+---
+
+Algolia transforms and stores your Shopify data in a format that's optimal for your search experience.
+
+## Products and variants
+
+Algolia stores [variants](https://help.shopify.com/en/manual/products/variants), not products,
+in an index `PREFIX_products`. The default prefix is `shopify`.
+Variants are stored as independent records.
+
+For products without variants, the product attributes are first transformed into a schema that parallels the structure of the variant's schema and then uploaded.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The Algolia AI Search & Discovery app only supports indexing products in the "Online Store" sales channel.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Product variant schema
+
+Algolia stores your product variants in the following format:
+
+```jsonc jsonc
+{
+  objectID,                       // Variant id (unique identifier also used by Algolia)
+  sku,
+  barcode,
+  id,                             // Product id
+  title,                          // Name of the product
+  variant_title,                  // Name of the variant
+  product_type,
+  vendor,
+  handle,                         // URL handle for the product
+  tags,
+  named_tags: {                   // Key value association from tags like this: "key:value" (See Named tags section)
+    <TAG_KEY>
+  },
+  body_html_safe,                 // Description (without HTML, truncated to 2,000 characters)
+  compare_at_price,               // Initial price
+  price,                          // Actual (optionally discounted) price
+  price_ratio,
+  price_range,
+  variants_count,                 // Total count of the variants of the related product
+  variants_min_price,             // Min price of all the variants of the related product (only relevant with distinct enabled)
+  variants_max_price,             // Max price of all the variants of the related product (only relevant with distinct enabled)
+  variants_compare_at_price_min   // Min compare_at_price of all the variants of the related product
+  variants_compare_at_price_max   // Max compare_at_price of all the variants of the related product
+  option1,                        // Variant option 1
+  option2,                        // Variant option 2
+  option3,                        // Variant option 3
+  options: {                      // Hash containing the option `names: value`
+    <OPTION_NAME>
+  },
+  option_names,                   // Array containing the option names, in order
+  requires_shipping,
+  taxable,
+  grams,
+  weight,                         // Weight with its original unit
+  image,
+  product_image,
+  inventory_quantity,             // Number of available items in the inventory
+  position,                       // Position of the variant in the list of products
+  template_suffix,
+  meta: {                         // Metafields (See Metafields section)
+    namespace1: {
+      key1,
+      key2
+    },
+  },
+  created_at,
+  updated_at,
+  published_at,
+  recently_ordered_count,          // How much have recently been ordered : useful for ranking
+  collections: [
+    'collection-1-handle',         // Array of product collection handles
+    // ...
+  ],
+  collection_ids: [
+    'collection-1-id',             // Array of product collection IDs
+    // ...
+  ],
+  locations_inventory: {
+    key1: value1,                  // Object with location_id:quantity - location_id is auto-generated
+    key2: value2
+  }
+}
+```
+
+The `image` attribute uses the variant's image if it exists,
+otherwise it uses the first image of the associated product.
+
+### Recently ordered count
+
+The recently ordered count attribute represents all orders **since the last full reindex**.
+Initially, it doesn't exist when the index is first created.
+It gets added when you sell products.
+For example, if a customer buys two blue t-shirts in size S,
+the value of this attribute increases by two.
+
+The recently ordered count attribute is used for the **Most Popular** [sort order](/integration/shopify/getting-started/configuration/#sort-orders).
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  The `recently_ordered_count` attribute is reset during a full reindex.
+  Therefore, it's a count of all orders since the last reindex, not since the beginning.
+  The `recently_ordered_count` attribute is preserved during [real-time indexing](/integration/shopify/sending-and-managing-data/introduction-to-shopify-indexing/#automatic-updates).
+</Warning>
+
+{/* prettier-ignore-end */}
+
+### Searchable attributes for products
+
+By default, these attributes are [searchable](/guides/managing-results/must-do/searchable-attributes/).
+They're ranked in order of relevance—for example, results with a match in the `vendor` attribute rank before results with a match in the `title` attribute:
+
+1. `unordered(vendor)`
+1. `unordered(title)`
+1. `unordered(variant_title)`
+1. `product_type`
+1. `unordered(tags)`
+1. `unordered(handle)`
+1. `sku`
+1. `barcode`
+1. `unordered(body_html_safe)`
+
+### Show products instead of variants
+
+To only show the most relevant variant instead of all variants in your search results:
+
+1. Go to the Shopify admin and go to the Algolia AI Search & Discovery app.
+1. On the **Search options** tab, in the **Variants** section, select **Show products instead of variants**.
+
+### Remove products from search results
+
+Products are indexed if they:
+
+- Have the "Active" status and are published to a sales channel
+- Don't have a publishing date in the future
+- Don't include `algolia-ignore` in their list of tags
+- Don't include `[hidden]` in their title
+
+To hide a product from the search results—for example, a product that's not released yet,
+you can make one of these changes:
+
+- Add `algolia-ignore` to the product's list of tags
+- Add `[hidden]` to its title
+- Set the status to "Draft"
+- Archive the product
+
+### Remove variants from search results
+
+To remove a variant from the search results add `[hidden]` to the variant's name.
+The position of the string `[hidden]` in the title doesn't matter.
+
+For example, if you want to hide a variant "blue" from the search results,
+change its title to `blue [hidden]` or `[hidden] blue`.
+
+## Collections
+
+If you enabled [Collection pages](/integration/shopify/advanced-customization/collection-search-page/),
+Algolia stores your collections in a dedicated index `PREFIX_collections`. The default prefix is `shopify`.
+The relationship between products and collections is stored in the product records,
+in the `collection_ids` and `collections` attributes.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The Algolia AI Search & Discovery app only supports indexing collections in the "Online Store" sales channel.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Collections schema
+
+Algolia stores your collections in the following format:
+
+```jsonc jsonc
+{
+  objectID,           // Collection id (in Shopify and Algolia)
+  title,
+  handle,             // URL handle
+  body_html,          // Description (with HTML, truncated to 2,000 characters)
+  body_html_safe,     // Description (without HTML, truncated to 2,000 characters)
+  image,
+  products_count,     // Product count in the collection (not updated in real time)
+  template_suffix,
+  meta: {             // Metafields (See Metafields section)
+    namespace1: {
+      key1,
+      key2
+    },
+  },
+  updated_at
+}
+```
+
+### Searchable attributes for collections
+
+The following attributes are [searchable](/guides/managing-results/must-do/searchable-attributes/).
+They're ranked in order of relevance—for example, results with a match in the `title` attribute rank before results with a match in the `handle` attribute:
+
+1. `title`
+1. `handle`
+1. `unordered(body_html_safe)`
+
+### Remove collections from search results
+
+Collections are indexed if they:
+
+- Are published to a sales channel
+- Don't have a publishing date in the future
+- Have at least one product
+- Don't include `[hidden]` in their title
+
+To remove a collection from the search results,
+you can:
+
+- Exclude it from the "Online Store" sales channel
+- Add `[hidden]` to the collection title
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Hiding a collection from search results won't hide the products within the collection.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Blogs
+
+If you select **Index blog posts** (on the **Indexing** tab of the Algolia AI Search & Discovery app), Algolia stores your Shopify blog posts in a dedicated index `PREFIX_articles`.
+The default prefix is `shopify`.
+
+### Blogs schema
+
+Algolia stores your blogs in the following format:
+
+```jsonc jsonc
+{
+  _tags: [
+    blog_id,
+  ],
+  author: {
+    name,
+    objectID,
+  },
+  blog: {
+    commentable,
+    created_at,
+    feedburner,
+    feedburner_location,
+    handle,
+    objectID,
+    title,
+    updated_at
+  },
+  body_html,
+  body_html_safe,
+  created_at,
+  handle,
+  image,
+  meta,
+  named_tags: {},
+  objectID,
+  published_at,
+  tags: [],
+  title,
+  updated_at,
+}
+```
+
+### Searchable attributes for blogs
+
+By default, these attributes are [searchable](/guides/managing-results/must-do/searchable-attributes/).
+They're ranked in order of relevance—for example, results with a match in the `title` attribute rank before results with a match in the `handle` attribute:
+
+1. `title`
+1. `handle`
+1. `tags`
+1. `blog.title`
+1. `blog.handle`
+1. `unordered(author.name)`
+1. `unordered(body_html_safe)`
+
+### Remove blog posts from search results
+
+To remove a blog post from the search results:
+
+- Add `algolia-ignore` to its list of tags
+- Add `[hidden]` to its title
+
+### Remove entire blogs from search results
+
+Blog posts belong to blogs.
+To remove all articles from a blog from the search results,
+add `[hidden]` to the blog name.
+
+## Pages
+
+If you select **Index pages** (on the **Indexing** tab of the Algolia AI Search & Discovery app), Algolia stores your Shopify blog posts in a dedicated index `PREFIX_pages`.
+The default prefix is `shopify`.
+
+### Pages schema
+
+Algolia stores your pages in the following format:
+
+```jsonc jsonc
+{
+  author,
+  body_html,
+  body_html_safe,
+  created_at,
+  handle,
+  meta,
+  objectID,
+  published_at,
+  shop_id,
+  template_suffix,
+  title,
+  updated_at,
+}
+```
+
+### Searchable attributes for pages
+
+By default, these attributes are [searchable](/guides/managing-results/must-do/searchable-attributes/).
+They're ranked in order of relevance—for example, results with a match in the `author` attribute rank before results with a match in the `body_html` attribute:
+
+1. `author`
+1. `body_html`
+1. `title`
+
+### Remove pages from search results
+
+To remove a page from the search results,
+add `[hidden]` to its title.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To hide the `[hidden]` phrase on your page,
+  replace `{{ page.title }}` with `{{ page.title | replace: "[hidden]", "" }}`.
+  For more information, see [`replace`](https://shopify.github.io/liquid/filters/replace/)
+</Note>
+
+{/* prettier-ignore-end */}

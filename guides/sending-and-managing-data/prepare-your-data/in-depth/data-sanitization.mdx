@@ -1,0 +1,50 @@
+---
+title: Data cleaning
+description: |-
+  Learn about data cleaning and handling the data that Algolia returns.
+---
+
+**Algolia accepts all your data "as is" without changing anything.**
+Algolia also returns all data in your index unmodified, including HTML tags and their properties.
+In other words, Algolia doesn't _clean_ your data.
+
+## How to clean your data
+
+You can clean data:
+
+- **Before you send your records for indexing.** Make sure your data is safe. This helps protect your app and users from possible security risks like [cross-site scripting (XSS) attacks](https://wikipedia.org/wiki/Cross-site_scripting).
+- **When showing results.** By default, Algolia includes all attributes in the response, even if you don't show them. To exclude attributes from the response, set them as [`unretrievableAttributes`](/api-reference/api-parameters/unretrievableAttributes/).
+- **As users type into search.** Any HTML or code they may enter in the search box exposes you to an XSS attack because Algolia sends the query back in the response.
+
+The data cleaning process is similar wherever it's applied:
+
+1. **Identify sensitive data.** Determine which parts of your records could potentially be harmful if misused. This includes any user-generated content or records that include special characters or scripts.
+1. **Determine how to clean potentially harmful data.** This could involve [preventing code injection](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html) by detecting and removing scripts, and replacing special HTML characters such as `<` and `>` with their [entity name or number](https://www.w3schools.com/html/html_entities.asp).
+
+## How Algolia helps
+
+**Algolia ignores HTML tags during search**.
+For example, your records might contain the HTML tag `<strong>`:
+
+```json json
+{
+  "description": "She is amazingly <strong>powerful</strong>, deeply visionary."
+}
+```
+
+But, because Algolia ignores HTML tags during search, searching for the word "strong" wouldn't return this record.
+
+**Algolia removes some characters from the response:**
+
+- [Control characters](https://wikipedia.org/wiki/Control_character) (U+0000 to U+001F)
+- [Delete character](https://wikipedia.org/wiki/Delete_character) (U+007F).
+
+## Further reading
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Security best practices](/guides/security/security-best-practices/)
+</Info>
+
+{/* prettier-ignore-end */}

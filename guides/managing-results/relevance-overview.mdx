@@ -1,0 +1,97 @@
+---
+title: Relevance overview
+description: |-
+  Relevancy from a high-level point of view - finding records, ranking, tie-breaking, typos, and other settings.
+---
+
+Relevance touches on every aspect of the Algolia search and discovery experience.
+[It governs everything](#what-is-relevance) from structuring your data to how the engine queries your indices and orders the results to what your users see as they type.
+The aim is to find a general configuration that gets the best results in all situations.
+
+Configuration is about telling Algolia how to search your data.
+You already began this process when [structuring your data](/guides/sending-and-managing-data/prepare-your-data/),
+where you told Algolia which attributes to search in and which to use to customize your ranking.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Configure textual relevance (dashboard)](https://academy.algolia.com/guides/f37d8e3c-c441-11ee-87dd-06c28b757225/tasks/1548e84a-afe8-11ee-90da-028dae5dc5d1)
+  - [Configure textual relevance (API clients)](https://academy.algolia.com/guides/f381b778-c441-11ee-87dd-06c28b757225/tasks/dd171bb2-afe8-11ee-aa36-02d110f70e35)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Must dos
+
+Defining searchable attributes and customizing your ranking are the two **must do** s before configuring anything else. These actions alone could get you production-ready.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Searchable attributes](/guides/managing-results/must-do/searchable-attributes/)
+  - [Custom ranking](/guides/managing-results/must-do/custom-ranking/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Get the best from Algolia
+
+Before [going live](/guides/going-to-production/implementation-checklist/), you should become familiar with Algolia's key features. Some are immediately useful, like:
+
+- Creating [synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/)
+- Adding [filters](/guides/managing-results/refine-results/filtering/)
+- [Alternative sorting strategies](/guides/managing-results/refine-results/sorting/).
+
+Others quickly become important, like:
+
+- [What to do if you get too few or no results](/guides/managing-results/optimize-search-results/empty-or-insufficient-results/)
+- [Merchandising](/guides/managing-results/rules/merchandising-and-promoting/)
+- [Grouping records](/guides/managing-results/refine-results/grouping/)
+- [Geolocation](/guides/managing-results/refine-results/geolocation/).
+
+Later, as your solution evolves, you'll take advantage of:
+
+- [Search analytics](/guides/search-analytics/overview/)
+- [Personalization](/guides/personalization/classic-personalization/what-is-personalization/)
+- [A/B testing](/guides/ab-testing/what-is-ab-testing/).
+
+Finally, learning how the engine works will be invaluable as you structure your data and fine-tune your results. You'll want to learn the core features of Algolia's engine, such as:
+
+- [Typo tolerance](/guides/managing-results/optimize-search-results/typo-tolerance/)
+- [Prefix search](/guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/prefix-searching/)
+- [Natural language processing (NLP)](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/)
+- [Detecting user intent](/guides/managing-results/rules/detecting-intent/).
+
+## What is relevance?
+
+Relevance is [finding results](#finding-results) that match a query and
+[ranking records](#ranking-records) so that the best-matched results appear at the top of the list.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [How does Algolia define relevance?](/guides/managing-results/relevance-overview/in-depth/defining-relevance/)
+  - [What is search relevance?](https://www.algolia.com/blog/product/what-is-search-relevance/)
+  - [Search engine relevance](https://www.algolia.com/blog/product/defining-what-a-search-index-is-and-the-speed-and-relevance-of-a-search-engine-index/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Finding results
+
+Finding results consists of defining attributes and text-based comparisons that affect the engine's choice of which objects to return. These include typos, prefixes, plurals, stop words, and other [text-based criteria](/guides/managing-results/relevance-overview/in-depth/textual-matching/) that Algolia uses to enhance relevancy. You may also need to consider some non-text-based criteria, such as filtering and geolocation.
+
+### Ranking records
+
+Ranking is critical since users should see the results that most closely match their queries _first_: this is wholly dependent on the order in which records are presented. Algolia's ranking uses a [tie-breaking algorithm](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/) to determine how results are ordered.
+
+## Index settings and query parameters
+
+You can configure Algolia in two ways (and at two times):
+
+- **During index configuration,** that is, when you change index settings. These changes are permanent and global - they affect how the data is stored and affect every search.
+- **When setting query parameters.** When you send a query to Algolia, you can add parameters that alter the index settings. These parameters only affect the current search.
+
+You can change some settings only during index configuration, as they affect how the data is stored. For example, adding new synonyms or changing typo tolerance settings. The same applies to query parameters—some settings make sense only at query time, like filtering, geolocation, and defining which attributes to retrieve.
+
+The specific [API parameter documentation](/api-reference/api-parameters/) indicates whether a setting is available during index configuration, query time, or both.

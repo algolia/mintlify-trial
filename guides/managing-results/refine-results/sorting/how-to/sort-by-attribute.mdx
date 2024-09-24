@@ -1,0 +1,359 @@
+---
+title: Sort by attribute
+description: |-
+  Learn how to sort an index by an attribute.
+---
+
+By default, Algolia puts the most relevant items first in results.
+However, you might want to sort results by a specific attribute, like price or date.
+
+To sort your search results by a specific attribute:
+
+1. [Create a replica index](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/)
+1. Configure an attribute for sorting
+1. Update your user interface
+
+## Replica indices
+
+Think of a replica index as a duplicate of your primary index but with a different sorting of results.
+Choose from two types of replicas: [standard or virtual](/guides/managing-results/refine-results/sorting/in-depth/replicas/#standard-and-virtual-replicas):
+
+- Use a standard replica for exhaustive sorting. This method sorts results by the chosen attribute.
+- Use a virtual replica for relevant sorting. This method prioritizes relevant results while still incorporating the sorting preference for the chosen attribute.
+
+## Configure an attribute for sorting in the Algolia dashboard
+
+1. [Create a replica index](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/#create-replica-indices-in-the-dashboard).
+
+1. Refresh the dashboard page in your browser.
+
+1. Select the replica index.
+
+1. On the **Configuration** tab, go to **Relevant sort** or **Ranking and Sorting**.
+   You'll see either option, depending on the type of replica you want to configure (virtual or standard).
+
+1. Click **+Add a sort attribute** or **+Add sort-by attribute**
+
+1. Type in the name of the attribute you want to sort. Be careful here: Algolia doesn't check to see if what you type matches the name of an attribute in the index.
+
+1. Determine the sort direction (**Ascending** or **Descending**).
+
+1. Review and save your changes.
+
+## Configure an attribute for sorting with the API
+
+1. [Create a replica index](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/#create-replica-indices-with-the-api).
+1. Update the [`ranking`](/api-reference/api-parameters/ranking/) parameter of the replica index with the [`setSettings`](/api-reference/api-methods/set-settings/) method.
+
+## Update user interface
+
+To let users select between different rankings in your user interface,
+you also need to update it—for example, by providing a [`sort-by`](/api-reference/widgets/sort-by/js/) widget.
+
+## Example: relevant sort by `price`
+
+This example applies relevant sorting to a virtual replica.
+
+<CodeGroup>
+  ```csharp csharp
+  SearchIndex replica_index = client.InitIndex("products_virtual_price_desc");
+
+  IndexSettings settings = new IndexSettings { CustomRanking = new List<string> { "desc(price)" } };
+
+  // Synchronous
+  replica_index.SetSettings(settings);
+
+  // Asynchronous
+  await replica_index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  replica_index := client.InitIndex("products_virtual_price_desc")
+
+  res, err := replica_index.SetSettings(algoliasearch.Map{
+  	"customRanking": []string{
+  		"desc(price)",
+  	},
+  })
+  ```
+
+  ```java java
+  // Sychronous
+  Index<Contact> replica_index = client.initIndex("products_virtual_price_desc", Contact.class);
+
+  // Asynchronous
+  AsyncIndex<Contact> replica_index = client.initIndex("products_virtual_price_desc", Contact.class);
+
+  // Both
+  replica_index.setSettings(
+    new IndexSettings().setCustomRankingRanking(Arrays.asList(
+      "desc(price)"
+    ))
+  );
+  ```
+
+  ```js js
+  const replicaIndex = client.initIndex("products_virtual_price_desc");
+
+  replicaIndex
+    .setSettings({
+      customRanking: ["desc(price)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```php php
+  $replica_index = $client->initIndex('products_virtual_price_desc');
+
+  $replica_index->setSettings([
+    'customRanking' => [
+      'desc(price)'
+    ]
+  ]);
+  ```
+
+  ```python python
+  replica_index = client.init_index("products_virtual_price_desc")
+
+  replica_index.set_settings({"customRanking": ["desc(price)"]})
+  ```
+
+  ```ruby ruby
+  replica_index = client.init_index("products_virtual_price_desc")
+
+  replica_index.set_settings(
+    {
+      customRanking: [
+        "desc(price)"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  // No initIndex
+
+  client.execute {
+    setSettings of "products_virtual_price_desc" `with` IndexSettings(
+      customRanking = Some(Seq(
+        Ranking.desc("price"))))
+  }
+  ```
+
+  ```swift swift
+  let replica_index = client.index(withName: "products_virtual_price_desc")
+
+  replica_index.setSettings([
+    "customRanking": [
+      "desc(price)"
+    ]
+  ])
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Note>
+  For virtual replicas, you only need to include the [`customRanking`](/api-reference/api-parameters/customRanking/) attribute used for sorting: `price`.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Example: exhaustive sort by `price`
+
+This example applies exhaustive sorting to a standard replica.
+
+<CodeGroup>
+  ```csharp csharp
+  SearchIndex replica_index = client.InitIndex("products_standard_price_desc");
+
+  IndexSettings settings = new IndexSettings
+  {
+      Ranking = new List<string>
+      {
+          "desc(price)",
+          "typo",
+          "geo",
+          "words",
+          "filters",
+          "proximity",
+          "attribute",
+          "exact",
+          "custom"
+      }
+  };
+
+  // Synchronous
+  replica_index.SetSettings(settings);
+
+  // Asynchronous
+  await replica_index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  replica_index := client.InitIndex("products_standard_price_desc")
+
+  res, err := replica_index.SetSettings(algoliasearch.Map{
+  	"ranking": []string{
+  		"desc(price)",
+  		"typo",
+  		"geo",
+  		"words",
+  		"filters",
+  		"proximity",
+  		"attribute",
+  		"exact",
+  		"custom",
+  	},
+  })
+  ```
+
+  ```java java
+  // Sychronous
+  Index<Contact> replica_index = client.initIndex("products_standard_price_desc", Contact.class);
+
+  // Asynchronous
+  AsyncIndex<Contact> replica_index = client.initIndex("products_standard_price_desc", Contact.class);
+
+  // Both
+  replica_index.setSettings(
+    new IndexSettings().setRanking(Arrays.asList(
+      "desc(price)",
+      "typo",
+      "geo",
+      "words",
+      "filters",
+      "proximity",
+      "attribute",
+      "exact",
+      "custom",
+    ))
+  );
+  ```
+
+  ```js js
+  const replicaIndex = client.initIndex("products_standard_price_desc");
+
+  replicaIndex
+    .setSettings({
+      ranking: [
+        "desc(price)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom",
+      ],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```php php
+  $replica_index = $client->initIndex('products_standard_price_desc');
+
+  $replica_index->setSettings([
+    'ranking' => [
+      'desc(price)',
+      'typo',
+      'geo',
+      'words',
+      'filters',
+      'proximity',
+      'attribute',
+      'exact',
+      'custom'
+    ]
+  ]);
+  ```
+
+  ```python python
+  replica_index = client.init_index("products_standard_price_desc")
+
+  replica_index.set_settings(
+      {
+          "ranking": [
+              "desc(price)",
+              "typo",
+              "geo",
+              "words",
+              "filters",
+              "proximity",
+              "attribute",
+              "exact",
+              "custom",
+          ]
+      }
+  )
+  ```
+
+  ```ruby ruby
+  replica_index = client.init_index("products_standard_price_desc")
+
+  replica_index.set_settings(
+    {
+      ranking: [
+        "desc(price)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  // No initIndex
+
+  client.execute {
+    setSettings of "products_standard_price_desc" `with` IndexSettings(
+      ranking = Some(Seq(
+        Ranking.desc("price"),
+        Ranking.typo,
+        Ranking.geo,
+        Ranking.words,
+        Ranking.filters,
+        Ranking.proximity,
+        Ranking.attribute,
+        Ranking.exact,
+        Ranking.custom)))
+  }
+  ```
+
+  ```swift swift
+  let replica_index = client.index(withName: "products_standard_price_desc")
+
+  replica_index.setSettings([
+    "ranking": [
+      "desc(price)",
+      "typo",
+      "geo",
+      "words",
+      "filters",
+      "proximity",
+      "attribute",
+      "exact",
+      "custom",
+    ]
+  ])
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Note>
+  For standard replicas, you need to provide **all** ranking attributes.
+</Note>
+
+{/* prettier-ignore-end */}

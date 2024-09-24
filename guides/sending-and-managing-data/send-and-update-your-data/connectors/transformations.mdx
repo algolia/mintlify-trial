@@ -1,0 +1,96 @@
+---
+title: Transformations
+description: |-
+  Transform your data before writing to your Algolia index.
+---
+
+{/* prettier-ignore-start */}
+
+<Info>
+  Data transformations is a **beta feature** according
+  to [Algolia's Terms of Service ("Beta Services")](https://www.algolia.com/policies/terms)
+</Info>
+
+{/* prettier-ignore-end */}
+
+You can add _transformations_ to your connector's destination to manipulate data before it's written to your Algolia indices.
+
+To use transformations, create a task that specifies both the data source and the destination (usually an Algolia index).
+You can add a transformation when creating the task or directly to an existing destination.
+
+To learn more about connectors, see [Connectors overview](/guides/sending-and-managing-data/send-and-update-your-data/connectors/overview/).
+
+Transformations are written as small JavaScript functions.
+See the [limits](#limits) section for more information about their runtime limitations.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Only one transformation can be added to a destination.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Get started
+
+1. Go to the Algolia dashboard and select your Algolia application.
+1. On the left sidebar, select **Data sources**.
+1. Open the [**Connectors**](https://dashboard.algolia.com/connectors) page.
+1. Select a connector and click **Connect** to start creating your task.
+1. Configure your data source: create a new source or select an existing one.
+1. To create your transformation function, click **Create transformation**.
+   When writing a transformation, you have these choices:
+   - Write your own functions directly in the code editor, which includes autocompletion and syntax highlighting.
+   - Use predefined helper functions for common Algolia-specific tasks.
+     To use a helper function, click **Helper functions** and select from the list.
+     For more information, see [Helper functions](#helper-functions).
+1. Configure your destination: create a new destination or select an existing one.
+1. Configure when your task should run and specify the operation type for writing your Algolia index records.
+1. Confirm whether you want to run your task immediately.
+   To see your transformation in action, click **Run** and inspect your index records after the task completes.
+
+## Helper functions
+
+The following helper transformations are available to use, or extend, in your own transformations.
+
+| Helper type          | Description                                                                                                                |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Reshape              | Includes functions for adding, or removing attributes from a record.                                                       |
+| Filters              | Exclude records based on a condition.                                                                                      |
+| Convert              | Change the data type of attributes, trim or normalize them, and convert data types to a specific ISO format.               |
+| Compute              | New properties: calculate a discounted price and show as a new discount attribute.                                         |
+| Ranking              | Compute a gravity/decay ranking to help with custom ranking outcomes, compute a weighted value ranking for custom ranking. |
+| Query Categorization | Manage hierarchical categories by converting a flat list into a hierarchical structure.                                    |
+
+## Preview transformation results
+
+When you create a transformation, you can preview the function on the right side of the code editor.
+
+The preview includes the following information:
+
+- **Input Record**.
+  A sample record, taken from the data source before applying the transformation.
+
+- **Transformation Preview**.
+  Click **Try it out** to see the results of your transformation on the sample record.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Not all connectors support fetching sample records.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Debug transformations
+
+Use the [**Connector Debugger**](https://dashboard.algolia.com/connectors/debugger) for insights into the status of your tasks, including transformations.
+
+## Limits
+
+The runtime environment for transformations has the following limits:
+
+| Parameter | Description                 |
+| --------- | --------------------------- |
+| Run time  | 1 second per transformation |
+| Memory    | 100 kB per transformation   |

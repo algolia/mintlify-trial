@@ -1,0 +1,136 @@
+---
+title: Landing Page Builder
+description: |-
+  Learn how landing page builder works in Algolia extension for Magento 2.
+---
+
+Algolia for Magento 2 | Merchandising Features
+
+By Algolia, 6 min
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The Landing Page Builder is available for all plans, but its merchandising features depend on [Rules](/guides/managing-results/rules/rules-overview/), which are only available on [Build and Premium plans](https://www.algolia.com/pricing/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+The Landing Page Builder lets you create dynamic landing pages by leveraging Algolia results, boosting your organic reach.
+You are able to create a whole new type of page, with a custom URL, custom CMS content, and a merchandised product listing with a pre-filled query and preselected filters.
+
+With the Landing Page Builder, you can:
+
+- Create new pages in a few clicks, displaying the results for a certain keyword,
+- Fine-tune your SEO by adding content, promotional banners, and more,
+- Promote specific products and offer tailored results thanks to the merchandising tool.
+
+You can use this to:
+
+- Create promotional pages for limited campaigns and special sales.
+- Catch traffic from search engines for products you don't have yet, and advertise alternative products.
+- Offer dedicated pages to your most popular search queries, to improve conversion.
+
+## Getting started
+
+### Access
+
+You can access the Landing Page Builder directly from your Magento 2 back office, by navigating to **Stores > Algolia Search > Merchandising > Landing Page Builder** through the main menu.
+
+### Landing page listing
+
+Once you land on the merchandising page, you reach the landing page listing.
+
+The listing contains 6 columns:
+
+- **ID**: Magento identifier of the landing page (will be used to set the correct context of your pages)
+- **Store view**: Determines on which store the landing page will be displayed
+- **Title**: Title of the Landing page
+- **URL key**: Path of the landing page inside your store view. This is where your page will be on the site.
+- **Status**: Determines whether the landing page is published or not.
+- **Action**: List the actions available for the landing page:
+
+  - **Edit** the landing page (see the following section)
+  - **Duplicate** the landing page. A new landing page with the same settings will be created with a temporary URL key.
+  - **Delete** the landing page (this will completely remove the landing page, its URL rewrites, and its configuration inside the Algolia dashboard)
+
+If no landing page has been created yet, a link to create a new landing page will be displayed. You can also use the "Create a new landing page" button on the top-right corner to create a new landing page.
+
+### Create and edit a landing page
+
+The edit page will open when you edit, create, or duplicate a landing page.
+
+The edit page contains the following buttons:
+
+- **Back**: return to the landing pages listing.
+- **Delete**: delete the current landing page and return to the landing pages listing.
+- **Duplicate**: duplicate the current landing page with a temporary URL and go to the newly created landing page.
+- **View**: open a new tab in your browser and display the landing page on the frontend.
+- **Save and continue edit**: save the landing page and stay on the page.
+- **Save**: save the landing page and return to the landing pages listing.
+
+The edit page consists of three sections, the _Page Settings_, _CMS Editor_, and _Displayed Products_:
+
+#### Page settings
+
+In this section, you can change and configure the SEO of the current landing page.
+
+The settings are composed of 9 fields:
+
+- **Unique URL key**: Path of the landing page inside your store view (a uniqueness check is performed each time you change it to be sure that the URL is available).
+- **Store view**: By default, set to "All stores", but allows you to specify a particular store if needed.
+- **Title**: Sets the main title of the page (**h1 tag**)
+- **Meta title**: Sets the content of the **title** tag
+- **Meta description**: Sets the content of the **meta description** tag
+- **Meta keywords**: Sets the content of the **meta keywords** tag
+- **Published**: Allows you to publish or un-publish a landing page (if the page is unpublished, it won't be accessible on the frontend)
+- **Custom JavaScript**: Allows you to add some custom JavaScript if needed.
+- **Custom CSS**: Allows you to add some custom CSS if needed.
+
+The created landing page will be available on the URL you set. You can view the page directly by clicking on the "View" button or by going to the URL in your browser.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Once this page is saved, the extension will automatically create an entry into the URL rewrite table of Magento, to ensure it remains safe and is not overridden by another module.
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### CMS editor
+
+This section contains a native Magento CMS editor which allows you to add content at the top of your landing page.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  By default, the content is displayed between the main menu and the product listing, but you can change the position if needed with a standard layout override.
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### Displayed products and merchandising
+
+This section is divided into 3 parts :
+
+- **The search query field**: Allows you to pre-fill the search input on your landing page. The products shown on the page will adapt to the keyword you type here, so you should choose a search term in relation to your landing page theme.
+- **The preselect applicable filters**: Allows you to apply filters by default on your landing page.
+- **The merchandised product listing**: Allows you to visualize which products will be displayed on the page. If you're on Algolia's higher plans, you will also be able to manually set a specific order of products, by promoting or demoting as desired. You can also use the search bar to add products that you would like to see on this page.
+
+The page will be pre-filled with the query and filters you set here, and products will be displayed in the order they are set in the merchandised product listing.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  As soon as you pin at least one product and you save the landing page, a [rule](/guides/managing-results/rules/rules-overview/) related to this landing page (context: `magento-landingpage-[landingpageID]`) is created inside the relevant product indices in your Algolia dashboard. This query rule will be automatically deleted if you delete the landing page in the Magento back office.
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Note>
+  These landing pages, like any other page in Magento, are managed by the caching system of your server. If you view your page and then modify it in the back office, you may have to clear the Magento cache to see the changes.
+</Note>
+
+{/* prettier-ignore-end */}

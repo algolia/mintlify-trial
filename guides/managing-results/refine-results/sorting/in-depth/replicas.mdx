@@ -1,0 +1,147 @@
+---
+title: Understanding replicas
+description: |-
+  What replicas are and how to handle them.
+---
+
+Algolia has one ranking formula per index.
+Every index has a unique sorting strategy but you can't change it at query time.
+This is because pre-sorting during indexing instead of at query time leads to a considerable performance boost.
+
+**The key use of replica indices is they let you provide different rankings for the same data.**
+
+Algolia lets you automatically replicate the content of one index (the _primary_) onto other indices (standard and virtual _replicas_) and synchronize content changes.
+
+## Standard and virtual replicas
+
+Standard and virtual have similarities and differences that affect which one you should use but, in short, if you need:
+
+- [Exhaustive sorting](/guides/managing-results/refine-results/sorting/how-to/sort-by-attribute/), pick standard replicas. Shows everything that matches, strictly sorted by a chosen attribute. For example, on a news site sort articles by publication date.
+- [Relevant sorting](/guides/managing-results/refine-results/sorting/in-depth/relevant-sort/), pick virtual replicas. It prioritizes relevant results while still incorporating the sorting preference for the chosen attribute. For example, searching for "chromebook" on an electronics site should show laptops first, not Chromebook accessories.
+
+### Similarities
+
+- You can [search a replica index](/guides/managing-results/refine-results/sorting/how-to/search-in-a-replica-index/) as you would any primary index.
+- You can't add, update, or delete records in replica indices.
+- Both replica types synchronize with any updates made to records in the primary index. Every time you add, update, or delete records in your primary index, your replica is automatically modified. You can't alter this automatic data synchronization.
+
+#### Index settings
+
+Replicas start with the same settings as their primary index, but you can change them.
+For example, to sort:
+
+- By price
+- In ascending order
+- In descending order
+- By most viewed.
+
+Algolia applies one sorting strategy to each index.
+
+You can only sort by attributes with **boolean or numerical values**.
+If you want to sort by dates, [convert the dates to Unix timestamps](/guides/managing-results/refine-results/sorting/how-to/sort-an-index-by-date/).
+
+To keep replica _settings_ in sync with your primary index, set the primary index's [`forwardToReplicas`](/api-reference/api-methods/set-settings/#method-param-forwardtoreplicas) to `true`.
+
+### Differences
+
+|                                  | Standard replicas                                                                                                                                                | Virtual replicas                                                                                                                                                                        |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Availability**                 | Available on all pricing plans                                                                                                                                   | Only available on the Build and Premium [pricing plans](https://www.algolia.com/pricing/)                                                                                               |
+| **Records**                      | [Increases](/guides/managing-results/refine-results/sorting/in-depth/replicas-impact-on-pricing/) the number of records since it's a _copy_ of its primary index | Doesn't increase the number of records since it's just a _view_ of its primary index. It does slightly increase the primary index's _size_ (but by less than 10 MB per million records) |
+| **Usage**                        | Optimized for exhaustive sorting                                                                                                                                 | Optimized for relevant sorting                                                                                                                                                          |
+| **Number of replicas per index** | Unlimited                                                                                                                                                        | 20                                                                                                                                                                                      |
+| **Supported index settings**     | All                                                                                                                                                              | [A subset](#virtual-replica-parameters)                                                                                                                                                 |
+| **Synonyms**                     | Supports all synonym types                                                                                                                                       | Supports most synonym types, except [placeholders](/guides/managing-results/optimize-search-results/adding-synonyms/#placeholders)                                                      |
+
+## Manage replicas
+
+### Create replicas
+
+Create replicas with the dashboard or the API and then change the replica's sorting.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Create a replica index](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/)
+  - [Manage multiple indices](/guides/managing-results/refine-results/sorting/how-to/set-settings-and-forward-to-replicas/)
+  - [`replicas`](/api-reference/api-parameters/replicas/)
+  - [Managing replica indices](https://www.algolia.com/ecommerce-merchandising-playbook/managing-replica-indices/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Delete or unlink a replica
+
+You can't edit the contents of a replica index.
+If you want to edit or [delete the replica](/guides/managing-results/refine-results/sorting/how-to/deleting-replicas/), you first have to unlink it from its primary index, which turns it into a regular index.
+Once unlinked, changes to the primary index no longer propagate to the replica index.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Detaching a virtual replica creates an _empty_ index.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Virtual replica parameters
+
+Virtual replicas support a _subset_ of the index settings.
+You can find the supported and unsupported parameters in the following lists.
+
+### Supported parameters
+
+- [`advancedSyntax`](/api-reference/api-parameters/advancedSyntax/)
+- [`advancedSyntaxFeatures`](/api-reference/api-parameters/advancedSyntaxFeatures/)
+- [`alternativesAsExact`](/api-reference/api-parameters/alternativesAsExact/)
+- [`allowTyposOnNumericTokens`](/api-reference/api-parameters/allowTyposOnNumericTokens/)
+- [`aroundPrecision`](/api-reference/api-parameters/aroundPrecision/)
+- [`attributeCriteriaComputedByMinProximity`](/api-reference/api-parameters/attributeCriteriaComputedByMinProximity/)
+- [`attributesToHighlight`](/api-reference/api-parameters/attributesToHighlight/)
+- [`attributesToSnippet`](/api-reference/api-parameters/attributesToSnippet/)
+- [`attributesToRetrieve`](/api-reference/api-parameters/attributesToRetrieve/)
+- [`distinct`](/api-reference/api-parameters/distinct/)
+- [`enablePersonalization`](/api-reference/api-parameters/enablePersonalization/)
+- [`enableRules`](/api-reference/api-parameters/enableRules/)
+- [`exactOnSingleWordQuery`](/api-reference/api-parameters/exactOnSingleWordQuery/)
+- [`highlightPostTag`](/api-reference/api-parameters/highlightPostTag/)
+- [`highlightPreTag`](/api-reference/api-parameters/highlightPreTag/)
+- [`hitsPerPage`](/api-reference/api-parameters/hitsPerPage/)
+- [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/)
+- [`maxFacetHits`](/api-reference/api-parameters/maxFacetHits/)
+- [`maxValuesPerFacet`](/api-reference/api-parameters/maxValuesPerFacet/)
+- [`minProximity`](/api-reference/api-parameters/minProximity/)
+- [`minWordSizefor1Typo`](/api-reference/api-parameters/minWordSizefor1Typo/)
+- [`minWordSizefor2Typos`](/api-reference/api-parameters/minWordSizefor2Typos/)
+- [`paginationLimitedTo`](/api-reference/api-parameters/paginationLimitedTo/)
+- [`queryLanguages`](/api-reference/api-parameters/queryLanguages/)
+- [`queryType`](/api-reference/api-parameters/queryType/)
+- [`removeStopWords`](/api-reference/api-parameters/removeStopWords/)
+- [`replaceSynonymsInHighlight`](/api-reference/api-parameters/replaceSynonymsInHighlight/)
+- [`responseFields`](/api-reference/api-parameters/responseFields/)
+- [`restrictHighlightAndSnippetArrays`](/api-reference/api-parameters/restrictHighlightAndSnippetArrays/)
+- [`snippetEllipsisText`](/api-reference/api-parameters/snippetEllipsisText/)
+- [`sortFacetValuesBy`](/api-reference/api-parameters/sortFacetValuesBy/)
+- [`typoTolerance`](/api-reference/api-parameters/typoTolerance/)
+- [`unretrievableAttributes`](/api-reference/api-parameters/unretrievableAttributes/)
+
+### Unsupported parameters
+
+You can't change the following parameters for virtual indices.
+Instead, change them on the corresponding primary index _or_ create a standard replica.
+
+- [`attributeForDistinct`](/api-reference/api-parameters/attributeForDistinct/)
+- [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/)
+- [`camelCaseAttributes`](/api-reference/api-parameters/camelCaseAttributes/)
+- [`customNormalization`](/api-reference/api-parameters/customNormalization/)
+- [`decompoundedAttributes`](/api-reference/api-parameters/decompoundedAttributes/)
+- [`disableExactOnAttributes`](/api-reference/api-parameters/disableExactOnAttributes/)
+- [`disablePrefixOnAttributes`](/api-reference/api-parameters/disablePrefixOnAttributes/)
+- [`disableTypoToleranceOnAttributes`](/api-reference/api-parameters/disableTypoToleranceOnAttributes/)
+- [`disableTypoToleranceOnWords`](/api-reference/api-parameters/disableTypoToleranceOnWords/)
+- [`indexLanguages`](/api-reference/api-parameters/indexLanguages/)
+- [`keepDiacriticsOnCharacters`](/api-reference/api-parameters/keepDiacriticsOnCharacters/)
+- [`numericAttributesForFiltering`](/api-reference/api-parameters/numericAttributesForFiltering/)
+- [`optionalWords`](/api-reference/api-parameters/optionalWords/)
+- [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/)
+- [`userData`](/api-reference/api-parameters/userData/)

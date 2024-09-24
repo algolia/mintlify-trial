@@ -1,0 +1,143 @@
+---
+title: Integrate Algolia into the storefront sample app
+description: |-
+  Connect Algolia to your headless Salesforce B2C Commerce using the official sample app.
+---
+
+This guide describes how to connect Algolia to a headless Salesforce B2C Commerce storefront with the storefront [sample app](https://github.com/SalesforceCommerceCloud/sfcc-sample-apps).
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Salesforce deprecated the [sample app](https://github.com/SalesforceCommerceCloud/sfcc-sample-apps)
+  and recommends using the [Progressive Web App (PWA) Kit](/integration/salesforce-commerce-cloud-b2c/guides/pwa-kit/).
+</Warning>
+
+{/* prettier-ignore-end */}
+
+To set up Algolia for your headless Salesforce B2C Commerce storefront,
+see [Headless commerce](/integration/salesforce-commerce-cloud-b2c/guides/headless/).
+
+## Download and run the SFCC storefront sample app
+
+1. Clone the sample app GitHub repository:
+
+   ```sh sh
+   git clone --depth=1 https://github.com/SalesforceCommerceCloud/sfcc-sample-apps
+   ```
+
+1. Follow the [setup instructions](https://github.com/SalesforceCommerceCloud/sfcc-sample-apps/blob/master/README.md#setup) to create a frontend with the native search.
+
+## Download and compile Unified InstantSearch
+
+1. Clone the [Unified InstantSearch](https://github.com/algolia/unified-instantsearch-ecommerce) GitHub repository into the `packages/` directory.
+
+1. Delete the `unified-instantsearch-ecommerce/.git` directory from the `unified-instantsearch-ecommerce` directory.
+
+   ```sh sh
+   cd sfcc-sample-apps/packages
+   git clone --depth=1 https://github.com/algolia/unified-instantsearch-ecommerce
+   rm -rf unified-instantsearch-ecommerce/.git
+   ```
+
+1. Install the dependencies and compile.
+
+   ```sh sh
+   cd sfcc-sample-apps/packages/unified-instantsearch-ecommerce
+   npm install
+   npm run export
+   ```
+
+This creates a new folder `unified-instantsearch-ecommerce/export` which contains the assets you need for a working search in the sample app.
+
+## Import Unified InstantSearch into the sample app
+
+1. Add the Unified UI assets to be copied into the `storefront-lwc` package.
+   Edit the file `packages/storefront-lwc/scripts/plugin-copy-assets.js`:
+
+   ```js js
+    /* inside packages/storefront-lwc/scripts/plugin-copy-assets.js */
+
+    const ASSETS = {
+        'src/assets/favicon.ico': 'favicon.ico',
+        'src/assets/manifest.json': 'manifest.json',
+        'src/assets/fonts/': 'fonts/',
+        'src/assets/images/': 'images/',
+        'src/assets/img/': 'img/',
+   +    '../unified-instantsearch-ecommerce/export/': 'algolia_unified_ui/',
+    };
+   ```
+
+   Now, building `storefront-lwc` automatically imports Unified UI files.
+
+1. Include the new files in the `index.html` file:
+
+   ```html html
+   <!-- inside packages/storefront-lwc/src/index.html -->
+
+   <link rel="manifest" href="/manifest.json" />
+   <link rel="shortcut icon" href="/favicon.ico" />
+   <link rel="stylesheet" href="/css/global.css" />
+
+   + <link rel="stylesheet" href="/algolia_unified_ui/search.css" /> +
+   <script src="/algolia_unified_ui/search.js"></script>
+   ```
+
+1. Create a new Lightning Element that serves as a host for the Algolia Unified UI.
+   In the directory `packages/storefront-lwc/src/modules/`, create the following files:
+
+   ```sh sh
+   mkdir -p packages/storefront-lwc/src/modules/algoliaUnifiedUi
+   touch packages/storefront-lwc/src/modules/algoliaUnifiedUi/algoliaUnifiedUi.{html,js,scss}
+   ```
+
+Add the following code to the files `algoliaUnifiedUi.html` and `algoliaUnifiedUi.js`:
+
+<CodeGroup>
+  ```html algoliaUnifiedUi.html
+  <template>
+    <div class="site-search"></div>
+  </template>
+  ```
+
+  ```js algoliaUnifiedUi.js
+  export default class AlgoliaUnifiedUi extends LightningElement {
+    renderedCallback() {
+      const productsIndexName =
+        "zzaa_001_sandbox_us01_dx__RefArch__products__en_US"; // Check to ensure this matches your products index's name
+      const currencyCode = "EUR";
+
+      window.UnifiedUI.start({
+        inputContainer: this.template.querySelector(".site-search"),
+        keyboardShortcuts: false,
+        appId: "<Your Algolia application ID>",
+        searchApiKey: "<Your Algolia Search-only API Key>",
+        currencyCode,
+        index: {
+          indexName: productsIndexName,
+          searchParameters: {
+            analytics: true,
+            clickAnalytics: true,
+            hitsPerPage: 18,
+            attributesToSnippet: ["short_description:25"],
+          },
+        },
+        sorts: [
+          {
+            label: "Price ascending",
+            value: `${productsIndexName}__price_${currencyCode}_asc`,
+          },
+          {
+            label: "Price descending",
+            value: `${productsIndexName}__price_${currencyCode}_desc`,
+          },
+        ],
+      });
+    }
+  }
+  ```
+</CodeGroup>
+
+## Click and conversion events
+
+To complete your setup, [send click and conversion events](/guides/building-search-ui/events/react/).

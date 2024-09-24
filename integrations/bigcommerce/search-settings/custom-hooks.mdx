@@ -1,0 +1,268 @@
+---
+title: Custom hook events
+description: |-
+  Custom frontend hooks let you modify the Autocomplete menu and Instantsearch page in the Algolia app for BigCommerce.
+---
+
+Hooks are functions that run at specific points of the Algolia app's lifecycle.
+They let you register custom functions that change certain aspects of the Autocomplete and InstantSearch integrations.
+
+To view the available Autocomplete or InstantSearch hooks, go to your BigCommerce store, open your browser's developer tools console, and enter `algoliaAutocompleteConfig.hooks` or `algoliaInstantsearchConfig.hooks`.
+
+## Use custom hooks
+
+To use these hooks, add a new JavaScript file to your theme using the [BigCommerce Script Manager](https://support.bigcommerce.com/s/article/Using-Script-Manager).
+
+### Create the file
+
+1. Go to the [BigCommerce Script Manager](https://support.bigcommerce.com/s/article/Using-Script-Manager) and click **Create a Script**.
+
+1. Complete the script form settings:
+   - **Name**: Enter a name for the script.
+   - **Description**: Enter a description for the script.
+   - **Placement**: Select `Header`.
+   - **Location**: Select `All pages`.
+   - **Script Category**: Select `Essential`.
+   - **Script type**: Select `Script`.
+
+1. If you want to add custom JS code for Autocomplete or InstantSearch hooks, add it to the **Script Contents** field.
+
+For example:
+
+```js js
+document.addEventListener(
+  "algoliaInstantsearchConfig.hooks.initialize",
+  function () {
+    algoliaInstantsearchConfig.hooks.registerHook(
+      "InstantSearchResultTemplate",
+      function (options) {
+        /* */
+      },
+    );
+  },
+);
+
+document.addEventListener(
+  "algoliaAutocompleteConfig.hooks.initialize",
+  function () {
+    algoliaAutocompleteConfig.hooks.registerHook(
+      "AutocompleteResultTemplate",
+      function (options) {
+        /* */
+      },
+    );
+  },
+);
+```
+
+The return values of the function you register with the hook must match the expected return type,
+indicated by the hook's name.
+
+| Hook name ends with | Expected return type                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `Options`           | Object                                                                                                         |
+| `Template`          | [tagged template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) |
+| `Array`             | Array of strings or objects                                                                                    |
+| `String`            | String                                                                                                         |
+| `Number`            | Number                                                                                                         |
+| `Action`            | Function                                                                                                       |
+
+## Autocomplete hooks
+
+The following hooks change the behavior of the autocomplete menu:
+
+- [`autocompleteInitOptions`](#autocompleteinitoptions)
+- [`autocompleteResultTemplate`](#autocompleteresulttemplate)
+
+### `autocompleteInitOptions`
+
+Sets [parameters](/ui-libraries/autocomplete/api-reference/autocomplete-js/autocomplete/#parameters) for the autocomplete menu.
+
+Example:
+
+```js js
+document.addEventListener(
+  "algoliaAutocompleteConfig.hooks.initialize",
+  function () {
+    algoliaAutocompleteConfig.hooks.registerHook(
+      "autocompleteInitOptions",
+      function (options) {
+        // Change the placeholder text of the autocomplete menu
+        options.placeholder = "Search Our Products";
+        return options;
+      },
+    );
+  },
+);
+```
+
+### `autocompleteResultTemplate`
+
+Changes the HTML template that renders the Autocomplete results panel
+
+Example:
+
+```js js
+document.addEventListener(
+  "algoliaAutocompleteConfig.hooks.initialize",
+  function () {
+    algoliaAutocompleteConfig.hooks.registerHook(
+      "autocompleteResultTemplate",
+      function (originalTemplate, html, item, insights) {
+        // Updates the html template of the autocomplete menu
+        return html` <a class="aa-GridItem" href="${item.url}">
+          <div class="aa-ItemContentBody">
+            <div class="aa-ItemPicture">
+              <img src="${item.image_url}" alt="${item.name}" />
+            </div>
+            <div class="aa-ItemContentNameWrapper">
+              <div class="aa-ItemContentTitle">
+                <span>${item.name}</span>
+              </div>
+            </div>
+            <div class="aa-ItemContentBodyFooter">
+              <div class="aa-ItemContentPrice">${item.default_price}</div>
+              <a class="add-to-cart"> Add To Cart </a>
+            </div>
+          </div>
+        </a>`;
+      },
+    );
+  },
+);
+```
+
+## InstantSearch hooks
+
+The following hooks change the behavior of the search results page:
+
+- [`instantSearchInitOptions`](#instantsearchinitoptions)
+- [`instantSearchResultTemplate`](#instantsearchresulttemplate)
+
+### `instantSearchInitOptions`
+
+Changes [InstantSearch options](/api-reference/widgets/instantsearch/js/#options).
+
+Example:
+
+```js js
+document.addEventListener(
+  "algoliaInstantsearchConfig.hooks.initialize",
+  function () {
+    algoliaInstantsearchConfig.hooks.registerHook(
+      "instantSearchInitOptions",
+      function (options) {
+        // Modify default options, then return them
+        options.indexName = "BigCommerce";
+        return options;
+      },
+    );
+  },
+);
+```
+
+### `instantSearchResultTemplate`
+
+Changes the HTML template that renders the Autocomplete results panel
+
+Example:
+
+```js js
+document.addEventListener(
+  "algoliaInstantsearchConfig.hooks.initialize",
+  function () {
+    algoliaInstantsearchConfig.hooks.registerHook(
+      "instantSearchResultTemplate",
+      function (originalTemplateHtml, html, hit, sendEvent) {
+        // Modify html template for InstantSearch results
+        return html` <a class="ais-hit-details" href="${hit.url}">
+            <div class="ais-hit-image">
+              <img src="${hit.image_url}" align="left" alt="${hit.name}" />
+            </div>
+            <div class="ais-hit-title">${hit.name}</div>
+          </a>
+          <div class="ais-hit-price">${hit.default_price}</div>
+          <a class="aa-ItemActionButton" data-product-id="${hit.objectID}">
+            Add to cart
+          </a>`;
+      },
+    );
+  },
+);
+```
+
+## Add new custom hooks
+
+To add new custom hooks you need to add the new hooks to the allowed list and edit the JavaScript file to add the new event trigger.
+
+### Add new hooks to the allowed list
+
+1. Go to the [BigCommerce Script Manager](/integration/bigcommerce/search-settings/instantsearch/#customize-the-instantsearch-menu).
+
+1. [Create or edit](/integration/bigcommerce/search-settings/custom-hooks/#create-the-file) BigCommerce Algolia hooks script.
+
+1. Add the new hook to the `allowedHooks` array.
+
+Autocomplete example:
+
+```js js
+document.addEventListener(
+  "algoliaAutocompleteConfig.hooks.initialize",
+  function () {
+    algoliaAutocompleteConfig.hooks.allowedHooks.push(
+      "autocompleteFiltersArray",
+    );
+
+    algoliaAutocompleteConfig.hooks.registerHook(
+      "autocompleteFiltersArray",
+      function (filter) {
+        return filter.push(`is_visible=1`);
+      },
+    );
+  },
+);
+```
+
+InstantSearch example:
+
+```js js
+document.addEventListener(
+  "algoliaInstantsearchConfig.hooks.initialize",
+  function () {
+    algoliaInstantsearchConfig.hooks.allowedHooks.push(
+      "instantSearchFiltersArray",
+    );
+
+    algoliaInstantsearchConfig.hooks.registerHook(
+      "instantSearchFiltersArray",
+      function (filter) {
+        return filter.push(`is_visible=1`);
+      },
+    );
+  },
+);
+```
+
+### Edit the JavaScript file
+
+1. Edit your Autocomplete or InstantSearch JavaScript file in [**Search Settings**](/integration/bigcommerce/search-settings/instantsearch/#customize-the-instantsearch-menu).
+
+1. Add a new event trigger to the JavaScript file.
+
+Autocomplete example:
+
+```js js
+algoliaAutocompleteConfig.hooks.triggerHooks(
+  "autocompleteFiltersArray",
+  autocompleteFilters,
+);
+```
+
+InstantSearch example:
+
+```js js
+algoliaInstantsearchConfig.hooks.triggerHooks(
+  "instantSearchFiltersArray",
+  instantsearchFilters,
+);
+```

@@ -1,0 +1,248 @@
+---
+title: Create a replica index
+description: |-
+  Replica indices let you use different ranking strategies, such as sorting.
+---
+
+Algolia uses one ranking strategy per index.
+If you want to use different rankings for the same data,
+you can use [replica indices](/guides/managing-results/refine-results/sorting/in-depth/replicas/).
+
+## Standard and virtual replicas
+
+Standard replicas are exact copies of your index.
+They let you to have a completely different configuration of your index,
+while keeping the data in sync with your primary index.
+
+[Virtual replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/) don't copy the data from their primary index.
+They're more efficient than standard replica, but you can only change a subset of the index settings.
+Virtual replicas are optimized for [relevant sorting](/guides/managing-results/refine-results/sorting/in-depth/relevant-sort/).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Virtual replicas aren't available on the [Grow plan](https://www.algolia.com/pricing/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Naming replica indices
+
+To help you identify your replica indices,
+you should adopt a naming pattern,
+such as `{primaryIndex}_{sortingAttribute}_{asc_or_desc}`.
+For example, `products_price_desc` is a replica index of your `products` index,
+where the results are sorted by the `price` attribute in descending order.
+
+## Create replica indices in the dashboard
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. On the **Replicas** tab, click **Create Replica Index**.
+
+1. In the **Create a new replica** dialog,
+   select **Standard Replica (default)** or **Virtual Replica for Relevant Sort**,
+   enter a name for your replica, and click **Create replica**.
+
+1. You can add multiple replicas at once.
+
+1. Click **Review and Save Settings**.
+
+## Create replica indices with the API
+
+To create replica indices,
+use the [`replicas`](/api-reference/api-parameters/replicas/) setting in your primary index.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      Replicas = new List<string> { "products_price_desc" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	Replicas: opt.Replicas("products_price_desc"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setReplicas(Collections.singletonList(
+      "products_price_desc"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      replicas: ["products_price_desc"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      replicas {
+          +"products_price_desc"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'replicas' => [
+      'products_price_desc'
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"replicas": ["products_price_desc"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      replicas: [
+        "products_price_desc"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "products" `with` IndexSettings(
+      replicas = Some(Seq(
+        "products_price_desc")))
+  }
+  ```
+
+  ```sh CLI
+  # Create a standard replica of your "products" index
+  algolia settings set products --replicas products_price_desc
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "replicas": [
+      "products_price_desc"
+    ]
+  ])
+  ```
+</CodeGroup>
+
+To create virtual indices, use the `virtual` modifier for the replica index name:
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      Replicas = new List<string> { "virtual(products_price_desc)" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	Replicas: opt.Replicas("virtual(products_price_desc)"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setReplicas(Collections.singletonList(
+      "virtual(products_price_desc)"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      replicas: ["virtual(products_price_desc)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      replicas {
+          +"virtual(products_price_desc)"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'replicas' => [
+      'virtual(products_price_desc)'
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"replicas": ["virtual(products_price_desc)"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      replicas: [
+        "virtual(products_price_desc)"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "products" `with` IndexSettings(
+      replicas = Some(Seq(
+        "virtual(products_price_desc)")))
+  }
+  ```
+
+  ```sh CLI
+  # Create a virtual replica of your "products" index
+  algolia settings set products --replicas "virtual(products_price_desc)"
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "replicas": [
+      "virtual(products_price_desc)"
+    ]
+  ])
+  ```
+</CodeGroup>
+
+## Next steps
+
+After creating your replica indices,
+you can change their settings—for example,
+by adding a [attribute for sorting](/guides/managing-results/refine-results/sorting/how-to/sort-by-attribute/).

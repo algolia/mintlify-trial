@@ -1,0 +1,270 @@
+---
+title: Searchable attributes
+description: |-
+  How to decide which searchable attributes you want to use.
+---
+
+When setting up and configuring your index, the first step is to decide which [attributes you want to use for searching](/guides/sending-and-managing-data/prepare-your-data/#algolia-records).
+When you create an index, **all attributes in all your records are searchable by default**.
+This means you can perform searches straight away without configuring anything.
+However, to enhance search relevance and exclude unnecessary results, you should specify which attributes should be searchable.
+
+- An example of a _useful_ searchable attribute is the name of a product.
+- An example of an attribute that _isn't useful_ for searching is a URL. Since users seldom search for URLs, exclude them from the searchable attributes list. However, you can still use image URLs to _display_ images in the results.
+
+For example, on a recipes website it makes sense to make `title`, `ingredients`, and `comments` searchable, and exclude `images`.
+You can still use non-searchable attributes for display or filtering.
+
+## Attributes to include
+
+The following attributes are commonly included (searchable):
+
+- Descriptive attributes: name, description, brand, list of actors in a film, list of features in a computer.
+- Filters: color, brand, size.
+- Keywords and tags.
+- Valuable data like telephone numbers, SKU, ISBN, and other identifying attributes.
+
+## Attributes to exclude
+
+These are often excluded (not searchable):
+
+- For display only: image and other URLs, price, brand logos, SKU.
+- Short descriptions are meant to be displayed, not searched since they usually summarize what's in a longer description.
+- For information only: not yet available, just released, on promotion.
+- For ranking only: most sales, most viewed, highest rated.
+
+## Set searchable attributes
+
+Specify searchable attributes from the dashboard or API.
+
+### Set searchable attributes in the Algolia dashboard
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. On the **Configuration** tab, select **Searchable attributes**.
+
+1. Click **Add a Searchable Attribute** and type or select an attribute from the list.
+
+1. Change the [order of attributes](/guides/managing-results/must-do/searchable-attributes/how-to/configuring-searchable-attributes-the-right-way/#order-of-attributes) by dragging them up or down in the **Searchable attributes** list.
+   To make two attributes equally important, when you add a new attribute,
+   type the attributes directly as a comma-separated list—for example, `title, comments`.
+
+1. Save your changes.
+
+### Set searchable attributes with the API
+
+To make certain attributes searchable, include them in the [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/) setting when configuring your index with the [`setSettings`](/api-reference/api-methods/set-settings/) method.
+
+To configure [the order of searchable attributes](/guides/managing-results/must-do/searchable-attributes/how-to/configuring-searchable-attributes-the-right-way/#order-of-attributes):
+
+- The higher in the list you place an attribute, the higher matches within that attribute will rank in search results.
+- If you want two attributes to have the same priority, include them on the same level, separated by a comma.
+
+<CodeGroup>
+  ```csharp csharp
+  // `title` and `comments` have the same priority
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string> { "title,comments", "ingredients" }
+  };
+
+  // `title` has the highest priority, then `ingredients`, then `comments`
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string> { "title", "ingredients", "comments" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  // `title` and `comments` have the same priority
+  res, err := index.SetSettings(search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		"title,comments",
+  		"ingredients",
+  	),
+  })
+
+  // `title` has the highest priority, then `ingredients`, then `comments`
+  res, err := index.SetSettings(search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		"title",
+  		"ingredients",
+  		"comments",
+  	),
+  })
+  ```
+
+  ```java java
+  // `title` and `comments` have the same priority
+  index.setSettings(
+    new IndexSettings().setSearchableAttributes(Arrays.asList(
+      "title,comments",
+      "ingredients"
+    ))
+  );
+
+  // `title` has the highest priority, then `ingredients`, then `comments`
+  index.setSettings(
+    new IndexSettings().setSearchableAttributes(Arrays.asList(
+      "title",
+      "ingredients"
+      "comments",
+    ))
+  );
+  ```
+
+  ```js js
+  // `title` and `comments` have the same priority
+  index
+    .setSettings({
+      searchableAttributes: ["title,comments", "ingredients"],
+    })
+    .then(() => {
+      // done
+    });
+
+  // `title` has the highest priority, then `ingredients`, then `comments`
+  index
+    .setSettings({
+      searchableAttributes: ["title", "ingredients", "comments"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  // "title" and "comments" have the same priority
+  var settings = settings {
+      searchableAttributes {
+          +"title,comments"
+          +"ingredients"
+      }
+  }
+
+  // "title" has the highest priority, then "ingredients", then "comments"
+  settings = settings {
+      searchableAttributes {
+          +"title"
+          +"ingredients"
+          +"comments"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  // `title` and `comments` have the same priority
+  $index->setSettings([
+    'searchableAttributes' => [
+      "title,comments",
+      "ingredients"
+    ]
+  ]);
+
+  // `title` has the highest priority, then `ingredients`, then `comments`
+  $index->setSettings([
+    'searchableAttributes' => [
+      "title",
+      "ingredients",
+      "comments"
+    ]
+  ]);
+  ```
+
+  ```python python
+  # `title` and `comments` have the same priority
+  index.set_settings({"searchableAttributes": ["title,comments", "ingredients"]})
+
+  # `title` has the highest priority, then `ingredients`, then `comments`
+  index.set_settings({"searchableAttributes": ["title", "ingredients", "comments"]})
+  ```
+
+  ```ruby ruby
+  # `title` and `comments` have the same priority
+  index.set_settings(
+    {
+      searchableAttributes: [
+        "title,comments",
+        "ingredients"
+      ]
+    }
+  )
+
+  # `title` has the highest priority, then `ingredients`, then `comments`
+  index.set_settings(
+    {
+      searchableAttributes: [
+        "title",
+        "ingredients",
+        "comments"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  // `title` and `comments` have the same priority
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(Seq(
+        SearchableAttributes.attributes("title", "comments"),
+        SearchableAttributes.attribute("ingredients"))))
+  }
+
+  // `title` has the highest priority, then `ingredients`, then `comments`
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(Seq(
+        SearchableAttributes.attributes("title"),
+        SearchableAttributes.attribute("ingredients"),
+        SearchableAttributes.unordered("comments"))))
+  }
+  ```
+
+  ```swift swift
+  // `title` and `comments` have the same priority
+  index.setSettings([
+    "searchableAttributes": [
+      "title,comments",
+      "ingredients",
+    ]
+  ])
+
+  // `title` has the highest priority, then `ingredients`, then `comments`
+  index.setSettings([
+    "searchableAttributes": [
+      "title",
+      "ingredients",
+      "comments",
+    ]
+  ])
+  ```
+</CodeGroup>
+
+In the first example, `title` and `comments` have the same priority.
+In the second example, matches in the `title` attribute rank before matches in the `comments` attribute.
+
+## See also
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Configuring searchable attributes the right way](/guides/managing-results/must-do/searchable-attributes/how-to/configuring-searchable-attributes-the-right-way/)
+  - [Records, attributes, and searchable attributes](/guides/sending-and-managing-data/prepare-your-data/#algolia-records)
+  - [User-restricted access to data](/guides/security/api-keys/how-to/user-restricted-access-to-data/)
+  - [Fuzzy search and fuzzy matching](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+  - [How search queries are processed](https://www.algolia.com/blog/product/what-is-a-search-query-and-how-is-it-processed-by-a-search-engine/)
+</Info>
+
+{/* prettier-ignore-end */}

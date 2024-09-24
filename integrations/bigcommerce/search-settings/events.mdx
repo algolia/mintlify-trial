@@ -1,0 +1,24 @@
+---
+title: Click and conversion events
+description: |-
+  Learn how to send click and conversion events from your BigCommerce store to the Algolia Insights API.
+---
+
+Learn how to send click and conversion events from your BigCommerce store to the Algolia Insights API.
+
+By default, you'll send [click and view events](/guides/sending-events/concepts/event-types/) when users view or select search results.
+
+To turn off the sending of click and conversion events,
+clear the **Use click analytics** checkbox.
+
+By default, a new anonymous user token is generated on every page refresh.
+For more persistent user tokens, select **userToken is set using cookies depending on the user's approval**.
+
+Before you can use cookies to store the user token,
+you must turn on "Cookie consent tracking" in your BigCommerce control panel.
+To find this option in your BigCommerce store, go to **Settings > Security & Privacy > Your customers' privacy.**
+
+## Big Open Data Layer analytics
+
+1. Check **Use data layer analytics** to enable [Big Open Data Layer](https://developer.bigcommerce.com/docs/integrations/hosted-analytics)
+1. Select **Add to cart**, **Order purchased**, or both events.

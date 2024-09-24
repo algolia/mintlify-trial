@@ -1,0 +1,63 @@
+---
+title: Data, record size, and usage limits
+description: |-
+  Learn about the size and usage limitations of your indices, records, and queries, restrictions related to performance, and infrastructure resources.
+---
+
+## Size limits
+
+### Record size limits
+
+Records can't go [beyond a certain size limit](https://support.algolia.com/hc/en-us/articles/4406981897617-Is-there-a-size-limit-for-my-index-records-/). This limit might depend on your plan—see the [Algolia pricing page](https://www.algolia.com/pricing) for more details. If you try to index a record that exceeds the limit, Algolia returns the `Record is too big` error.
+
+[Break up your records into smaller ones](/guides/sending-and-managing-data/prepare-your-data/how-to/reducing-object-size/) if needed.
+
+### Index size limits
+
+The maximum size for a single index is 100 GB (or 1 GB for the Build plan). The number of records an index can have is only limited by the capacity of the hardware.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Special infrastructure options let you go much further than this limit. If you would like to know more, contact your account manager or the [Algolia support](https://support.algolia.com/hc/en-us/requests/new)
+  team.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Application size limits
+
+For regular plans and infrastructure, the maximum size for an application (cumulative size of its indices) is 100 GB (or 1 GB for the Build plan).
+This represents 80% of the RAM capacity of regular servers (128 GB), which leaves 20% of the RAM capacity to handle your indexing tasks. If the application size exceeds the 100 GB (or 1 GB for the Build plan) capacity, performance degrades severely: data swaps back and forth between temporary and permanent memory, which is a costly operation.
+
+If you approach or exceed this limit, you will see a warning message similar to:
+
+```txt txt
+Rate limit reached for index size (observed: Over-usage Amount MB; allowed: 256000MB).
+Please contact us at support@algolia.com if you need an extended limit.
+```
+
+Special infrastructure options let you go much further than this limit. If you would like to know more, contact your account manager or the [Algolia support](https://support.algolia.com/hc/en-us/requests/new)
+team.
+
+## Indexing usage limits
+
+### Maximum indexing operations
+
+Algolia [counts the number of operations performed every month](https://support.algolia.com/hc/en-us/articles/18138875086865). When you hit your plan's limit, you're charged for the extra operations, based on your plan's over-quota pricing.
+
+### Indexing rate limit
+
+Algolia delays or rejects indexing operations whenever a server is overloaded. If Algolia determines that indexing operations can negatively impact search requests, **it takes action to favor search over indexing**. This [rate limit](https://support.algolia.com/hc/en-us/articles/4406981897617) exists to protect the server's search capacity.
+
+## Query usage
+
+Algolia counts a search operation whenever you perform a search. In search-as-you-type implementations, this happens on every keystroke. If you're querying several indices at each keystroke, then one keystroke triggers as many operations as queried indices, unless you use the [`multipleQueries`](/api-reference/api-methods/multiple-queries/) method to do this.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [What are the various limits of the search API endpoints?](https://support.algolia.com/hc/en-us/articles/4406981926801)
+</Info>
+
+{/* prettier-ignore-end */}

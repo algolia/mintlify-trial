@@ -1,0 +1,1300 @@
+---
+title: Dynamic filtering with Rules
+description: |-
+  Dynamic filtering with Rules search.
+---
+
+To help users find what they're looking for straight from the search box, you can use Algolia Rules to automatically apply a filter to results if the query matches a facet value.
+
+## How to create a dynamic filtering rule
+
+In this example for a product catalog, you create a rule that displays products with the "red" value in the `color` facet if the query contains the word "red".
+
+Using the [example dataset](#example-dataset), this rule ensures that only records with "red" in the `color` attribute are returned. It ignores "red" in other attributes such as `brand`.
+
+| Query | Results                                                                                    |
+| ----- | ------------------------------------------------------------------------------------------ |
+| red   | FM, Clothing, LondonLook, Red, 21.99<br />The Mandal, Toaster, Black & Decker, Red, 149.99 |
+
+### Using the dashboard
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. Click [**Rules**](https://dashboard.algolia.com/rules) in the left sidebar menu.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Manual Editor** option.
+
+1. In the **Condition(s)** section, with **Query** toggled on, select **Contains** in the drop-down menu, and enter "red" in the input field.
+
+1. In the **Consequence(s)** section:
+
+   - Click **Add consequence** and select **Add Query Parameter**.
+   - In the input field that appears, add the JSON parameters you want to apply when the user's query matches the Rule: `{"filters":"color:red"}`
+   - Click **Add consequence** and select **Remove Word**.
+   - Type or select "red" in the input field.
+
+If you click **Optional** under **Consequence(s)**, this will display non-red products after the red ones. For more information, see [Using optional filters](/guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-promote-with-optional-filters/).
+
+8. **Save** your changes.
+
+### Using the API
+
+This example uses the [`filters`](/api-reference/api-parameters/filters/) parameter.
+With this approach, you need one rule per filter value.
+If you have 10 color options, you need 10 rules, one for each color.
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "red-color",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "red" }
+      },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              Filters = "color:red",
+              Query = new ConsequenceQuery { Edits = new List<Edit> { new Edit { Delete = "red" } } }
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:  "red-color",
+  	Condition: search.RuleCondition{Anchoring: search.Contains, Pattern: "red"},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{
+  						search.RemoveEdit("red"),
+  					},
+  				},
+  			),
+  			QueryParams: search.QueryParams{
+  				Filters: opt.Filters("color:red"),
+  			},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition()
+      .setAnchoring("contains")
+      .setPattern("red");
+
+  ConsequenceParams params =
+      new ConsequenceParams()
+          .setFilters("color:red")
+          .setConsequenceQuery(
+              new ConsequenceQuery()
+                  .setEdits(Collections.singletonList(Edit.createDelete("read"))));
+
+  Consequence consequence = new Consequence()
+      .setParams(params);
+
+  Rule rule = new Rule()
+          .setObjectID("red-color")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+
+  // Asynchronous
+  index.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  index.saveRule({
+    objectID: "red-color",
+    condition: {
+      pattern: "red",
+      anchoring: "contains",
+    },
+    consequence: {
+      params: {
+        query: {
+          remove: "red",
+        },
+        filters: "color:red",
+      },
+    },
+  });
+  ```
+
+  ```kotlin kotlin
+  val rule = Rule(
+      objectID = ObjectID("red-color"),
+      conditions = listOf(
+          Condition(anchoring = Anchoring.Contains, pattern = Pattern.Literal("red"))
+      ),
+      consequence = Consequence(
+          query = Query(filters = "color:red"),
+          edits = listOf(Edit(delete = "read"))
+      )
+  )
+
+  index.saveRule(rule)
+  ```
+
+  ```php php
+  $rule = array(
+    'objectID' => 'red-color',
+    'conditions' => array(array(
+      'pattern' => 'red',
+      'anchoring' => 'contains'
+    )),
+    'consequence' => array(
+      'params' => array(
+        'query' => array(
+          'remove' => 'red'
+        ),
+        'filters' => 'color:red'
+      )
+    )
+  );
+
+  // Push Rule to index
+  $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "red-color",
+      "condition": {
+          "anchoring": "contains",
+          "pattern": "red",
+      },
+      "consequence": {
+          "params": {
+              "query": {
+                  "remove": ["red"],
+              },
+              "filters": "color:red",
+          }
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  index.save_rule(
+    "red-color",
+    {
+      objectID: "red-color",
+      conditions: [
+        {
+          pattern: "red",
+          anchoring: "contains"
+        }
+      ],
+      consequence: {
+        params: {
+          query: {
+            remove: ["red"]
+          },
+          filters: "color:red"
+        }
+      }
+    }
+  )
+  ```
+
+  ```scala scala
+  val rule = Rule(
+    objectID = "red-color",
+    condition = Some(
+      Condition(
+        pattern = "red",
+        anchoring = "contains")),
+    consequence = Consequence(
+      params = Some(
+        Map(
+          "query" -> Map("remove" -> "red"),
+          "filters" -> "color:red"))))
+
+  client.execute {
+    save rule rule inIndex "indexName"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "red-color")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("red"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(\.queryTextAlteration, to: .edits([.remove("read")]))
+        .set(\.query, to: Query().set(\.filters, to: "color:red"))
+    )
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+## Examples
+
+The following examples explore:
+
+- [One rule per facet](#one-rule-per-facet)
+- [Numerical dynamic filtering](#numerical-dynamic-filtering)
+- [Tagged filters](#tagged-filters)
+
+### One rule per facet
+
+Instead of creating one rule per facet value, this approach uses one rule for the `color` facet.
+
+Using the [example dataset](#example-dataset), this _single_ rule ensures that any record with any matching color value in the `color` attribute will be returned.
+
+| Query | Results                                                                                    |
+| ----- | ------------------------------------------------------------------------------------------ |
+| red   | FM, Clothing, LondonLook, Red, 21.99<br />The Mandal, Toaster, Black & Decker, Red, 149.99 |
+| black | Will Carpenter, T-shirt, Red or Dead, Black, 199.99                                        |
+
+#### Using the dashboard
+
+1. Create a new rule. See [how to create a dynamic filtering rule](#how-to-create-a-dynamic-filtering-rule).
+1. In the Manual Editor's **Condition(s)**, click the box next to **Query contains** and select the option **Add Facet "color"** from the drop-down menu.
+1. In the **Consequence(s)** section:
+   - Click **Add consequence** and select **Filter/Boost Matching Attributes**.
+   - Click the **Filter** box that appears and select the option **Add Facet "color"** from the drop-down menu.
+1. **Save** your changes.
+
+#### Using the API
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "color-facets",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "contains", Pattern = "facet:color" }
+      },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              AutomaticFacetFilters = new List<AutomaticFacetFilter>
+              {
+                  new AutomaticFacetFilter { Facet = "color" }
+              }
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:  "color-facets",
+  	Condition: search.RuleCondition{Anchoring: search.Contains, Pattern: "{facet:color}"},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			AutomaticFacetFilters: []search.AutomaticFacetFilter{{Facet: "color"}},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition()
+      .setAnchoring("contains")
+      .setPattern("{facet:color}");
+
+  ConsequenceParams params = new ConsequenceParams()
+      .setAutomaticFacetFilters(Collections.singletonList(new AutomaticFacetFilter("color")));
+
+  Consequence consequence = new Consequence()
+      .setParams(params);
+
+  Rule rule =
+      new Rule()
+          .setObjectID("color-facets")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+
+  // Asynchronous
+  index.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  index.saveRule({
+    objectID: "color-facets",
+    condition: {
+      pattern: "{facet:color}",
+    },
+    consequence: {
+      params: {
+        automaticFacetFilters: ["color"],
+      },
+    },
+  });
+  ```
+
+  ```kotlin kotlin
+  val rule = Rule(
+      objectID = ObjectID("color-facets"),
+      conditions = listOf(
+          Condition(
+              anchoring = Anchoring.Contains,
+              pattern = Pattern.Literal("{facet:color}")
+          )
+      ),
+      consequence = Consequence(
+          automaticFacetFilters = listOf(
+              AutomaticFacetFilters(attribute = Attribute("color"))
+          )
+      )
+  )
+
+  index.saveRule(rule)
+  ```
+
+  ```php php
+  // Turn JSON into an array
+  $rule = array(
+    'objectID' => 'color-facets',
+    'conditions' => array(array(
+      'pattern' => '{facet:color}'
+    )),
+    'consequence' => array(
+      'params' => array(
+        'automaticFacetFilters' => ['color']
+      )
+    )
+  );
+
+  // Push Rule to index
+  $index->saveRule($rule['objectID'], $rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "color-facets",
+      "condition": {
+          "anchoring": "contains",
+          "pattern": "{facet:color}",
+      },
+      "consequence": {
+          "params": {
+              "automaticFacetFilters": ["color"],
+          },
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  index.save_rule(
+    "color-facets",
+    {
+      objectID: "color-facets",
+      conditions: [
+        {
+          pattern: "{facet:color}",
+          anchoring: "contains"
+        }
+      ],
+      consequence: {
+        params: {
+          automaticFacetFilters: ["color"]
+        }
+      }
+    }
+  )
+  ```
+
+  ```scala scala
+  val rule = Rule(
+    objectID = "color-facets",
+    condition = Some(
+      Condition(
+        pattern = "{facet:color}",
+        anchoring = "contains")),
+    consequence = Consequence(
+      params = Some(
+        Map(
+          "automaticFacetFilters" -> Seq("color")))))
+
+  client.execute {
+    save rule rule inIndex "indexName"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "color-facets")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("{facet:color}"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(\.automaticFacetFilters, to: [.init(attribute: "color")])
+    )
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Numerical dynamic filtering
+
+Consider a user entering the query "cheap toaster 800w". You can use two rules together to filter results by:
+
+1. The product type: "Toaster"
+1. "Cheapness". You determine that a cheap product is any product that costs less than $15.
+
+Using the [example dataset](#example-dataset), these rules ensure that any product that costs less than $15, has the `product_type` "Toaster" and includes the phrase "800w" is returned.
+
+| Query              | Results                                        |
+| ------------------ | ---------------------------------------------- |
+| cheap toaster 800w | Essentials 800w, Toaster, Daewoo, Black, 14.99 |
+
+#### Using the dashboard
+
+**Create the first rule:**
+
+1. Create a new rule. See [how to create a dynamic filtering rule](#how-to-create-a-dynamic-filtering-rule).
+1. In the Manual Editor's **Condition(s)**, with **Query** toggled on, select **Contains** in the drop-down menu, and enter "toaster" in the input field.
+1. In the **Consequence(s)** section:
+   - Click **Add consequence** and select **Add Query Parameter**.
+   - In the input field that appears, enter `{"filters":"product_type:toaster"}`
+   - Click **Add consequence** and select **Remove Word**.
+   - Type or select "toaster" in the input field.
+1. **Save** your changes.
+
+**Create the second rule:**
+
+1. Create a new rule
+1. In the Manual Editor's **Condition(s)**, with **Query** toggled on, select **Contains** in the drop-down menu, and enter "cheap" in the input field.
+1. In the **Consequence(s)** section:
+   - Click **Add consequence** and select **Add Query Parameter**.
+   - In the input field that appears, enter `{"filters":"price < 10"}`
+   - Click **Add consequence** and select **Remove Word**.
+   - Type or select "cheap" in the input field.
+1. **Save** your changes.
+
+#### Using the API
+
+<CodeGroup>
+  ```csharp csharp
+  var rules = new List<Rule>
+  {
+      new Rule
+      {
+          ObjectID = "toaster",
+          Conditions = new List<Condition>
+          {
+              new Condition { Anchoring = "contains", Pattern = "toaster" }
+          },
+          Consequence = new Consequence
+          {
+              Params = new ConsequenceParams
+              {
+                  Filters = "product_type:toaster",
+                  Query = new ConsequenceQuery
+                  {
+                      Edits = new List<Edit> { new Edit { Delete = "toaster" } }
+                  }
+              }
+          }
+      },
+      new Rule
+      {
+          ObjectID = "cheap",
+          Conditions = new List<Condition>
+          {
+              new Condition { Anchoring = "contains", Pattern = "cheap" }
+          },
+          Consequence = new Consequence
+          {
+              Params = new ConsequenceParams
+              {
+                  Filters = "price < 15",
+                  Query = new ConsequenceQuery
+                  {
+                      Edits = new List<Edit> { new Edit { Delete = "cheap" } }
+                  }
+              }
+          }
+      },
+  };
+
+  index.SaveRules(rules);
+
+  // Asynchronous
+  await index.SaveRulesAsync(rules);
+  ```
+
+  ```go go
+  toasterRule := search.Rule{
+  	ObjectID:  "toaster",
+  	Condition: search.RuleCondition{Anchoring: search.Contains, Pattern: "toaster"},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{
+  						search.RemoveEdit("toaster"),
+  					},
+  				},
+  			),
+  			QueryParams: search.QueryParams{
+  				Filters: opt.Filters("product_type:toaster"),
+  			},
+  		},
+  	},
+  }
+
+  cheapRule := search.Rule{
+  	ObjectID:  "cheap",
+  	Condition: search.RuleCondition{Anchoring: search.Contains, Pattern: "cheap"},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{
+  						search.RemoveEdit("toaster"),
+  					},
+  				},
+  			),
+  			QueryParams: search.QueryParams{
+  				Filters: opt.Filters("product_type:toaster"),
+  			},
+  		},
+  	},
+  }
+
+  rules := []search.Rule{toasterRule, cheapRule}
+
+  res, err := index.SaveRules(rules)
+  ```
+
+  ```java java
+  Condition toasterCondition = new Condition()
+      .setAnchoring("contains")
+      .setPattern("toaster");
+
+  Consequence toasterConsequence = new Consequence()
+      .setParams(new ConsequenceParams()
+          .setFilters("product_type:toaster")
+          .setConsequenceQuery(
+              new ConsequenceQuery()
+                  .setEdits(Collections.singletonList(Edit.createDelete("toaster")))));
+
+  Rule toasterRule =
+      new Rule()
+          .setObjectID("toaster")
+          .setConditions(Collections.singletonList(toasterCondition))
+          .setConsequence(toasterConsequence);
+
+  Condition cheapCondition = new Condition()
+      .setAnchoring("contains")
+      .setPattern("cheap");
+
+  Consequence cheapConsequence = new Consequence()
+      .setParams(new ConsequenceParams()
+          .setFilters("price < 15")
+          .setConsequenceQuery(
+              new ConsequenceQuery()
+                  .setEdits(Collections.singletonList(Edit.createDelete("cheap")))));
+
+  Rule cheapRule =
+      new Rule()
+          .setObjectID("cheap")
+          .setConditions(Collections.singletonList(cheapCondition))
+          .setConsequence(cheapConsequence);
+
+  List<Rule> rules = Arrays.asList(toasterRule, cheapRule);
+
+  index.saveRules(rules);
+
+  // Asynchronous
+  index.saveRulesAsync(rules);
+  ```
+
+  ```js js
+  index.saveRules([
+    {
+      objectID: "toaster",
+      condition: {
+        pattern: "toaster",
+        anchoring: "contains",
+      },
+      consequence: {
+        params: {
+          query: {
+            remove: "toaster",
+          },
+          filters: "product_type:toaster",
+        },
+      },
+    },
+    {
+      objectID: "cheap",
+      condition: {
+        pattern: "cheap",
+        anchoring: "contains",
+      },
+      consequence: {
+        params: {
+          query: {
+            remove: "cheap",
+          },
+          filters: "price < 15",
+        },
+      },
+    },
+  ]);
+  ```
+
+  ```kotlin kotlin
+  val toasterRule = Rule(
+      objectID = ObjectID("toaster"),
+      conditions = listOf(
+          Condition(anchoring = Anchoring.Contains, pattern = Pattern.Literal("toaster"))
+      ),
+      consequence = Consequence(
+          query = Query(filters = "product_type:toaster"),
+          edits = listOf(Edit(delete = "toaster"))
+      )
+  )
+
+  val cheapRule = Rule(
+      objectID = ObjectID("cheap"),
+      conditions = listOf(
+          Condition(anchoring = Anchoring.Contains, pattern = Pattern.Literal("cheap"))
+      ),
+      consequence = Consequence(
+          query = Query(filters = "price < 15"),
+          edits = listOf(Edit(delete = "cheap"))
+      )
+  )
+
+  index.saveRules(listOf(toasterRule, cheapRule))
+  ```
+
+  ```php php
+  // Turn JSON into an array
+  $rules = array(
+    array(
+      'objectID' => 'toaster',
+      'conditions' => array(array(
+        'pattern' => 'toaster',
+        'anchoring' => 'contains'
+      )),
+      'consequence' => array(
+        'params' => array(
+          'query' => array(
+            'remove' => 'toaster'
+          ),
+          'filters' => 'product_type:toaster'
+        )
+      )
+    ),
+    array(
+      'objectID' => 'cheap',
+      'condition' => array(
+        'pattern' => 'cheap',
+        'anchoring' => 'contains'
+      ),
+      'consequence' => array(
+        'params' => array(
+          'query' => array(
+            'remove' => 'cheap'
+          ),
+          'filters' => 'price < 15'
+        )
+      )
+    )
+  );
+
+  // Push Rule to index
+  $index->saveRules($rules);
+  ```
+
+  ```python python
+  rules = [
+      {
+          "objectID": "toaster",
+          "condition": {
+              "anchoring": "contains",
+              "pattern": "toaster",
+          },
+          "consequence": {
+              "params": {
+                  "query": {
+                      "remove": ["toaster"],
+                  },
+                  "filters": "product_type:toaster",
+              },
+          },
+      },
+      {
+          "objectID": "cheap",
+          "condition": {
+              "anchoring": "contains",
+              "pattern": "cheap",
+          },
+          "consequence": {
+              "params": {
+                  "query": {
+                      "remove": ["cheap"],
+                  },
+                  "filters": "price < 15",
+              },
+          },
+      },
+  ]
+
+  response = index.save_rules(rules)
+  ```
+
+  ```ruby ruby
+  index.batch_rules(
+    [
+      {
+        objectID: "toaster",
+        conditions: [
+          {
+            pattern: "toaster",
+            anchoring: "contains"
+          }
+        ],
+        consequence: {
+          params: {
+            query: {
+              remove: ["toaster"]
+            },
+            filters: "product_type:toaster"
+          }
+        }
+      },
+      {
+        objectID: "cheap",
+        conditions: [
+          {
+            pattern: "cheap",
+            anchoring: "contains"
+          }
+        ],
+        consequence: {
+          params: {
+            query: {
+              remove: ["cheap"]
+            },
+            filters: "price < 15"
+          }
+        }
+      }
+    ]
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    saveRules inIndex "myIndex" Seq (
+      Rule(
+        objectID = "toaster",
+        condition = Some(
+          Condition(
+            pattern = "toaster",
+            anchoring = "contains")),
+        consequence = Consequence(
+          params = Some(
+            Map(
+              "query" -> Map("remove" -> Seq("toaster")),
+              "filters" -> "product_type:toaster")))),
+        Rule(
+          objectID = "cheap",
+          condition = Some(
+            Condition(
+              pattern = "cheap",
+              anchoring = "contains")),
+          consequence = Consequence(
+            params = Some(
+              Map(
+                "query" -> Map("remove" -> Seq("cheap")),
+                "filters" -> "price < 15")))))
+  }
+  ```
+
+  ```swift swift
+  let toasterRule = Rule(objectID: "toaster")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("toaster"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(\.queryTextAlteration, to: .edits([.remove("toaster")]))
+        .set(\.query, to: Query().set(\.filters, to: "product_type:toaster"))
+    )
+
+  let cheapRule = Rule(objectID: "cheap")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("cheap"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(\.queryTextAlteration, to: .edits([.remove("cheap")]))
+        .set(\.query, to: Query().set(\.filters, to: "price < 15"))
+    )
+  index.saveRules([toasterRule, cheapRule]) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Tagged filters
+
+Consider a user who enters the query "apple headphones".
+They would expect to search for results that match the term "headphones", but only where the `brand` attribute matches "apple".
+You can find this behavior on sites such as GitHub.
+It's a great alternative to filters for users who prefer to type rather than click.
+
+This approach is similar to [one rule per facet](#one-rule-per-facet).
+
+Using the [example dataset](#example-dataset), this rule ensures that any record containing the phrase "headphones" that also has "Apple" in the `brand` attribute will be returned. It won't return non-Apple brands, even if the phrase "Apple" appears in other attributes.
+
+| Query            | Results                                      |
+| ---------------- | -------------------------------------------- |
+| apple headphones | Airpods Max, Headphones, Apple, Gray, 548.99 |
+
+#### Using the dashboard
+
+1. Create a new rule [as above](#how-to-create-a-dynamic-filtering-rule)
+1. In the Manual Editor's **Condition(s)**, click the box next to **Query contains** and select the option **Add Facet "brand"** from the drop-down menu.
+1. Clear the **Apply to plurals, synonyms and typos** checkbox to ensure precise matching of the brand name.
+1. In the **Consequence(s)** section:
+   - Click **Add consequence** and select **Filter/Boost Matching Attributes**.
+   - Click the **Filter** box that appears and select the option **Add Facet "brand"** from the drop-down menu.
+   - Click **Add consequence** and select **Remove word**.
+   - In the input that appears, select **Remove `{facet:brand}`**.
+1. **Save** your changes.
+
+#### Using the API
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      Condition = new Condition
+      {
+          Anchoring = "contains",
+          Pattern = "brand\\: {facet:brand}",
+          Alternatives = Alternatives.Of(false)
+      },
+
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              AutomaticFacetFilters = new List<AutomaticFacetFilter>
+              {
+                  new AutomaticFacetFilter { Facet = "brand" }
+              },
+              Query = new ConsequenceQuery
+              {
+                  Edits = new List<Edit>
+                  {
+                      new Edit { Type = EditType.Remove, Delete = "brand\\:" },
+                      new Edit { Type = EditType.Remove, Delete = "{facet:brand}" }
+                  }
+              }
+          }
+      },
+      Description = "filter on brand: {brand}",
+      ObjectID = "tagged-brand-rule"
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:    "tagged-brand-rule",
+  	Description: "filter on brand: {brand}",
+  	Conditions: []search.RuleCondition{
+  		{
+  			Pattern:      "brand\\: {facet:brand}",
+  			Anchoring:    search.Contains,
+  			Alternatives: search.AlternativesDisabled(),
+  		},
+  	},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			AutomaticFacetFilters: []search.AutomaticFacetFilter{
+  				{Facet: "brand"},
+  			},
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{
+  						search.RemoveEdit("brand\\:"),
+  						search.RemoveEdit("{facet:brand}"),
+  					},
+  				},
+  			),
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition =
+      new Condition()
+          .setAnchoring("contains")
+          .setPattern("brand\\: {facet:brand}")
+          .setAlternatives(Alternatives.of(false));
+
+  ConsequenceParams params =
+      new ConsequenceParams()
+          .setAutomaticFacetFilters(
+              Collections.singletonList(new AutomaticFacetFilter("brand")))
+          .setConsequenceQuery(
+              new ConsequenceQuery()
+                  .setEdits(
+                      Arrays.asList(
+                          Edit.createDelete("brand\\:"),
+                          Edit.createDelete("{facet:brand}"))));
+
+  Consequence consequence = new Consequence().setParams(params);
+
+  Rule rule =
+      new Rule()
+          .setObjectID("tagged-brand-rule")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  index.saveRule(rule);
+
+  // Asynchronous
+  index.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  const rule = {
+    condition: {
+      pattern: "brand\\: {facet:brand}",
+      anchoring: "contains",
+      alternatives: false,
+    },
+    consequences: [
+      {
+        params: {
+          automaticFacetFilters: ["brand"],
+          query: {
+            remove: ["brand\\:", "{facet:brand}"],
+          },
+        },
+      },
+    ],
+    description: "filter on brand: {brand}",
+    objectID: "tagged-brand-rule",
+  };
+
+  index.saveRule(rule);
+  ```
+
+  ```kotlin kotlin
+  val rule = Rule(
+      objectID = ObjectID("tagged-brand-rule"),
+      conditions = listOf(
+          Condition(
+              anchoring = Anchoring.Contains,
+              pattern = Pattern.Literal("brand\\: {facet:brand}"),
+              alternative = Alternatives.False
+          )
+      ),
+      consequence = Consequence(
+          automaticFacetFilters = listOf(AutomaticFacetFilters(attribute = Attribute("brand"))),
+          edits = listOf(Edit(delete = "brand\\:"), Edit(delete = "{facet:brand}"))
+      )
+  )
+
+  index.saveRule(rule)
+  ```
+
+  ```php php
+  $rule = array (
+    'conditions' => array(
+    array (
+      'pattern' => 'brand\\: {facet:brand}',
+      'anchoring' => 'contains',
+      'alternatives' => false,
+    )),
+    'consequences' =>
+    array (
+      array (
+        'params' =>
+        array (
+          'automaticFacetFilters' =>
+          array (
+            'brand',
+          ),
+          'query' =>
+          array (
+            'remove' =>
+            array (
+              'brand\\:',
+              '{facet:brand}',
+            ),
+          ),
+        ),
+      ),
+    ),
+    'description' => 'filter on brand: {brand}',
+    'objectID' => 'tagged-brand-rule',
+  );
+
+  $response = $index->saveRule($rule['objectID'], $rule);
+  ```
+
+  ```python python
+  rule = {
+      "description": "filter on brand: {brand}",
+      "objectID": "tagged-brand-rule",
+      "conditions": [
+          {
+              "pattern": "brand\\: {facet:brand}",
+              "anchoring": "contains",
+              "alternatives": False,
+          }
+      ],
+      "consequence": {
+          "params": {
+              "query": {
+                  "edits": [
+                      {"type": "remove", "delete": "brand\\:"},
+                      {"type": "remove", "delete": "{facet:brand}"},
+                  ]
+              },
+              "automaticFacetFilters": [
+                  {"facet": "brand"},
+              ],
+          }
+      },
+  }
+
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    conditions: [
+      {
+        pattern: "brand\\: {facet:brand}",
+        anchoring: "contains",
+        alternatives: false
+      }
+    ],
+    consequences: [
+      {
+        params: {
+          automaticFacetFilters: ["brand"],
+          query: {
+            remove: ["brand\\:", "{facet:brand}"]
+          }
+        }
+      }
+    ],
+    description: "filter on brand: {brand}",
+    objectID: "tagged-brand-rule"
+  }
+
+  index.save_rule(rule["objectID"], rule)
+  ```
+
+  ```scala scala
+  val rule = Rule(
+    objectID = "tagged-brand-rule",
+    description = Some("filter on brand: {brand}"),
+    condition = Some(
+      Condition(
+        pattern = "brand\\: {facet:brand}",
+        anchoring = "contains",
+        alternatives = Some(Alternatives.`false`))),
+    consequence = Consequence(
+      params = Some(
+        Map(
+          "query" -> Map(
+            "edits" -> Seq(
+              Map("type" -> "remove", "delete" -> "brand\\:"),
+              Map("type" -> "remove", "delete" -> "{facet:brand}"))),
+          "automaticFacetFilters" -> Map("facet" -> "brand")))))
+
+  client.execute {
+    save rule rule inIndex "index_name"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "tagged-brand-rule")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .contains)
+          .set(\.pattern, to: .literal("brand\\: {facet:brand"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(\.automaticFacetFilters, to: [.init(attribute: "brand")])
+        .set(
+          \.queryTextAlteration,
+          to: .edits([
+            .remove("brand\\:"),
+            .remove("{facet:brand}"),
+          ]))
+    )
+
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+## Example dataset
+
+All the examples on this page use a product catalog index.
+The appropriate attributes have been set as [attributes for faceting](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting-with-dashboard/).
+The index has records that look like this:
+
+```json json
+[
+  {
+    "product_name": "FM",
+    "product_type": "T-shirt",
+    "brand": "LondonLook",
+    "color": "Red",
+    "price": 21.99
+  },
+  {
+    "product_name": "Caveman",
+    "product_type": "T-shirt",
+    "brand": "Red or Dead",
+    "color": "Brown",
+    "price": 9.99
+  },
+  {
+    "product_name": "iPhone 13 Pro Max",
+    "product_type": "Phone",
+    "brand": "Apple",
+    "color": "Blue",
+    "price": 1824.61
+  },
+  {
+    "product_name": "Will Carpenter",
+    "product_type": "T-shirt",
+    "brand": "Red or Dead",
+    "color": "Black",
+    "price": 199.99
+  },
+  {
+    "product_name": "The Mandal 800w",
+    "product_type": "Toaster",
+    "brand": "Black & Decker",
+    "color": "Red",
+    "price": 149.99
+  },
+  {
+    "product_name": "Essentials 800w",
+    "product_type": "Toaster",
+    "brand": "Daewoo",
+    "color": "Black",
+    "price": 14.99
+  },
+  {
+    "product_name": "Airpods Max",
+    "product_type": "Headphones",
+    "brand": "Apple",
+    "color": "Gray",
+    "price": 548.99
+  },
+  {
+    "product_name": "WH-CH520",
+    "product_type": "Headphones",
+    "brand": "Sony",
+    "color": "Apple",
+    "price": 39.99
+  }
+]
+```
+
+## See also
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Adding filters based on the query](/guides/managing-results/rules/detecting-intent/how-to/applying-a-custom-filter-for-a-specific-query/)
+  - [Faceting](/guides/managing-results/refine-results/faceting/#conjunctive-and-disjunctive-faceting)
+</Info>
+
+{/* prettier-ignore-end */}

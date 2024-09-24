@@ -1,0 +1,520 @@
+---
+title: Faceting
+description: |-
+  Algolia uses facets for categorizing and grouping your data. Users can use facets to refine their search.
+---
+
+Facets let you create **categories on a select group of attributes so that users can refine their search**. For example, on an index of books, helpful facets might be author and genre. Algolia also calculates results for each facet. It allows you to display facets and facet counts so that users can filter results.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Filters and facets](https://www.algolia.com/blog/ux/filters-vs-facets-in-site-search/)
+  - [Fuzzy search based on filtering and faceting](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## What's a facet?
+
+Think of facets as a set of filterable categories that allow users to refine results by multiple categories simultaneously. Algolia derives these facets from attributes.
+
+- For a book index, facets might be `author` or `genre`.
+- For a luxury shop, facets might be `brand` or `designer`.
+
+Algolia's faceting features allow you to:
+
+- List all possible values for the selected attributes and return contextual values and counts with each search result.
+- Compute a facet count or the number of records matching each attribute's value
+- Enable search within an attribute's values ([search for facet values](#search-for-facet-values)).
+
+## Difference between filters and facets
+
+Filters and facets often get mixed up because there's much overlap, but [understanding the difference is essential](https://www.algolia.com/blog/ux/filters-vs-facets-in-site-search/). Both help to restrict a search to a subset of results.
+
+- **Filters provide basic options to help narrow down search results.** Sometimes users don't see the filter restrictions, for example, when automatically _filtering_ the records they're allowed to see based on their user ID.
+- **Facets help users refine their search using several categories simultaneously.** Faceting is still filtering but displays facets to allow users to choose from a set of useful values, features, and counts.
+
+## How to configure faceting
+
+You can configure faceting from the dashboard or the API, but the overall process is the same:
+
+1. [Declare attributes for faceting](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/)
+1. Retrieve facets from the API (see the following section).
+
+## Retrieving facets
+
+To retrieve facets and their respective counts as part of the JSON response, you must specify a list of facets in the [`facets`](/api-reference/api-parameters/facets/) parameter at query time.
+
+For example, retrieve your books' facets by specifying the following list:
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search<Book>(
+      new Query("query")
+      {
+          Facets = new List<string> { "author", "genre" }
+      }
+  );
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"query",
+  	opt.Facets("author", "genre"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("query").setFacets(Arrays.asList(
+      "author",
+      "genre"
+    ))
+  );
+  ```
+
+  ```js js
+  index.search("query", {
+    facets: ["author", "genre"],
+  });
+  ```
+
+  ```kotlin kotlin
+  val query = query("query") {
+      facets {
+        +"author"
+        +"genre"
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('query', [
+    'facets' => ['author', 'genre']
+  ]);
+  ```
+
+  ```python python
+  results = index.search("query", {"facets": ["author", "genre"]})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "query",
+    {
+      facets: ["author", "genre"]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("query"),
+      facets = Some(Seq(
+        "author",
+        "genre")))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "query")
+  query.facets = ["author", "genre"]
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+To extract all facet information, use the wildcard character (`*`).
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search<Book>(new Query("query") { Facets = new List<string> { "*" } });
+  ```
+
+  ```go go
+  res, err := index.Search(
+  	"query",
+  	opt.Facets("*"),
+  )
+  ```
+
+  ```java java
+  index.search(
+    new Query("query").setFacets(Arrays.asList(
+      "*"
+    ))
+  );
+  ```
+
+  ```js js
+  index.search("query", {
+    facets: ["*"],
+  });
+  ```
+
+  ```kotlin kotlin
+  val query = query("query") {
+      facets {
+        +"*"
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $results = $index->search('query', [
+    'facets' => ['*']
+  ]);
+  ```
+
+  ```python python
+  results = index.search("query", {"facets": ["*"]})
+  ```
+
+  ```ruby ruby
+  results = index.search(
+    "query",
+    {
+      facets: ["*"]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("query"),
+      facets = Some(Seq(
+        "*")))
+  }
+  ```
+
+  ```swift swift
+  let query = Query(query: "query")
+  query.facets = ["*"]
+
+  index.search(
+    query,
+    completionHandler: { (res, error) in
+      print(res)
+    })
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Note>
+  When the [`facets`](/api-reference/api-parameters/facets/) parameter is empty, the engine returns no facet information.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Faceting types and features
+
+### Conjunctive and disjunctive faceting
+
+_Facet filtering_, filtering based on facet values, is a helpful feature for users since it allows them to find specific, targeted results in a way that isn't possible with one-size-fits-all filters.
+
+You can combine facet filters with `AND` (conjunctive) and `OR` (disjunctive) operators. When using these operators, the engine handles the facet counts differently to keep a consistent user experience. This doesn't happen at the API level but in the [InstantSearch libraries](/guides/building-search-ui/what-is-instantsearch/js/).
+
+### Hierarchical facets
+
+You can build a hierarchy in your facet values to enable multi-level navigation and filtering. This pattern is interesting to improve discoverability when you have deeply nested categories, as your users can browse up and down in the levels to refine their search.
+
+For example, imagine a book available in **Books > Science Fiction > Time Travel**:
+
+```json json
+{
+  "categories": {
+    "lvl0": "Books",
+    "lvl1": "Books > Science Fiction",
+    "lvl2": "Books > Science Fiction > Time Travel"
+  }
+}
+```
+
+Or a book available in both **Books > Science Fiction > Time Travel** and **Books > Literature & Fiction > Modernism**:
+
+```json json
+{
+  "categories": {
+    "lvl0": "Books",
+    "lvl1": ["Books > Science Fiction", "Books > Literature & Fiction"],
+    "lvl2": [
+      "Books > Science Fiction > Time Travel",
+      "Books > Literature & Fiction > Modernism "
+    ]
+  }
+}
+```
+
+The [`hierarchicalMenu`](/api-reference/widgets/hierarchical-menu/js/) widget from the [InstantSearch libraries](/guides/building-search-ui/what-is-instantsearch/js/) helps you to build hierarchical faceting.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Disjunctive facets with hierarchical facets aren't possible.
+  Hierarchical facets with many nested attributes have many different facet names.
+  This adds a lot of metadata that needs to be processed.
+  This can lead to poor search performance, even if you don't reference these facets directly.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Contextual facet values and counts
+
+Enabling faceting on attributes computes facet counts for each facet value, and the engine updates and returns the list of values and counts with each search result. It's helpful to offer users a relevant and contextual set of filters and information.
+
+### How the engine approximates facet counts
+
+When dealing with massive indices, the engine might need to approximate facet counts to guarantee optimal performance. To see if the facet counts are exact, check the `exhaustiveFacetsCount` property in the JSON response.
+
+### Increasing the default limit
+
+By default, the engine lets you retrieve 100 values per facet. If you need to increase this limit, use the [`maxValuesPerFacet`](/api-reference/api-parameters/maxValuesPerFacet/) parameter. The maximum is 1,000 facet values at a time.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings();
+  settings.MaxValuesPerFacet = 1000;
+
+  index.SetSettings(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	opt.MaxValuesPerFacet(1000),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setMaxValuesPerFacet(1000)
+  );
+  ```
+
+  ```js js
+  index.setSettings({
+    maxValuesPerFacet: 1000,
+  });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      maxValuesPerFacet = 1000
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'maxValuesPerFacet' => 1000
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"maxValuesPerFacet": 1000})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      maxValuesPerFacet: 1000
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      maxValuesPerFacet = Some(1000))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "maxValuesPerFacet": 1000
+  ])
+  ```
+</CodeGroup>
+
+### Faceting on `objectID`
+
+You can't facet on the `objectID` attribute, and the engine ignores it if you declare it in [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/). Faceting on a unique identifier makes little sense, though, because every facet count would be 1.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The engine treats the `objectID` attribute as a filter-only facet. You can filter on that attribute (even without declaring it in `attributesForFaceting` but not get any facet counts.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Attributes are case-sensitive
+
+The attribute names you declare in [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/) are case-sensitive: **they must exactly match the attribute names in your records**. The [`facetFilters`](/api-reference/api-parameters/facetFilters/) and [`filters`](/api-reference/api-parameters/filters/) parameters are only case-insensitive for values.
+
+For example, if your records include an attribute named `color`, with values such as "blue", "red", and "green", you must declare `color` (not `Color`) within your [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/). However, you can facet and filter using `color:BLUE`, `color:Blue`, or `color:blue`.
+
+As an exception, **[`facetFilters`](/api-reference/api-parameters/facetFilters/) and [`filters`](/api-reference/api-parameters/filters/) are case-sensitive when filtering on `objectID`**. For example, `objectID:abc` only returns the record with that specific `objectID`, not one with `objectID:ABC`.
+
+## Search for facet values
+
+Sometimes you may have thousands of different values for a given facet attribute, and it would be impossible to display them all in your user interface (see the [facet display](/guides/building-search-ui/ui-and-ux-patterns/facet-display/js/) guide for more information). Instead, use [`search_for_facet_values`](/api-reference/api-methods/search-for-facet-values/) to let users search within a specific faceted attribute (for example, `brands`, `authors`, or `categories`) without needing to create a separate index. It means you can still display the first, most common values for each facet but also let users search for more.
+
+By default, returned facet values are sorted by count.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Facet queries only match [prefixes](/guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/prefix-searching/), [typos](/guides/managing-results/optimize-search-results/typo-tolerance/), and [exact](/guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/adjust-exact-settings/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Searching in facet values
+
+In this example, the engine would return all the authors matching the query "stephen".
+
+<CodeGroup>
+  ```csharp csharp
+  index.SearchForFacetValue(
+      new SearchForFacetRequest { FacetName = "stephen", FacetQuery = "author" }
+  );
+  ```
+
+  ```go go
+  index.SearchForFacetValues("author", "stephen")
+  ```
+
+  ```java java
+  // Sync
+  SearchForFacetResponse result = index.searchForFacetValues(
+    new SearchForFacetRequest().setFacetName("stephen").setFacetQuery("author")
+  );
+
+  // Async
+  CompletableFuture<SearchForFacetResponse> result =
+    index.searchForFacetValuesAsync(
+      new SearchForFacetRequest().setFacetName("stephen").setFacetQuery("author")
+    );
+
+  ```
+
+  ```js js
+  index.searchForFacetValues("author", "stephen").then(({ facetHits }) => {
+    console.log(facetHits);
+  });
+  ```
+
+  ```kotlin kotlin
+  val attribute = Attribute("author")
+
+  index.searchForFacets(attribute, "stephen")
+  ```
+
+  ```php php
+  $index->searchForFacetValues("author", "stephen");
+  ```
+
+  ```python python
+  index.search_for_facet_values("author", "stephen")
+  ```
+
+  ```ruby ruby
+  index.search_for_facet_values("author", "stephen")
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" facet "author" values "stephen"
+  }
+  ```
+
+  ```swift swift
+  index.searchForFacetValues("author", for: "stephen") { (content, error) in
+    // Handle results
+  }
+  ```
+</CodeGroup>
+
+### Increasing the default limit
+
+By default, you retrieve ten facet values at a time. You can raise this limit up to 100 by updating the [`maxFacetHits`](/api-reference/api-parameters/maxFacetHits/) parameter.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings();
+  settings.MaxFacetHits = 100;
+
+  index.SetSettings(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	MaxFacetHits: opt.MaxFacetHits(100),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings()
+      .setMaxFacetHits(100)
+  );
+  ```
+
+  ```js js
+  index.setSettings({
+    maxFacetHits: 100,
+  });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      maxFacetHits = 100
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'maxFacetHits' => 100
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"maxFacetHits": 100})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      maxFacetHits: 100
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      maxFacetHits = Some(100))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "maxFacetHits": 100
+  ])
+  ```
+</CodeGroup>

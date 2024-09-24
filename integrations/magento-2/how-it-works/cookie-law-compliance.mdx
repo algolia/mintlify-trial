@@ -1,0 +1,52 @@
+---
+title: Cookie law compliance
+description: |-
+  Learn how Algolia respects user consent when using cookies for feaures like personalization and analytics.
+---
+
+## Obtaining user consent
+
+The ability to place cookies in a user's browser to track recurring activity on your site is essential to support Algolia features such as personalization, analytics, and A/B testing.
+However, in many regions and countries, it's a legal requirement to obtain the user's consent before doing so.
+
+Two types of consent are supported by the Algolia extension:
+
+- Implied
+- Expressed
+
+If you opt to rely on implied consent then it will require careful legal language to ensure that users clearly understand that by using your site they are agreeing to the use of cookies.
+
+Magento and Adobe Commerce also come pre-packaged with the ability to [obtain expressed consent](https://experienceleague.adobe.com/en/docs/commerce-admin/start/compliance/privacy/compliance-cookie-law):
+
+The latest version of the Algolia Magento extension supports this feature of Magento out-of-the-box, although some configuration is required.
+
+## Cookie restriction mode
+
+To configure Algolia's cookie collection policy for expressed consent, ensure that you've assigned the correct "Cookie Restriction Mode".
+To do this, go to **General > Web > Default Cookie Settings > Cookie Restriction Mode** and adjust as follows:
+
+- **No** implies the user has already consented to use cookies. Therefore, the `useCookie` parameter will be set to `true` for all Insights events.
+- **Yes**, Insights events won't set a cookie in the user's browser without their explicit consent.
+
+## Algolia cookie configuration
+
+With ["Cookie Restriction Mode" enabled](#cookie-restriction-mode), Algolia sets its cookies accordingly.
+
+**Algolia Cookie Configuration** lets you configure things further. Here you can:
+
+- Override the default consent cookie name
+- Specify the DOM selector ID for the cookie acceptance button
+- Adjust the duration of Algolia cookies
+
+To examine your cookie settings, go to **Stores > Configuration > Algolia Search > Credentials and Basic Setup > Algolia Cookie Configuration** in the Magento Admin panel.
+
+If you've incorporated any third-party extensions or made customizations to the cookies on your website, you must update:
+
+- **Consent Cookie Name** (default is `user_allowed_save_cookie`)
+- **Allow Cookie Button Selector** (default is `#btn-cookie-allow`).
+
+### How to get the selector for the "Allow Cookies" button
+
+If you're using the default Magento cookie notification, no changes are required.
+
+However, if you have a custom notification, find and note down the cookie button selector ID from your website's cookie notification setup.

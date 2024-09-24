@@ -1,0 +1,176 @@
+---
+itle: Integrate Algolia with a custom React frontend
+description: |-
+  Connect Algolia to your headless Salesforce B2C Commerce using a React frontend.
+---
+
+This guide describes how to integrate Algolia into a headless Salesforce B2C Commerce storefront using a custom React frontend.
+
+[Live Demo](https://codesandbox.io/s/github/tkrugg/sfcc-next-js-storefront) [Source Code](https://github.com/tkrugg/sfcc-next-js-storefront/)
+
+To set up Algolia for your headless Salesforce B2C Commerce storefront,
+see [Headless commerce](/integration/salesforce-commerce-cloud-b2c/guides/headless/).
+
+## Set up a React project
+
+This guide uses [Next.js](https://nextjs.org/) but you can apply the instructions to any React project.
+
+Create a new Next.js app with the [`create-next-app`](https://nextjs.org/docs/api-reference/create-next-app) command-line tool.
+
+```sh sh
+npx create-next-app my-react-storefront
+cd my-react-storefront
+yarn dev
+```
+
+Running this command creates a new project in the directory `my-react-storefront` and starts a local development server on `http://localhost:3000/`.
+
+## Build your search experience
+
+To create the search experience, you can either:
+
+1. Use the [Unified InstantSearch](https://github.com/algolia/unified-instantsearch-ecommerce) package.
+2. Build a custom experience with [React InstantSearch](/guides/building-search-ui/what-is-instantsearch/react/).
+
+This guide uses the [Unified InstantSearch](https://github.com/algolia/unified-instantsearch-ecommerce) package.
+
+### Download and run Unified InstantSearch
+
+Clone the Unified InstantSearch [GitHub repository](https://github.com/algolia/unified-instantsearch-ecommerce).
+
+```sh sh
+git clone --depth=1 --branch=master https://github.com/algolia/unified-instantsearch-ecommerce
+rm -rf unified-instantsearch-ecommerce/.git
+cd unified-instantsearch-ecommerce
+yarn && yarn start
+```
+
+### Configure Unified InstantSearch for your data
+
+Open the file `unified-instantsearch-ecommerce/src/config/settings.js` and make the following changes:
+
+1. Add your Algolia application ID, search API key, and index name:
+
+1. Configure your replica indices for sorting by "price" in ascending and descending order:
+
+1. Configure your category attributes.
+
+   By default, the Algolia cartridge indexes the primary category on the attributes `__primary_category.*`:
+
+   ```js js
+   {
+     type: 'hierarchical',
+     header: 'Categories',
+     label: 'Category',
+     options: {
+       attributes: [
+   -     'hierarchicalCategories.lvl0',
+   -     'hierarchicalCategories.lvl1',
+   +     '__primary_category.0',
+   +     '__primary_category.1',
+   +     '__primary_category.2',
+       ],
+       limit: 6,
+       showMore: true,
+     },
+   },
+   ```
+
+1. Set your price attribute.
+
+   By default, the Algolia cartridge indexes prices on the attributes `price.${currency}`:
+
+1. Optional: remove query suggestions.
+
+   If you don't have [Query Suggestions](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/) set up, remove the following code:
+
+1. Customize the `<Hit>` component:
+
+   ```jsx jsx
+   export function Hit({ hit, insights, view }) {
+   + const image = hit.image_groups[1].images[0];
+     return (
+       <article
+         className="uni-Hit"
+         onClick={() =>
+           insights('clickedObjectIDsAfterSearch', {
+             eventName: 'Product Clicked',
+           })
+         }
+       >
+         <a href={hit.url} className="uni-Hit-inner">
+           <div className="uni-Hit-image">
+   ```
+
+The `<Hit>` component includes code for sending [click events](/guides/sending-events/concepts/event-types/) when users select a product in the search results.
+
+### Export the project
+
+To make your frontend available in your storefront, you need to export it:
+
+```sh sh
+yarn export
+```
+
+Running this command creates a new directory `unified-instantsearch-ecommerce/export` with all assets.
+
+Copy this directory to the `public` directory of your storefront project.
+
+```sh sh
+cp -r unified-instantsearch-ecommerce/export my-react-storefront/public/
+```
+
+### Create a new `<Search />` component
+
+To use your React frontend in your storefront, create a new `<Search />` component in the `components` directory.
+
+```sh sh
+mkdir -p my-react-storefront/components/Search
+touch my-react-storefront/components/Search.js
+```
+
+Add the following code to the file: `Search.js`:
+
+```jsx jsx
+// in my-react-storefront/components/Search.js
+import React from "react";
+import Head from "next/head";
+
+export default function Search() {
+  React.useEffect(() => {
+    // remove the script if already exists
+    let script = document.querySelector(`script[src="${src}"]`);
+
+    if (script) {
+      script.remove();
+    }
+
+    // add script to DOM
+    script = document.createElement("script");
+    script.src = src;
+    document.body.appendChild(script);
+
+    return () => {
+      // remove the script on unmount
+      document.querySelector(`script[src="${src}"]`).remove();
+    };
+  });
+
+  return (
+    <>
+      <Head>
+        <link rel="stylesheet" async href="/export/search.css" />
+      </Head>
+      <div id="search-button" />
+    </>
+  );
+}
+```
+
+### Use your `<Search />` component in your storefront
+
+Open the file `pages/index.js` with your `<Home />` component and add your `<Search />` component to it.
+
+## Click and conversion events
+
+To complete your setup, [send click and conversion events](/guides/building-search-ui/events/react/).

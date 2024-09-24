@@ -1,0 +1,25 @@
+---
+title: Add Query Suggestions to Autocomplete
+description: |-
+  Add Query Suggestions to the Autocomplete search in your Shopify app.
+---
+
+The default Shopify templates include Autocomplete search out-of-the-box.
+This lets users search across [selected indexes](/integration/shopify/getting-started/configuration/#indexing) for products, collections, blogs, or pages.
+
+Algolia Query Suggestions generate suggested search terms [based on popular searches](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/#how-query-suggestions-work).
+
+If you want to use Query Suggestions in the Algolia AI Search & Discovery app, you must:
+
+- Use an Algolia application with the [Query Suggestions](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/#set-up-query-suggestions) feature turned on.
+- Enable Query Suggestions for Autocomplete.
+
+## Enable Query Suggestions for Autocomplete
+
+1. Open the **Search options** tab in the Algolia AI Search & Discovery app
+1. Go to the **Autocomplete configuration options** section
+1. Select the **Enable Query Suggestions** option.
+
+By default, the engine uses an index name computed with your index prefix. If the index name doesn't correspond to your Query Suggestions index name, you can replace it.
+
+1. Click **Save**. Your Autocomplete menu should now show Query Suggestions.

@@ -1,0 +1,428 @@
+---
+title: Querying in the middle of a word
+description: |-
+  How to match queries with records that contain the query text in the middle or the end of a word.
+---
+
+By design, **Algolia doesn't support infix/suffix matching**; therefore it won't find substrings in the middle or the end of a string. Only prefix matching is natively supported. This means that if a user searches for "note", this would find records with attributes containing "notepad" or "notebook", but wouldn't match "keynote".
+
+However, there are occasional use cases where this behavior can be useful. Let's say you have prefixed references in your system (e.g., "XXXABCDEF") but not on printed catalogs. Therefore, if a user searched for "ABCDEF", it wouldn't return the product with reference "XXXABCDEF". In this case, it would make sense to enable search in the middle of the reference.
+
+To do this with Algolia, **you need to generate alternatives**.
+
+Partial matching can be dangerous for relevance because **they create noise**. Make sure you do it sparingly and limit the number of alternatives to what makes sense.
+
+## Modifying the data: an example
+
+### Before
+
+Let's say you have the following dataset for products:
+
+```json json
+[
+  {
+    "name": "Apple iPhone XS",
+    "product_reference": "002ABCDEF"
+  },
+  {
+    "name": "Apple iPhone XS Max",
+    "product_reference": "001GHIJKL"
+  }
+]
+```
+
+The `product_reference` attribute has a numeric prefix, which may exist for internal purposes. The problem is, if a user searches for "ABCDEF" or "GHIJKL", they won't find anything.
+
+Since Algolia only supports prefix search, what you need to do to is add an attribute that contains all the possible suffixes for `product_reference`, as an array.
+
+<CodeGroup>
+  ```csharp csharp
+  IEnumerable<JObject> records = JsonConvert.DeserializeObject<IEnumerable<JObject>>(
+      File.ReadAllText("products.json")
+  );
+
+  foreach (var record in records)
+  {
+      var word = record["product_reference"].ToString();
+      var suffixes = new JArray();
+
+      while (word.Length > 1)
+      {
+          word = word.Substring(1);
+          suffixes.Add(word);
+      }
+
+      record["product_reference_suffixes"] = suffixes;
+  }
+  ```
+
+  ```go go
+  type Product struct {
+  	ObjectID                 string   `json:"objectID"`
+  	ProductReference         string   `json:"product_reference"`
+  	ProductReferenceSuffixes []string `json:"product_reference_suffixes"`
+  	// Other fields
+  }
+
+  var products []Product
+  data, _ := ioutil.ReadFile("products.json")
+  _ = json.Unmarshal(data, &products)
+
+  for _, product := range products {
+  	var suffixes []string
+  	reference := product.ProductReference
+  	for i := len(reference) - 1; i > 0; i-- {
+  		suffixes = append(suffixes, reference[i:])
+  	}
+  	product.ProductReferenceSuffixes = suffixes
+  }
+
+  res, err := index.SaveObjects(products)
+  ```
+
+  ```java java
+  ObjectMapper objectMapper = Defaults.getObjectMapper();
+  InputStream input = new FileInputStream("products.json");
+
+  JsonNode[] records = objectMapper.readValue(input, JsonNode[].class);
+
+  for (JsonNode record : records) {
+    String word = record.get("product_reference").asText();
+    ArrayNode suffixes = objectMapper.createArrayNode();
+
+    while (word.length() > 1) {
+      word = word.substring(1);
+      suffixes.add(word);
+    }
+
+    ((ObjectNode) record).put("product_reference_suffixes", suffixes);
+  }
+  ```
+
+  ```js js
+  let objects = require("./products.json");
+
+  objects = objects.map((record) => {
+    let reference = record.product_reference;
+    record.product_reference_suffixes = [];
+
+    while (reference.length > 1) {
+      reference = reference.substr(1);
+      record.product_reference_suffixes.push(reference);
+    }
+
+    return record;
+  });
+
+  index.saveObjects(objects).then(() => {
+    // done
+  });
+  ```
+
+  ```kotlin kotlin
+  val string = File("products.json").readText()
+  val objects = Json.parse(JsonObjectSerializer.list, string)
+  val records = objects.map {
+      val map = it.toMutableMap()
+      val suffixes = mutableListOf<JsonElement>()
+      var word = map.getValue("product_reference").content
+
+      while (word.length > 1) {
+          word = word.substring(1)
+          suffixes += JsonLiteral(word)
+      }
+      map["product_reference_suffixes"] = JsonArray(suffixes)
+      JsonObject(map)
+  }
+
+  index.saveObjects(records)
+  ```
+
+  ```php php
+  $objects = json_decode(file_get_contents('products.json'), true);
+
+  $objects = array_map(function ($record) {
+    $reference = $record['product_reference'];
+
+    $record['product_reference_suffixes'] = [];
+
+    while (mb_strlen($reference) > 1) {
+      $reference = substr($reference, 1);
+
+      $record['product_reference_suffixes'][] = $reference;
+    }
+
+    return $record;
+  }, $objects);
+
+  $index->saveObjects($objects, ['autoGenerateObjectIDIfNotExist' => true]);
+  ```
+
+  ```python python
+  with open("products.json") as f:
+      objects = json.load(f)
+
+  for obj in objects:
+      reference = obj["product_reference"]
+      obj["product_reference_suffixes"] = []
+      while len(reference.decode("UTF-8")) > 1:
+          reference = reference[1:]
+          obj["product_reference_suffixes"].append(reference)
+
+  index.save_objects(objects, {"autoGenerateObjectIDIfNotExist": True})
+  ```
+
+  ```ruby ruby
+  require "json"
+
+  file = File.read(products.json)
+  objects = JSON.parse(file)
+
+  records = objects.map do |object|
+    word = object["product_reference"]
+    word_size = word.size
+
+    object["product_reference_suffixes"] = []
+
+    1.upto(word_size - 1) do |i|
+      object["product_reference_suffixes"] << word[i..word_size]
+    end
+
+    object
+  end
+
+  index.save_objects(records, {autoGenerateObjectIDIfNotExist: true})
+  ```
+
+  ```scala scala
+  import java.io.FileInputStream
+
+  import algolia.AlgoliaClient
+  import algolia.AlgoliaDsl._
+  import algolia.responses.ObjectID
+  import org.json4s._
+  import org.json4s.native.JsonMethods._
+
+  import scala.concurrent.{ ExecutionContext, ExecutionContextExecutor }
+
+  case class Product(
+    objectID: String,
+    name: String,
+    product_reference: String,
+    product_reference_suffixes: Seq[String],
+    price: Int,
+    popularity: Int) extends ObjectID
+
+  object Main {
+    def main(args: Array[String]): Unit = {
+
+      implicit val ec: ExecutionContextExecutor = ExecutionContext.global
+
+      val client = new AlgoliaClient("YourApplicationID", "YourWriteAPIKey")
+
+      val products =
+        parse(new FileInputStream("products.json"))
+          .extract[Seq[Product]]
+          .map(p => {
+            val suffixes = p.product_reference.tails.drop(1).toSeq
+            p.copy(product_reference_suffixes = suffixes)
+          })
+
+      client.execute {
+        index into "index" objects products
+      }
+
+    }
+  }
+  ```
+
+  ```swift swift
+  let filePath = Bundle.main.path(forResource: "products", ofType: "json")!
+  let contentData = FileManager.default.contents(atPath: filePath)!
+  let records = try! JSONSerialization.jsonObject(with: contentData, options: []) as! [[String: Any]]
+
+  let objects = records.map { (record) -> [String: Any] in
+    var reference = record["product_reference"] as! String
+    var suffixes: [String] = []
+
+    while reference.count > 1 {
+      reference = reference.substring(from: reference.index(reference.startIndex, offsetBy: 1))
+      suffixes.append(reference)
+    }
+    var record = record
+    record["product_reference_suffixes"] = suffixes
+    return record
+  }
+
+  index.addObjects(objects)
+  ```
+</CodeGroup>
+
+### After
+
+Once processed, the records should look like this:
+
+```json json
+[
+  {
+    "name": "Apple iPhone XS",
+    "product_reference": "002ABCDEF",
+    "product_reference_suffixes": [
+      "02ABCDEF",
+      "2ABCDEF",
+      "ABCDEF",
+      "BCDEF",
+      "CDEF",
+      "DEF",
+      "EF",
+      "F"
+    ]
+  },
+  {
+    "name": "Apple iPhone XS Max",
+    "product_reference": "001GHIJKL",
+    "product_reference_suffixes": [
+      "01GHIJKL",
+      "1GHIJKL",
+      "GHIJKL",
+      "HIJKL",
+      "IJKL",
+      "JKL",
+      "KL",
+      "L"
+    ]
+  }
+]
+```
+
+We've created a new attribute called `product_reference_suffixes` where we've stored all suffixes for the `product_reference` attribute.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Note that you might not need to generate all possible suffixes, and stop when the reference is of a certain length. As said above, partial matching generates noise, so the more short alternatives you have, the more your search may return irrelevant results.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Updating searchableAttributes
+
+You also need to add `product_reference_suffixes` to the list of searchable attributes, to ensure the suffixes are searchable along with the original product reference.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string>
+      {
+          "name",
+          "product_reference",
+          "product_reference_suffixes"
+      }
+  };
+
+  index.SetSettings(settings);
+  ```
+
+  ```go go
+  index.SetSettings(search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		"name",
+  		"product_reference",
+  		"product_reference_suffixes",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings()
+      .setSearchableAttributes(
+        Arrays.asList("name", "product_reference", "product_reference_suffixes")
+      )
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      searchableAttributes: [
+        "name",
+        "product_reference",
+        "product_reference_suffixes",
+      ],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+          +"name"
+          +"product_reference"
+          +"product_reference_suffixes"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'searchableAttributes' => [
+      'name',
+      'product_reference',
+      'product_reference_suffixes'
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "searchableAttributes": [
+              "name",
+              "product_reference",
+              "product_reference_suffixes",
+          ]
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      searchableAttributes: [
+        "name",
+        "product_reference",
+        "product_reference_suffixes"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "index" `with` IndexSettings(
+      searchableAttributes = Some(Seq(
+        SearchableAttributes.attributes(
+          "name",
+          "product_reference",
+          "product_reference_suffixes", ))))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "searchableAttributes": [
+      "name",
+      "product_reference",
+      "product_reference_suffixes",
+    ]
+  ])
+  ```
+</CodeGroup>
+
+It's recommended to set `product_reference_suffixes` after `product_reference` to give it a lower priority. This way, a full match would be considered better than a partial one.

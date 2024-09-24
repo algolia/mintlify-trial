@@ -1,0 +1,107 @@
+---
+title: Configuration
+description: |-
+  Index your Salesforce B2C Commerce content with Algolia.
+---
+
+The following section explains the configuration of the cartridge's content indexing job, including its configuration parameters and default attributes.
+
+## Content indexing job structure
+
+The Content Indexing job's general structure and workflow mirror those of [product indexing jobs](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview/).
+The cartridge's content indexing uses the Salesforce B2C Content Search Model (`ContentSearchModel`) to browse content assets.
+This is why the job has two steps: `SFCCContentSearchIndex` and `algoliaContentIndex`. Job first refreshes the SFCC content search index before extracting content assets and sends them to Algolia.
+
+## Indexed content attributes
+
+The content job [fully reindexes](/guides/sending-and-managing-data/send-and-update-your-data/in-depth/the-different-synchronization-strategies/#full-reindexing) all content data/records with each job run. It is possible to configure at the job level which attributes to send using the `attributeList` parameter.
+
+By default, the content indexing job sends the following attributes to Algolia: `id`, `name`, `description`, `url`, `body`, `page`, and `algolia_chunk_order`.
+Unlike for the product indexing jobs where there is a [Custom Preference](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/?client=javascript) for defining defaults (that can be overridden per job), content attributes sent to Algolia are only configured at the job level by utilizing the `attributeList` parameter.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The job intentionally ignores and strips out certain HTML tags, such as the `<script>` tag, as indexing content from these tags is not meaningful for search purposes.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Base attributes
+
+The base set of attributes is always included in content indexing, regardless of whether these are specified in `attributeList`.
+
+| Attribute                 | Description                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **id**                    | Content Asset or Page ID (on Salesforce B2C)                                                           |
+| **objectId**              | A unique identifier on Algolia's side for the Content Asset or Page (`id + "_" + algolia_chunk_order`) |
+| **algolia\_chunk\_order** | Used for sorting chunks that belong to the same content asset/page                                     |
+
+### Configurable attributes
+
+You have the option to send additional content record attributes to Algolia by listing them in the **Attribute List** as a job parameter.
+
+The default attributes include `name`, `description`, `url`, `body`, and `page`. Expand this list as needed for your use case (for example, `pageTitle`).
+
+| Attribute                | Description                                                                                                                |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| **name**                 | The name of the content asset or page                                                                                      |
+| **description**          | A description of the content asset or page                                                                                 |
+| **url**                  | The URL that provides access to the page or content asset                                                                  |
+| **body**                 | The primary content displayed to users on the storefront                                                                   |
+| **page**                 | Indicates whether the item is a (Page Designer) page (`true` if so)                                                        |
+| **classificationFolder** | The classification folder for the content (not applicable for Page Designer pages if the page is not assigned to a folder) |
+| **pageDescription**      | A description metadata field, often used for SEO purposes                                                                  |
+| **pageKeywords**         | A list of keywords, often used for SEO purposes but potentially also useful for site search                                |
+| **pageTitle**            | A page title, used for SEO purposes and to define the browser's page title                                                 |
+| **template**             | Applied for rendering content on Salesforce B2C                                                                            |
+
+### Customize indexed attributes
+
+It is not possible to exclude `algolia_chunk_order` and `objectId` from the attributes being sent. However, you can specify which attributes should always be included by using `defaultAttributes` in `cartridges/int_algolia/cartridge/scripts/algolia/lib/algoliaContentConfig.js`.
+
+### Index unsearchable page designer content
+
+By default, the cartridge conforms to Salesforce B2C's standard indexing policy, which indexes only the searchable attributes of Page Designer components.
+This can be overridden on a code level with the `indexOnlySearchables` boolean flag in [pageDesignerHelper.js](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/master/cartridges/int_algolia/cartridge/scripts/algolia/lib/pageDesignerHelper.js).
+If `indexOnlySearchables` is set to false, all attributes are indexed without the need for developer support for marking an attribute as searchable, if the page is marked as searchable in the Business Manager (BM).
+
+## Content indexing job configuration
+
+The process has two steps:
+
+- **SFCCContentSearchIndex**: Prepares and updates the [SFCC content index](https://help.salesforce.com/s/articleView?id=cc.b2c_index_creation.htm\&type=5) before browsing and sending content data to Algolia (in the second step).
+  This predefined Salesforce B2C Commerce job step doesn't require any additional configuration.
+- **algoliaContentIndex**: Extracts data from content assets and Page Designer pages and indexes it with Algolia.
+
+The job configuration is accessible in the Job Steps tab. Set the scope to Specific Sites and select all sites for which the job should be executed.
+
+### Content indexing job parameters
+
+| Parameter                      | Description                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **attributeList**              | A comma-separated list of [attributes](#configurable-attributes) to be indexed.                                                                                                                                                                                                                                                                                                                                |
+| **failureThresholdPercentage** | The maximum percentage of records allowed to have errors during indexing. For example, if the threshold is 10%, the indexing job fails if more than 10% of your records have an error during indexing. The temporary index will not be moved to production if the failure rate exceeds this threshold. The default is 0%.                                                                                      |
+| **splittingTag**               | The [HTML tag used for splitting content asset records](/integration/salesforce-commerce-cloud-b2c/indexing/content-indexing/fundamentals/#splitting) into chunks. Without specifying this delimiter tag, there will be no semantic splitting, but only [record size-based splitting](/integration/salesforce-commerce-cloud-b2c/indexing/content-indexing/fundamentals/#record-size-splitting). Example: `h1` |
+| **includedContent**            | Defines the indexing scope: `allContents` indexes both content assets and Page Designer components, `contentAssets` exclusively indexes content assets, and `pageDesignerComponents` indexes only the page designer components.                                                                                                                                                                                |
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Content assets are indexed to a single attribute: `body`. Page Designer pages are more complex, as they can consist of multiple regions and components, each with several attributes.
+  The structure of pages, regions, and components is adaptable. To effectively manage this structure, the cartridge uses the `pageDesignerHelper.js` file, which helps you optimize extracting data from a single page.
+  `pageDesignerHelper.js` utilizes a recursive approach to effectively manage and structure the hierarchical, tree-like data. For a comprehensive overview, see [Salesforce's Page Designer documentation](https://developer.salesforce.com/docs/commerce/b2c-commerce/guide/b2c-dev-for-page-designer.html#create-page-and-component-types).
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Attribute selection and performance
+
+The job employs a retry strategy akin to those used by other API clients.
+
+The number and type of content attributes sent to Algolia impacts job performance: the more attributes you select, the longer the indexing takes. Additionally, enabling [indexing of unsearchable Page Designer components](#index-unsearchable-page-designer-content) might lead to longer indexing jobs.
+For detailed insights, refer to the [performance considerations section](/integration/salesforce-commerce-cloud-b2c/guides/performance-considerations/#content-indexing).
+
+### Content search UI
+
+The cartridge provides a [content search UI](/integration/salesforce-commerce-cloud-b2c/building-the-search-ui/front-end/#content-search-ui) that you can use to display content results on your storefront.

@@ -1,0 +1,38 @@
+---
+title: Recommend
+description: |-
+  Implement product recommendations in your Shopify app with Algolia Recommend.
+---
+
+{/* prettier-ignore-start */}
+
+<Info>
+  Recommend for Shopify is a **beta feature** according to the [Algolia Terms of Service ("Beta Services")](https://www.algolia.com/policies/terms/).
+</Info>
+
+{/* prettier-ignore-end */}
+
+The Algolia integration for Shopify includes an [app block](https://shopify.dev/docs/storefronts/themes/architecture/blocks/app-blocks) built with [Algolia Recommend](/guides/algolia-recommend/overview/) that you can add to your store's pages to show product recommendations.
+
+## Before you begin
+
+Before you can show recommendations in your store, check that you've set up Recommend:
+
+- [Enable Algolia for your Shopify theme](/integration/shopify/getting-started/quick-start/#enable-algolia-on-your-theme).
+- You're sending [click and conversion events](/integration/bigcommerce/search-settings/events/).
+  Algolia Recommend relies on click and conversion events to continuously improve its recommendations.
+  You can also [upload events via CSV](/guides/algolia-recommend/how-to/csv-upload/) to get started.
+- You have a [Recommend model](/guides/algolia-recommend/how-to/set-up/#train-the-recommend-models/) trained in your Algolia dashboard.
+- Recommend is not compatible with Shopify Markets.
+
+## Enable Recommend
+
+1. To add the Algolia Recommend app block to your theme, open your [theme editor](https://help.shopify.com/en/manual/online-store/themes/customizing-themes/edit), click **Add section**, go to the **Apps** tab, and select **Algolia Recommend**.
+
+1. Select the Recommend model for the app block, complete the settings, save your changes.
+
+Once your model training is completed and meets the criteria set for the app block, the recommendations app block will appear on your store's page.
+
+### Customize
+
+You can use [custom hooks](/integration/shopify/building-search-ui/frontend-custom-events/#recommend-hooks) to customize how your recommendations will be rendered.

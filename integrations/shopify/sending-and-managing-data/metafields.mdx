@@ -1,0 +1,113 @@
+---
+title: Metafields
+description: |-
+  Index Shopify's metafields.
+---
+
+Algolia supports indexing Shopify's [metafields](https://help.shopify.com/en/manual/custom-data/metafields).
+
+To learn how to add metafields to your products and collections,
+see [Adding metafields](https://help.shopify.com/en/manual/custom-data/metafields/metafield-definitions) in the Shopify documentation.
+
+As an alternative, consider using [named tags](/integration/shopify/sending-and-managing-data/named-tags/).
+They let you add extra attributes to your products and variants, without having to configure metafield indexing settings.
+
+## Index metafields
+
+1. In your Shopify admin, go to the Algolia AI Search & Discovery app.
+1. Open the **Indexing** tab.
+1. Go to the **Metafields Indexing** section.
+1. Enter a title, namespace, and key for the metafield you want to add.
+   You should be able to find this information in the app you use to manage your metafields.
+1. Optional (only for products): select [**Use as facet**](#metafields-as-facets) if you want to use this metafield for faceting or filtering.
+1. Optional: [convert the type](#type-conversion) of the metafield to a number, a string array, or a JSON encoded field.
+1. Click **Add**. If you're done adding metafields, click **Save**.
+
+## Metafields as facets
+
+For your products, you can select metafields as facets.
+If you select the **Use as facet** option when adding or editing a metafield,
+the metafield is _inactive_ at first.
+Inactive facets aren't shown in your index in the Algolia dashboard.
+
+To activate the facet, go to the **Search Options** tab,
+click **InstantSearch - Results page powered by Algolia > Customize** and [configure your facets](/integration/shopify/getting-started/configuration/#faceting)
+
+## Type conversion
+
+Shopify metafields can only be `integer` or `string` types.
+For your Algolia index, you can convert them to the following types:
+
+### Number
+
+Converts strings to:
+
+- Integers: `"100" => 100`
+- Decimals: `"1.2" => 1.2`
+
+### String array
+
+Converts a string to an array of strings, split on commas.
+
+- To include commas in a string, wrap the string in quotes: `abc, "def,ghi"`
+- To include quotes in a string, wrap the string in quotes and escape the quotes: `abc, "def\"ghi"`
+- To include backslashes in a string, wrap the string in quotes and escape the backslashes: `abc, "def\\ghi"`
+
+### JSON Encoded
+
+Decode a JSON-encoded string.
+
+Transform this string:
+
+```txt txt
+"[{\"value\":2.0,\"unit\":\"oz\"},{\"value\":3.0,\"unit\":\"oz\"}]"
+```
+
+Into this record:
+
+```json json
+[
+  { "value": 2.0, "unit": "oz" },
+  { "value": 3.0, "unit": "oz" }
+]
+```
+
+## Schema
+
+In your Algolia index, metafields are added to your records as `meta` attribute,
+which itself is also a (nested) JSON object.
+
+For example, a record with three metafields `colors.main`, `colors.secondary`, and `contact.partner`:
+
+```jsonc jsonc
+{
+  "title": "Awesome dress",
+  // ... Other attributes
+  "meta": {
+    "colors": {
+      "main": "white",
+      "secondary": "gold",
+    },
+    "contact": {
+      "partner": "sellonlineshop.co",
+    },
+  },
+}
+```
+
+You can use any of these metafields in your Algolia index configuration.
+To select a metafield, use `meta.namespace.key`, such as `meta.colors.primary`.
+
+## Product and variant metafields
+
+If a variant has metafields, their values override the metafields of its parent product.
+
+## Multiple language support
+
+Some Shopify apps that help with translations store their translated data within metafields, which can be indexed by the Shopify app.
+
+To add support for multiple languages:
+
+1. Add all the required translated data within metafields associated with the product
+1. [Index those metafields](#index-metafields)
+1. \[Optional.] Depending on the user's chosen language, display this data by modifying the relevant product template ([InstantSearch](/integration/shopify/building-search-ui/instant-search/) and [Autocomplete](/integration/shopify/building-search-ui/autocomplete/)).

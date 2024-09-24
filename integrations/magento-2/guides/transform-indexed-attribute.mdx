@@ -1,0 +1,66 @@
+---
+title: Index strings as numeric attributes
+description: |-
+  Learn how to index numeric variation to a string attribute.
+---
+
+## Introduction
+
+In some situations, it makes sense to index a numeric representation of a string attribute, for example for sorting by clothing size.
+Size is usually a string (S, M, L, etc), but sorting alphabetically will yield strange results (S, L, M).
+It makes sense to replace these values with a numeric attribute to sort.
+
+It is possible to add a new attribute containing this value by implementing a custom observer.
+To make changes to the attributes being indexed, observe the [`algolia_after_create_product_object`](/integration/magento-2/customize/custom-back-end-events/#dispatched-after-fetching-products-attributes-for-indexing) event with a custom observer.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This tutorial assumes knowledge of writing a custom observer. More info can be found [here](/integration/magento-2/guides/create-a-custom-extension/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Create observer
+
+Create the `Observer/TransformAttribute.php` file, and add a new Observer class in it.
+
+```php php
+namespace Algolia\CustomAlgolia\Observer;
+
+use Magento\Framework\Event\Observer;
+use Magento\Framework\Event\ObserverInterface;
+
+class TransformAttribute implements ObserverInterface
+{
+  public function execute(Observer $observer)
+  {
+    $record = $observer->getData('custom_data');
+
+    // $sizes = ['S', 'M', 'L'];
+    $sizes = $record['sizes'];
+
+    // S => 1, M => 2, L => 3
+    $replacementNumbers = [1, 2, 3];
+
+    $record['numeric_sizes'] = array_replace($sizes, $replacementNumbers);
+  }
+}
+```
+
+The code in the `execute` block can be modified as needed. In this example, the clothing sizes are transformed into numeric values.
+
+## Register the observer
+
+To register your observer, add the following snippet to the [`etc/events.xml`](https://github.com/algolia/algoliasearch-custom-algolia-magento-2/blob/master/etc/events.xml) file:
+
+```xml xml
+<event name="algolia_after_create_product_object">
+    <observer name="customalgolia_transform_attribute" instance="Algolia\CustomAlgolia\Observer\TransformAttribute" />
+</event>
+```
+
+## Reindex data
+
+With the custom observer in place, the catalog needs to be reindexed in order to for the changes to take effect.
+Read more about (re)indexing [here](/integration/magento-2/how-it-works/indexing/).

@@ -1,0 +1,283 @@
+---
+title: Merchandising on empty queries
+description: |-
+  Use an API client or the dashboard to promote or hide items or categories without a particular query.
+---
+
+You can create rules that promote or hide items, boost, or bury categories, or activate filters even when users haven't typed anything yet.
+
+This guide shows you how to create a rule that boosts the category `clearance:true`, whenever there is an empty query and the context is set to `landing`.
+You can use other consequences, such as promoting or hiding items, and boosting or burying categories, with the same condition.
+To trigger this rule, you must send `landing` as a [`ruleContexts`](/api-reference/api-parameters/ruleContexts/) on the frontend.
+
+As soon as user begins typing, the rule is turned off.
+If you want a rule that's always active for a particular context regardless of the query string, create a [context-only rule](/guides/managing-results/rules/rules-overview/#context-only-rules).
+For more information, see [Using rules to customize search results by platform](/guides/managing-results/rules/rules-overview/how-to/customize-search-results-by-platform/).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To boost, bury, or filter on values of a certain attribute, you must declare that attribute as an [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+Rules on empty queries are useful for landing or category pages.
+Use either [filters](/guides/managing-results/rules/rules-overview/#rules-responding-to-applied-filters) or [context](/guides/managing-results/rules/rules-overview/#context-only-rules) to determine which category pages should trigger these rules.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Category Pages](/guides/solutions/ecommerce/browse/tutorials/category-pages/)
+  - [Merchandise category pages](/guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Using the API
+
+To create a rule with an API client, use the [`saveRule`](/api-reference/api-methods/save-rule/) method on a Rule object with an empty search as the condition.
+
+<CodeGroup>
+  ```csharp csharp
+  Rule ruleToSave = new Rule
+  {
+      ObjectID = "clearance-category-filter",
+      Conditions = new List<Condition>
+      {
+          new Condition
+          {
+              Anchoring = "is",
+              Pattern = "",
+              Context = "landing"
+          },
+      },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              AutomaticFacetFilters = new List<AutomaticFacetFilter>
+              {
+                  new AutomaticFacetFilter { Facet = "clearance = true" }
+              }
+          }
+      }
+  };
+  index.SaveRule(rule, forwardToReplicas: false);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID: "clearance-category-filter",
+  	Conditions: []search.RuleCondition{
+  		{
+  			Anchoring: search.Is, Pattern: "", Context: "landing",
+  		},
+  	},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			QueryParams: search.QueryParams{
+  				OptionalFilters: opt.OptionalFilters("clearance:true"),
+  			},
+  		},
+  	},
+  }
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition()
+      .setAnchoring("is")
+      .setPattern("")
+      .setContext("landing");
+  ConsequenceParams params =
+      new ConsequenceParams()
+          .setFilters("clearance:true");
+  Consequence consequence = new Consequence()
+      .setParams(params);
+  Rule rule = new Rule()
+          .setObjectID("clearance-category-filter")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+  index.saveRule(rule);
+  // Asynchronous
+  index.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  index.saveRule({
+    objectID: "clearance-category-filter",
+    conditions: [
+      {
+        pattern: "",
+        anchoring: "is",
+        context: "landing",
+      },
+    ],
+    consequence: {
+      optionalFilters: "clearance:true",
+    },
+  });
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          objectID = "clearance-category-filter",
+          conditions = conditions {
+            condition(anchoring = Anchoring.Is, pattern = Pattern.Literal(""), context= Context.Literal("landing"))
+          },
+          consequence = consequence(
+              query = query {
+                  optionalFilters = "clearance:true"
+              }
+          )
+      )
+  }
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  // turn json into an array
+  $rule = array(
+      'objectID' => 'clearance-category-filter',
+      'conditions' => array(
+        array(
+          'pattern' => '',
+          'anchoring' => 'is'
+        ),
+        array(
+          'context' => 'landing',
+        ),
+      ),
+      'consequence' => array(
+          'params' => array(
+              'optionalFilters' => 'clearance:true'
+          )
+      )
+  );
+  // push Rule to index
+  $index->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "clearance-category-filter",
+      "conditions": [{"anchoring": "is", "pattern": "", "context": "landing"}],
+      "consequence": {
+          "params": {
+              "optionalFilters": "clearance:true",
+          },
+      },
+  }
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  index.save_rule(
+    "clearance-category-filter",
+    {
+      objectID: "clearance-category-filter",
+      conditions: [
+        {
+          pattern: "",
+          anchoring: "is",
+          context: "landing"
+        }
+      ],
+      consequence: {
+        params: {
+          optionalFilters: "clearance:true"
+        }
+      }
+    }
+  )
+  ```
+
+  ```scala scala
+  val rule = Rule(
+    objectID = "clearance-category-filter",
+    conditions = Some(Seq(
+      Condition(
+        pattern = "",
+        anchoring = "is",
+        context = "landing"))),
+    consequence = Consequence(
+      params = Some(
+        Map(
+          "optionalFilters" -> "clearance:true"))))
+  client.execute {
+    save rule rule inIndex "indexName"
+  }
+  ```
+
+  ```swift swift
+  let rule = Rule(objectID: "clearance-category-filter")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .is)
+          .set(\.pattern, to: .literal(""))
+          .set(\.context, to: .literal("landing"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence().set(\.query, to: Query().set(\.optionalFilters, to: "clearance:true"))
+    )
+  index.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+## Using the Visual Editor
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+1. Under the heading **Rules**, select the index you are adding a rule to.
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click **Visual Editor**.
+1. Select **Set the search query**.
+1. In the **Your search** section, right below the **Define the query that triggers the rule** header, select **is** and leave the next input box empty.
+1. In **Add a context (optional)**, add the context "landing". If you want to trigger this rule whenever there is an empty query, regardless of context, leave this input box empty. Select **Apply**.
+1. Below **What do you want to do?** Select **Boost categories.**
+1. Fill in the **Category** section to be "clearance" is "true".
+1. Select **Apply.** This will provide you a preview of the results.
+1. **Save as Draft** or **Review and Publish**.
+
+## Using the Manual Editor
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a rule to.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click **Manual Editor**.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Is**, and leave the text input field empty.
+
+1. If you want to trigger this rule whenever there is an empty query and for this specific context only, toggle **Context** on. In the dedicated input field, enter the context "landing". Without including context as part of the condition, this rule triggers on every empty query.
+
+1. In the **Consequence(s)** section, click **Add consequence** and select **Add Query Parameter**.
+
+1. In the input field that appears, enter the JSON search parameter you want to add followed by a colon and the value you want to add. For example:
+
+   ```json json
+   {
+     "optionalFilters": "clearance:true"
+   }
+   ```
+
+1. If you want to forward the rule to replicas or other indices, toggle **Copy this rule to other indices**, and enter the relevant indices.
+
+1. Save your changes.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  In JSON, you must write string values inside quotation marks, and number values and booleans without quotations.
+  For more information about JSON syntax, see [What is in a record](/guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record/).
+</Note>
+
+{/* prettier-ignore-end */}

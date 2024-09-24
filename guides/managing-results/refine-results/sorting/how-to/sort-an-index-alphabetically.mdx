@@ -1,0 +1,297 @@
+---
+title: Sort an index alphabetically
+description: |-
+  How to sort your records in alphabetical order.
+---
+
+Having constantly seen data sorted alphabetically, you may find yourself wanting to follow suit. However, while sorting alphabetically makes sense for a database, it doesn't for a search engine and **we strongly discourage it**. This isn't to say your use case is invalid; rather, we want to encourage caution and due consideration.
+
+When you sort your data alphabetically, you don't only devalue Algolia's tie-breaking algorithm: **you essentially disable it**. If you sort alphabetically first, then the only objects requiring tie-breaking are those with the exact same name: there will likely be few objects that fit this criterea.
+
+Alphabetically structured results lead users to search through data by hand, while a search engine, like Algolia, should ensure that they don't need to.
+
+**Since sorting your data alphabetically disables Algolia's tie-breaking, it's best to give users this type of sort as an option and not as the default experience. To provide different sorting options, you should use [replica](/guides/managing-results/refine-results/sorting/in-depth/replicas/) indices.**
+
+Warnings aside, it's still possible to sort alphabetically by using the [`customRanking`](/api-reference/api-parameters/customRanking/) parameter with the attribute you want to sort on. **If you are sorting alphabetically on a non-replica index, the method is the same as for a [standard replica](#standard-replicas)**.
+
+## Using the API
+
+### Standard replicas
+
+To sort a standard replica or non-replica index alphabetically, you need to change its [custom ranking](/guides/managing-results/must-do/custom-ranking/), and set `custom` as the index's first [`ranking`](/api-reference/api-parameters/ranking/) criterion.
+
+<CodeGroup>
+  ```csharp csharp
+  var settings = new IndexSettings
+  {
+      CustomRanking = new List<string> { "asc(textual_attribute)" },
+      Ranking = new List<string>
+      {
+          "custom",
+          "typo",
+          "geo",
+          "words",
+          "filters",
+          "proximity",
+          "attribute",
+          "exact"
+      }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	CustomRanking: opt.CustomRanking(
+  		"asc(textual_attribute)",
+  	),
+  	Ranking: opt.Ranking(
+  		"custom",
+  		"typo",
+  		"geo",
+  		"words",
+  		"filters",
+  		"proximity",
+  		"attribute",
+  		"exact",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings()
+    .setCustomRanking(
+      Arrays.asList(
+        "asc(textual_attribute)"
+        )
+     )
+    .setRanking(
+      Arrays.asList(
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom"
+      )
+    )
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      customRanking: ["asc(textual_attribute)"],
+      ranking: [
+        "custom",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+      ],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```php php
+  $index->setSettings([
+     'customRanking' => [
+       'asc(textual_attribute)'
+     ],
+     'ranking' => [
+        'custom',
+        'typo',
+        'geo',
+        'words',
+        'filters',
+        'proximity',
+        'attribute',
+        'exact'
+      ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "customRanking": ["asc(textual_attribute)"],
+          "ranking": [
+              "custom",
+              "typo",
+              "geo",
+              "words",
+              "filters",
+              "proximity",
+              "attribute",
+              "exact",
+          ],
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      customRanking: [
+        "asc(textual_attribute)"
+      ],
+      ranking: [
+        "custom",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "index" `with` IndexSettings(
+      customRanking = Some(Seq(
+        CustomRanking.asc("textual_attribute"), )),
+      ranking = Some(Seq(
+        Ranking.custom,
+        Ranking.typo,
+        Ranking.geo,
+        Ranking.words,
+        Ranking.filters,
+        Ranking.proximity,
+        Ranking.attribute,
+        Ranking.exact)), )
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "customRanking": [
+      "asc(textual_attribute)"
+    ],
+    "ranking": [
+      "custom",
+      "typo",
+      "geo",
+      "words",
+      "filters",
+      "proximity",
+      "attribute",
+      "exact",
+    ],
+  ])
+  ```
+</CodeGroup>
+
+### Virtual replicas
+
+If you would like to use virtual replicas for a strict alphabetical sort where other relevancy factors aren't taken into account, you must set [`relevancyStrictness`](/api-reference/api-parameters/relevancyStrictness/) to `0`. You must also set the replica's [custom ranking](/guides/managing-results/must-do/custom-ranking/) with the attributes you'd like to sort on.
+
+<CodeGroup>
+  ```csharp csharp
+  var settings = new IndexSettings
+  {
+      CustomRanking = new List<string> { "asc(textual_attribute)" },
+      RelevancyStrictness = 0
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	CustomRanking: opt.CustomRanking(
+  		"asc(textual_attribute",
+  	),
+  	RelevancyStrictness: opt.RelevancyStrictness(0),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings()
+    .setCustomRanking(
+      Arrays.asList(
+        "asc(textual_attribute)"
+        )
+     )
+     .setRelevancyStrictness(0)
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      customRanking: ["asc(textual_attribute)"],
+      relevancyStrictness: 0,
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```php php
+  $index->setSettings([
+     'customRanking' => [
+       'asc(textual_attribute)'
+     ],
+     'relevancyStrictness' => 0
+  ]);
+  ```
+
+  ```python python
+  index.set_settings(
+      {"customRanking": ["asc(textual_attribute)"], "relevancyStrictness": 0}
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      :customRanking => [
+        "asc(textual_attribute)"
+      ],
+      :"relevancyStrictness" => 0
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "index" `with` IndexSettings(
+      customRanking = Some(Seq(
+        CustomRanking.asc("textual_attribute"), )),
+      relevancyStrictness = Some(0))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "customRanking": [
+      "asc(textual_attribute)"
+    ],
+    "relevancyStrictness": 0,
+  ])
+  ```
+</CodeGroup>
+
+## Caveats
+
+**Algolia isn't locale-aware.** Strings are ordered by the lexicographical order of their first 50 Unicode characters. That may be acceptable for English text, less so for other languages (especially those with diacritics).

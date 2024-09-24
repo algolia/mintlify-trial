@@ -1,0 +1,67 @@
+---
+title: Tokenization
+description: |-
+  Learn how Algolia handles tokenization.
+---
+
+Within a search engine, tokenization is the process of splitting text into "tokens", both during querying and indexing. Tokens are the basic units for finding matches between queries and records.
+
+## Separators and non-separators
+
+Our tokenizer divides characters into two classes: non-separators and separators. Non-separators are alphanumeric characters, and separators are non-alphanumeric characters like spaces and hyphens (`-`).
+
+To form a token, we consider a string character-by-character. Our tokenizer identifies the longest groups of contiguous characters belonging to the same class (separator or non-separator), and creates a token for each group.
+
+For example, the string `Hello, World!` is tokenized as these four tokens:
+
+- `Hello` (non-separator)
+- `, ` (with a trailing space) (separator)
+- `World` (non-separator)
+- `!` (separator)
+
+`Hello` and `World` are comprised of non-separator characters, while `, ` (with a trailing space) and `!` are comprised of separators.
+
+Only non-separator characters are indexed, and thus searchable, by default. In the example above, only `Hello` and `World` are indexed. Regardless if a user searches for `Hello, World!` or `hello world`, any record with these tokens will be a match.
+
+## Including separators to be indexed
+
+You can customize what characters are indexed using [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/). When you include a character in this parameter, it has three consequences:
+
+1. We tokenize it as a non-separator.
+1. We do not combine it with adjacent characters: the tokenizer always puts the character alone in its own token, even if it appears next to other non-separators, or even next to itself.
+1. We index it.
+
+For example, if [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/) is set to `#@` (hash and at sign), then the string `#@lgolia!!` is tokenized as:
+
+- `#` (non-separator)
+- `@` (non-separator)
+- `lgolia` (non-separator)
+- `!!` (separator)
+
+Since `#` and `@` are included in [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/), we index the tokens `#`, `@`, and `lgolia`. Note that even though they appear next to each other, `#` and `@` are separate tokens.
+
+Now, when a user searches for `#`, `@`, or `LGOLIA!!` this record will be a match.
+
+## Sequence expressions
+
+Although we tokenize a character in [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/) on its own, when it's directly adjacent to a non-separator token, we want to keep the order as a requirement for the search query.
+
+For example, assuming that `@` is included in [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/), then the string `alice@wonderland` is interpreted as `alice @ wonderland` (all tokens must be adjacent, in this order). The phrase `alice @ wonderland` (with spaces in between) has the same tokens, but with no restrictions on order. A search for `alice@wonderland`, returns records with `alice@wonderland` and `alice @ wonderland` (with spaces), but not records with `wonderland @ alice` or `alice was @ wonderland`.
+
+When tokens must be found in a particular order, it is known as a _sequence expression_.
+
+We also always create sequence expressions when alphanumeric characters surround a hyphen (`-`), whether the hyphen is in [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/) or not. For example, the term `real-time` creates a sequence expression, meaning that the query `real-time` matches records with `real time` and `real-time`, but not `real [...] time`, `time real`, or `time [...] real` (`[...]` indicates other words in the string). The query `real time`, without a hyphen, matches any records with those two words, no matter the order or proximity.
+
+### Sequence expressions limitation
+
+Sequence expression matching relies on words position. It means that all tokens must be adjacent.
+
+The indexing only keeps the position of the first 1000 words of every record.
+For all words beyond this limit, the sequence expression matching doesn't work, preventing potential valid records from being raised.
+
+#### Mitigation and solution
+
+To mitigate the issue, you can:
+
+- Transform the query, for example from `real-time` to `real time`
+- Use smaller records

@@ -1,0 +1,90 @@
+---
+title: Exhaustive sorting
+description: |-
+  Learn how to exhaustively sort by an attribute using standard replicas.
+---
+
+Exhaustive sorting refers to strictly reordering results by an attribute. For example, you can exhaustively sort results from lowest to highest price, regardless of [textual](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/) and [business relevance](/guides/managing-results/must-do/custom-ranking/#custom-ranking). It's intended for use cases requiring _strict_ sorting or where relevance isn't essential, like an inventory app or a database.
+
+An alternative to exhaustive sorting is [relevant sorting](/guides/managing-results/refine-results/sorting/in-depth/relevant-sort/).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Understanding replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/)
+  - [Relevant sorting](/guides/managing-results/refine-results/sorting/in-depth/relevant-sort/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Effect on ranking formula
+
+In Algolia, each of your indices has a ranking formula of two or three parts:
+
+- [Sort-by attributes](/guides/managing-results/refine-results/sorting/how-to/sort-by-attribute/) (optional)
+- [Textual ranking criteria](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/)
+- [Custom ranking](/guides/managing-results/must-do/custom-ranking/#custom-ranking), also known as business ranking criteria
+
+### Sort-by attribute
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You should only add a [sort-by attribute](/guides/managing-results/refine-results/sorting/how-to/sort-by-attribute/) to [replica indices](#backend-implementation).
+</Note>
+
+{/* prettier-ignore-end */}
+
+If a sort-by attribute _is_ present, the engine first orders results by the sort-by attribute's value.
+
+For example, suppose you have an index where you've set "price (ascending)" as a sort-by attribute.
+For the query "iphone", the engine first selects all records that match "iphone" (and alternatives like prefixes, typos, and synonyms) in the [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/). Then, it orders the results from lowest to highest price.
+
+- Once sorted by the sort-by attribute's value (price), products with the same price are ordered according to Algolia's default [textual ranking criteria](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/).
+- If records have the same values for all textual ranking criteria, the engine orders them by [custom ranking](/guides/managing-results/must-do/custom-ranking/#custom-ranking).
+
+In summary, **textual ranking criteria come _after_ your selected sort-by attribute.**
+
+With exhaustive sorting, if the sort-by attribute values are very granular and or relatively unique, the textual ranking criteria won't have a significant role in ranking. For example, consider exhaustively sorting on a timestamp attribute down to the millisecond. If none of your records have the same timestamp value, the timestamp is the only attribute that plays a role in ranking. Depending on your use case, this may be what you want, or you may want to decrease your timestamp granularity, or [relevant sorting](/guides/managing-results/refine-results/sorting/in-depth/relevant-sort/) might be a more appropriate choice.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Sort by attribute](/guides/managing-results/refine-results/sorting/how-to/sort-by-attribute/)
+  - [Sort an index by date](/guides/managing-results/refine-results/sorting/how-to/sort-an-index-by-date/)
+  - [Sort an index alphabetically](/guides/managing-results/refine-results/sorting/how-to/sort-an-index-alphabetically/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Backend implementation
+
+To ensure a fast search experience, the engine sorts your data at indexing time. Therefore, each of your indices can only be sorted in one way. However, to allow for multiple sort orders, Algolia uses replica indices.
+
+### Exhaustive sorting uses standard index replicas
+
+A replica is a copy of one of your indices, with the same data and synchronized data updates, but can have unique settings. The index from which you copy a replica's data is the replica's primary index. **If you want to configure an exhaustive sort-by, use [standard replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/#standard-and-virtual-replicas).**
+
+For each attribute you want to sort by, create a replica index, which contains a copy of all the data in your primary index.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Understanding replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/)
+  - [What is the effect of a replica on the number of records?](/guides/managing-results/refine-results/sorting/in-depth/replicas-impact-on-pricing/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Frontend implementation
+
+Replica indices manage the backend of sorting, but you still need to implement the frontend with
+custom logic or [InstantSearch's SortBy UI widget](/guides/managing-results/refine-results/sorting/how-to/use-sorting-ui-widget/).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [SortBy Widget](/api-reference/widgets/sort-by/js/)
+</Info>
+
+{/* prettier-ignore-end */}

@@ -1,0 +1,100 @@
+---
+title: Filtering
+description: |-
+  How does filtering work with Algolia? Learn how Algolia enables filtered searches.
+---
+
+Filtering allows your users to drill down and create a smaller, more manageable set of results based on meaningful categories.
+It gives them direct control over the records they query.
+Categories can be brand, color, or genre of film.
+They can be dress or shoe sizes or price ranges like expensive or cheap.
+They can be date ranges, booleans, user-defined tags, geolocation, and other information that helps classify your data.
+
+The most common use for filtering is to provide a UI that enables users to refine their search using one or more clickable items.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Choosing suitable filters](https://www.algolia.com/blog/ux/search-filter-ux-best-practices/)
+  - [Fuzzy searching and matching](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## How to filter your data
+
+The process is as follows:
+
+1. [Define filterable attributes (at indexing time)](#define-filterable-attributes)
+1. [Filter by attributes (at query time)](#filter-by-attributes)
+
+Most [records have one or more attributes](/guides/sending-and-managing-data/prepare-your-data/#algolia-records), such as _color_, _brand_, _genre_, or _category_, that you can choose as a filter.
+A filter attribute can be a list of single words, more complex phrases, numbers, booleans, dates, or even arrays and nested arrays of related data.
+Users may use any filter combination to group records.
+Filtering creates more targeted and therefore relevant subsets of results, and increases the chance that only the best results appear at the top.
+
+### Define filterable attributes
+
+First, define filter attributes as _attributes for faceting_.
+You can do this on the [dashboard](https://www.algolia.com/ecommerce-merchandising-playbook/configuring-faceting/) or with an [API client](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/).
+
+If you only want to use an attribute for filtering, use the [`filterOnly`](/api-reference/api-parameters/attributesForFaceting/#parameter-option-filteronly) modifier.
+This reduces the index size and improves search speed.
+For example, if you plan to filter on an attribute, such as `color`, but don't need to calculate or display the number of items with `color:green`, `color:blue`, or similar, use `filterOnly`.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you use [`numericFilters`](/api-reference/api-parameters/numericFilters/) to filter on **numeric** or **boolean** attributes, you don't need to set these attributes as `attributesForFaceting`.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Filter by attributes
+
+The actual filtering of records happens at "query time" (when users search), not "indexing time" (when your index is populated or configured).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Filter by string](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-string)
+  - [Filter by numeric value](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-numeric-value)
+  - [Filter by date](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-date)
+  - [Filter by array](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-array)
+  - [Filter by tags](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-tags)
+  - [Filter by boolean](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-boolean)
+  - [Filter by null or missing attributes](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-null-or-missing-attributes)
+  - [Filter by `objectID`](/guides/managing-results/refine-results/filtering/how-to/filter-by-attributes/#filter-by-objectid)
+  - [`filters`](/api-reference/api-parameters/filters/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## How to apply filtering to the search UI
+
+After defining [filterable attributes](#define-filterable-attributes) and ensuring users can filter every record [with the appropriate attributes](#filter-by-attributes), ensure your frontend represents all these possibilities by using InstantSearch's [refinements](/api-reference/widgets/refinement-list/js/).
+
+You'll typically want to display _all_ filtering categories. Thus, if you have created two filters, `brand` and `price_range`, you'll always want to display a list of brands and a price range slider for every query in your UI.
+For example, a search for "phones" returns brands like Apple and Samsung, while a search for "speakers" returns Panasonic and Bose.
+While the _values_ may change, the `brand` filter is always present.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Facet dropdown with](/guides/building-search-ui/ui-and-ux-patterns/facet-dropdown/js/)
+  - [Filter suggestions](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/filter-suggestions/)
+  - [Guided search](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/guided-search/)
+  - [UI design: filter and sort panel](/guides/building-search-ui/resources/ui-kit/js/#filter-and-sort-panel)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Other uses for filtering
+
+Although the most common use for filtering is to enable users to refine their search and limit the records they search within, there are other ways to use filters. For example:
+
+- **[Security-filtering](/guides/security/api-keys/how-to/user-restricted-access-to-data/)**: using filters as a security measure, where each user has access to only their private data.
+- [**Geo-filtering**](/guides/managing-results/refine-results/geolocation/#geographical-filtering-and-sorting): filtering on user's geolocation (if your index has geographical data).
+- [**Filter scoring**](/guides/managing-results/refine-results/filtering/in-depth/filter-scoring/): using filters to help promote some records over others.
+- **[Query-based filtering](/guides/managing-results/rules/detecting-intent/)**: setting rules that parse your users' queries and use specific query terms as filters instead of search terms.
+  For example, if a user types in "red", "red" can be used as a filter instead of a search term, thereby returning all red records.

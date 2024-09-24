@@ -1,0 +1,120 @@
+---
+title: Google Analytics
+description: |-
+  Learn how to track Search Analytics in Algolia extension for Magento 2.
+---
+
+Algolia for Magento 2 | Notable Features
+
+By Algolia, 5 min
+
+The Google Analytics feature of the extension is handled by the [Analytics widget](/api-reference/widgets/analytics/js/) of the [InstantSearch.js](/api-reference/widgets/js/) library.
+The widget will push all the searches to analytics tools like Google Analytics.
+It's also possible to send the data to any other analytics service - like Segment.io, Kissmetrics, and any other such service - by implementing a custom function.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  The analytics feature only works on the InstantSearch page at this time, not on the autocomplete menu.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Configuration
+
+The Analytics feature has a total of three variables that can be configured.
+
+### Delay
+
+The delay **in milliseconds**.
+Each keystroke in the search bar will trigger a search in Algolia to provide a search-as-you-type experience, which is great for the user experience.
+For the analytics, however, it generates a lot of unnecessary data and noise in analytics if all the queries would be pushed to the analytics service.
+The delay setting defines how long the widget should wait between keystrokes before pushing data to the analytics service.
+Only the last search after this delay will be pushed to the analytics service.
+
+### Push before delay on UI interaction
+
+If the delay set is too high, it could happen that a user interacts with the search results - clicking one of the results for example - before the delay is actually finished.
+This could prevent the search event from being pushed to the analytics service.
+When this setting is set to true, the search event will be forced pushed to the analytics service, even if it occurred within the delay parameter set.
+
+### Push after initial search
+
+If users land on the search page directly from a shared URL, the search is automatically triggered without any user interaction.
+At the same time, the load of the page triggers the default Google Analytics code for a page view.
+This setting will specify if you should push a search event in such non-interactive search scenarios.
+
+## Push function
+
+The [`analytics` widget](/api-reference/widgets/analytics/js/#widget-param-pushfunction) calls the `push` function every time it has to send analytics data to an analytics service.
+
+If **[Google Analytics](https://docs.magento.com/user-guide/marketing/google-universal-analytics.html)** is enabled in Magento, the widget will automatically configure the `push` function to send the data to Google Analytics. You can configure Magento's Google Analytics settings by going to: **Stores > Configuration > Sales > Google API > Google Analytics**
+
+Each search will be tracked as a page view in Google Analytics.
+The URL of the page view will have the following format:
+
+`/catalogsearch/result/?q=[[search_term]]&[[selected_filters]]&numberOfHits=[[number_of_results]]`
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The Magento extension is [open source](https://github.com/algolia/algoliasearch-magento-2/). You can find the code for the `push` function on [GitHub](https://github.com/algolia/algoliasearch-magento-2/blob/3.0.2/view/frontend/web/instantsearch.js#L577-L596) if interested.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Other analytics services
+
+If data needs to be pushed to an analytics services other than Google Analytics, a custom `push` function needs to be written.
+This can be done by defining a `algoliaAnalyticsPushFunction` variable, and assigning the custom function to it.
+The widget automatically calls the custom function, so there's no need to do anything else.
+
+The custom function will be passed three variables: `formattedParameters`, `state`, and `results`.
+
+### Examples
+
+```js js
+const algoliaAnalyticsPushFunction = (
+  formattedParameters,
+  { query },
+  { nbHits },
+) => {
+  // Google Analytics
+  window.ga(
+    "set",
+    "page",
+    `/search/query/?query=${query}&${formattedParameters}&numberOfHits=${nbHits}`,
+  );
+  window.ga("send", "pageView");
+
+  // GTM
+  dataLayer.push({
+    event: "search",
+    "Search Query": query,
+    "Facet Parameters": formattedParameters,
+    "Number of Hits": nbHits,
+  });
+
+  // Segment.io
+  analytics.page("[SEGMENT] instantsearch", {
+    path: `/instantsearch/?query=${query}&${formattedParameters}`,
+  });
+
+  // KissMetrics
+  const objParams = JSON.parse(
+    `{"${decodeURI(formattedParameters.replace(/&/g, '","').replace(/=/g, '":"'))}"}`,
+  );
+  const arrParams = $.map(objParams, (value, index) => [value]);
+  _kmq.push([
+    "record",
+    "[KM] Viewed Result page",
+    {
+      Query: query,
+      "Number of Hits": nbHits,
+      "Search Params": arrParams,
+    },
+  ]);
+
+  // Or any other service
+};
+```

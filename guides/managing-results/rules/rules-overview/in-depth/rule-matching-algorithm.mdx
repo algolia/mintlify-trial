@@ -1,0 +1,152 @@
+---
+title: Rule matching algorithm
+description: |-
+  learn how conflicting Rules are applied.
+---
+
+**Rules can contradict or override each other.**
+This guide explains how to handle contradicting rules, and which effects to expect.
+
+## Overview of the Rule matching algorithm
+
+If your index contains many rules, you need to be careful not to create conflicts.
+Most rules target different situations, so this isn't usually a concern.
+
+However, such conflicts _can_ happen.
+Two rules may be triggered by the same condition.
+Applying both could produce unwanted side effects.
+To avoid this, Algolia's **Rule matching algorithm** picks the best one and applies it, but which rule wins?
+
+To solve conflicts, Algolia:
+
+1. Sorts all the matching rules with a [precedence logic](#precedence-logic), as outlined below.
+
+1. The sorted rules are compared to check for conflicts. If there is a conflict, the rules with the lowest precedence are [excluded](#excluding-conflicting-rules).
+
+1. The remaining non-conflicting rules are applied to the query.
+
+## Precedence logic
+
+Algolia uses a tie-breaking algorithm, much like the ranking formula, to determine the precedence of all the Rules that apply to any given query.
+In other words, a criterion is only considered when all its preceding criteria rank equal.
+
+Precedence acts mainly on **specificity** (the more specific a rule is, the higher its precedence) and **query text**.
+
+The logic, ranked by importance, is as follows:
+
+- **Position**: the earliest match wins (the match closest to the beginning of the query string).
+- **Match length**: the longest match wins; match length is determined by the number of words matched from the query string and the number of filters matched from the query parameters.
+- **Anchoring**: is > starts with > ends with > contains.
+- **Context**: a contextual Rule has higher priority than a general Rule or than a Rule using filters.
+- **Filters**: a Rule using filters has higher priority than a general Rule.
+- **Literals over placeholders**: if a word could match both a literal or a facet value, the literal takes precedence.
+- **Temporary over permanent**: if both a temporary and a permanent Rule match, the temporary Rule takes precedence.
+- **Rule ID**: if there are still conflicts after all other criteria have been applied, the record with the smallest `objectID` in [lexicographical order](https://www.educative.io/answers/what-is-a-lexicographic-order) wins.
+
+This final criterion is guaranteed to break any tie. It most likely applies only when there are duplicate rules.
+
+Essentially, Rules apply from the beginning of the query to its end.
+
+Note that **the precedence logic applies the same way with multi-conditional Rules**. The engine evaluates each condition as if it were an independent Rule.
+
+### Recommend rules
+
+The [Recommend Rules precedence logic](/guides/algolia-recommend/how-to/rules/#rules-precedence-algorithm) is the same as the Search Rules precedence logic, except that it doesn't match a query pattern.
+
+## Excluding conflicting rules
+
+After ranking rules by precedence, any conflicting rules are excluded.
+Only the conflicting rules with the highest precedence are retained.
+
+### Overlapping pattern conditions
+
+One possible cause of conflict is an overlap on the [`pattern`](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#rule-query-pattern) condition.
+
+For example, consider the query `Enchanted forest adventure`, and an index with several rules.
+Each rule matches a different pattern in that query.
+The rules are ranked by precedence and the exclusion logic behaves as follows:
+
+```
+`pattern`    [enchanted] [forest] [adventure]
+Rule A       [------------------]               KEPT
+Rule B                   [------------------]   EXCLUDED: overlaps with Rule A
+Rule C                   [------]               EXCLUDED: overlaps with Rule A
+Rule D                            [---------]   KEPT
+```
+
+As shown in the previous example, multiple rules can still match a given query, provided they match a distinct set of words.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Using an empty query pattern as a trigger condition is a special case: an empty query won't overlap with any other pattern.
+  Therefore, multiple rules using such a pattern will all be applied, as long as there isn't another conflicting condition.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Filter intersections
+
+[Overlapping `pattern` conditions](#overlapping-pattern-conditions) aren't the only cause of conflict.
+
+The [`filters`](/guides/managing-results/rules/rules-overview/in-depth/implementing-rules/#filters-can-trigger-rules) condition can cause issues if the intersection of the filters condition with a previous rule isn't empty.
+If this happens, the rule with the lowest precedence is excluded.
+
+## Conflicting consequences
+
+What happens when two _consequences_ are in conflict?
+
+Consider the following examples:
+
+- **Rule 1:** if a query contains "Shakespeare", then promote the record "The Lost Shakespeare Diaries", with objectID "1", to the first result.
+- **Rule 2:** if a query contains the phrase "how much is", then promote the record "Full Price List", with objectID "2", to the first result.
+
+What happens when the query is "how much is Shakespeare"?
+
+In this case, there is no conflict because the conditions are different.
+Yet, the _consequences_ overlap: two different consequences are fighting for the first position in the results.
+To solve the conflict, the consequences are applied depending on the `objectID` of the promoted results.
+Records are promoted in ascending lexicographical order: the smallest `objectID` secures the requested slot. Subsequent promotions are shifted down one level in the results.
+
+Using the previous example, "The Lost Shakespeare Diaries" is promoted to the first result because it has the smallest `objectID`, followed by "Full Price List".
+
+## Edge cases
+
+- If a Rule removes a word from the query string, all subsequent Rules that would have been triggered by this word (be it via a literal or a facet placeholder) are turned off.
+- If a Rule replaces the query string entirely, all subsequent Rules are turned off.
+
+### Context-only rules
+
+- A rule with just a context condition has higher priority than general and conditionless rules.
+- If a rule has just a context condition, it always triggers in this context and it never conflicts with other rules.
+
+### Conditionless rules
+
+- A conditionless rule has higher priority than a general rule.
+- If a rule is conditionless, it always triggers and never conflicts with other rules.
+
+## Some further considerations
+
+### Hit promotion's effect on relevance
+
+Only records coming from the same index can be promoted. Promoted records have to be explicitly identified by their `objectID`.
+
+A promoted record is considered a hit, even if it doesn't match the query.
+If it matches the query, it's removed from its original position and inserted at its promoted position, even if the original position was better than the promoted position (in other words, promoted hits can also be "demoted").
+For performance reasons, promoted positions are restricted to the range \[0, 300] (zero-based).
+
+Inside the same rule, each promoted record must have a unique promoted position.
+If promoted records from two distinct rules are triggered for the same query:
+
+- Duplicates are merged, using the best position.
+- If the resulting positions conflict between distinct records, records are shifted down until a free slot is found.
+- All regular hits are shifted down as many times as necessary to ensure that all promoted records get as close to their promoted position as possible.
+
+Hidden records are removed from the hits. The following hits are shifted up so that pagination works seamlessly.
+
+### Injecting user data
+
+User data lets you inject data inside the results that don't come from the index, and, as such, doesn't compete with other hits for pagination.
+A typical use case is to display a banner on top of the result list.
+
+User data can be any JSON object. It's not interpreted by the API.

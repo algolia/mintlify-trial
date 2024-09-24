@@ -1,0 +1,168 @@
+---
+title: Override engine defaults
+description: |-
+  Override engine defaults in rare or complex situations.
+---
+
+## Don't override engine defaults unless necessary
+
+If your results aren't quite right, before tweaking the engine in an attempt to fix the problem, first perform these steps:
+
+- Review the content of your data.
+- Verify that both [searchable attributes](/guides/managing-results/must-do/searchable-attributes/) and [custom ranking](/guides/managing-results/must-do/custom-ranking/) are well configured.
+- Take a look at your [analytics data](/guides/search-analytics/concepts/metrics/) for insights into how to improve your data or settings.
+- Review the [troubleshooting guide](/guides/managing-results/rules/merchandising-and-promoting/) for Rules.
+
+## Search engine tweaks
+
+If you've gone through the preceding steps, here is a list of engine-level settings that you can look at to address persistent, "unsolvable" problems.
+
+- [Override the default prefix setting](#adjusting-prefix-search)
+- [Allow users to use quotes and negative query terms](#advanced-syntax)
+- [Enable search on some non-alphanumeric characters](#enable-search-on-non-alphanumeric-characters)
+- [Override the default ranking formula](#change-the-ranking-formula-criteria)
+- [Make the Words criterion first in the list](#make-words-the-first-ranking-formula-criterion)
+- [Adjust the Exact criterion](#adjust-the-exact-criterion)
+- [Adjust the Proximity criterion](#adjust-the-proximity-criterion)
+
+{/* prettier-ignore-start */}
+
+<Note>
+  These settings are global, so you'll need to be careful since every change affects every search. With a minor tweak, you may solve one problem but create others, or worse, undermine your entire search solution.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Adjusting prefix search
+
+Prefix matching is central to Algolia's as-you-type search experience.
+It enables the engine to start matching records based on partial words.
+
+For example, as soon as a user types `a`, `ap`, `apr`, any records containing `apricot` will be returned. There's no need for the engine to wait for a full-word match before displaying results.
+
+By default, only the last word in a query is treated as a prefix: all other text in the query must be a complete match.
+
+You can change this and get more results by making _all_ text in a query match the prefix.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Prefix search](/guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/prefix-searching/)
+  - [Empty or insufficient results](/guides/managing-results/optimize-search-results/empty-or-insufficient-results/)
+  - [Querying in the middle of a word](/guides/managing-results/optimize-search-results/override-search-engine-defaults/how-to/how-can-i-make-queries-within-the-middle-of-a-word/)
+  - [`queryType`](/api-reference/api-parameters/queryType/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Advanced syntax
+
+When Algolia's advanced syntax is enabled ([`advancedSyntax`](/api-reference/api-parameters/advancedSyntax/)), search queries are treated differently in two significant ways:
+
+- Matching phrases within quotes
+- Excluding words
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Advanced syntax enables both these behaviors by default but you can enable them individually with ([`advancedSyntaxFeatures`](/api-reference/api-parameters/advancedSyntaxFeatures/)).
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### Match phrases within quotes
+
+Terms in quotes must match exactly. For example, `sparkly blue "iPhone case"` only returns records containing the exact string, "iPhone case" but "sparkly" and "blue" could occur anywhere in the record.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  [Algolia's typo tolerance](/guides/managing-results/optimize-search-results/typo-tolerance/in-depth/configuring-typo-tolerance/) is turned off inside quotes.
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### Exclude words from search
+
+To exclude a word from a search, prefix it with a minus sign. For example, `search -engine` only matches records that contain "search" and don't contain "engine."
+
+### Enable search on non-alphanumeric characters
+
+By default, separators (such as ``!#()[]{}*+-_一,:;<>?@/\^|%&~£¥$§€`"'''""†‡``)aren't included in indices and, hence, can't be searched. for. The query "yahoo!" becomes "yahoo".
+
+To ensure that you can search for terms like "Google+" or "C#", you must override the default and ensure that `+` and `#` are treated like alphanumeric characters.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Change the ranking formula criteria
+
+You are strongly discouraged from changing [the ranking formula](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/) unless you understand the global impact of the change. While changing the ranking formula might solve some queries, it might cause unexpected consequences for all others.
+
+### Make Words the first ranking formula criterion
+
+The most common change, and least risky, is to put [the Words criterion](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#words-if-applicable) as the first entry in the ranking formula.
+Moving the criterion is often done when dealing with long documents and queries, where you care about how many words match.
+The more words that match, the more likely the document is relevant.
+This works in connection with [`optionalWords`](/api-reference/api-parameters/optionalWords/).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Algolia's [DocSearch](https://docsearch.algolia.com/) uses this "Word first" approach.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Adjust the Exact criterion
+
+The Exact criterion behaves like a counter: if an exact match occurs in an attribute, the Exact counter is incremented by 1. The higher the Exact count, the higher the record is ranked.
+
+- **An exact match is where a complete word in a query matches fully without typos** to a word in an attribute.
+- **An inexact match is one with typos or matched by a prefix.**
+
+  - "star" is an exact match to "Star Wars".
+  - "Sta" is an inexact match to "Star Wars"
+
+Synonym matching and plural/singular matching are considered exact.
+
+- **Single-word matches on single-word attributes rank higher than multi-word exact matching.**
+
+You can [adjust one or more of these behaviors](/guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/adjust-exact-settings/).
+
+### Adjust the Proximity criterion
+
+By default:
+
+- Adjacent words rank higher than words with one word between them
+- Words with one word between them rank higher than words with two words between them, and so on
+
+You can override this default behavior by increasing the minimum proximity up to 7.
+
+For example, consider the query "javascript framework".
+If you set minProximity to 2, two records containing "JavaScript framework" and "JavaScript charting framework" have the same proximity score.
+
+#### Large attributes affect proximity
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you have attributes of more than 1,000 characters, Algolia will assign all matched words after the 1,000th character a proximity score of 8 (the lowest).
+</Note>
+
+{/* prettier-ignore-end */}
+
+If you have such large attributes, you should [split them into smaller components](/guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents/).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [`minProximity`](/api-reference/api-parameters/minProximity/)
+</Info>
+
+{/* prettier-ignore-end */}

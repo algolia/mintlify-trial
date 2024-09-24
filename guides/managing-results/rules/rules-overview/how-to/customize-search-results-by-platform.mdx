@@ -1,0 +1,335 @@
+---
+title: Using rules to customize search results by device
+description: |-
+  Learn how to customize your search results based on whether your user is on a mobile or desktop device.
+---
+
+Search needs to be flexible.
+Depending on the user's context, results can vary.
+For example, because some products are more likely to be bought or viewed from phones than desktops, you may want to promote items based on the user's device.
+
+To do this:
+
+1. Identify your user's device.
+1. Assign a `mobile` context when users search from mobile devices. A context is a string passed as a search parameter to InstantSearch or an Algolia API client.
+1. Create a contextual rule that acts on the `mobile` context.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To help understand user behavior across devices, pair your device-specific experience with analytics. You can even use the same context string to tag search queries for analytics. These [`analyticsTags`](/guides/search-analytics/guides/segments/) help you group search analytics into different segments.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Example scenario
+
+Suppose you work for a movie database company.
+Research shows that mobile users, unlike desktop users, tend to see a film in theaters after it has appeared in their search results.
+To capitalize on this, you partner with a movie theater chain and decide to promote newly released movies to your mobile users.
+
+The records in your Algolia index include a `release_date` attribute, in [Unix timestamp](https://www.unixtimestamp.com/) format, this is useful for identifying newly released movies.
+
+```json json
+{
+  "title": "Fargo",
+  "year": 1996,
+  "director": "Joel Coen",
+  "release_date": 841795200,
+  "rating": 93
+}
+```
+
+By creating a mobile context and contextual rules, you can promote recent movies to mobile users.
+
+## Identify your user's device
+
+Before assigning a mobile context to searches, write a function that detects what device the app is running on, and return "desktop" or "mobile" depending on what it finds:
+
+```js js
+const getPlatform = () => {
+  // const isMobile = ...
+  // Your logic to determine whether a user is on a mobile or desktop device
+  return isMobile ? "mobile" : "desktop";
+};
+```
+
+## Assign context
+
+You can assign context with InstantSearch or an Algolia API client.
+
+### Assign context with InstantSearch
+
+Set the user's device context at the beginning of their search session by adding it to the `searchParameters` setting of your InstantSearch instance [during initialization](/api-reference/widgets/instantsearch/js/).
+
+<CodeGroup>
+  ```html vue
+  <script>
+    export default {
+      data() {
+        return {
+          ruleContexts: getPlatform(),
+        };
+      },
+    };
+  </script>
+  ```
+
+  ```html angular
+  <ais-configure>
+    [searchParameters]="{ ruleContexts: [getPlatform()]}"
+  </ais-configure>
+  ```
+
+  ```js js
+  const platformTag = getPlatform();
+
+  instantsearch.widgets.configure({
+    ruleContexts: [platformTag],
+  });
+  ```
+
+  ```jsx react
+  import { Configure } from 'react-instantsearch';
+
+  const platformTag = getPlatform()
+
+  <Configure
+    ruleContexts=[platformTag]
+  />
+  ```
+
+  ```kotlin android
+  val platform: String = getPlatform()
+  val query = query {
+      ruleContexts {
+          +platform
+      }
+  }
+
+  val searcher = HitsSearcher(movies, query)
+  ```
+
+  ```swift swift
+  let platform = getPlatform()
+
+  let searcher = HitsSearcher(appId: "YourAppId", apiKey: "YourAPIKey", indexName: "YourIndexName")
+
+  searcher.request.query.ruleContexts = [platform]
+  ```
+</CodeGroup>
+
+### Assign context with an API client
+
+Pass the user's device context as a search parameter whenever you [`search`](/api-reference/api-methods/search/) your index.
+
+```js js
+const index = client.initIndex("movies");
+
+const platformTag = getPlatform();
+
+index
+  .search("query", {
+    ruleContexts: platformTag,
+  })
+  .then(({ hits }) => {
+    console.log(hits);
+  });
+```
+
+## Create a contextual rule
+
+You can create a mobile contextual rule with an API client or from the Algolia dashboard.
+
+### Create a contextual rule with an API client
+
+Use the [`save-rule`](/api-reference/api-methods/save-rule/) method to create a context-dependent rule.
+For example, to promote movies released after January 1, 2020, for mobile users:
+
+<CodeGroup>
+  ```csharp csharp
+  Rule ruleToSave = new Rule
+  {
+      ObjectID = "a-rule-id",
+      Conditions = new List<Condition> { new Condition { Context = "mobile" } },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              AutomaticFacetFilters = new List<AutomaticFacetFilter>
+              {
+                  new AutomaticFacetFilter { Facet = "release_date >= 1577836800" }
+              }
+          }
+      }
+  };
+
+  movies.SaveRule(rule, forwardToReplicas: false);
+  ```
+
+  ```go go
+  forwardToReplicas := opt.ForwardToReplicas(false)
+
+  rule := search.Rule{
+  	ObjectID:   "a-rule-id",
+  	Conditions: []search.RuleCondition{{Context: "mobile"}},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			QueryParams: search.QueryParams{
+  				Filters: opt.Filters("release_date >= 1577836800"),
+  			},
+  		},
+  	},
+  }
+
+  res, err := movies.SaveRule(rule, forwardToReplicas)
+  ```
+
+  ```java java
+  Condition condition = new Condition()
+      .setContext("smartphone");
+
+  ConsequenceParams params = new ConsequenceParams()
+      .setFilters("release_date >= 1577836800");
+
+  Consequence consequence = new Consequence()
+      .setParams(params);
+
+  Rule rule =
+      new Rule()
+          .setObjectID("a-unique-identifier")
+          .setConditions(Collections.singletonList(condition))
+          .setConsequence(consequence);
+
+  movies.saveRule(rule);
+
+  // Asynchronous
+  movies.saveRuleAsync(rule);
+  ```
+
+  ```js js
+  const rule = {
+    objectID: "a-rule-id",
+    conditions: [
+      {
+        context: "mobile",
+      },
+    ],
+    consequence: {
+      params: {
+        filters: "release_date >= 1577836800",
+      },
+    },
+  };
+
+  movies.saveRule(rule).then(() => {
+    // done
+  });
+  ```
+
+  ```kotlin kotlin
+  val rule = Rule(
+      objectID = ObjectID("a-rule-id"),
+      conditions = listOf(Condition(
+          context = "mobile"
+      )),
+      consequence = Consequence(
+          query = Query(filters = "release_date >= 1577836800")
+      ),
+  )
+
+  movies.saveRule(rule)
+  ```
+
+  ```php php
+  $rule = array(
+      'objectID' => 'a-rule-id',
+      'conditions' => array(array(
+          'context' => 'mobile',
+      )),
+      'consequence' => array(
+          'params' => array(
+              'filters' => 'release_date >= 1577836800',
+          )
+      )
+  );
+
+  $movies->saveRule($rule);
+  ```
+
+  ```python python
+  rule = {
+      "objectID": "a-rule-id",
+      "conditions": [{"context": "mobile"}],
+      "consequence": {"params": {"filters": "release_date >= 1577836800"}},
+  }
+
+  response = movies.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  rule = {
+    objectID: "a-rule-id",
+    conditions: [
+      {context: "mobile"}
+    ],
+    consequence: {
+      params: {
+        filters: "release_date >= 1577836800"
+      }
+    }
+  }
+
+  movies.save_rule(rule)
+  ```
+
+  ```scala scala
+  val ruleToSave = Rule(
+    objectID = "a-rule-id",
+    conditions = Some(Seq(Condition(
+      context = "mobile", ))),
+    consequence = Consequence(
+      params = Some(Map("filters" -> "release_date >=  1577836800")), ), )
+  client.execute {
+    save rule ruleToSave inIndex "movies"
+  }
+  ```
+
+  ```swift swift
+  let modifiedQuery = Query().set(\.filters, to: "release_date >= 1577836800")
+
+  let rule = Rule(objectID: "a-rule-id")
+    .set(\.conditions, to: [Rule.Condition().set(\.context, to: "mobile")])
+    .set(\.consequence, to: Rule.Consequence().set(\.query, to: modifiedQuery))
+
+  movies.saveRule(rule) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Create a contextual rule with the dashboard
+
+1. Select the **Search** product icon on your dashboard.
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index to which you're adding a rule.
+
+1. Select **Create your first rule** or **New rule**. In the drop-down menu, click the **Manual Editor** option.
+
+1. In the **Condition(s)** section, toggle **Context** on and toggle **Query** off.
+
+1. Enter "mobile" in the context input field.
+
+1. In the **Consequence(s)** sections, click **Add Consequence** and select the **Add Query Parameter** consequence.
+
+1. In the editor, add a filter for the `release_date` attribute.
+   For example, to show all movies released since 2020 (`1577836800` is the Unix timestamp for January 1, 2020),
+   enter: `{ "filters": "release_date >= 1577836800" }`
+
+1. If you wish, you can add other consequences by clicking **Add consequence**. For example, there may be movies that you want to pin to a specific location or rank at the top,
+
+1. Save your changes.

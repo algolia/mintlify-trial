@@ -1,0 +1,309 @@
+---
+title: Filter results inside a rectangle
+description: |-
+  Use Algolia's geo search capabilities to filter results inside a rectangle.
+---
+
+In this tutorial, we'll see how we can filter results inside a rectangle area. This location can either be set manually or taken from the current user position.
+
+## Dataset
+
+The dataset contains 3000+ of the biggest airports in the world.
+
+```json json
+[
+  {
+    "objectID": "3797",
+    "name": "John F Kennedy Intl",
+    "city": "New York",
+    "country": "United States",
+    "iata_code": "JFK",
+    "_geoloc": {
+      "lat": 40.639751,
+      "lng": -73.778925
+    },
+    "links_count": 911
+  }
+]
+```
+
+To tell Algolia where each record is located, we need to have the latitude and longitude stored in the `_geoloc` attribute.
+
+You can download the dataset [here](https://github.com/algolia/datasets/blob/master/airports/airports.json). Have look at how to import it in Algolia [here](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard/)
+
+## Initialize the client
+
+<CodeGroup>
+  ```csharp csharp
+  SearchClient client = new SearchClient("YourApplicationID", "YourWriteAPIKey");
+  SearchIndex index = client.InitIndex("your_index_name");
+  ```
+
+  ```go go
+  package main
+
+  import "github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
+  func main() {
+  	client := search.NewClient("YourApplicationID", "YourWriteAPIKey")
+  	index := client.InitIndex("your_index_name")
+  }
+  ```
+
+  ```java java
+  SearchClient client = DefaultSearchClient.create(
+    "YourApplicationID",
+    "YourWriteAPIKey"
+  );
+
+  SearchIndex index = client.initIndex("your_index_name");
+
+  ```
+
+  ```js js
+  // Default version
+  import algoliasearch from "algoliasearch";
+
+  // Search-only version
+  // import algoliasearch from 'algoliasearch/lite';
+
+  const client = algoliasearch("YourApplicationID", "YourWriteAPIKey");
+  const index = client.initIndex("your_index_name");
+  ```
+
+  ```kotlin kotlin
+  val client = ClientSearch(
+      applicationID = ApplicationID("YourApplicationID"),
+      apiKey = APIKey("YourWriteAPIKey")
+  )
+  val indexName = IndexName("your_index_name")
+
+  client.initIndex(indexName)
+  ```
+
+  ```php php
+  // composer autoload
+  require __DIR__ . '/vendor/autoload.php';
+
+  // if you are not using composer
+  // require_once 'path/to/algoliasearch.php';
+
+  $client = \Algolia\AlgoliaSearch\SearchClient::create(
+    'YourApplicationID',
+    'YourWriteAPIKey'
+  );
+
+  $index = $client->initIndex('your_index_name');
+  ```
+
+  ```python python
+  from algoliasearch.search_client import SearchClient
+
+  client = SearchClient.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```ruby ruby
+  require "algolia"
+
+  client = Algolia::Search::Client.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```scala scala
+  // No initIndex
+  val client = new AlgoliaClient("YourApplicationID", "YourWriteAPIKey")
+  ```
+
+  ```swift swift
+  let client = SearchClient(appID: "YourApplicationID", apiKey: "YourWriteAPIKey")
+  let index = client.index(withName: "your_index_name")
+  ```
+</CodeGroup>
+
+## Configure Index Settings
+
+Even if we want to sort by distance to a location we need the textual relevance to be good in case refine the search with a query.
+
+First, let's configure the index.
+
+<CodeGroup>
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		"name",
+  		"city",
+  		"country",
+  		"iata_code",
+  	),
+  	CustomRanking: opt.CustomRanking("desc(links_count)"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(new IndexSettings()
+      .setSearchableAttributes(Arrays.asList("name", "city", "country", "iata_code"))
+      .setCustomRanking(Collections.singletonList("desc(links_count"))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      searchableAttributes: ["name", "city", "country", "iata_code"],
+      customRanking: ["desc(links_count)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+          +"name"
+          +"city"
+          +"country"
+          +"iata_code"
+      }
+      customRanking {
+          +Desc("links_count")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings({
+    'searchableAttributes' => [
+      'name',
+      'city',
+      'country',
+      'iata_code'
+    ],
+    'customRanking': [
+      'desc(links_count)'
+    ]
+  });
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    searchableAttributes: [
+      "name",
+      "city",
+      "country",
+      "iata_code"
+    ],
+    customRanking: [
+      "desc(links_count)"
+    ]
+  )
+  ```
+</CodeGroup>
+
+### Searchable attributes
+
+We're going to search in our 4 textual attributes: `name`, `city`, `country` and `iata_code`.
+
+### Custom Ranking
+
+We'll use the **number of other connected airports** to any airport as a ranking metric. The more connection the better.
+
+## Filtering inside a rectangle area
+
+Let's filter inside the United State of America. The USA can be considered as a rectangle:
+
+To filter inside this rectangle we need the upper-left and bottom-right latitude and longitude:
+
+- 49.067996905313834, 65.73828125
+- 25.905859247243498, 128.8046875
+
+We are going to use the `insideBoundingBox` parameter:
+
+<CodeGroup>
+  ```go go
+  boundingBox := [][4]float64{
+  	{
+  		49.067996905313834, // p1Lat
+  		65.73828125,        // p1Lng
+  		25.905859247243498, // p2Lat
+  		128.8046875,        // p2Lng
+  	},
+  }
+
+  res, err := index.Search("", opt.InsideBoundingBox(boundingBox))
+  ```
+
+  ```java java
+  index.search(new Query().setInsideBoundingBox(
+            Collections.singletonList(Arrays.asList(
+              49.067996905313834f, // p1Lat
+              65.73828125f, // p1Lng
+              25.905859247243498f, // p2Lat
+              128.8046875f // p2Lng
+    ))));
+  );
+  ```
+
+  ```js js
+  const boundingBox = [
+    49.067996905313834, // p1Lat
+    65.73828125, // p1Lng
+    25.905859247243498, // p2Lat
+    128.8046875, // p2Lng
+  ];
+
+  index
+    .search("", {
+      insideBoundingBox: [boundingBox],
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query {
+      insideBoundingBox {
+          +BoundingBox(
+              Point(49.067996905313834f, 65.73828125f),
+              Point(25.905859247243498f, 128.8046875f)
+          )
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $boundingBox = [
+    49.067996905313834, // p1Lat
+    65.73828125, // p1Lng
+    25.905859247243498, // p2Lat
+    128.8046875 // p2Lng
+  ];
+
+  $results = $index->search('', [
+    'insideBoundingBox' => [$boundingBox]
+  ]);
+  ```
+
+  ```ruby ruby
+  bounding_box = [
+    # p1Lat
+    49.067996905313834,
+    # p1Lng
+    65.73828125,
+    # p2Lat
+    25.905859247243498,
+    # p2Lng
+    128.8046875
+  ]
+
+  results = index.search("", {insideBoundingBox: [bounding_box]})
+  ```
+</CodeGroup>
+
+We are using the empty query (`''`) to tell that we want all airports.
