@@ -3,3 +3,94 @@ title: 'Keep track of query IDs'
 sidebarTitle: 'Track query IDs'
 description: Pass query IDs as URL parameters to product detail pages to track conversion events related to search.
 ---
+
+Often, conversions start with a search query and finish _outside_ the search results page.
+For example, consider this sequence of user events on an ecommerce website:
+
+1. User searches for a product or browses a category page.
+1. User clicks one or more products and opens their product detail pages.
+1. After visiting one or more product detail pages, user adds the product they like the most to the shopping cart.
+
+You can track this as a conversion event related to an Algolia query.
+
+Connect the conversion event to the search query with a `queryID` parameter,
+which uniquely identifies an Algolia search query.
+To keep track of query IDs across pages,
+it's best to include them as URL parameters.
+
+To track conversions unrelated to a previous search,
+you can send a conversion event without a `queryID`.
+
+## Get the `queryID` for every search
+
+To generate a `queryID` with every search,
+set the `clickAnalytics` parameter to `true`.
+
+If you're using an API client, run:
+
+import EnableClickAnalytics from '/snippets/insights/enable-click-analytics.mdx';
+
+If you're using InstantSearch or Autocomplete, set the `insights` option to `true`:
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/ui-libraries/autocomplete/guides/sending-algolia-insights-events/#enable-the-insights-option" horizontal="true">
+    Autocomplete: enable the insights option
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/sending-events/instantsearch/send-events/#enable-events-collection" horizontal="true">
+    InstantSearch: enable the insights option
+  </Card>
+
+</CardGroup>
+
+## Use InstantSearch or Autocomplete to track the `queryID` for conversion events
+
+InstantSearch and Autocomplete keep track of the `queryID` when users click search results.
+When sending conversion events, [`search-insights`](/api-reference/insights-api/) automatically includes the `queryID` in the event payload if you
+pass `inferQueryID: true` for each call.
+
+## Track the `queryID` as a URL parameter
+
+You can add the `queryID` as a URL parameter to the URL of the product detail page.
+For example, on your InstantSearch search results page:
+
+import ReadingQueryid from '/snippets/insights/reading-queryid.mdx';
+
+To read the `queryID` from the URL, you can use the [URL API](https://developer.mozilla.org/en-US/docs/Web/API/URL/searchParams):
+
+```js Javascript
+const url = new URL(window.location.href)
+const searchParams = url.searchParams
+
+const queryID = searchParams.get('queryID')
+```
+
+Tracking the `queryID` with URL parameters is the best way to ensure that conversion events match the correct search.
+For example, users might open several product detail pages from your category page or search results.
+This pattern is sometimes called [page parking](https://www.nngroup.com/articles/multi-tab-page-parking/).
+
+When you use URL parameters to keep track of the query ID,
+follow SEO best practices.
+For more information, read the [URL parameter handling](https://www.searchenginejournal.com/technical-seo/url-parameter-handling/) article in Search Engine Journal.
+
+## Track the `queryID` in cookies or local storage
+
+You could track the `queryID` in a `cookie`, `localStorage`, or `sessionStorage`.
+
+For example, to store the latest `queryID` in the browser's local storage:
+
+```js JavaScript
+// Write `queryID` to local storage
+localStorage.setItem("queryID", queryID);
+
+// Read `queryID` from local storage
+let queryID = localStorage.getItem("queryID");
+```
+
+This example only stores one `queryID` from the last search query that the user performed.
+If the user has multiple product detail pages open from previous searches, the conversion event won't have the correct `queryID`.
+
+Storing the `queryID` in a cookie or the browser's local storage may require your users' consent.
+
+## Send the conversion event
+
+To send the conversion event, use the `convertedObjectIDsAfterSearch` method.
