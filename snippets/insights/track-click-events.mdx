@@ -1,0 +1,34 @@
+## Track click events
+
+Click events capture when users indicate they want to view
+specific pieces of content. Add the following code to track a user navigating to
+a piece of content from a search results page:
+
+```js JavaScript
+window.aa("clickedObjectIDsAfterSearch", {
+    index: "YourIndexName",
+    eventName: "Item Clicked",
+
+    // Fields from the search response.
+    queryID: "YourQueryID",
+    objectIDs: ["objectID-1"],
+    positions: [1],
+});
+```
+
+In `clickedObjectIdsAfterSearch`:
+
+- `queryID` is used by Algolia to relate the event to a prior search or browse event.
+- `objectIDs` should contain the ID of the article. This can be retrieved from the `objectID` field of the `hits` array returned from the search request.
+- `positions` indicates the position of the item in the search results. For example, if the user clicked on the top result on the page, positions should be `[1]`.
+
+If a user found a piece of content without performing a search---for example, they
+browsed there from elsewhere on your site, add the following code to track that:
+
+```js JavaScript
+window.aa("clickedObjectIDs", {
+    index: "YourIndexName",
+    eventName: "Item Clicked",
+    objectIDs: ["objectID-1"],
+})
+    ```

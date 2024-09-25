@@ -3,3 +3,82 @@ title: 'Send media events with an API client'
 sidebarTitle: 'Send media events'
 description: Collect user interactions as events on your media website.
 ---
+
+import Intro from '/snippets/insights/intro.mdx';
+
+import EnableEventsCollection from '/snippets/insights/enable-events-collection.mdx';
+
+import InitializeClient from '/snippets/insights/initialize-client.mdx';
+
+import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+<Tabs>
+  <Tab title="Search results page">
+    ![Search results page](/images/events/search-events-media.png)
+    Starting with a search on any of your pages, a user might take the following actions:
+
+    1. Select a product from the search results to open the content details page.
+    1. Consume content, such as watching a video, reading an article, or listening to an audio track.
+    1. Interact with content, such as liking, subscribing, or following.
+  </Tab>
+  <Tab title="Browse page">
+    ![Browse page](/images/events/browse-events-media.png)
+    Starting with a visit to your homepage or to a category page, a user might take the following actions:
+
+    1. Select a content category to open a category page.
+    1. Select content displayed on the page to open the content details page.
+    1. Consume content, such as watching a video, reading an article, or listening to an audio track.
+    1. Interact with content, such as liking, subscribing, or following.
+  </Tab>
+  <Tab title="External referrals">
+    ![External referrals](/images/events/personalization-events-media.png)
+    Starting with a search on an internet search engine, with a click on a recommendation, or any other external referral, a user might take the following actions:
+
+    1. Click on an (internet) search result, recommendation, or other link to your website.
+    1. Depending on where the user lands on your website, they continue the same path as if they started with your homepage or with a category page.
+  </Tab>
+</Tabs>
+
+import SearchResults from '/snippets/insights/search-results.mdx';
+
+#### Browse/category page
+
+| User action         | Method name                    |
+| ------------------- | ------------------------------ |
+| User clicks content | `clickedObjectIDsAfterSearch`  |
+| User views content  | `viewedObjectIDs`              |
+
+#### Content details page
+
+| User action        | Method name       |
+| ------------------ | ----------------- |
+| User views content | `viewedObjectIDs` |
+
+import TrackQueryid from '/snippets/insights/track-queryid.mdx';
+
+import TrackClickEvents from '/snippets/insights/track-click-events.mdx';
+
+import TrackConversionEvents from '/snippets/insights/track-conversion-events.mdx';
+
+import TrackAdditioalClickEvents from '/snippets/insights/track-additional-click-events.mdx';
+
+## (Optional) Handle known users for Personalization
+
+For effective personalization, you need to identify users across sessions.
+It's best to use an identifier from your authentication system after users signed in.
+
+For more information, see [User token](/guides/send-events/concepts/user-token/).
+
+import PesonalizationUserToken from '/snippets/insights/personalization-user-token.mdx';
+
+## (Optional) Send view events for Personalization
+
+import ViewEvents from '/snippets/insights/view-events.mdx';
+
+```js JavaScript
+window.aa("viewedObjectIDs", {
+    index: "YourIndexName",
+    eventName: "Article Viewed",
+    objectIDs: ["objectID-1"],
+});
+```
