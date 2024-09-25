@@ -3,3 +3,39 @@ title: 'Send events with an API client'
 sidebarTitle: 'Send events'
 description: Collect user interactions as events on your website.
 ---
+
+import Intro from '/snippets/insights/intro.mdx';
+
+import EnableEventsCollection from '/snippets/insights/enable-events-collection.mdx';
+
+import InitializeClient from '/snippets/insights/initialize-client.mdx';
+
+import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+import TrackQueryid from '/snippets/insights/track-queryid.mdx';
+
+import TrackClickEvents from '/snippets/insights/track-click-events.mdx';
+
+import TrackConversionEvents from '/snippets/insights/track-conversion-events.mdx';
+
+import TrackAdditioalClickEvents from '/snippets/insights/track-additional-click-events.mdx';
+
+## (Optional) Handle known users for Personalization
+
+For effective personalization, you need to identify users across sessions.
+It's best to use an identifier from your authentication system after users signed in.
+
+For more information, see [User token](/guides/send-events/concepts/user-token/).
+
+import PesonalizationUserToken from '/snippets/insights/personalization-user-token.mdx';
+
+## (Optional) Send view events for Personalization
+
+import ViewEvents from '/snippets/insights/view-events.mdx';
+
+```js JavaScript
+window.aa("viewedObjectIDs", {
+    index: "YourIndexName",
+    eventName: "Item Viewed",
+    objectIDs: ["objectID-1"],
+});
