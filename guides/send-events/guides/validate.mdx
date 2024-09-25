@@ -3,3 +3,151 @@ title: 'Validate your events'
 sidebarTitle: 'Validate events'
 description: Validate your click and conversion tracking implementation and make sure you get the most value.
 ---
+
+Events unlock Algolia's most powerful features.
+To select the best way to track events, see [Get started with click and conversion events](/guides/send-events/get-started/).
+This page describes tools and methods to check for errors.
+
+## Browser developer tools
+
+To check your frontend implementation,
+use your browser's built-in developer tools.
+
+<CardGroup cols={2}>
+  <Card title="Chrome docs" icon="globe-pointer" href="https://developer.chrome.com/docs/devtools/open/" horizontal="true">
+    Chrome DevTools
+  </Card>
+  <Card title="Firefox docs" icon="globe-pointer" href="https://firefox-source-docs.mozilla.org/devtools-user/" horizontal="true">
+    Firefox DevTools
+  </Card>
+  <Card title="Apple docs" icon="globe-pointer" href="https://support.apple.com/guide/safari/use-the-developer-tools-in-the-develop-menu-sfri20948/mac" horizontal="true">
+    Safari developer tools
+  </Card>
+</CardGroup>
+
+### Check the `search-insights` library
+
+Open the **Network** tab of your browser's developer tools and check that the `search-insights` library loads without errors.
+
+![Chrome DevTools network tab showing the search insights library loading correctly (with a status of 200)](/images/events/insights-loads.png)
+
+Open the **Console** and run:
+
+```js
+window.aa
+```
+
+If the `search-insights` library loads, you should see:
+
+```js 
+ƒ (){(t.aa.queue=t.aa.queue||[]).push(arguments)}
+```
+
+If the `search-insights` library isn't loaded, you'll see `undefined` as output.
+
+### Check the user token
+
+To check if the `userToken` or `authenticatedUserToken` is set, open the **Console** and run:
+
+```js JavaScript
+// For anonymous user tokens
+window.aa('getUserToken', null, (_, token) => console.log(token));
+
+// For authenticated user tokens
+window.aa('getAuthenticatedUserToken', null, (_, token) => console.log(token));
+```
+
+You should see the current user token as an output.
+
+If you're using the cookie-based anonymous `userToken` from the `search-insights` library,
+open the **Application** tab of your browser's developer tools (**Storage** in Firefox or Safari) and go to **Cookies**.
+
+The `search-insights` library stores the generated `userToken` in the `_ALGOLIA` cookie.
+
+![Browser developer tools showing the _ALGOLIA cookie with an anonymous user token](/images/events/insights-cookie.png)
+
+For more information, see [User token](/doc/guides/send-events/concepts/user-token/).
+
+### Test sending an event to the Insights API
+
+You can send a test event from your browser's developer tools.
+For example, to send a view event, open the **Console** and run:
+
+```js JavaScript
+window.aa('viewedObjectIDs', {
+  'eventType': 'view',
+  'eventName': 'Test View Event',
+  'index': 'TestIndex',
+  'objectIDs': ['test-object']
+}
+```
+
+You shouldn't see an error in the console.
+To check the corresponding API request, open the **Network** tab
+and check for the POST request to the Insights API.
+
+![Network tab in the browser developer tools showing the POST request to the Insights API](/images/events/insights-request.png)
+
+If the status is `200`, the API request was successful.
+Check the [debugger](#debugger) in the Algolia dashboard to see how the event was received by the Insights API.
+
+<Note>
+In the Chrome browser, you might see a warning in the **Console**:
+_Cross-Origin Read Blocking (CORB) blocked cross-origin response_.
+This isn't an error and doesn't prevent the event from being sent.
+When testing, you can ignore this warning.
+</Note>
+
+## Events health
+
+The [Events health](https://dashboard.algolia.com/events/health) page on the Algolia dashboard lets you check the status of your event tracking at a glance.
+To get the Events health page:
+
+1. Open the [Algolia dashboard](https://dashboard.algolia.com/dashboard) and select your Algolia application.
+1. In the left sidebar, select <Icon icon="database" iconType="regular" /> **Data sources**.
+
+The Events health page displays a card for each feature that requires event data to function optimally.
+Each feature card shows a status indicator icon and a link to either go to the feature (if included in your application's plan) or review any potential issues.
+
+![Events health page in the Algolia dashboard](/images/events/events-health.png)
+
+Clicking on the name of a feature will take you to the [debugger](#debugger) with a filter applied to show only the events that _won't_ be used for that particular feature, so that you can make sure you're sending the correct events for the features relevant to you.
+
+### Debugger
+
+The **Events collected** section of the debugger page displays the number of events received by the Insights API up to 90 days ago.
+These numbers are approximate and can take up to 30 minutes to update.
+
+The debugger, which can be found in the **Debug events collected** section, shows the livestream of your events as the Insights API receives them.
+Your most recent 3,000 events appear in this table.
+
+![Events debugger in the Algolia dashboard with a table of incoming events](/images/events/events-debugger.png)
+
+Use the search box or click the <Icon icon="filter" iconType="regular" /> **Filter events** button to filter the list of events.
+For example, enter `httpCode=422` in the search box to show only the events with the HTTP status code `422`.
+
+<Note>
+If the debugger doesn't show any events even though you're sending them, check that you're not using an ad blocker.
+Turn off your ad blocker and reload the page.
+</Note>
+
+#### Destinations
+
+In the debugger, you can check the properties of the events,
+which user agent sent each event,
+and the number of [Algolia features](/guides/send-events/concepts/event-types/#events-by-features) that can consume each event.
+You can view more details about where events are used on the [**Details**](#event-details) panel.
+
+#### Event details
+
+Select any event in the Events debugger to see its details.
+
+![Event details for a valid event without errors. The list of attributions show that the event can be used with all Algolia features](/images/events/event-debugger-details.png)
+
+You can check the following details:
+
+- **Event Validity.** If there are errors, such as a missing `userToken` parameter, or if you use a number instead of a string as a parameter value, you can see the error message under **Errors**.
+  Under **Destinations**, you can see where the event can be used. Events with the status **Warning** can't be used in all Algolia features. For more information, see [Event types](/guides/send-events/concepts/event-types/).
+- **HTTP Data.** Details about the HTTP request sending the event, such as the referrer, user agent, and Insights library version.
+- **User Timeline.** A list of events sent by the same user.
+- **Query Details.** If the event includes a [query ID](/guides/send-events/concepts/event-types/#what-is-the-query-id), you can see the associated Search API request with the matching query ID.

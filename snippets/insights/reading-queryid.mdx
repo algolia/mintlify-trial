@@ -1,0 +1,34 @@
+<CodeGroup>
+
+```js InstantSearch.js
+search.addWidgets([
+instantsearch.widgets.hits({
+    templates: {
+    item: (item, { html }) => 
+        html`<a href="product.html?queryID=${item.__queryID}"> ... </a>`
+    }
+})
+]);
+```
+
+```jsx React InstantSearch
+const Hit = ({ hit }) => (
+<article>
+    <a href={`/product.html?queryID=${hit.__queryID}`}>
+    ...
+    </a>
+</article>
+);
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+<template v-slot:item="{ item }">
+    <a href="/product.html?queryID={{item.__queryID}}">
+    ...
+    </a>
+</template>
+</ais-hits>
+```
+
+</CodeGroup>
