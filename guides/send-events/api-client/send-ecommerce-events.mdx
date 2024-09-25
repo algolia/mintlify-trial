@@ -3,3 +3,159 @@ title: 'Send ecommerce events with an API client'
 sidebarTitle: 'Send ecommerce events'
 description: Collect user interactions as events in your ecommerce store.
 ---
+
+Capturing real-time user interactions as events gives you actionable insights with click and conversion metrics,
+and they help you increase your customer engagement and conversions.
+Events are used to activate Algolia features and products like:
+
+import Features from '/snippets/insights/features.mdx';
+
+import EnableEventsCollection from '/snippets/insights/enable-events-collection.mdx';
+
+import InitializeClient from '/snippets/insights/initialize-client.mdx';
+
+## Understand which events to track
+
+import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+#### Search and search results pages
+
+| User action                        | Method name                       |
+| ---------------------------------- | --------------------------------- |
+| User clicks search result          | `clickedObjectIDsAfterSearch`     |
+| User adds product to shopping cart | `addedToCartObjectIDsAfterSearch` |
+| User clicks categories/filters     | `clickedFilters`                  |
+| User views search results          | `viewedObjectIDs`                 |
+
+#### Product listing and category pages
+
+| User action                        | Method name                       |
+| ---------------------------------- | --------------------------------- |
+| User clicks product                | `clickedObjectIDsAfterSearch`     |
+| User adds product to shopping cart | `addedToCartObjectIDsAfterSearch` |
+| User views category page           | `viewedObjectIDs`                 |
+
+#### Product details page
+
+| User action               | Method name                       |
+| ------------------------- | --------------------------------- |
+| User adds product to cart | `addedToCartObjectIDsAfterSearch` |
+| User views product        | `viewedObjectIDs`                 |
+
+#### Checkout page
+
+| User action       | Method name                     |
+| ----------------- | ------------------------------- |
+| User buys product | `purchasedObjectIDsAfterSearch` |
+
+import TrackQueryid from '/snippets/insights/track-queryid.mdx';
+
+## Track click events
+
+To send click events with the Insights client, add the following code
+whenever a user clicks on a product.
+
+```js JavaScript]
+aa("clickedObjectIDs", {
+  index: "YourIndexName",
+  eventName: "Product Clicked",
+  objectIDs: ["objectID-1"],
+});
+```
+
+If you want to track clicks on search results pages, add the following code whenever a user clicks on a product.
+
+```js JavaScript
+aa("clickedObjectIDsAfterSearch", {
+  index: "YourIndexName",
+  queryID: "YourQueryID", // From the search response
+  eventName: "Product Clicked",
+  objectIDs: ["objectID-1"],
+  positions: [1],
+});
+```
+
+- The `objectID` is included in the search response for each search result as part of the `hits` attribute.
+- The `positions` array in `clickedObjectIdsAfterSearch` contains a one-based index of the product hit in the search results.
+
+## Track add-to-cart events
+
+Add the following code to all components and pages where users can add products to their shopping cart.
+
+```js JavaScript
+aa("addedToCartObjectIDsAfterSearch", {
+  eventName: "Product Added To Cart",
+  index: "YourIndexName",
+  objectIDs: ["objectID-1"],
+  objectData: [
+    {
+      queryID: "queryID-1",
+      price: 19.99,
+      discount: 3.99,
+      quantity: 3,
+    },
+  ],
+  currency: "USD",
+});
+```
+
+- The `objectID` is included in the search response for each search result as part of the `hits` attribute.
+
+You should store the query ID with other product details when updating a user's shopping cart.
+This makes it easy to record query IDs for each item for any following purchase events.
+
+## Track purchase events
+
+To record when a user completes a purchase,
+add the following code:
+
+```js JavaScript
+aa("purchasedObjectIDsAfterSearch", {
+  eventName: "Products Purchased",
+  index: "YourIndexName",
+  objectIDs: ["objectID-1", "objectID-2"],
+  objectData: [
+    {
+      queryID: "queryID-1",
+      price: 19.99,
+      discount: 3.99,
+      quantity: 3,
+    },
+    {
+      queryID: "queryID-2",
+      price: 59.99,
+      quantity: 2,
+    },
+  ],
+  currency: "USD",
+});
+```
+
+Use `objectData` to record per-object data, such as the price and quantity of the purchased products.
+
+Users often purchase items that were added to the cart in response to different queries.
+For example, a user might search for "shoes" and add a pair of shoes to their cart.
+Then, they search for "lamp" and add a lamp to their cart. Then, they check out and complete the purchase of both items.
+In this case, there would be a single purchase event.
+Each item---the shoes and the lamp---will have the query ID of
+the search they originated from.
+
+## (Optional) Handle known users for Personalization
+
+For effective personalization, you need to identify users across sessions.
+It's best to use an identifier from your authentication,
+user profile, or ecommerce service after users signed in.
+
+import PesonalizationUserToken from '/snippets/insights/personalization-user-token.mdx';
+
+## (Optional) Send view events for Personalization
+
+import ViewEvents from '/snippets/insights/view-events.mdx';
+
+```js JavaScript
+window.aa("viewedObjectIDs", {
+    index: "YourIndexName",
+    eventName: "Product Viewed",
+    objectIDs: ["objectID-1"],
+});
+```
