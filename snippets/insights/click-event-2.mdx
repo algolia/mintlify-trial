@@ -1,0 +1,58 @@
+<CodeGroup>
+
+```js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <div onClick="${() => sendEvent("click", hit, "Product Clicked")}">
+            <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+            <p>${hit.description}</p>
+            <button
+            onClick="${() =>
+                sendEvent("click", hit, "Product Added to Favorites")
+            }"
+            >
+            Add to favorites
+            </button>
+        </div>
+        `;
+    },
+    },
+});
+```
+
+```jsx React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <div onClick={() => sendEvent("click", hit, "Product Clicked")}>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={() => sendEvent("click", hit, "Product Added to Favorites")}
+        >
+        Add to favorites
+        </button>
+    </div>
+    );
+}
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+    <div @click="sendEvent('click', item, 'Product Clicked')">
+        <h2>
+        <ais-highlight attribute="name" :hit="item" />
+        </h2>
+        <p>{{ item.description }}</p>
+        <button @click="sendEvent('click', item, 'Product Added to Favorites')">
+        Add to favorites
+        </button>
+    </div>
+    </template>
+</ais-hits>
+```
+</CodeGroup>

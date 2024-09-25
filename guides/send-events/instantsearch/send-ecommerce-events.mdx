@@ -3,3 +3,281 @@ title: 'Send ecommerce events with InstantSearch'
 sidebarTitle: 'Send ecommerce events'
 description: Collect user interactions as events in your ecommerce store.
 ---
+
+import Intro from '/snippets/insights/intro.mdx';
+
+import InstantsearchBeforeYouBegin from '/snippets/insights/instantsearch-before-you-begin.mdx';
+
+import EnableEventsCollection from '/snippets/insights/enable-events-collection.mdx';
+
+import InstantSearchEventsToTrack from '/snippets/insights/instantsearch-events-to-track.mdx';
+import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+<Tabs>
+  <Tab title="Search results page">
+    ![Search results page](/images/events/search-events.png)
+    Starting with a search on any of your pages, a user might take the following actions:
+
+    1. Select a product from the search results to open the product details page.
+    1. Add a product to the shopping cart.
+    1. Buy the product.
+  </Tab>
+  <Tab title="Category page">
+    ![Category page](/images/events/browse-events.png)
+    Starting with a visit to your home page, a user might take the following actions:
+
+    1. Select a product category to open a category (product listing) page.
+    1. Select a product to open a product details page.
+    1. Add a product to the shopping cart.
+    1. Buy the product.
+  </Tab>
+  <Tab title="External referrals">
+    ![External referrals](/images/events/personalization-events.png)
+    Starting with a search on an internet search engine, with a click on a recommendation, or any other external referral, a user might take the following actions:
+
+    1. Click on an (internet) search result, recommendation, or other link to your website.
+    1. Depending on where the user lands on your website, they continue the same path as if they started with your homepage or with a category page.
+  </Tab>
+</Tabs>
+
+#### Search and search results pages
+
+| User action                        | Method name                       | Automatically collected? |
+| ---------------------------------- | --------------------------------- | ------------------------ |
+| User clicks search result          | `clickedObjectIDsAfterSearch`     | **Yes**                  |
+| User adds product to shopping cart | `addedToCartObjectIDsAfterSearch` | **No**                   |
+| User clicks categories/filters     | `clickedFilters`                  | **Yes**                  |
+| User views search results          | `viewedObjectIDs`                 | **Yes**                  |
+
+#### Product listing and category pages
+
+| User action                        | Method name                       | Automatically collected? |
+| ---------------------------------- | --------------------------------- | ------------------------ |
+| User clicks product                | `clickedObjectIDsAfterSearch`     | **Yes**                  |
+| User adds product to shopping cart | `addedToCartObjectIDsAfterSearch` | **No**                   |
+| User views category page           | `viewedObjectIDs`                 | **Yes**                  |
+
+#### Product details page
+
+| User action               | Method name                       | Automatically collected? |
+| ------------------------- | --------------------------------- | ------------------------ |
+| User adds product to cart | `addedToCartObjectIDsAfterSearch` | **No**                   |
+| User views product        | `viewedObjectIDs`                 | **No**                   |
+
+#### Checkout page
+
+| User action       | Event                           | Automatically collected? |
+| ----------------- | ------------------------------- | ------------------------ |
+| User buys product | `purchasedObjectIDsAfterSearch` | **No**                   |
+
+## Keep track of query IDs
+
+Conversion events are often triggered on pages that aren't covered by InstantSearch,
+such as your product details pages, or the checkout page.
+
+import InstantSearchTrackQueryid from '/snippets/insights/instantsearch-track-queryid.mdx';
+
+## Track add-to-cart events
+
+### Using InstantSearch widgets
+
+When your users add an item to their cart, send a special `conversion` event with the `addToCart` subtype.
+
+import AddToCart from '/snippets/insights/add-to-cart.mdx';
+
+import EventPrices from '/snippets/insights/event-prices.mdx';
+
+### On pages without InstantSearch widgets
+
+Add the following code to all components and pages where users can add products to their shopping cart.
+
+For add-to-cart events associated with a search:
+
+```js JavaScript
+window.aa("addedToCartObjectIDsAfterSearch", {
+  eventName: "Product Added To Cart",
+  index: "YourIndexName",
+  queryID: "queryID-1",
+  objectIDs: ["objectID-1"],
+  objectData: [
+    {
+      price: 19.99,
+      discount: 3.99,
+      quantity: 3,
+    },
+  ],
+  currency: "USD",
+});
+```
+
+The `windows.aa` object is the API client for the Insights API and is globally available
+if you enabled automatic events collection.
+The `queryID` parameter is used by Algolia to relate the event to a prior search or browse event.
+
+For add-to-cart events not related to a search query, for example, after a user clicks on a
+'Recommended for you' or 'Buy again' carousel on the home page:
+
+```js JavaScript
+window.aa("addedToCartObjectIDs", {
+  eventName: "Recommended Product Added To Cart",
+  index: "YourIndexName",
+  objectIDs: ["objectID-1"],
+  objectData: [
+    {
+      price: 68.5,
+      quantity: 2,
+    },
+  ],
+  currency: "USD",
+});
+```
+
+## Track purchase events
+
+### Using InstantSearch widgets
+
+When your users purchase an item, send a special `conversion` event with the `purchase` subtype.
+
+import PurchaseEvent from '/snippets/insights/purchase-event.mdx';
+
+import Prices from '/snippets/insights/event-prices.mdx';
+
+### On pages without InstantSearch widgets
+
+Add the following code to your checkout flow:
+
+```js JavaScript
+window.aa("purchasedObjectIDsAfterSearch", {
+  userToken: "anonymous-123456", // required for Node.js
+  authenticatedUserToken: "user-123456",
+  eventName: "your_event_name",
+  index: "your_index_name",
+  objectIDs: ["objectID-1", "objectID-2"],
+  objectData: [
+    {
+      queryID: "queryID-1",
+      price: 19.99,
+      discount: 3.99,
+      quantity: 3,
+    },
+    {
+      queryID: "queryID-2",
+      price: 59.99,
+      quantity: 2,
+    },
+  ],
+  currency: "USD",
+});
+```
+
+## Track other conversion events
+
+You can track other conversions in addition to add-to-cart and purchase events.
+
+import InstantSearchTrackConversionEvents from '/snippets/insights/instantsearch-track-conversion-events.mdx';
+
+### On pages without InstantSearch widgets
+
+This is an example of a conversion that may occur on a page without InstantSearch:
+
+```js JavaScript
+// A user added a product to their wishlist from the homepage
+window.aa("convertedObjectIDs", {
+  eventName: "Product Added To Wishlist",
+  index: "YourIndexName",
+  objectIDs: ["objectID-1"],
+});
+```
+
+## Track click events
+
+### Override default click events
+
+The `hits` and `infiniteHits` widgets expose a `sendEvent` function.
+Use it to send `click` events when users interact with your search results.
+
+import ClickEvent1 from '/snippets/insights/click-event-1.mdx';
+
+You can set more events on specific parts of your template.
+In the following example, when clicking on the **Add to favorites** button, two events are sent to the Insights API:
+
+- A `click` event with the `eventName` "Product Added to Favorites"
+- A `click` event with the `eventName` "Product Clicked" (through event propagation)
+
+import ClickEvent2 from '/snippets/insights/click-event-2.mdx';
+
+To only send the most specific event per clicked element, you can use [`Event.stopPropagation`](https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation) in your event handler.
+
+import ClickEvent3 from '/snippets/insights/click-event-3.mdx';
+
+When InstantSearch captures a custom `click` event that you defined, it doesn't send the default `click` event.
+In the following example, when clicking the **Add to favorites** button, only the "Product Added to Favorites" event is sent.
+
+import ClickEvent4 from '/snippets/insights/click-event-4.mdx';
+
+### Track additional click events
+
+For Algolia Recommend and Personalization, capture additional click events
+when users select individual products:
+
+- On your home page
+- From product recommendations
+
+To send click events with the Insights client, add the following code
+whenever a user clicks on a product---for example,
+on your homepage.
+
+```js JavaScript
+window.aa("clickedObjectIDs", {
+  index: "YourIndexName",
+  eventName: "Product Clicked",
+  objectIDs: ["objectID-1"],
+});
+```
+
+## (Optional) Set up Personalization
+
+For effective [personalization](/doc/guides/personalization/classic-personalization/what-is-personalization/), you need to identify users across sessions.
+It's best to use an identifier from your authentication,
+user profile, or ecommerce service after users signed in. For more information, see [User token](/doc/guides/sending-events/concepts/usertoken/).
+
+After getting the identifier from your system,
+set it as `authenticatedUserToken` parameter.
+
+```js JavaScript
+// Get a unique, pseudonymous identifier for signed-in users
+const authenticatedUserToken = getUserTokenAfterSignIn();
+window.aa("setAuthenticatedUserToken", authenticatedUserToken);
+```
+
+If you can't get persistent user identifiers from your system,
+you can store the anonymous user token in a cookie **after obtaining user consent**.
+
+```js JavaScript
+// If user consented
+aa("init", {
+  partial: true,
+  useCookies: true,
+});
+```
+
+If you don't use persistent user identifiers,
+a new anonymous user token is generated on every page refresh.
+
+Personalization benefits from the same click and conversion events,
+plus it can use view events to enrich user profiles.
+
+Your InstantSearch components for the search results and category pages automatically collect view events.
+
+To capture additional view events, such as on your homepage,
+add this code:
+
+```js JavaScript
+window.aa("viewedObjectIDs", {
+  index: "YourIndexName",
+  eventName: "Products Viewed",
+  objectIDs: ["objectID-1"],
+});
+```
+
+import Examples from '/snippets/insights/examples.mdx';

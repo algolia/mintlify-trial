@@ -1,0 +1,27 @@
+## Before you begin
+
+To follow this guide, you need to build both search results and category pages with one of these UI libraries:
+
+- InstantSearch.js version 4.59 or later
+- React InstantSearch version 7.2.1 or later
+- Vue InstantSearch version 4.12.0 or later
+
+For other methods of collecting events, see [Get started with events](/guides/send-events/get-started).
+
+### Manage the Insights library
+
+InstantSearch loads the [`search-insights`](/api-reference/insights-api/) library for you from [jsDelivr](https://www.jsdelivr.com/).
+You don't need to install it or set it up yourself.
+
+If you're using a [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) to protect your site and you want to let InstantSearch load [`search-insights`](/doc/api-client/methods/insights/) for you, make sure to add `https://cdn.jsdelivr.net` in your list of trusted sources for JavaScript.
+
+```txt
+script-src https://cdn.jsdelivr.net/
+```
+
+If you prefer hosting your own version of `search-insights`, you can add it to your project:
+
+1. Install the Insights client
+1. Initialize the Insights client (optional)
+
+InstantSearch doesn't load `search-insights` when it detects it on the page.
