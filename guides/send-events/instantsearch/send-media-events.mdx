@@ -6,12 +6,21 @@ description: Collect user interactions as events on your media website.
 
 import Intro from '/snippets/insights/intro.mdx';
 
-import InstantsearchBeforeYouBegin from '/snippets/insights/instantsearch-before-you-begin.mdx';
+<Intro />
 
-import InstantsearchEnableEventsCollection from '/snippets/insights/instantsearch-enable-events-collection.mdx';
+import BeforeYouBegin from '/snippets/insights/instantsearch-before-you-begin.mdx';
 
-import InstantSearchEventsToTrack from '/snippets/insights/instantsearch-events-to-track.mdx';
+<BeforeYouBegin />
+
+import EnableEventsCollection from '/snippets/insights/instantsearch-enable-events-collection.mdx';
+
+<EnableEventsCollection />
+
+import InstantsearchEventsToTrack from '/snippets/insights/instantsearch-events-to-track.mdx';
 import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+<InstantsearchEventsToTrack />
+<EventsToTrack />
 
 <Tabs>
   <Tab title="Search results page">
@@ -66,16 +75,80 @@ import EventsToTrack from '/snippets/insights/events-to-track.mdx';
 Conversion events are often triggered on pages that aren't covered by InstantSearch,
 such as your content details pages.
 
-import InstantSearchTrackQueryid from '/snippets/insights/instantsearch-track-queryid.mdx';
+import TrackQueryid from '/snippets/insights/instantsearch-track-queryid.mdx';
+
+< TrackQueryid />
 
 ## Track conversion events
 
-import InstantSearchTrackConversionEvents from '/snippets/insights/instantsearch-track-conversion-events.mdx';
+import TrackConversionEvents from '/snippets/insights/instantsearch-track-conversion-events.mdx';
+
+<TrackConversionEvents />
 
 ### On pages without InstantSearch widgets
 
-import TrackConversionEvents from '/snippets/insights/track-conversion-events.mdx';
+import ConversionEvents from '/snippets/insights/track-conversion-events.mdx';
 
-import InstantsearchPersonalization from '/snippets/insights/instantsearch-personalization.mdx';
+<ConversionEvents />
+
+## Track click events
+
+### Override default click events
+
+The `hits` and `infiniteHits` widgets expose a `sendEvent` function.
+Use it to send `click` events when users interact with your search results.
+
+import MediaClickEvent1 from '/snippets/insights/media-click-event-1.mdx';
+
+< MediaClickEvent1 />
+
+You can set more events on specific parts of your template.
+In the following example, when clicking on the **View more info** button, two events are sent to the Insights API:
+
+- A `click` event with the `eventName` "Article More Info"
+- A `click` event with the `eventName` "Article Clicked" (through event propagation)
+
+import MediaClickEvent2 from '/snippets/insights/media-click-event-2.mdx';
+
+<MediaClickEvent2 />
+
+To only send the most specific event per clicked element, you can use [`Event.stopPropagation`](https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation) in your event handler.
+
+import MediaClickEvent3 from '/snippets/insights/media-click-event-3.mdx';
+
+<MediaClickEvent3 />
+ 
+When InstantSearch captures a custom `click` event that you defined, it doesn't send the default `click` event.
+In the following example, when clicking the **View mores** button, only the "Article More Info Clicked" event is sent.
+
+import MediaClickEvent4 from '/snippets/insights/media-click-event-4.mdx';
+
+<MediaClickEvent4 />
+
+### Track additional click events
+
+For Algolia Recommend and Personalization, capture additional click events
+when users select individual products:
+
+- On your home page
+- From product recommendations.
+
+To send click events with the Insights client, add the following code
+whenever a user clicks on an article---for example,
+on your homepage.
+
+```js JavaScript
+window.aa("clickedObjectIDs", {
+  index: "YourIndexName",
+  eventName: "Artivcle Clicked",
+  objectIDs: ["objectID-1"],
+});
+```
+
+import Personalization from '/snippets/insights/instantsearch-personalization.mdx';
+
+<Personalization />
 
 import Examples from '/snippets/insights/examples.mdx';
+
+<Examples />

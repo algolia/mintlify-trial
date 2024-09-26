@@ -2,59 +2,59 @@
 
 You can use the `sendEvent` function to send conversion events from your InstantSearch app.
 
-  InstantSearch.js: |
-    ```js
-    hits({
-      templates: {
-        item(hit, { html, components, sendEvent }) {
-          return html`
-            <h2>${components.Highlight({ attribute: "name", hit })}</h2>
-            <p>${hit.description}</p>
-            <button
-              onClick="${() =>
-                sendEvent("conversion", hit, "Product Added To Wishlist")
-              }"
-            >
-              Add to wishlist
-            </button>
-          `;
-        },
-      },
-    });
-    ```
-  React InstantSearch: |
-    ```jsx
-    function Hit({ hit, sendEvent }) {
-      return (
-        <>
-          <h2>
-            <Highlight hit={hit} attribute="name" />
-          </h2>
-          <p>{hit.description}</p>
-          <button
-            onClick={() =>
-              sendEvent("conversion", hit, "Product Added To Wishlist")
-            }
-          >
-            Add to wishlist
-          </button>
-        </>
-      );
-    }
-    ```
-  Vue InstantSearch: |
-    ```vue
-    <ais-hits>
-      <template v-slot:item="{ item, sendEvent }">
-        <h2><ais-highlight attribute="name" :hit="item" /></h2>
-        <p>{{ item.description }}</p>
-        <button @click="sendEvent('conversion', item, 'Product Added To Wishlist')">
+<CodeGroup>
+
+```js InstantSearch.js
+hits({
+  templates: {
+    item(hit, { html, components, sendEvent }) {
+      return html`
+        <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+        <p>${hit.description}</p>
+        <button
+          onClick="${() =>
+            sendEvent("conversion", hit, "Product Added To Wishlist")
+          }"
+        >
           Add to wishlist
         </button>
-      </template>
-    </ais-hits>
+      `;
+    },
+  },
+});
     ```
 
-<Note>Unlike `click` events, setting custom `conversion` events doesn't prevent the custom `click` event from being sent.</Note>
+  ```jsx React InstantSearch
+  function Hit({ hit, sendEvent }) {
+    return (
+      <>
+        <h2>
+          <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+          onClick={() =>
+            sendEvent("conversion", hit, "Product Added To Wishlist")
+          }
+        >
+          Add to wishlist
+        </button>
+      </>
+    );
+  }
+  ```
 
-### On pages without InstantSearch widgets
+```vue Vue InstantSearch
+<ais-hits>
+  <template v-slot:item="{ item, sendEvent }">
+    <h2><ais-highlight attribute="name" :hit="item" /></h2>
+    <p>{{ item.description }}</p>
+    <button @click="sendEvent('conversion', item, 'Product Added To Wishlist')">
+      Add to wishlist
+    </button>
+  </template>
+</ais-hits>
+```
+</CodeGroup>
+
+<Note>Unlike `click` events, setting custom `conversion` events doesn't prevent the custom `click` event from being sent.</Note>

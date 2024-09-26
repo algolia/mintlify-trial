@@ -16,6 +16,8 @@ The following table lists events and where they're used.
 
 import Events from '/snippets/insights/events.mdx';
 
+<Events />
+
 To learn more about the properties of each event,
 see the [Insights API reference](/api-reference/insights-api/).
 
@@ -30,7 +32,9 @@ Some features need a minimum number of events to be active.
 
 NeuralSearch uses these events:
 
-import NeuralsearchEvents from '/snippets/insights/neuralsearch-events.mdx';
+import Neuralsearch from '/snippets/insights/neuralsearch-events.mdx';
+
+<Neuralsearch />
 
 ### Events requirements for Recommend—Frequently Bought Together
 
@@ -41,7 +45,9 @@ If there aren't enough events within 30 days, the collection period extends to 9
 
 Frequently Bought Together uses these events:
 
-import FrequentlyboughttogetherEvents from '/snippets/insights/frequentlyboughttogether-events.mdx';
+import Frequentlyboughttogether from '/snippets/insights/frequentlyboughttogether-events.mdx';
+
+<Frequentlyboughttogether />
 
 ### Events requirements for Recommend—Related Products
 
@@ -52,7 +58,9 @@ If there aren't enough events within 30 days, the collection period extends to 9
 
 Related Products uses these events:
 
-import RelatedproductsEvents from '/snippets/insights/relatedproducts-events.mdx';
+import Relatedproducts from '/snippets/insights/relatedproducts-events.mdx';
+
+<Relatedproducts />
 
 ### Events requirements for Recommend—Related Content
 
@@ -70,7 +78,9 @@ Related Content uses the same events as the Related Products model.
 
 Trending Items and Trending Facet Values use these events:
 
-import TrendingEvents from '/snippets/insights/trending-events.mdx';
+import Trending from '/snippets/insights/trending-events.mdx';
+
+<Trending />
 
 ### Events requirements for Dynamic Re-Ranking
 
@@ -80,7 +90,9 @@ Records with fewer events won't be re-ranked.
 
 Dynamic Re-Ranking uses these events:
 
-import DrrEvents from '/snippets/insights/drr-events.mdx';
+import Drr from '/snippets/insights/drr-events.mdx';
+
+<Drr />
 
 To prevent a manipulation of your ranking,
 Dynamic Re-Ranking only considers **1 event per user (`userToken`) per search query per record (`objectID`).**
@@ -92,7 +104,9 @@ It always uses events from the last 90 days.
 
 Query Categorization uses these events:
 
-import QcatEvents from '/snippets/insights/qcat-events.mdx';
+import Qcat from '/snippets/insights/qcat-events.mdx';
+
+<Qcat />
 
 ## Events on category pages
 

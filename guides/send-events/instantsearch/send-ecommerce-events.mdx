@@ -6,12 +6,21 @@ description: Collect user interactions as events in your ecommerce store.
 
 import Intro from '/snippets/insights/intro.mdx';
 
-import InstantsearchBeforeYouBegin from '/snippets/insights/instantsearch-before-you-begin.mdx';
+<Intro />
 
-import InstantsearchEnableEventsCollection from '/snippets/insights/instantsearch-enable-events-collection.mdx';
+import BeforeYouBegin from '/snippets/insights/instantsearch-before-you-begin.mdx';
 
-import InstantSearchEventsToTrack from '/snippets/insights/instantsearch-events-to-track.mdx';
+<BeforeYouBegin />
+
+import EnableEventsCollection from '/snippets/insights/instantsearch-enable-events-collection.mdx';
+
+<EnableEventsCollection />
+
+import InstantsearchEventsToTrack from '/snippets/insights/instantsearch-events-to-track.mdx';
 import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+<InstantsearchEventsToTrack />
+<EventsToTrack />
 
 <Tabs>
   <Tab title="Search results page">
@@ -75,7 +84,9 @@ import EventsToTrack from '/snippets/insights/events-to-track.mdx';
 Conversion events are often triggered on pages that aren't covered by InstantSearch,
 such as your product details pages, or the checkout page.
 
-import InstantSearchTrackQueryid from '/snippets/insights/instantsearch-track-queryid.mdx';
+import TrackQueryid from '/snippets/insights/instantsearch-track-queryid.mdx';
+
+<TrackQueryid />
 
 ## Track add-to-cart events
 
@@ -85,7 +96,11 @@ When your users add an item to their cart, send a special `conversion` event wit
 
 import AddToCart from '/snippets/insights/add-to-cart.mdx';
 
-import EventPrices from '/snippets/insights/event-prices.mdx';
+<AddToCart />
+
+import Prices from '/snippets/insights/event-prices.mdx';
+
+<Prices />
 
 ### On pages without InstantSearch widgets
 
@@ -140,7 +155,9 @@ When your users purchase an item, send a special `conversion` event with the `pu
 
 import PurchaseEvent from '/snippets/insights/purchase-event.mdx';
 
-import Prices from '/snippets/insights/event-prices.mdx';
+<PurchaseEvent />
+
+<Prices />
 
 ### On pages without InstantSearch widgets
 
@@ -174,7 +191,9 @@ window.aa("purchasedObjectIDsAfterSearch", {
 
 You can track other conversions in addition to add-to-cart and purchase events.
 
-import InstantSearchTrackConversionEvents from '/snippets/insights/instantsearch-track-conversion-events.mdx';
+import TrackConversionEvents from '/snippets/insights/instantsearch-track-conversion-events.mdx';
+
+<TrackConversionEvents />
 
 ### On pages without InstantSearch widgets
 
@@ -198,6 +217,8 @@ Use it to send `click` events when users interact with your search results.
 
 import ClickEvent1 from '/snippets/insights/click-event-1.mdx';
 
+<ClickEvent1 />
+
 You can set more events on specific parts of your template.
 In the following example, when clicking on the **Add to favorites** button, two events are sent to the Insights API:
 
@@ -206,14 +227,20 @@ In the following example, when clicking on the **Add to favorites** button, two 
 
 import ClickEvent2 from '/snippets/insights/click-event-2.mdx';
 
+<ClickEvent2 />
+
 To only send the most specific event per clicked element, you can use [`Event.stopPropagation`](https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation) in your event handler.
 
 import ClickEvent3 from '/snippets/insights/click-event-3.mdx';
+
+<ClickEvent3 />
 
 When InstantSearch captures a custom `click` event that you defined, it doesn't send the default `click` event.
 In the following example, when clicking the **Add to favorites** button, only the "Product Added to Favorites" event is sent.
 
 import ClickEvent4 from '/snippets/insights/click-event-4.mdx';
+
+<ClickEvent4 />
 
 ### Track additional click events
 
@@ -235,6 +262,10 @@ window.aa("clickedObjectIDs", {
 });
 ```
 
-import InstantsearchPersonalization from '/snippets/insights/instantsearch-personalization.mdx';
+import Personalization from '/snippets/insights/instantsearch-personalization.mdx';
+
+<Personalization />
 
 import Examples from '/snippets/insights/examples.mdx';
+
+<Examples />
