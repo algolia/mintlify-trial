@@ -1,0 +1,64 @@
+  <CodeGroup>
+
+```diff*js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <div onClick="${() => sendEvent("click", hit, "Item Clicked")}">
+            <!-- ... -->
+            <button
+            onClick="${(event) => {
++             event.stopPropagation();
+
+                sendEvent("click", hit, "Item More Info Clicked");
+            }}"
+            >
+            Add to favorites
+            </button>
+        </div>
+        `;
+    },
+    },
+});
+```
+
+```diff*jsx React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <div onClick={() => sendEvent("click", hit, "Item Clicked")}>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={(event) => {
++         event.stopPropagation();
+
+            sendEvent("click", hit, "Item More Info Clicked");
+        }}
+        >
+        Add to favorites
+        </button>
+    </div>
+    );
+}
+```
+
+```diff*vue Vue InstantSearch
+    <ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+        <div @click="sendEvent('click', item, 'Item Clicked')">
+        <!-- … -->
+        <button @click="(event) => {
++         event.stopPropagation();
+
+            sendEvent('click', item, 'Item More Info Clicked');
+        }">
+            Add to favorites
+        </button>
+        </div>
+    </template>
+    </ais-hits>
+```
+</CodeGroup>
