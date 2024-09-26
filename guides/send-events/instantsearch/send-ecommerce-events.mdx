@@ -8,7 +8,7 @@ import Intro from '/snippets/insights/intro.mdx';
 
 import InstantsearchBeforeYouBegin from '/snippets/insights/instantsearch-before-you-begin.mdx';
 
-import EnableEventsCollection from '/snippets/insights/enable-events-collection.mdx';
+import InstantsearchEnableEventsCollection from '/snippets/insights/instantsearch-enable-events-collection.mdx';
 
 import InstantSearchEventsToTrack from '/snippets/insights/instantsearch-events-to-track.mdx';
 import EventsToTrack from '/snippets/insights/events-to-track.mdx';
@@ -235,49 +235,6 @@ window.aa("clickedObjectIDs", {
 });
 ```
 
-## (Optional) Set up Personalization
-
-For effective [personalization](/doc/guides/personalization/classic-personalization/what-is-personalization/), you need to identify users across sessions.
-It's best to use an identifier from your authentication,
-user profile, or ecommerce service after users signed in. For more information, see [User token](/doc/guides/sending-events/concepts/usertoken/).
-
-After getting the identifier from your system,
-set it as `authenticatedUserToken` parameter.
-
-```js JavaScript
-// Get a unique, pseudonymous identifier for signed-in users
-const authenticatedUserToken = getUserTokenAfterSignIn();
-window.aa("setAuthenticatedUserToken", authenticatedUserToken);
-```
-
-If you can't get persistent user identifiers from your system,
-you can store the anonymous user token in a cookie **after obtaining user consent**.
-
-```js JavaScript
-// If user consented
-aa("init", {
-  partial: true,
-  useCookies: true,
-});
-```
-
-If you don't use persistent user identifiers,
-a new anonymous user token is generated on every page refresh.
-
-Personalization benefits from the same click and conversion events,
-plus it can use view events to enrich user profiles.
-
-Your InstantSearch components for the search results and category pages automatically collect view events.
-
-To capture additional view events, such as on your homepage,
-add this code:
-
-```js JavaScript
-window.aa("viewedObjectIDs", {
-  index: "YourIndexName",
-  eventName: "Products Viewed",
-  objectIDs: ["objectID-1"],
-});
-```
+import InstantsearchPersonalization from '/snippets/insights/instantsearch-personalization.mdx';
 
 import Examples from '/snippets/insights/examples.mdx';

@@ -3,3 +3,79 @@ title: 'Send media events with InstantSearch'
 sidebarTitle: 'Send media events'
 description: Collect user interactions as events on your media website.
 ---
+
+import Intro from '/snippets/insights/intro.mdx';
+
+import InstantsearchBeforeYouBegin from '/snippets/insights/instantsearch-before-you-begin.mdx';
+
+import InstantsearchEnableEventsCollection from '/snippets/insights/instantsearch-enable-events-collection.mdx';
+
+import InstantSearchEventsToTrack from '/snippets/insights/instantsearch-events-to-track.mdx';
+import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+<Tabs>
+  <Tab title="Search results page">
+    ![Search results page](/images/events/search-events-media.png)
+    Starting with a search on any of your pages, a user might take the following actions:
+
+    1. Select a product from the search results to open the content details page.
+    1. Consume content, such as watching a video, reading an article, or listening to an audio track.
+    1. Interact with content, such as liking, subscribing, or following.
+  </Tab>
+  <Tab title="Browse page">
+    ![Browse page](/images/events/browse-events-media.png)
+    Starting with a visit to your homepage or to a category page, a user might take the following actions:
+
+    1. Select a content category to open a category page.
+    1. Select content displayed on the page to open the content details page.
+    1. Consume content, such as watching a video, reading an article, or listening to an audio track.
+    1. Interact with content, such as liking, subscribing, or following.
+  </Tab>
+  <Tab title="External referrals">
+    ![External referrals](/images/events/personalization-events-media.png)
+    Starting with a search on an internet search engine, with a click on a recommendation, or any other external referral, a user might take the following actions:
+
+    1. Click on an (internet) search result, recommendation, or other link to your website.
+    1. Depending on where the user lands on your website, they continue the same path as if they started with your homepage or with a category page.
+  </Tab>
+</Tabs>
+
+#### Search and search results pages
+
+| User action                    | Method name                   | Automatically collected? |
+| ------------------------------ | ----------------------------- | ------------------------ |
+| User clicks search result      | `clickedObjectIDsAfterSearch` | **Yes**                  |
+| User clicks categories/filters | `clickedFilters`              | **Yes**                  |
+| User views search results      | `viewedObjectIDs`             | **Yes**                  |
+
+#### Browse/category page
+
+| User action         | Method name                   | Automatically collected? |
+| ------------------- | ----------------------------- | -----------------------  |
+| User clicks content | `clickedObjectIDsAfterSearch` | **Yes**                  |
+| User views content  | `viewedObjectIDs`             | **Yes**                  |
+
+#### Content details page
+
+| User action        | Method name       | Automatically collected? |
+| ------------------ | ----------------- | ------------------------ |
+| User views content | `viewedObjectIDs` | **No**                   |
+
+## Keep track of query IDs
+
+Conversion events are often triggered on pages that aren't covered by InstantSearch,
+such as your content details pages.
+
+import InstantSearchTrackQueryid from '/snippets/insights/instantsearch-track-queryid.mdx';
+
+## Track conversion events
+
+import InstantSearchTrackConversionEvents from '/snippets/insights/instantsearch-track-conversion-events.mdx';
+
+### On pages without InstantSearch widgets
+
+import TrackConversionEvents from '/snippets/insights/track-conversion-events.mdx';
+
+import InstantsearchPersonalization from '/snippets/insights/instantsearch-personalization.mdx';
+
+import Examples from '/snippets/insights/examples.mdx';

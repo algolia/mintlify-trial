@@ -58,6 +58,8 @@ import TrackQueryid from '/snippets/insights/track-queryid.mdx';
 
 import TrackClickEvents from '/snippets/insights/track-click-events.mdx';
 
+## Track conversion events
+
 import TrackConversionEvents from '/snippets/insights/track-conversion-events.mdx';
 
 import TrackAdditioalClickEvents from '/snippets/insights/track-additional-click-events.mdx';
@@ -82,3 +84,50 @@ window.aa("viewedObjectIDs", {
     objectIDs: ["objectID-1"],
 });
 ```
+
+## Track click events
+
+### Override default click events
+
+The `hits` and `infiniteHits` widgets expose a `sendEvent` function.
+Use it to send `click` events when users interact with your search results.
+
+import MediaClickEvent1 from '/snippets/insights/media-click-event-1.mdx';
+
+You can set more events on specific parts of your template.
+In the following example, when clicking on the **View more info** button, two events are sent to the Insights API:
+
+- A `click` event with the `eventName` "Article More Info"
+- A `click` event with the `eventName` "Article Clicked" (through event propagation)
+
+import MediaClickEvent2 from '/snippets/insights/media-click-event-2.mdx';
+
+To only send the most specific event per clicked element, you can use [`Event.stopPropagation`](https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation) in your event handler.
+
+import MediaClickEvent3 from '/snippets/insights/media-click-event-3.mdx';
+
+When InstantSearch captures a custom `click` event that you defined, it doesn't send the default `click` event.
+In the following example, when clicking the **View mores** button, only the "Article More Info Clicked" event is sent.
+
+import MediaClickEvent4 from '/snippets/insights/media-click-event-4.mdx';
+
+### Track additional click events
+
+For Algolia Recommend and Personalization, capture additional click events
+when users select individual products:
+
+- On your home page
+- From product recommendations.
+
+To send click events with the Insights client, add the following code
+whenever a user clicks on an article---for example,
+on your homepage.
+
+```js JavaScript
+window.aa("clickedObjectIDs", {
+  index: "YourIndexName",
+  eventName: "Artivcle Clicked",
+  objectIDs: ["objectID-1"],
+});
+```
+

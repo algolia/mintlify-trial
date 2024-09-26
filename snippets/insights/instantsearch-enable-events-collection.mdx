@@ -1,0 +1,60 @@
+    ## Enable events collection
+
+    You can enable the automatic collection of events from your InstantSearch apps
+    in the Algolia dashboard (without coding),
+    or when setting up your InstantSearch app (with coding).
+
+    Enabling automatic events collection takes care of the following:
+
+    - Add the [`search-insights`](/api-reference/insights-api/) library to your project and make it globally available as `window.aa`
+    - Set an anonymous [`userToken`](/guides/send-events/concepts/user-token/) for sending events to the Insights API _and_ for search requests
+    - Include the [`queryID`](/guides/send-events/concepts/event-types/#what-is-the-query-id) parameter in the search response
+    - Send default click and view events for your InstantSearch widgets
+
+    Go to the [Events hub](https://dashboard.algolia.com/events/) in the Algolia dashboard to check
+    the default events arriving from your website or app.
+    For more information, see [Validate your events](/guides/send-events/guides/validate).
+
+    ### No code
+
+    1. Go to the [Algolia dashboard](https://dashboard.algolia.com/events/settings) and select your Algolia application.
+    2. On the left sidebar, select **Data sources** > **Events** > **Settings**.
+    3. Click **Enable automatic events collection**.
+
+    ### Code
+
+    Enable the `insights` option:
+
+    <CodeGroup>
+
+    ```diff*js InstantSearch.js
+        const search = instantsearch({
+        searchClient,
+        indexName: "YourIndexName",
+    +   insights: true,
+        });
+        // Add your InstantSearch widgets here
+        search.start();
+    ```
+
+    ```diff*jsx React InstantSearch
+        <InstantSearch
+        searchClient={searchClient}
+        indexName="YourIndexName"
+    +   insights={true}
+        >
+        {/* Add your InstantSearch widgets here */}
+        </InstantSearch>
+    ```
+
+    ```diff*vue Vue InstantSearch
+        <template>
+        <ais-instant-search
+            :index-name="YourIndexName"
+            :search-client="searchClient"
+    +     :insights="true"
+        >
+            <!-- Add your InstantSearch widgets here -->
+        </ais-instant-search>
+        </template>
+    ```
