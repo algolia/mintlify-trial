@@ -1,0 +1,99 @@
+<CodeGroup>
+
+```js Vanilla JavaScript
+const indexName = <YourIndexName>;
+
+index.search('query', {
+    userToken: 'user-1',
+    clickAnalytics: true
+}).then(({ hits, queryID, page, hitsPerPage }) => {
+    const container = document.querySelector('<YourSelector>');
+
+    container.innerHTML = `
+    <div data-insights-index="${indexName}">
+        <div id="hits">
+        ${
+            hits.map((hit, arrayIndex) => `
+            <div class="hit"
+                data-insights-object-id="${hit.objectID}"
+                data-insights-position="${arrayIndex + 1 + page * hitsPerPage}"
+                data-insights-query-id="${queryID}"
+            >
+                <!-- ... -->
+            </div>
+            `).join('')
+        }
+        </div>
+    </div>
+    `
+});
+```
+
+```js InstantSearch.js
+/*
+    <div data-insights-index="<YourIndexName>">
+    <div id="filters"><!-- ... --></div>
+    <div id="hits"></div>
+    </div>
+*/
+
+instantsearch.widgets.hits({
+    container: '#hits',
+    templates: {
+    item: (hit, { html }) => html`
+        <div
+        data-insights-object-id="${hit.objectID}"
+        data-insights-position="${hit.__position}"
+        data-insights-query-id="${hit.__queryID}"
+        >
+        <!-- ... -->
+        </div>
+    `,
+    },
+}),
+```
+
+```jsx React InstantSearch
+import { Hits } from 'react-instantsearch';
+
+const indexName = <YourIndexName>;
+
+function Hit({ hit }) {
+    return (
+    <div
+        data-insights-object-id={hit.objectID}
+        data-insights-position={hit.__position}
+        data-insights-query-id={hit.__queryID}
+    >
+        {/* ... */}
+    </div>
+    );
+}
+
+// ...
+
+<div data-insights-index={indexName}>
+    {/* ... */}
+    <Hits hitComponent={Hit} />
+</div>
+```
+
+```vue Vue InstantSearch
+<div :data-insights-index="indexName">
+    <!-- .. -->
+    <ais-hits>
+    <ul slot-scope="{ items }">
+        <li
+        v-for="item in items"
+        :key="item.objectID"
+        :data-insights-object-id="item.objectID"
+        :data-insights-position="item.__position"
+        :data-insights-query-id="item.__queryID"
+        >
+        </li>
+    </ul>
+    </ais-hits>
+</div>
+```
+
+</CodeGroup>
