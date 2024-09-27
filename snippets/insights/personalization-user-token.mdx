@@ -1,0 +1,40 @@
+After getting the identifier from your system,
+set it as `authenticatedUserToken` parameter.
+
+```js JavaScript
+// Get a unique, pseudonymous identifier for signed-in users
+const authenticatedUserToken = getUserTokenAfterSignIn();
+window.aa("setAuthenticatedUserToken", authenticatedUserToken);
+```
+
+When you set the `authenticatedUserToken` parameter in the Insights client, you also need to update
+the user token you send with your search requests.
+
+```js JavaScript
+function getEffectiveUserToken() {
+    const userToken = window.aa("getUserToken");
+    const authenticatedUserToken = window.aa("getAuthenticatedUserToken");
+    return authenticatedUserToken || userToken;
+}
+
+index.search("query", {
+    clickAnalytics: true,
+    userToken: getEffectiveUserToken(),
+}).then(({queryID, hits}) => {
+    console.log(hits);
+    console.log(queryID);
+})
+```
+
+If you can't get persistent user identifiers from your system,
+you can store the anonymous user token in a cookie **after obtaining user consent**.
+
+```js JavaScript
+// If user consented
+aa("init", {
+    partial: true,
+    useCookies: true,
+});
+```
+
+For more information, see [User token](/guides/send-events/concepts/user-token/).

@@ -1,0 +1,40 @@
+An example of a conversion event that may be relevant to your media site:
+
+```js JavaScript
+// A user reached the bottom of an article page
+window.aa("convertedObjectIDsAfterSearch", {
+eventName: "Article Read",
+index: "YourIndexName",
+queryID: "query-1",
+objectIDs: ["objectID-1"],
+});
+```
+
+The `window.aa` object is the API client for the Insights API and is globally available
+if you enabled automatic events collection.
+
+In `convertedObjectIDsAfterSearch`:
+
+- `queryID` is used by Algolia to relate the event to a prior search.
+- `objectIDs` indicates which items were part of the conversion.The `objectID` parameter is included in the search response for each hit.
+
+If the event isn't directly related to a search, for example, it's triggered on the homepage,
+use the `convertedObjectIDs` method instead.
+
+```js JavaScript
+// A user watched a video
+window.aa("convertedObjectIDs", {
+eventName: "Video Watched",
+index: "YourIndexName",
+objectIDs: ["objectID-1"],
+});
+```
+
+Some other examples of conversion events are:
+
+- `Article Bookmarked`: a user bookmarked an article.
+- `Article Liked`: a user liked an article.
+- `Article Recommended`: a user recommended an article.
+- `Playlist Followed`: a user followed a playlist.
+- `Author Followed`: a user followed an author.
+- `Brand Followed`: a user followed a brand.

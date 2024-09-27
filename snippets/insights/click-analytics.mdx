@@ -1,0 +1,35 @@
+<CodeGroup>
+
+```js Vanilla JavaScript
+index.search('YourSearchQuery', {
+    userToken: 'user-1',
+    clickAnalytics: true
+}).then(({ hits, queryID }) => {
+    console.log(hits, queryID);
+})
+```
+
+```js InstantSearch.js
+instantsearch.widgets.configure({
+    clickAnalytics: true,
+    userToken: 'user-1'
+});
+```
+
+```jsx React InstantSearch
+import { Configure } from 'react-instantsearch';
+
+<Configure
+    clickAnalytics={true}
+    userToken={'user-1'}
+/>
+```
+
+```vue Vue InstantSearch
+<ais-configure
+    :click-analytics.camel="true"
+    user-token.camel="user-1"
+/>
+```
+
+</CodeGroup>

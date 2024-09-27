@@ -1,0 +1,725 @@
+---
+title: 'Google Tag Manager'
+sidebarTitle: 'Google Tag Manager'
+description: Send click, conversion, and view events to the Algolia Insights API with Google Tag Manager.
+---
+
+To use Google Tag Manager (GTM) for sending [click and conversion events](/guides/send-events/get-started/) to the Algolia Insights API,
+you need to add data attributes to your website's templates and configure the Algolia Insights template in the GTM dashboard.
+
+## Update your search parameters
+
+To connect events to searches, including those from category pages, you must pass [`queryID`](/guides/send-events/guides/queryid/) when sending search-related events to the Insights API, such as with the `clickedObjectIDsAfterSearch` method.
+
+To include the `queryID` in the search response, set `clickAnalytics` to `true`.
+
+To identify users, [add the `userToken` parameter](/guides/send-events/concepts/user-token/).
+
+import ClickAnalytics from '/snippets/insights/click-analytics.mdx';
+
+<ClickAnalytics />
+
+## Update your HTML
+
+Add the following data attributes to your template for Algolia search results within your HTML:
+
+- `data-insights-index`. Select a parent DOM element that contains both your filters and hits UI elements to capture events related to both.
+- `data-insights-object-id`. The unique object identifier for the Algolia hit.
+- `data-insights-position`. The position in the search results, starting with 1 and taking paginated search results into account.
+- `data-insights-query-id`. A unique identifier for relating the search query and event.
+
+For more information, see the [Insights API reference](/api-reference/insights-api/).
+
+<CodeGroup>
+
+```js Vanilla JavaScript
+const indexName = <YourIndexName>;
+
+index.search('query', {
+    userToken: 'user-1',
+    clickAnalytics: true
+}).then(({ hits, queryID, page, hitsPerPage }) => {
+    const container = document.querySelector('<YourSelector>');
+
+    container.innerHTML = `
+    <div data-insights-index="${indexName}">
+        <div id="hits">
+        ${
+            hits.map((hit, arrayIndex) => `
+            <div class="hit"
+                data-insights-object-id="${hit.objectID}"
+                data-insights-position="${arrayIndex + 1 + page * hitsPerPage}"
+                data-insights-query-id="${queryID}"
+            >
+                <!-- ... -->
+            </div>
+            `).join('')
+        }
+        </div>
+    </div>
+    `
+});
+```
+
+```js InstantSearch.js
+/*
+    <div data-insights-index="<YourIndexName>">
+    <div id="filters"><!-- ... --></div>
+    <div id="hits"></div>
+    </div>
+*/
+
+instantsearch.widgets.hits({
+    container: '#hits',
+    templates: {
+    item: (hit, { html }) => html`
+        <div
+        data-insights-object-id="${hit.objectID}"
+        data-insights-position="${hit.__position}"
+        data-insights-query-id="${hit.__queryID}"
+        >
+        <!-- ... -->
+        </div>
+    `,
+    },
+}),
+```
+
+```jsx React InstantSearch
+import { Hits } from 'react-instantsearch';
+
+const indexName = <YourIndexName>;
+
+function Hit({ hit }) {
+    return (
+    <div
+        data-insights-object-id={hit.objectID}
+        data-insights-position={hit.__position}
+        data-insights-query-id={hit.__queryID}
+    >
+        {/* ... */}
+    </div>
+    );
+}
+
+// ...
+
+<div data-insights-index={indexName}>
+    {/* ... */}
+    <Hits hitComponent={Hit} />
+</div>
+```
+
+```vue Vue InstantSearch
+<div :data-insights-index="indexName">
+    <!-- .. -->
+    <ais-hits>
+    <ul slot-scope="{ items }">
+        <li
+        v-for="item in items"
+        :key="item.objectID"
+        :data-insights-object-id="item.objectID"
+        :data-insights-position="item.__position"
+        :data-insights-query-id="item.__queryID"
+        >
+        </li>
+    </ul>
+    </ais-hits>
+</div>
+```
+
+</CodeGroup>
+
+To track filter events, add a `data-insights-filter` attribute to each filter element (format: `${attribute}:${value}`):
+
+<CodeGroup>
+
+```html Vamilla JavaScript
+<ul>
+    <li data-insights-filter="brand:Apple">Apple</li>
+    <li data-insights-filter="brand:HP">HP</li>
+    <li>...</li>
+</ul>
+```
+
+```js InstantSearch.js
+instantsearch.widgets.refinementList({
+    container: '#refinement-list',
+    attribute: 'brand',
+    templates: {
+    item: ({ value, isRefined, label, count }, { html }) => html`
+        <a
+        data-insights-filter="${`brand:${value}`}"
+        href="${url}"
+        style="${isRefined ? 'font-weight: bold' : ''}"
+        >
+        <span>${label} (${count})</span>
+        </a>
+    `,
+    }
+});
+```
+
+```jsx React InstantSearch
+import { useRefinementList } from 'react-instantsearch'
+
+function CustomRefinementList(props) {
+    const { items, refine } = useRefinementList(
+    props,
+    { $$widgetType: 'gtm.refinementList' }
+    );
+    return (
+    <div>
+        <ul>
+        {items.map(item => (
+            <li
+            key={item.label}
+            data-insights-filter={`${brand}:${item.value}`}
+            >
+            <a
+                href="#"
+                style={{ fontWeight: item.isRefined ? 'bold' : '' }}
+                onClick={event => {
+                event.preventDefault();
+                refine(item.value);
+                }}
+            >
+                {item.label} ({item.count})
+            </a>
+            </li>
+        ))}
+        </ul>
+    </div>
+    );
+}
+
+
+// ...
+<CustomRefinementList attribute={"brand"} />
+```
+
+```vue Vue InstantSearch
+<ais-refinement-list attribute="brand">
+    <template v-slot:item="{ item, refine, createURL }">
+    <a
+        :data-insights-filter="`brand:${item.value}`"
+        :href="createURL(item.value)"
+        :style="{ fontWeight: item.isRefined ? 'bold' : '' }"
+        @click.prevent="refine(item.value)"
+    >
+        <ais-highlight attribute="item" :hit="item"/>
+        ({{ item.count.toLocaleString() }})
+    </a>
+    </template>
+</ais-refinement-list>
+```
+</CodeGroup>
+
+## Send the user token to Google Tag Manager
+
+Send the appropriate user token to GTM when the user's browser session changes:
+
+```js JavaScript
+window.dataLayer.push({
+  algoliaUserToken: 'user-1',
+});
+```
+
+If you're using the [`search-insights`](https://github.com/algolia/search-insights.js) library,
+use its `onUserTokenChange` method to sync the user token with GTM:
+
+```js JavaScript
+aa('onUserTokenChange', (userToken) => {
+  window.dataLayer.push({
+    algoliaUserToken: userToken,
+  });
+}, { immediate: true });
+```
+
+The `onUserTokenChange` method is supported in `search-insights` versions 1.5.0 or later.
+
+## Send view events
+
+GTM doesn't know when users see new search results, as these are rendered client-side on the users' devices.
+To inform GTM, you need to manually push view events to the data layer.
+
+<CodeGroup>
+
+```diff Vamilla JavaScript
+index.search('query', { /* ... */ }).then(({ hits, queryID }) => {
+    const container = document.querySelector('<your-selector>');
+    container.innerHTML = `...`
+
++  dataLayer.push({ event: 'Hits Viewed' });
+});
+```
+
+```js InstantSearch.js
+const search = instantsearch({
+    insights: {
+    onEvent(event) {
+        const { widgetType, eventType, payload, hits } = event;
+
+        if (widgetType === 'ais.hits' && eventType === 'view') {
+        dataLayer.push({ event: 'Hits Viewed' });
+        }
+    }
+    },
+});
+```
+
+```jsx React InstantSearch
+<InstantSearch
+    insights={{
+    onEvent(event) {
+        const { widgetType, eventType, payload, hits } = event;
+
+        if (widgetType === 'ais.hits' && eventType === 'view') {
+        dataLayer.push({ event: 'Hits Viewed' });
+        }
+    }
+    }}
+/>
+```
+
+```vue Vue InstantSearch
+<!-- Required: Vue InstantSearch >= 3.7.0 -->
+<template>
+    <ais-instant-search
+    :index-name="<index-name>"
+    :search-client="searchClient"
+    :middlewares="middlewares"
+    >
+    <!-- widgets -->
+    </ais-instant-search>
+</template>
+
+<script>
+import {
+    createInsightsMiddleware,
+} from 'instantsearch.js/es/middlewares';
+
+const insightsMiddleware = createInsightsMiddleware({
+    insightsClient: null, // or `window.aa`
+    onEvent(event) {
+    const { widgetType, eventType, payload, hits } = event;
+
+    if (widgetType === 'ais.hits' && eventType === 'view') {
+        dataLayer.push({ event: 'Hits Viewed' });
+    }
+    }
+});
+
+export default {
+    data() {
+    return {
+        // ...
+        middlewares: [insightsMiddleware]
+    }
+    },
+}
+</script>
+```
+</CodeGroup>
+
+<Note>You can use the Insights option with InstantSearch.js, Vue InstantSearch, or React InstantSearch.</Note>
+
+## Add the Algolia Search Insights template
+
+Before sending events to the Insights API, add the [**Algolia Search Insights**](https://tagmanager.google.com/gallery/#/owners/algolia/templates/search-insights-gtm) template to your workspace.
+
+1. Sign in to your GTM workspace and go to **Tag Templates > Search Gallery**.
+
+    ![Search for the Algolia Search Insights template in your Workspace](/images/gtm/add-tag-template-step1.png)
+
+1. Search for the Algolia Search Insights template (by Algolia).
+
+    ![Select the Algolia Search Insights template in your Workspace](/images/gtm/add-tag-template-step2.png)
+
+1. Click **Add to workspace** and confirm by clicking **Add**.
+
+    ![Add the Algolia Search Insights template in your Workspace](/images/gtm/add-tag-template-step3.png)
+
+1. On the **Tag Templates** page, you should now see the **Algolia Search Insights** template:
+
+    ![Algolia Search Insights template added in your Workspace](/images/gtm/add-tag-template-step4.png)
+
+## Add variables
+
+[Variables](https://support.google.com/tagmanager/answer/7683056?hl=en) are named placeholders for values that are populated when code is run on your website or app.
+
+### Built-in variables
+
+First, add the built-in variable **Click Element**.
+This variable is associated with the data from your click events.
+
+1. In the **Variables** section of your GTM workspace, click **Configure**.
+
+    ![Configure variable click element in GTM](/images/gtm/add-click-element-step1.png)
+
+1. In the **Configure Built-In Variables** dialog, select **Click Element**.
+
+    ![Configure Built-In Variables](/images/gtm/add-click-element-step2.png)
+
+### Algolia Insights user token
+
+1. In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+
+    ![Add Data Layer variable in GTM](/images/gtm/add-data-layer-variable-step1.png)
+
+1. Select **Data Layer Variable**.
+
+    ![Select Data Layer Variable](/images/gtm/add-data-layer-variable-step2.png)
+
+1. Enter `Algolia Insights User Token` as the variable name and `algoliaUserToken` as the data layer variable name.
+
+    ![Add User Token Data Layer variable in GTM](/images/gtm/add-user-token-variable.png)
+
+### Algolia Get Data Attributes
+
+1. In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+1. Select **Custom JavaScript**.
+
+    ![Add Custom JavaScript variable in GTM](/images/gtm/add-custom-javascript.png)
+
+1. Enter `Algolia Get Data Attributes` as variable name and add the following JavaScript code:
+
+   ```js JavaScript
+   function() {
+     function findClosest(target, selector) {
+       while (!target.matches(selector) && !target.matches('body')) {
+         target = target.parentElement;
+       }
+       return target.matches(selector) ? target : undefined;
+     }
+
+     return function (attributeName, containerQuerySelector) {
+       var clickedElement = {{Click Element}};
+
+       // Search for the selector's children
+       var elements = clickedElement
+         ? [findClosest(clickedElement, '[' + attributeName +']')]
+         : Array.from(document.querySelectorAll((containerQuerySelector || '') + ' [' + attributeName + ']')).filter(Boolean);
+
+       // See if it matches the container itself.
+       // For example, `#app[data-insights-index]`
+       if (elements.length === 0 && containerQuerySelector) {
+         elements = Array.from(document.querySelectorAll(containerQuerySelector + '[' + attributeName + ']')).filter(Boolean);
+       }
+
+       var attributes = elements.map(function (element) {
+         return element.getAttribute(attributeName);
+       });
+
+       return attributes;
+     }
+   }
+   ```
+
+### Algolia Insights index
+
+1. [Add a new user-defined variable](#algolia-get-data-attributes).
+1. Enter `Algolia Insights Index` as variable name and add the following JavaScript code:
+
+   ```js JavaScript
+   function() {
+     return {{Algolia Get Data Attributes}}('data-insights-index')[0];
+   }
+   ```
+
+When searching multiple indices, you must specify which index to track.
+Add an optional query selector with the `data-insights-index` attribute.
+
+For example, if you have the following HTML:
+
+```html HTML
+<div id="index-1" data-insights-index="YourIndexName">
+  <div id="hits">
+    <!-- ... -->
+  </div>
+</div>
+
+<div id="index-2">
+  <div id="hits">
+    <!-- ... -->
+  </div>
+</div>
+```
+
+Select the `div` element with the id `index-1` for tracking events:
+
+```js JavaScript
+function() {
+  return {{Algolia Get Data Attributes}}('data-insights-index', '#index-1')[0];
+}
+```
+
+### Algolia Insights ObjectIDs
+
+1. [Add a new user-defined variable](#algolia-get-data-attributes).
+1. Enter `Algolia Insights ObjectIDs` as variable name and add the following JavaScript code:
+
+   ```js JavaScript
+   function() {
+     return {{Algolia Get Data Attributes}}('data-insights-object-id');
+   }
+   ```
+
+When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+
+### Algolia Insights positions
+
+1. [Add a new user-defined variable](#algolia-get-data-attributes).
+1. Enter `Algolia Insights Positions` as variable name and add the following JavaScript code:
+
+   ```js JavaScript
+   function() {
+     return {{Algolia Get Data Attributes}}('data-insights-position');
+   }
+   ```
+
+When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+
+### Algolia Insights QueryID
+
+1. [Add a new user-defined variable](#algolia-get-data-attributes).
+1. Enter `Algolia Insights QueryID` as the variable name and add the following JavaScript code:
+
+   ```js JavaScript
+   function() {
+     return {{Algolia Get Data Attributes}}('data-insights-query-id')[0];
+   }
+   ```
+
+When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+
+### Algolia Insights viewed filters
+
+1. [Add a new user-defined variable](#algolia-get-data-attributes).
+1. Enter `Algolia Insights Viewed Filters` as the variable name and add the following JavaScript code:
+
+   ```js JavaScript
+   function() {
+     var attributeName = 'data-insights-filter';
+     var elements = Array.from(document.querySelectorAll('[' + attributeName + ']'));
+     var attributes = elements.map(function (element) {
+       return element.getAttribute(attributeName);
+     });
+     return attributes;
+   }
+   ```
+
+### Algolia Insights clicked filters
+
+1. [Add a new user-defined variable](#algolia-get-data-attributes).
+1. Enter `Algolia Insights Clicked Filters` as variable name and add the following JavaScript code:
+
+   ```js JavaScript
+   function() {
+     return {{Algolia Get Data Attributes}}('data-insights-filter')
+   }
+   ```
+
+When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+
+## Add custom triggers
+
+[Triggers](https://support.google.com/tagmanager/answer/7679316?hl=en) listen to selected types of events on your website or app
+and tell the tags to fire, when a specified event is detected.
+
+### Add a trigger for view events
+
+To capture the view events you [send from your website](#send-view-events)
+you must add a custom trigger.
+
+![Add Hits Viewed trigger in GTM](/images/gtm/add-hits-viewed-trigger.png)
+
+Select the following values for the corresponding fields:
+
+- Trigger name: `Hits Viewed`
+- Trigger type: `Custom Event`
+- Event name: `Hits Viewed`
+
+### Customize triggers for click events
+
+Click or conversion events come from user actions,
+such as clicks on DOM elements.
+
+Consider this template:
+
+```html HTML
+<div data-insights-index="<your-index-name>">
+  <div id="hits">
+    <article
+      class="hit"
+      data-insights-object-id="{{objectID}}"
+      data-insights-position="{{__position}}"
+      data-insights-query-id="{{__queryID}}"
+    >
+      <h1>{{name}}</h1>
+      <p>{{description}}</p>
+
+      <button class="btn-view-details" type="button">
+        View Details
+      </button>
+    </article>
+    <!-- ... -->
+  </div>
+</div>
+```
+
+To configure a click on the **View Details** button as a trigger in GTM, select `Click - All Elements` as the trigger type
+and configure the trigger to fire only when the click text matches _View Details_.
+
+![Add custom trigger with text matching in GTM](/images/gtm/add-custom-trigger1.png)
+
+You can also configure the trigger to fire when the click target matches a CSS selector:
+
+![Add custom trigger with matching CSS selector matching in GTM](/images/gtm/add-custom-trigger2.png)
+
+### Customize triggers for filters
+
+To track clicked filters, create a trigger that matches the CSS selector of your filter elements.
+
+Consider this template:
+
+```html HTML
+<div class="ais-RefinementList">
+  <ul class="ais-RefinementList-list">
+    <li class="ais-RefinementList-item">
+      <div>
+        <label data-insights-filter="brand:Apple">
+          <input type="checkbox" value="Apple" />
+          <span class="ais-RefinementList-labelText">Apple</span>
+          <span class="ais-RefinementList-count">746</span>
+        </label>
+      </div>
+    </li>
+    <li class="ais-RefinementList-item">
+      <!-- ... -->
+    </li>
+    <!-- ... -->
+  </ul>
+</div>
+```
+
+In this example, the CSS selector can be `.ais-RefinementList-labelText`.
+You must add the `data-insights-filter` attribute to the element matching the `.ais-RefinementList-labelText` selector,
+or to a parent element at a higher level in the DOM.
+
+## Set up tags
+
+Tags are the functions that run when a trigger is fired.
+When using GTM with Algolia, each tag corresponds to an API method for sending a specific event.
+
+### Set up your initialization tag
+
+You **must** set up an initialization tag to connect with the Algolia Insights API.
+
+1. In your GTM workspace, go to the **Tags** section and select **Algolia Search Insights**.
+1. In the **Init Options** section, enter your Algolia application ID and API key with**search** permissions.
+1. In the **Triggering** section, select **Initialization—All Pages** to trigger this tag on all pages.
+
+    ![Initialization tag in GTM](/images/gtm/add-tags-init.png)
+
+### Set up view tags for objects
+
+This tag sends a [view event](/guides/send-events/concepts/event-types/) to the Algolia Insights API when search results are rendered.
+It corresponds to the `viewedObjectIDs` method.
+
+![Viewed Object IDs tag in GTM](/images/gtm/add-tags-viewed-object-ids.png)
+
+Attributes:
+
+- Trigger: [`Hits Viewed`](#add-a-trigger-for-view-events)
+- Tag type: `Algolia Search Insights`
+- Tag method: `Viewed Object IDs`
+- Event name: select any name for your events but [name your events consistently](https://segment.com/academy/collecting-data/naming-conventions-for-clean-data/).
+
+### Set up view tags for filters
+
+This tag sends a [view event](/guides/send-events/concepts/event-types/) to the Algolia Insights API when a filter is applied to the search query.
+It corresponds to the `viewedFilters` method.
+
+Attributes:
+
+- Trigger: [`Hits Viewed`](#add-a-trigger-for-view-events)
+- Tag type: `Algolia Search Insights`
+- Tag method: `Viewed Filters`
+- Filters: [`{{Algolia Insights Viewed Filters}}`](#algolia-insights-viewed-filters)
+- Event name: select any name for your events but [name your events consistently](https://segment.com/academy/collecting-data/naming-conventions-for-clean-data/).
+
+### Set up click tags for objects related to search
+
+This tag sends a [click event](/guides/send-events/concepts/event-types/) to capture a search query and the clicked items and their positions.
+It corresponds to the `clickedObjectIDsAfterSearch` method.
+
+![Clicked Object IDs After Search tag in GTM](/images/gtm/add-tags-clicked-object-ids-after-search.png)
+
+Attributes:
+
+- Trigger: [`View Details`](#customize-triggers-for-click-events)
+- Tag type: `Algolia Search Insights`
+- Tag method: `Clicked Object IDs After Search`
+
+### Set up click tags for objects
+
+This tag sends a [click event](/guides/send-events/concepts/event-types/) to the Insights API when users select an item from an Algolia index, regardless of the associated query.
+This event can be useful on product detail pages or the shopping cart.
+This tag corresponds to the `clickedObjectIDs` method.
+
+Attributes:
+
+- Trigger: [`View Details`](#customize-triggers-for-click-events)
+- Tag type: `Algolia Search Insights`
+- Tag method: `Clicked Object IDs`
+
+### Set up click tags for filters
+
+This tag sends a click event to the Insights API to capture selected filters.
+It accepts the [`{{Algolia Insights Clicked Filters}}`](#algolia-insights-clicked-filters) attribute and corresponds to the `clickedFilters` method.
+
+Attributes:
+
+- Trigger: [`View Details`](#customize-triggers-for-filters)
+- Tag type: `Algolia Search Insights`
+- Tag method: `Clicked Filters`
+
+### Set up conversion tags
+
+The following tags send a [conversion event](/guides/send-events/concepts/event-types/) to the Insights API:
+
+- **Search-related objects**. Captures a search query and the converted items. It corresponds to the `convertedObjectIDsAfterSearch` method. Set up this tag like the related [click tag](#set-up-click-tags-for-objects-related-to-search).
+- **Objects**. Captures items, regardless of the associated query. It corresponds to the `convertedObjectIDs` method. Set up this tag like the related [click tag](#set-up-click-tags-for-objects).
+- **Filters**. Captures converted filters. It corresponds to the `convertedFilters` method. Set up this tag like the related [click tag](#set-up-click-tags-for-filters).
+
+#### Track add-to-cart and purchase events
+
+If you have an ecommerce website, use [conversion tags](#set-up-conversion-tags) to track add-to-cart and purchase conversion events.
+This enhances Algolia's AI and unlocks features such as revenue analytics.
+
+Configure the additional **event subtype**, **value**, **currency**, and **object data** (**price**, **discount**, **quantity**) attributes for add-to-cart and purchase events.
+
+To track purchases of multiple items that are associated with different searches, use the **Objects** tag and specify the **query ID** values within the **object data** attribute.
+For example, if your object IDs list is `["product-1", "product-2"]`, then your object data list might look like:
+
+```json JSON
+[
+  { "queryID": "query-1", "price": 10, "quantity": 1, "discount": 0 },
+  { "queryID": "query-2", "price": 5, "quantity": 2, "discount": 15.5 }
+]
+````
+
+<Note>
+Support for add-to-cart and purchase events was added on **December 4, 2023**.
+For template update instructions, refer to the [GTM documentation](https://support.google.com/tagmanager/answer/9454109).
+</Note>
+
+## Submit your changes and debug your events
+
+After setting up the variables, tags, and triggers, submit your changes.
+To ensure all variables are set correctly, use [Google Tag Assistant](https://tagassistant.google.com/).
+
+![Ensure all Algolia variables have the expected values](/images/gtm/tag-assistant-inspect-event.png)
+
+The next step is to [validate your events](/guides/send-events/guides/validate/).
