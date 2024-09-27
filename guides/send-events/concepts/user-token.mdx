@@ -34,7 +34,7 @@ For more accurate analytics and better personalization experiences, you should p
 If you're using an authentication system for your users,
 use the `setAuthenticatedUserToken` method to set the authenticated user token as the `authenticatedUserToken` parameter for the Insights client.
 
-```js
+```js JavaScript
 const authenticatedUserToken = getAuthenticatedUserTokenAfterLogIn();
 aa('setAuthenticatedUserToken', authenticatedUserToken);
 ```
@@ -57,7 +57,7 @@ set the `useCookie` parameter in the `init` method to `true`.
 
 This lets you identify users across sessions with the persistent, anonymous user token.
 
-```js
+```js JavaScript
 aa('init', {
   appId: 'YourApplicationID',
   apiKey: 'YourSearchOnlyAPIKey',
@@ -69,7 +69,7 @@ Before setting `useCookie` to `true`, you should get user consent.
 For example, you can dynamically update the `useCookie` parameter when the user accepts non-essential cookies.
 Use the 'partial` parameter to only update the `useCookie` option without changing the others.
 
-```js
+```js JavaScript
 // User accepts cookies
 aa('init', {
   partial: true,
@@ -87,7 +87,7 @@ If you must abide by legal requirements like GDPR that prohibit usage of non-ess
 
 For example, your code could look like this:
 
-```js
+```js JavaScript
 document.getElementById('cookie-accept').addEventListener('click', () => {
   window.aa('init', {
     useCookie: true,
@@ -115,7 +115,7 @@ document.getElementById('cookie-accept').addEventListener('click', () => {
 By default, the `_ALGOLIA` cookie expires after 6 months.
 To adjust the lifespan of the cookie, set the `cookieDuration` parameter.
 
-```js
+```js JavaScript
 const DAY = 1000 * 60 * 60 * 24;
 
 aa('init', {
@@ -147,7 +147,7 @@ The value of the `_ga` cookie follows the pattern `GA1.1.1900000000.1684510679` 
 
 To extract the unique user ID from the cookie, you can use the following function:
 
-```js
+```js JavaScript
 /**
  * Extracts the user ID from the Google Analytics device ID.
  * @example `GA1.1.xxxxxxxxxx.xxxxxxxxxx => xxxxxxxxxx-xxxxxxxxxx`
@@ -201,7 +201,7 @@ function getGoogleAnalyticsUserIdFromBrowserCookie(cookieName) {
 
 Then, you can use the user ID from the Google Analytics cookie as the `userToken` for Search Insights with `setUserToken`.
 
-```js
+```js JavaScript
 const userToken = getGoogleAnalyticsUserIdFromBrowserCookie('_ga');
 
 aa('setUserToken', userToken);
@@ -228,7 +228,7 @@ you can get the user token from the function `analytics.user().anonymousId()`.
 
 With the Search Insights library, you can retrieve the anonymous user token by calling `getUserToken`.
 
-```js
+```js JavaScript
 // Starting from v1.3.0 of the search-insights.js library
 aa('getUserToken', {}, (err, userToken) => {
   if (err) {
@@ -241,7 +241,7 @@ aa('getUserToken', {}, (err, userToken) => {
 
 Similarly, you can retrieve an authenticated user token by calling `getAuthenticatedUserToken`
 
-```js
+```js JavaScript
 // Starting from v2.9.0 of the search-insights.js library
 aa('getAuthenticatedUserToken', {}, (err, authenticatedUserToken) => {
   if (err) {
@@ -259,7 +259,7 @@ The [Search Insights](https://www.npmjs.com/package/search-insights/v/latest) li
 To set `userToken` or `authenticatedUserToken` globally, you can pass them on `init` or use the `setUserToken` or
 `setAuthenticatedUserToken` method. This way, you don't need to provide your user token every time you send an event.
 
-```js
+```js JavaScript
 // Set a global anonymous user token before a user is identified
 aa('setUserToken', 'anonymous-1');
 
@@ -284,7 +284,7 @@ aa('clickedObjectIDs', {
 To send user tokens with each event, add the `userToken` and `authenticatedUserToken`
 parameters to the event object.
 
-```js
+```js JavaScript
 // Send a click event associated with "anonymous-2"
 aa('clickedObjectIDs', {
   userToken: 'anonymous-2',

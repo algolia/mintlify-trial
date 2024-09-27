@@ -4,50 +4,13 @@ sidebarTitle: 'Send media events'
 description: Collect user interactions as events on your media website.
 ---
 
-import Intro from '/snippets/insights/intro.mdx';
+import InstantSearchIntro from '/snippets/insights/instantsearch-intro.mdx';
 
-<Intro />
+<InstantSearchIntro />
 
-import BeforeYouBegin from '/snippets/insights/instantsearch-before-you-begin.mdx';
+import MediaDiagram from '/snippets/insights/media-diagram.mdx';
 
-<BeforeYouBegin />
-
-import EnableEventsCollection from '/snippets/insights/instantsearch-enable-events-collection.mdx';
-
-<EnableEventsCollection />
-
-import InstantsearchEventsToTrack from '/snippets/insights/instantsearch-events-to-track.mdx';
-import EventsToTrack from '/snippets/insights/events-to-track.mdx';
-
-<InstantsearchEventsToTrack />
-<EventsToTrack />
-
-<Tabs>
-  <Tab title="Search results page">
-    ![Search results page](/images/events/search-events-media.png)
-    Starting with a search on any of your pages, a user might take the following actions:
-
-    1. Select a product from the search results to open the content details page.
-    1. Consume content, such as watching a video, reading an article, or listening to an audio track.
-    1. Interact with content, such as liking, subscribing, or following.
-  </Tab>
-  <Tab title="Browse page">
-    ![Browse page](/images/events/browse-events-media.png)
-    Starting with a visit to your homepage or to a category page, a user might take the following actions:
-
-    1. Select a content category to open a category page.
-    1. Select content displayed on the page to open the content details page.
-    1. Consume content, such as watching a video, reading an article, or listening to an audio track.
-    1. Interact with content, such as liking, subscribing, or following.
-  </Tab>
-  <Tab title="External referrals">
-    ![External referrals](/images/events/personalization-events-media.png)
-    Starting with a search on an internet search engine, with a click on a recommendation, or any other external referral, a user might take the following actions:
-
-    1. Click on an (internet) search result, recommendation, or other link to your website.
-    1. Depending on where the user lands on your website, they continue the same path as if they started with your homepage or with a category page.
-  </Tab>
-</Tabs>
+<MediaDiagram />
 
 #### Search and search results pages
 
@@ -98,9 +61,60 @@ import ConversionEvents from '/snippets/insights/track-conversion-events.mdx';
 The `hits` and `infiniteHits` widgets expose a `sendEvent` function.
 Use it to send `click` events when users interact with your search results.
 
-import MediaClickEvent1 from '/snippets/insights/media-click-event-1.mdx';
+<CodeGroup>
 
-< MediaClickEvent1 />
+```js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <div onClick="${() => sendEvent("click", hit, "Article Clicked")}">
+            <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+            <p>${hit.description}</p>
+        </div>
+        `;
+    },
+    },
+});
+```
+
+```jsx React InstantSearch
+import { InstantSearch, Hits, Highlight } from "react-instantsearch";
+
+function Hit({ hit, sendEvent }) {
+    return (
+    <div onClick={() => sendEvent("click", hit, "Article Clicked")}>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+    </div>
+    );
+}
+
+function App(props) {
+    return (
+    <InstantSearch {...props}>
+        <Hits hitComponent={Hit} />
+    </InstantSearch>
+    );
+}
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+    <div @click="sendEvent('click', item, 'Article Clicked')">
+        <h2>
+        <ais-highlight attribute="name" :hit="item" />
+        </h2>
+        <p>{{ item.description }}</p>
+    </div>
+    </template>
+</ais-hits>
+```
+
+</CodeGroup>
 
 You can set more events on specific parts of your template.
 In the following example, when clicking on the **View more info** button, two events are sent to the Insights API:
@@ -108,22 +122,188 @@ In the following example, when clicking on the **View more info** button, two ev
 - A `click` event with the `eventName` "Article More Info"
 - A `click` event with the `eventName` "Article Clicked" (through event propagation)
 
-import MediaClickEvent2 from '/snippets/insights/media-click-event-2.mdx';
+<CodeGroup>
 
-<MediaClickEvent2 />
+```js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <div onClick="${() => sendEvent("click", hit, "Article Clicked")}">
+            <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+            <p>${hit.description}</p>
+            <button
+            onClick="${() =>
+                sendEvent("click", hit, "Article More Info Clicked")
+            }"
+            >
+            Add to favorites
+            </button>
+        </div>
+        `;
+    },
+    },
+});
+```
+
+```jsx React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <div onClick={() => sendEvent("click", hit, "Article Clicked")}>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={() => sendEvent("click", hit, "Article More Info Clicked")}
+        >
+        Add to favorites
+        </button>
+    </div>
+    );
+}
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+    <div @click="sendEvent('click', item, 'Article Clicked')">
+        <h2>
+        <ais-highlight attribute="name" :hit="item" />
+        </h2>
+        <p>{{ item.description }}</p>
+        <button @click="sendEvent('click', item, 'Article More Info Clicked')">
+        Add to favorites
+        </button>
+    </div>
+    </template>
+</ais-hits>
+```
+</CodeGroup>
 
 To only send the most specific event per clicked element, you can use [`Event.stopPropagation`](https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation) in your event handler.
 
-import MediaClickEvent3 from '/snippets/insights/media-click-event-3.mdx';
+  <CodeGroup>
 
-<MediaClickEvent3 />
+```diff InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <div onClick="${() => sendEvent("click", hit, "Article Clicked")}">
+            <!-- ... -->
+            <button
+            onClick="${(event) => {
++             event.stopPropagation();
+
+                sendEvent("click", hit, "Article More Info Clicked");
+            }}"
+            >
+            Add to favorites
+            </button>
+        </div>
+        `;
+    },
+    },
+});
+```
+
+```diff React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <div onClick={() => sendEvent("click", hit, "Article Clicked")}>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={(event) => {
++         event.stopPropagation();
+
+            sendEvent("click", hit, "Article More Info Clicked");
+        }}
+        >
+        Add to favorites
+        </button>
+    </div>
+    );
+}
+```
+
+```diff Vue InstantSearch
+    <ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+        <div @click="sendEvent('click', item, 'Article Clicked')">
+        <!-- … -->
+        <button @click="(event) => {
++         event.stopPropagation();
+
+            sendEvent('click', item, 'Article More Info Clicked');
+        }">
+            Add to favorites
+        </button>
+        </div>
+    </template>
+    </ais-hits>
+```
+</CodeGroup>
  
 When InstantSearch captures a custom `click` event that you defined, it doesn't send the default `click` event.
 In the following example, when clicking the **View mores** button, only the "Article More Info Clicked" event is sent.
 
-import MediaClickEvent4 from '/snippets/insights/media-click-event-4.mdx';
+<CodeGroup>
+```js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+        <p>${hit.description}</p>
+        <button
+            onClick="${() =>
+            sendEvent("click", hit, "Article More Info Clicked")
+            }"
+        >
+            Add to favorites
+        </button>
+        `;
+    },
+    },
+});
+```
 
-<MediaClickEvent4 />
+```jsx React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={() => sendEvent("click", hit, "Article More Info Clicked")}
+        >
+        Add to favorites
+        </button>
+    </>
+    );
+}
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+    <h2>
+        <ais-highlight attribute="name" :hit="item" />
+    </h2>
+    <p>{{ item.description }}</p>
+    <button @click="sendEvent('click', item, 'Article More Info Clicked')">
+        Add to favorites
+    </button>
+    </template>
+</ais-hits>
+```
+</CodeGroup>
 
 ### Track additional click events
 
@@ -145,10 +325,6 @@ window.aa("clickedObjectIDs", {
 });
 ```
 
-import Personalization from '/snippets/insights/instantsearch-personalization.mdx';
+import InstantSearchOutro from '/snippets/insights/instantsearch-outro.mdx';
 
-<Personalization />
-
-import Examples from '/snippets/insights/examples.mdx';
-
-<Examples />
+<InstantSearchOutro />

@@ -30,15 +30,190 @@ Add the following data attributes to your template for Algolia search results wi
 
 For more information, see the [Insights API reference](/api-reference/insights-api/).
 
-import UpdateHTML from '/snippets/insights/update-html.mdx';
+<CodeGroup>
 
-<UpdateHTML />
+```js Vanilla JavaScript
+const indexName = <YourIndexName>;
+
+index.search('query', {
+    userToken: 'user-1',
+    clickAnalytics: true
+}).then(({ hits, queryID, page, hitsPerPage }) => {
+    const container = document.querySelector('<YourSelector>');
+
+    container.innerHTML = `
+    <div data-insights-index="${indexName}">
+        <div id="hits">
+        ${
+            hits.map((hit, arrayIndex) => `
+            <div class="hit"
+                data-insights-object-id="${hit.objectID}"
+                data-insights-position="${arrayIndex + 1 + page * hitsPerPage}"
+                data-insights-query-id="${queryID}"
+            >
+                <!-- ... -->
+            </div>
+            `).join('')
+        }
+        </div>
+    </div>
+    `
+});
+```
+
+```js InstantSearch.js
+/*
+    <div data-insights-index="<YourIndexName>">
+    <div id="filters"><!-- ... --></div>
+    <div id="hits"></div>
+    </div>
+*/
+
+instantsearch.widgets.hits({
+    container: '#hits',
+    templates: {
+    item: (hit, { html }) => html`
+        <div
+        data-insights-object-id="${hit.objectID}"
+        data-insights-position="${hit.__position}"
+        data-insights-query-id="${hit.__queryID}"
+        >
+        <!-- ... -->
+        </div>
+    `,
+    },
+}),
+```
+
+```jsx React InstantSearch
+import { Hits } from 'react-instantsearch';
+
+const indexName = <YourIndexName>;
+
+function Hit({ hit }) {
+    return (
+    <div
+        data-insights-object-id={hit.objectID}
+        data-insights-position={hit.__position}
+        data-insights-query-id={hit.__queryID}
+    >
+        {/* ... */}
+    </div>
+    );
+}
+
+// ...
+
+<div data-insights-index={indexName}>
+    {/* ... */}
+    <Hits hitComponent={Hit} />
+</div>
+```
+
+```vue Vue InstantSearch
+<div :data-insights-index="indexName">
+    <!-- .. -->
+    <ais-hits>
+    <ul slot-scope="{ items }">
+        <li
+        v-for="item in items"
+        :key="item.objectID"
+        :data-insights-object-id="item.objectID"
+        :data-insights-position="item.__position"
+        :data-insights-query-id="item.__queryID"
+        >
+        </li>
+    </ul>
+    </ais-hits>
+</div>
+```
+
+</CodeGroup>
 
 To track filter events, add a `data-insights-filter` attribute to each filter element (format: `${attribute}:${value}`):
 
-import UpdateFilters from '/snippets/insights/update-html-filters.mdx';
+<CodeGroup>
 
-<UpdateFilters />
+```html Vamilla JavaScript
+<ul>
+    <li data-insights-filter="brand:Apple">Apple</li>
+    <li data-insights-filter="brand:HP">HP</li>
+    <li>...</li>
+</ul>
+```
+
+```js InstantSearch.js
+instantsearch.widgets.refinementList({
+    container: '#refinement-list',
+    attribute: 'brand',
+    templates: {
+    item: ({ value, isRefined, label, count }, { html }) => html`
+        <a
+        data-insights-filter="${`brand:${value}`}"
+        href="${url}"
+        style="${isRefined ? 'font-weight: bold' : ''}"
+        >
+        <span>${label} (${count})</span>
+        </a>
+    `,
+    }
+});
+```
+
+```jsx React InstantSearch
+import { useRefinementList } from 'react-instantsearch'
+
+function CustomRefinementList(props) {
+    const { items, refine } = useRefinementList(
+    props,
+    { $$widgetType: 'gtm.refinementList' }
+    );
+    return (
+    <div>
+        <ul>
+        {items.map(item => (
+            <li
+            key={item.label}
+            data-insights-filter={`${brand}:${item.value}`}
+            >
+            <a
+                href="#"
+                style={{ fontWeight: item.isRefined ? 'bold' : '' }}
+                onClick={event => {
+                event.preventDefault();
+                refine(item.value);
+                }}
+            >
+                {item.label} ({item.count})
+            </a>
+            </li>
+        ))}
+        </ul>
+    </div>
+    );
+}
+
+
+// ...
+<CustomRefinementList attribute={"brand"} />
+```
+
+```vue Vue InstantSearch
+<ais-refinement-list attribute="brand">
+    <template v-slot:item="{ item, refine, createURL }">
+    <a
+        :data-insights-filter="`brand:${item.value}`"
+        :href="createURL(item.value)"
+        :style="{ fontWeight: item.isRefined ? 'bold' : '' }"
+        @click.prevent="refine(item.value)"
+    >
+        <ais-highlight attribute="item" :hit="item"/>
+        ({{ item.count.toLocaleString() }})
+    </a>
+    </template>
+</ais-refinement-list>
+```
+</CodeGroup>
 
 ## Send the user token to Google Tag Manager
 
@@ -68,9 +243,84 @@ The `onUserTokenChange` method is supported in `search-insights` versions 1.5.0 
 GTM doesn't know when users see new search results, as these are rendered client-side on the users' devices.
 To inform GTM, you need to manually push view events to the data layer.
 
-import HitsViewed from '/snippets/insights/hits-viewed.mdx';
+<CodeGroup>
 
-<HitsViewed />
+```diff Vamilla JavaScript
+index.search('query', { /* ... */ }).then(({ hits, queryID }) => {
+    const container = document.querySelector('<your-selector>');
+    container.innerHTML = `...`
+
++  dataLayer.push({ event: 'Hits Viewed' });
+});
+```
+
+```js InstantSearch.js
+const search = instantsearch({
+    insights: {
+    onEvent(event) {
+        const { widgetType, eventType, payload, hits } = event;
+
+        if (widgetType === 'ais.hits' && eventType === 'view') {
+        dataLayer.push({ event: 'Hits Viewed' });
+        }
+    }
+    },
+});
+```
+
+```jsx React InstantSearch
+<InstantSearch
+    insights={{
+    onEvent(event) {
+        const { widgetType, eventType, payload, hits } = event;
+
+        if (widgetType === 'ais.hits' && eventType === 'view') {
+        dataLayer.push({ event: 'Hits Viewed' });
+        }
+    }
+    }}
+/>
+```
+
+```vue Vue InstantSearch
+<!-- Required: Vue InstantSearch >= 3.7.0 -->
+<template>
+    <ais-instant-search
+    :index-name="<index-name>"
+    :search-client="searchClient"
+    :middlewares="middlewares"
+    >
+    <!-- widgets -->
+    </ais-instant-search>
+</template>
+
+<script>
+import {
+    createInsightsMiddleware,
+} from 'instantsearch.js/es/middlewares';
+
+const insightsMiddleware = createInsightsMiddleware({
+    insightsClient: null, // or `window.aa`
+    onEvent(event) {
+    const { widgetType, eventType, payload, hits } = event;
+
+    if (widgetType === 'ais.hits' && eventType === 'view') {
+        dataLayer.push({ event: 'Hits Viewed' });
+    }
+    }
+});
+
+export default {
+    data() {
+    return {
+        // ...
+        middlewares: [insightsMiddleware]
+    }
+    },
+}
+</script>
+```
+</CodeGroup>
 
 <Note>You can use the Insights option with InstantSearch.js, Vue InstantSearch, or React InstantSearch.</Note>
 

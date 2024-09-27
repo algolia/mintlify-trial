@@ -1,4 +1,16 @@
- <CodeGroup>
+import Intro from '/snippets/insights/intro.mdx';
+
+<Intro />
+
+import EnableEventsCollection from '/snippets/insights/enable-events-collection.mdx';
+
+<EnableEventsCollection />
+
+## Initialize search-insights.js
+
+Install the [`search-insights`](/api-reference/insights-api/) library.
+
+<CodeGroup>
 
 ```html HTML
 <script>
@@ -28,3 +40,18 @@ npm install search-insights
 ```
 
 </CodeGroup>
+
+After installing the `search-insights` library, initialize the client in your website.
+
+```js JavaScript
+import aa from 'search-insights';
+
+aa("init", {
+appId: "YourApplicationID",
+apiKey: "YourSearchOnlyAPIKey",
+});
+```
+
+import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+<EventsToTrack />

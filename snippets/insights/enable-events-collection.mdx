@@ -4,7 +4,7 @@ Set the `clickAnalytics` parameter to `true` when making search requests.
 This includes the [`queryID`](/guides/send-events/concepts/event-types#what-is-the-query-id) parameter in the search response,
 which is required for linking events and search requests.
 
-```diff*js JavaScript
+```diff JavaScript
     const algoliasearch = require("algoliasearch");
     const client = algoliasearch("YourApplicationID", "YourSearchOnlyAPIKey");
     const index = client.initIndex("YourIndexName");
