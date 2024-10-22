@@ -1,0 +1,468 @@
+---
+title: Filter results inside a polygon
+description: |-
+  Use Algolia's geo search capabilities to filter results inside a polygon.
+---
+
+In this tutorial, you'll learn how to filter results around a polygonal location. This location can either be set manually or taken from the current user position.
+
+## Dataset
+
+The dataset contains 3000+ of the biggest airports in the world.
+
+```json json
+[
+  {
+    "objectID": "3797",
+    "name": "John F Kennedy Intl",
+    "city": "New York",
+    "country": "United States",
+    "iata_code": "JFK",
+    "_geoloc": {
+      "lat": 40.639751,
+      "lng": -73.778925
+    },
+    "links_count": 911
+  }
+]
+```
+
+To tell Algolia where each record is located,
+we need to have the latitude and longitude stored in the `_geoloc` attribute.
+
+You can download the dataset [here](https://github.com/algolia/datasets/blob/master/airports/airports.json). Have look at how to import it in Algolia [here](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard/)
+
+## Initialize the client
+
+<CodeGroup>
+  ```csharp csharp
+  SearchClient client = new SearchClient("YourApplicationID", "YourWriteAPIKey");
+  SearchIndex index = client.InitIndex("your_index_name");
+  ```
+
+  ```go go
+  package main
+
+  import "github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+
+  func main() {
+  	client := search.NewClient("YourApplicationID", "YourWriteAPIKey")
+  	index := client.InitIndex("your_index_name")
+  }
+  ```
+
+  ```java java
+  SearchClient client = DefaultSearchClient.create(
+    "YourApplicationID",
+    "YourWriteAPIKey"
+  );
+
+  SearchIndex index = client.initIndex("your_index_name");
+
+  ```
+
+  ```js js
+  // Default version
+  import algoliasearch from "algoliasearch";
+
+  // Search-only version
+  // import algoliasearch from 'algoliasearch/lite';
+
+  const client = algoliasearch("YourApplicationID", "YourWriteAPIKey");
+  const index = client.initIndex("your_index_name");
+  ```
+
+  ```kotlin kotlin
+  val client = ClientSearch(
+      applicationID = ApplicationID("YourApplicationID"),
+      apiKey = APIKey("YourWriteAPIKey")
+  )
+  val indexName = IndexName("your_index_name")
+
+  client.initIndex(indexName)
+  ```
+
+  ```php php
+  // composer autoload
+  require __DIR__ . '/vendor/autoload.php';
+
+  // if you are not using composer
+  // require_once 'path/to/algoliasearch.php';
+
+  $client = \Algolia\AlgoliaSearch\SearchClient::create(
+    'YourApplicationID',
+    'YourWriteAPIKey'
+  );
+
+  $index = $client->initIndex('your_index_name');
+  ```
+
+  ```python python
+  from algoliasearch.search_client import SearchClient
+
+  client = SearchClient.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```ruby ruby
+  require "algolia"
+
+  client = Algolia::Search::Client.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("your_index_name")
+  ```
+
+  ```scala scala
+  // No initIndex
+  val client = new AlgoliaClient("YourApplicationID", "YourWriteAPIKey")
+  ```
+
+  ```swift swift
+  let client = SearchClient(appID: "YourApplicationID", apiKey: "YourWriteAPIKey")
+  let index = client.index(withName: "your_index_name")
+  ```
+</CodeGroup>
+
+## Configure Index Settings
+
+Even if we want to sort by distance to a location, we need the textual relevance to be good in case we refine the search with a query.
+
+For that let's configure the index.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string> { "name", "city", "country", "iata_code", },
+      CustomRanking = new List<string> { "desc(links_count)" }
+  };
+
+  index.SetSettings(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		"name",
+  		"city",
+  		"country",
+  		"iata_code",
+  	),
+  	CustomRanking: opt.CustomRanking("desc(links_count)"),
+  })
+  ```
+
+  ```java java
+  index.setSettings(new IndexSettings()
+      .setSearchableAttributes(Arrays.asList("name", "city", "country", "iata_code"))
+      .setCustomRanking(Collections.singletonList("desc(links_count"))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      searchableAttributes: ["name", "city", "country", "iata_code"],
+      customRanking: ["desc(links_count)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+          +"name"
+          +"city"
+          +"country"
+          +"iata_code"
+      }
+      customRanking {
+          +Desc("links_count")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings({
+    'searchableAttributes' => [
+      'name',
+      'city',
+      'country',
+      'iata_code'
+    ],
+    'customRanking': [
+      'desc(links_count)'
+    ]
+  });
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "searchableAttributes": ["name", "city", "country", "iata_code"],
+          customRanking: ["desc(links_count)"],
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    searchableAttributes: [
+      "name",
+      "city",
+      "country",
+      "iata_code"
+    ],
+    customRanking: [
+      "desc(links_count)"
+    ]
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(Seq(
+        SearchableAttributes.attributes("name"),
+        SearchableAttributes.attribute("city"),
+        SearchableAttributes.unordered("country"),
+        SearchableAttributes.attribute("iata_code"))),
+      customRanking = Some(Seq(CustomRanking.desc("links_count"))))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(
+      \.searchableAttributes,
+      to: [
+        "name",
+        "city",
+        "country",
+        "iata_code",
+      ]
+    )
+    .set(\.customRanking, to: [.desc("links_count")])
+
+  index.setSettings(settings) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Searchable attributes
+
+We're going to search in our 4 textual attributes: `name`, `city`, `country` and `iata_code`.
+
+### Custom Ranking
+
+We will use the **number of other connected airports** to any airport as a ranking metric - the more connection the better.
+
+## Filtering inside a polygonal area
+
+Let's filter inside the United State of America.
+
+USA can be considered as a polygon:
+
+To filter inside this polygon we need the latitude and longitude of all the points:
+
+- 42.01,-124.31,
+- 48.835509470063045,-124.40453125000005
+- 45.01082951668149,-65.95726562500005
+- 31.247243545293433,-81.06578125000004
+- 25.924152577235226,-97.68234374999997
+- 32.300311895879545,-117.54828125
+
+We are going to use the `insidePolygon` parameter:
+
+<CodeGroup>
+  ```csharp csharp
+  index.Search<T>(
+      new Query("query")
+      {
+          InsidePolygon = new List<List<float>>
+          {
+              new List<float>
+              {
+                  42.01f,
+                  -124.31f,
+                  48.835509470063045f,
+                  -124.40453125000005f,
+                  45.01082951668149f,
+                  -65.95726562500005f,
+                  31.247243545293433f,
+                  -81.06578125000004f,
+                  25.924152577235226f,
+                  -97.68234374999997f,
+                  32.300311895879545f,
+                  -117.54828125f,
+              }
+          }
+      }
+  );
+  ```
+
+  ```go go
+  polygons := [][]float64{
+  	{
+  		42.01, -124.31,
+  		48.835509470063045, -124.40453125000005,
+  		45.01082951668149, -65.95726562500005,
+  		31.247243545293433, -81.06578125000004,
+  		25.924152577235226, -97.68234374999997,
+  		32.300311895879545, -117.54828125,
+  	},
+  }
+
+  res, err := index.Search("", opt.InsidePolygon(polygons))
+  ```
+
+  ```java java
+  index.search(new Query().setInsidePolygon(
+    Arrays.asList(
+      Arrays.asList(42.01f, -124.31f),
+      Arrays.asList(48.835509470063045f, -124.40453125000005f),
+      Arrays.asList(45.01082951668149f, -65.95726562500005f),
+      Arrays.asList(31.247243545293433f, -81.06578125000004f),
+      Arrays.asList(25.924152577235226f, -97.68234374999997f),
+      Arrays.asList(32.300311895879545f, -117.54828125f)
+  )));
+  ```
+
+  ```js js
+  const polygon = [
+    42.01, -124.31, 48.835509470063045, -124.40453125000005, 45.01082951668149,
+    -65.95726562500005, 31.247243545293433, -81.06578125000004,
+    25.924152577235226, -97.68234374999997, 32.300311895879545, -117.54828125,
+  ];
+  index
+    .search("query", {
+      insidePolygon: [polygon],
+    })
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val query = query {
+      insidePolygon {
+          +Polygon(
+              Point(42.01f, -124.31f),
+              Point(48.835509470063045f, -124.40453125000005f),
+              Point(45.01082951668149f, -65.95726562500005f),
+              Point(31.247243545293433f, -81.06578125000004f),
+              Point(25.924152577235226f, -97.68234374999997f),
+              Point(32.300311895879545f, -117.54828125f)
+          )
+      }
+  }
+
+  index.search(query)
+  ```
+
+  ```php php
+  $polygon = [
+    42.01,
+    -124.31,
+
+    48.835509470063045,
+    -124.40453125000005,
+
+    45.01082951668149,
+    -65.95726562500005,
+
+    31.247243545293433,
+    -81.06578125000004,
+
+    25.924152577235226,
+    -97.68234374999997,
+
+    32.300311895879545,
+    -117.54828125
+  ];
+
+  $results = $index->search('', [
+    'insidePolygon' => [$polygon]
+  ]);
+  ```
+
+  ```python python
+  polygon = [
+      42.01,
+      -124.31,
+      48.835509470063045,
+      -124.40453125000005,
+      45.01082951668149,
+      -65.95726562500005,
+      31.247243545293433,
+      -81.06578125000004,
+      25.924152577235226,
+      -97.68234374999997,
+      32.300311895879545,
+      -117.54828125,
+  ]
+  results = index.search("", {insidePolygon: [polygon]})
+  ```
+
+  ```ruby ruby
+  polygon = [
+    42.01,
+    -124.31,
+    48.835509470063045,
+    -124.40453125000005,
+    45.01082951668149,
+    -65.95726562500005,
+    31.247243545293433,
+    -81.06578125000004,
+    25.924152577235226,
+    -97.68234374999997,
+    32.300311895879545,
+    -117.54828125
+  ]
+
+  results = index.search("", {insidePolygon: [polygon]})
+  ```
+
+  ```scala scala
+  client.execute {
+    search into "myIndex" query Query(
+      query = Some("query"),
+      insidePolygon = Some(Seq(
+        InsidePolygon(
+          42.01f,
+          -124.31f,
+          48.835509470063045f,
+          -124.40453125000005f,
+          45.01082951668149f,
+          -65.95726562500005f))))
+  }
+  ```
+
+  ```swift swift
+  let polygon = Polygon(
+    (42.01, -124.31),
+    (48.835509470063045, -124.40453125000005),
+    (45.01082951668149, -65.95726562500005),
+    (31.247243545293433, -81.06578125000004),
+    (25.924152577235226, -97.68234374999997),
+    (32.300311895879545, -117.54828125)
+  )
+
+  let query = Query("query")
+    .set(\.insidePolygon, to: [polygon])
+
+  index.search(query: query) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+We are using the empty query (`''`) because we want all airports.

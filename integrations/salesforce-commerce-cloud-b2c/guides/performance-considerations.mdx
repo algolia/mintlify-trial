@@ -1,0 +1,94 @@
+---
+title: Performance considerations
+description: |-
+  Tips for increasing indexing performance.
+---
+
+The v2 indexing jobs (available from [cartridge version 23.5.0](/integration/salesforce-commerce-cloud-b2c/guides/migrating-to-23-5-0/)) bring many performance improvements compared to the v1 jobs.
+
+This guide provides additional tips to help you further improve your indexing performance.
+
+## Only export the attributes which are necessary for your business
+
+Retrieving attributes from the database and exporting them is expensive. Every millisecond counts when the number of products is high.
+
+Limit the number of attributes you're exporting to the ones you're using on your frontend.
+Removing unused, forgotten, and stale attributes improves job run times.
+
+## Pay attention to both complex and simple attributes
+
+Your products have:
+
+- Simple (static) attributes that can be retrieved by a simple "getter" method
+- Complex (dynamic) attributes which must be calculated at the time of the query, for each product, for each locale.
+
+When considering which attributes to remove from the list of exported attributes, start by eliminating the complex ones first.
+
+## Number of currencies and locales affects run time
+
+If your site has unused currencies or locales configured, consider removing them in Business Manager as products will be exported using these locales and currencies as well.
+The list of indexed locales can also be restricted using the `Locales for indexing` [custom preference](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/),
+or at the job step level, in the `localesForIndexing` parameter.
+
+When indexing a lot of locales, the size of indexing batches is increased (one record is generated per locale), which can lead to memory errors in the indexing jobs.
+Reduce the number of locales or lower the [chunk size](#chunk-size) if you encounter a `java.lang.OutOfMemoryError: Java heap space` error.
+
+A job can also become slow when dealing with a large number of locales.
+In that case, a strategy is to split it in separate jobs, each one indexing a subset of locales.
+This is achieved by using the `localesForIndexing` [job step parameter](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing/#algoliaproductindex-job-step-parameters).
+
+## Chunk size
+
+The default chunk size for the new jobs is 100, while the maximum is 1,000.
+You can change the chunk size in `steptypes.json`, under `"@type-id": "..."` > `"chunk-size"`.
+
+The products to be exported are broken down into chunks of this size, with multiple chunks executing in parallel.
+To achieve the best performance, you can set this value higher if you have a large catalog with many products.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Setting the chunk size too high can cause issues:
+
+  - it can result in an `api.jsJSONStringLength` [quota violation](https://salesforcecommercecloud.github.io/b2c-dev-doc/docs/current/quota/html/API_Quotas.html#category_Script).
+    A quota warning will be issued, but the platform won't prevent execution of the job because the quota is not currently enforced.
+  - it can cause memory issues when a large number of locales are enabled, because one product or variant record is generated for each locale and added to the batch.
+    If a job fails with a `java.lang.OutOfMemoryError: Java heap space` error, you need to lower the chunk size.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Environment
+
+Jobs run significantly faster on Production instances than they do on sandboxes due to having more resources assigned to them.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  On-demand sandboxes can be configured with [three tiers of allocated resources](https://help.salesforce.com/s/articleView?id=sf.rn_b2c_sandbox_w8978426_ods_resource_prof_mjb.htm\&type=5).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Job scheduling
+
+Schedule jobs in a staggered manner.
+Don't run jobs at the same time even if they access different resources or business object types.
+
+Try to run high-volume jobs, such as full catalog exports, during low-traffic hours, like nighttime.
+
+Don't schedule jobs to start at the top of the hour, instead schedule them to start at random minutes of the hour (for example 2:17 or 6:39).
+This is due to your B2C instances running on multi-tenant servers.
+If every tenant configures their job to start at the top of the same hour, that means slower access for everyone.
+
+## Use each job for its intended purpose
+
+Partial update jobs, such as `AlgoliaProductInventoryExport_v2` and `AlgoliaProductPriceExport_v2`, finish quickly compared to a full catalog export job, since they only export one relatively easily calculable attribute.
+The list of attributes for partial update jobs can be extended, but this will increase job run times.
+
+## Content indexing
+
+Content datasets and indices tend to be smaller than product catalogs, since there are usually fewer content assets and pages than products. Content updates also tend to be less time- and performance- sensitive and occur less often compared to product updates. However, if content job performance is critical, consider the following strategies:
+
+- If Page Designer or Content Assets aren't part of your usage, you can tailor your indexing preferences by configuring the `includedContent` to specify which types of content are indexed.
+- For those indexing all Page Designer components by setting `indexOnlySearchables` to false, it's advisable to review and specify both `indexableAttributes` and `ignoredAttributes`. This can help to minimize unnecessary indexing of content, such as style configurations, that do not need to be indexed.

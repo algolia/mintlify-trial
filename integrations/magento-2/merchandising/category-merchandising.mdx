@@ -1,0 +1,47 @@
+---
+title: Visual category merchandising
+description: |-
+  Learn how to merchandise products on Algolia powered category pages in the Algolia extension for Magento 2.
+---
+
+Algolia for Magento 2 | Merchandising Features
+
+By Algolia, 6 min
+
+The Visual Category Merchandising tool makes it possible to edit how products are displayed on Algolia-powered category pages, (potentially) boosting conversion rates for your shop.
+The tool can be found on the edit page of a category, in the _Algolia Merchandising_ tab.
+
+## Merchandising
+
+The visual merchandiser allows you to easily manage the order in which products should be shown on a category page.
+Through the drag-and-drop feature, or the arrow keys, products can be moved up or down in the hierarchy to move them to the desired position.
+
+Products can be pinned to a position. This means this product will _always_ show up on the position it is pinned.
+To unpin a product, just press the 'Un-pin' button.
+
+The Visual Merchandiser will only display the first page of results in the admin section of Magento.
+To pin products from any other page, use the autocomplete menu to find the desired product.
+This autocomplete menu will only show products from the current category.
+When you select a product from this menu, it will be automatically pinned to the first position.
+If any other position is desired, just move the product up or down.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  All pinned positions will be saved when the whole category is saved.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Rules
+
+The Visual Merchandising Tool makes use of [Rules](/guides/managing-results/rules/rules-overview/) to pin products to a certain position.
+In order to preserve the position of these products, a query rule is created for every category that has _at least_ one pinned product.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Rules are only available on the Premium plan. Please check your [account](https://dashboard.algolia.com/dashboard) to find out your Rules quota and [upgrade](https://dashboard.algolia.com/billing/overview) if needed.
+</Note>
+
+{/* prettier-ignore-end */}

@@ -1,0 +1,270 @@
+---
+title: Product schema
+description: |-
+  Understand the format of your commercetools product records in Algolia.
+---
+
+Algolia's commercetools integration stores your product data in an extensible format that's optimal for search.
+
+The integration can generate two types of records, depending on your **record model** preference:
+
+- **Product Variant** records: create one record per product variant.
+- **Product** records: create one record per base product, containing all the variants in a `variants` attribute.
+
+You can choose the record model when you [configure the destination](/integration/commercetools/get-started/configuration/#configure-your-destination).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  For more information about which model best suits your needs, see [Ecommerce records](/guides/sending-and-managing-data/prepare-your-data/how-to/ecommerce-records/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Variant level schema
+
+Algolia stores [commercetools product variants](https://docs.commercetools.com/tutorials/product-modeling/products#product-variants) in the following format:
+
+```jsonc jsonc
+{
+  // Unique ID in the format product ID.variantID
+  objectID: "ffdcbccd-fd9d-49fc-8f12-b43a97721300.7",
+  productID,
+  productKey,
+  productType,
+  key,                 // Variant key
+  sku,
+  name,                // Name of the product
+  description,
+  slug: {              // Localized slugs (keys are locales and values are slugs)
+    en: "en-slug"
+  },
+  categories: {        // Localized hierarchical categories for faceting
+    en: {
+      lvl0: ["Men"],
+      lvl1: ["Men > Clothing"],
+      lvl2: ["Men > Clothing > T-shirts"]
+    }
+  },
+  categoriesCustomFields: { // Categories defined custom fields, only indexed when the source defines it https://docs.commercetools.com/tutorials/custom-types
+    en: {
+      Men: {
+        custom-field-name: {
+          en: "custom-field-value"
+        }
+      }
+    }
+  },
+  categoryKeys: {      // Localized unique non-hierarchical categories with ancestors
+    en: ["Men", "Clothing", "T-shirts"]
+  }
+  categoryPageID: [    // Category pages
+    "Men",
+    "Men > Clothing",
+    "Men > Clothing > T-shirts"
+  ]
+  searchableAttributes: {
+    color: "blue"
+  },
+  attributes: {
+    color: "blue"
+    season: "winter"
+  },
+  images: [],          // List of image URLs
+  prices: {            // Prices by currency
+    USD: {
+      min: 1000,
+      max: 2000,
+      priceValues: [ // List of all prices with optional values
+        {
+          id: "price-id-1",
+          value: 1000
+          discountedValue: 995
+          validFrom: "2023-01-01T00:00:00.000Z"
+          validUntil: "2023-02-01T00:00:00.000Z"
+          customerGroupID: "customer-group-id-1"
+        }
+      ]
+    }
+  },
+  pricesCustomFields: { // Price defined custom fields, only indexed when the source defines it https://docs.commercetools.com/tutorials/custom-types
+    USD: {
+      custom-field-name: {
+        en: "price-custom-field-value"
+      }
+    }
+  },
+  isMasterVariant,     // `true` if this record is the primary variant
+  isInStock,           // `true` if this SKU is in stock
+  inventory: {         // inventory information by supply channel
+    "channel-key-1": 100,
+    "channel-key-2": 120
+  },
+  inventoryCustomFields: { // Inventory defined custom fields, only indexed when the source defines it https://docs.commercetools.com/tutorials/custom-types
+    "channel-key-1": {
+      custom-field-name-in-channel-1: {
+        en: "inventory-custom-field-value"
+      }
+    },
+    "channel-key-2": {
+      custom-field-name-in-channel-2: {
+        en: "inventory-custom-field-value"
+      }
+    },
+  }
+}
+```
+
+## Product level schema
+
+```jsonc jsonc
+{
+  // Unique ID in the format product ID
+  objectID: "ffdcbccd-fd9d-49fc-8f12-b43a97721300",
+  key,                 // Product key
+  productType,
+  name,                // Name of the product
+  description,
+  slug: {              // Localized slugs (keys are locales and values are slugs)
+    en: "en-slug"
+  },
+  categories: {        // Localized hierarchical categories for faceting
+    en: {
+      lvl0: ["Men"],
+      lvl1: ["Men > Clothing"],
+      lvl2: ["Men > Clothing > T-shirts"]
+    }
+  },
+  categoriesCustomFields: { // Categories defined custom fields, only indexed when the source defines it https://docs.commercetools.com/tutorials/custom-types
+    en: {
+      Men: {
+        custom-field-name: {
+          en: "custom-field-value"
+        }
+      }
+    }
+  },
+  categoryKeys: {      // Localized unique non-hierarchical categories with ancestors
+    en: ["Men", "Clothing", "T-shirts"]
+  }
+  categoryPageID: [   // Category pages
+    "Men",
+    "Men > Clothing",
+    "Men > Clothing > T-shirts"
+  ]
+  searchableAttributes: {
+    season: "winter"
+  },
+  attributes: {
+    season: "winter"
+  },
+  masterVariantID,    // The ID of the primary variant
+  variantIDs: [        // List of variant IDs
+    "variant-id-1",
+    "variant-id-2"
+  ]
+  variants: [
+    {
+      id,                  // variant ID
+      key,                 // variant key
+      sku,                 // variant SKU
+      searchableAttributes: {
+        color: "blue"
+      },
+      attributes: {
+        color: "blue"
+      },
+      images: [],          // List of image URLs
+      prices: {            // Prices by currency
+        USD: {
+          min: 1000,
+          max: 2000,
+          priceValues: [   // List of all prices with optional values
+            {
+              id: "price-id-1",
+              value: 1000
+              discountedValue: 995
+              validFrom: "2023-01-01T00:00:00.000Z"
+              validUntil: "2023-02-01T00:00:00.000Z"
+              customerGroupID: "customer-group-id-1"
+            }
+          ]
+        }
+      },
+      pricesCustomFields: { // Price defined custom fields, only indexed when the source defines it https://docs.commercetools.com/tutorials/custom-types
+        USD: {
+          custom-field-name: {
+            en: "price-custom-field-value"
+          }
+        }
+      },
+      isInStock,          // `true` if this SKU is in stock
+      inventory: {        // inventory information by supply channel
+        "channel-key-1": 100,
+        "channel-key-2": 120
+      },
+      inventoryCustomFields: { // Inventory defined custom fields, only indexed when the source defines it https://docs.commercetools.com/tutorials/custom-types
+        "channel-key-1": {
+          custom-field-name-in-channel-1: {
+            en: "inventory-custom-field-value"
+          }
+        },
+        "channel-key-2": {
+          custom-field-name-in-channel-2: {
+            en: "inventory-custom-field-value"
+          }
+        },
+      }
+    }
+  ]
+}
+```
+
+The `attributes` field lists all the [commercetools product attributes](https://docs.commercetools.com/learning-composable-commerce-administrator/product-modeling/product-types#product-attributes).
+
+## Attributes used for search
+
+By default, users can search in the following attributes, ranked in order of importance:
+
+1. `name`
+1. `description`
+1. `searchableAttributes`.
+   All commercetools product attributes where the `isSearchable` property is `true`. It's a subset of the `attributes` object in the product schema.
+1. [`categories`](#categories)
+
+## Configure results grouping
+
+Results are grouped by default when you use the [product-level schema](#product-level-schema).
+
+For the [variant-level schema](#variant-level-schema), if your catalog is large, it's common practice to [group](/guides/managing-results/refine-results/grouping/) related variants in the results by displaying _one_ result per base product.
+To do that, [Enable the `distinct` feature](/guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents/#how-to-enable-the-distinct-feature) one the `productID` attribute.
+
+## Categories
+
+Categories are stored as [hierarchical facets](/guides/managing-results/refine-results/faceting/#hierarchical-facets).
+
+[Category pages](/guides/solutions/ecommerce/browse/tutorials/category-pages/) are automatically generated and referenced by the `categoryPageId` attribute.
+
+The `categoryKeys` attribute is a flattened version of the `categories` attribute hierarchy.
+
+## Changes to your commercetools inventory
+
+Algolia's commercetools integration monitors inventory changes and sets the `isInStock` value for each affected SKU.
+
+`isInStock` is `true` if the inventory for any [supply channel](https://docs.commercetools.com/api/projects/channels) is greater than zero for that SKU.
+
+## Prices
+
+The `prices` attribute consists of key-value pairs with currency codes as keys, such as "USD".
+Values contain:
+
+- The minimum price `min` in [`centAmount`](https://docs.commercetools.com/api/types#typedmoney): the smallest unit of the currency such as cents, pence, or centime.
+- The maximum price `max` in `centAmount`
+- A list of values for each [price](https://docs.commercetools.com/api/types#price) as `priceValues` with the following properties:
+
+  - `id` - The ID of the price.
+  - `value` - The price in `centAmount`.
+  - `discountedValue` - The discounted price in `centAmount`.
+  - `validFrom` - The date from which the price is valid.
+  - `validUntil` - The date until which the price is valid.
+  - `customerGroupID` - The ID of the [customer group](https://docs.commercetools.com/api/projects/customerGroups) to which the price applies.

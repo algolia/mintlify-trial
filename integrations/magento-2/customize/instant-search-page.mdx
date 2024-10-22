@@ -1,0 +1,327 @@
+---
+title: InstantSearch page
+description: |-
+  Learn how to customize the features and design of InstantSearch results page in Algolia extension for Magento 2.
+---
+
+Algolia for Magento 2 | InstantSearch Page Configuration
+
+By Algolia, 5 min
+
+For InstantSearch-powered pages like catalog search and categories, the extension handles the following for the [InstantSearch](/guides/building-search-ui/what-is-instantsearch/js/) implementation based on your configurations:
+
+- implementing [widgets](/api-reference/widgets/js/) for your search experience like search input field, facets, sorting, and results
+- templates for your search UI like filters, results, and the toolbar
+
+All the necessary files are in the `vendor/algolia/algoliasearch-magento-2/view/frontend` folder, which contains the templates, JavaScript, and style sheets in use.
+
+## Widgets
+
+The InstantSearch UI consists of widgets, which have a predefined behavior and rendering. For example, the search input field is a widget, and the results is another widget.
+
+The extension defines a set of widgets for your InstantSearch UI based on your configuration settings in **Stores > Configuration > Algolia Search > InstantSearch Results Page**
+
+Here are some widgets that the extension leverages for its UI:
+
+- [`searchBox`](/api-reference/widgets/search-box/js/)
+- [`stats`](/api-reference/widgets/stats/js/)
+- [`sortBy`](/api-reference/widgets/sort-by/js/)
+- [`currentRefinements`](/api-reference/widgets/current-refinements/js/)
+- [`queryRuleCustomData`](/api-reference/widgets/query-rule-custom-data/js/)
+- [`infiniteHits`](/api-reference/widgets/infinite-hits/js/) or [`hits`](/api-reference/widgets/hits/js/)
+- [`pagination`](/api-reference/widgets/pagination/js/)
+- [`rangeInput`](/api-reference/widgets/range-input/js/)
+- [`refinementList`](/api-reference/widgets/refinement-list/js/)
+- [`rangeSlider`](/api-reference/widgets/range-slider/js/)
+
+In the image below of a basic InstantSearch configuration, each highlighted section is a widget:
+
+If you need to add or change these preconfigured widgets, use the `beforeWidgetInitialization` event provided by the extension.
+
+```js js
+algolia.registerHook(
+  "beforeWidgetInitialization",
+  function (allWidgetConfiguration, algoliaBundle) {
+    // add your code here
+    return allWidgetConfiguration;
+  },
+);
+```
+
+The `allWidgetConfiguration` parameter has access to the set variable `allWidgetConfiguration`. This variable has all the InstantSearch widget configurations already created for you based on your extension settings. Using this event, you can return a modified `allWidgetConfiguration` for InstantSearch to render.
+
+The following sections reviews key implementation concepts to help better understand what events to target when customising InstantSearch.
+
+### Layered navigation or facets
+
+Magento defines the filters on the left column as layered navigation. Algolia calls them **facets**. InstantSearch builds these facet filters with refinement widgets like:
+
+- [`rangeInput`](/api-reference/widgets/range-input/js/)
+- [`refinementList`](/api-reference/widgets/refinement-list/js/)
+- [`rangeSlider`](/api-reference/widgets/range-slider/js/)
+
+The extension uses the configuration for facets set in **Stores > Configuration > Algolia Search > InstantSearch Results Page > Facets**, to define which refinement widget to use.
+
+You can use the `algoliaConfig` global in your developer tools console to review the configurations for the implementation using `algoliaConfig.facets` in your store front.
+
+### Product results or hits
+
+The `hits` and `infiniteHits` widgets display the product results from a search. The extension can configure either options. You can enable `infiniteHits` in **Stores > Configuration > Algolia Search > InstantSearch Results Page > Enable Infinite Scrolling?**
+
+Both widgets use the same template to render the item template: `view/frontend/templates/instant/hit.phtml`. To change the rendering of the product result, remember to copy and change the template in your theme instead of directly in the extension
+
+If you need to add complex display conditions to your product hits, use the `beforeWidgetInitialization` event hook to transform the hit before passing in the variable to the template.
+
+These widgets have the option to `transformItems`, which accepts a callback function. As the extension already utilizes this parameter, make sure that you run the already created function before yours. For example:
+
+```js js
+define([
+  "jquery",
+  "algoliaAnalytics",
+  "algoliaBundle",
+  "suggestionsHtml",
+  "algoliaCommon",
+], function (
+  $,
+  algoliaAnalyticsWrapper,
+  algoliaBundle,
+  suggestionsHtml,
+  algoliaRecentSearches,
+  algoliaCommon,
+) {
+  algolia.registerHook(
+    "beforeWidgetInitialization",
+    function (allWidgetConfiguration, algoliaBundle) {
+      $.each(allWidgetConfiguration, function (widgetType) {
+        if (widgetType == "hits") {
+          var callbackTransform =
+            allWidgetConfiguration[widgetType].transformItems;
+          allWidgetConfiguration[widgetType].transformItems = function (
+            items,
+            { results },
+          ) {
+            items = callbackTransform(items, { results });
+            return items.map(function (item) {
+              // add your modification to item result
+              item.exampleNewVariable =
+                "This is an example that will be applied to all items.";
+              console.log(item);
+              return item;
+            });
+          };
+        }
+      });
+
+      return allWidgetConfiguration;
+    },
+  );
+});
+```
+
+The preceding example adds a new attribute variable on the fly for the hits. You can access the new attribute variable by adding the variable to the hits template:
+
+`{{{exampleNewVariable}}}`
+
+Leverage the `beforeWidgetInitialization` frontend hook to add more complex logic for your product listing.
+
+## Custom events
+
+The extension offers several events within the InstantSearch implementation:
+
+- `beforeInstantsearchInit(instantsearchOptions, algoliaBundle)`
+  - used to change default [`instantsearch` options](/api-reference/widgets/instantsearch/js/#options)
+- `beforeWidgetInitialization(allWidgetConfiguration, algoliaBundle)`
+  - used to add/remove/update any [widgets](/api-reference/widgets/js/)
+- `beforeInstantsearchStart(search, algoliaBundle)`
+  - used to change the [`instantsearch` instance](/api-reference/widgets/instantsearch/js/) before call of [`start()`](/api-reference/widgets/instantsearch/js/#widget-param-start) method
+- `afterInstantsearchStart(search, algoliaBundle)`
+  - used to change the [`instantsearch` instance](/api-reference/widgets/instantsearch/js/) after call of [`start()`](/api-reference/widgets/instantsearch/js/#widget-param-start) method
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  All custom methods **must** return the manipulated first parameter.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+### Change search options
+
+If you need to change the InstantSearch [search options](/api-reference/widgets/instantsearch/js/), whether that is changing the index name or tapping directly to InstantSearch events, you can use the event: `beforeInstantsearchInit`
+
+Use this event to change the `instantsearchOptions` option which accepts a callback function. As the extension already utilizes this parameter, make sure that you run the already created function before yours. For example:
+
+```js js
+// Modify default `instantsearchOptions`
+algolia.registerHook(
+  "beforeInstantsearchInit",
+  function (instantsearchOptions, algoliaBundle) {
+    instantsearchOptions.numberLocale = "fr";
+    instantsearchOptions.onStateChange = function ({ uiState, setUiState }) {
+      // Add your logic here
+      setUiState(uiState);
+    };
+
+    return instantsearchOptions;
+  },
+);
+```
+
+### Change search parameters
+
+The method to change the `searchParameters` for your search request depends on your extension version. In version 1.x, change this parameter in search options. In versions 2.x and higher, the `configure` widget sets the search parameters. This widget accepts an object of `searchParameters`. For example:
+
+<CodeGroup>
+  ```js v2.x and up
+  instantsearch.widgets.configure({
+    hitsPerPage: 8,
+    distinct: true,
+    clickAnalytics: true,
+    enablePersonalization: true,
+  });
+  ```
+
+  ```js v1.x
+  var instantsearchOptions = {
+    appId: algoliaConfig.applicationId,
+    apiKey: algoliaConfig.apiKey,
+    indexName: algoliaConfig.indexName + '_products',
+    searchParameters: {
+      hitsPerPage: algoliaConfig.hitsPerPage,
+      ruleContexts: ruleContexts
+    },
+    [...]
+  };
+  ```
+</CodeGroup>
+
+As the extension implements the `configure` widget for you, use `beforeWidgetInitialization` to make any changes to it. The example below shows how to change and add preconfigured values using the event hook:
+
+<CodeGroup>
+  ```js v2.x and up
+  // Modify default `searchParameters`
+  // see: https://www.algolia.com/doc/api-reference/api-parameters/
+  algolia.registerHook(
+    "beforeWidgetInitialization",
+    function (allWidgetConfiguration) {
+      allWidgetConfiguration["configure"] =
+        allWidgetConfiguration["configure"] || {};
+
+      // change hitsPerPage
+      allWidgetConfiguration["configure"].hitsPerPage = 20;
+
+      // change enabledPersonalization
+      allWidgetConfiguration["configure"].enabledPersonalization = true;
+
+      // Adding a custom Query Rule context
+      var newQueryRuleContext = "new-custom-query-rule-context";
+      allWidgetConfiguration["configure"].ruleContexts.push(newQueryRuleContext);
+
+      return allWidgetConfiguration;
+    },
+  );
+  ```
+
+  ```js v1.x
+  algolia.registerHook(
+    "beforeInstantsearchInit",
+    function (instantsearchOptions, algoliaBundle) {
+      // change hitsPerPage
+      instantsearchOptions.searchParameters["hitsPerPage"] = 20;
+
+      // change enabledPersonalization
+      instantsearchOptions.searchParameters["enabledPersonalization"] = true;
+
+      // Adding a custom Query Rule context
+      var newQueryRuleContext = "new-custom-query-rule-context";
+      instantsearchOptions.searchParameters["ruleContext"].push(
+        newQueryRuleContext,
+      );
+
+      return allWidgetConfiguration;
+    },
+  );
+  ```
+</CodeGroup>
+
+### Add new widgets
+
+The following code shows how to add the [`toggleRefinement`](/api-reference/widgets/toggle-refinement/js/) widget to the InstantSearch page:
+
+<CodeGroup>
+  ```js v2.x and up
+  algolia.registerHook(
+    "beforeWidgetInitialization",
+    function (allWidgetConfiguration) {
+      const wrapper = document.getElementById("instant-search-facets-container");
+
+      const widgetConfig = {
+        container: wrapper.appendChild(createISWidgetContainer("in_stock")),
+        attribute: "in_stock",
+        on: 1,
+        templates: {
+          label: "In Stock",
+        },
+      };
+
+      if (typeof allWidgetConfiguration["toggleRefinement"] === "undefined") {
+        allWidgetConfiguration["toggleRefinement"] = [widgetConfig];
+      } else {
+        allWidgetConfiguration["toggleRefinement"].push(widgetConfig);
+      }
+
+      return allWidgetConfiguration;
+    },
+  );
+  ```
+
+  ```js v1.x
+  algolia.registerHook(
+    "beforeWidgetInitialization",
+    function (allWidgetConfiguration) {
+      const wrapper = document.getElementById("instant-search-facets-container");
+
+      const widgetConfig = {
+        container: wrapper.appendChild(createISWidgetContainer("in_stock")),
+        attributeName: "in_stock",
+        label: "In Stock",
+        values: {
+          on: 1,
+        },
+        templates: {
+          header: '<div class="name">Is in stock</div>',
+        },
+      };
+
+      if (typeof allWidgetConfiguration["toggle"] === "undefined") {
+        allWidgetConfiguration["toggle"] = [widgetConfig];
+      } else {
+        allWidgetConfiguration["toggle"].push(widgetConfig);
+      }
+
+      return allWidgetConfiguration;
+    },
+  );
+  ```
+</CodeGroup>
+
+## Templates
+
+Remember to follow best practices when you update templates in the extension. Keep changes in your theme directory and never directly edit the extension if possible.
+
+### InstantSearch page wrapper
+
+The wrapper template holds the layout of the InstantSearch results page, along with all other templates rendered in to it.
+In order to alter the layout of this page, navigate to the `templates` directory, and locate the [`wrapper.phtml`](https://github.com/algolia/algoliasearch-magento-2/blob/master/view/frontend/templates/instant/wrapper.phtml) file.
+This file is a standard Magento template file.
+
+### InstantSearch results page
+
+To change the structure of the widgets on the results page, navigate to the [`instant`](https://github.com/algolia/algoliasearch-magento-2/blob/master/view/frontend/templates/instant/) folder of the `templates` directory.
+
+Here are the files used to render the configured widgets:
+
+- [`hit.phtml`](https://github.com/algolia/algoliasearch-magento-2/blob/master/view/frontend/templates/instant/hit.phtml) - The template for a single product
+- [`facet.phtml`](https://github.com/algolia/algoliasearch-magento-2/blob/master/view/frontend/templates/instant/facet.phtml) - The template for a single filter/facet
+- [`refinements.phtml`](https://github.com/algolia/algoliasearch-magento-2/blob/master/view/frontend/templates/instant/refinements.phtml) - The template for current refinements
+- [`stats.phtml`](https://github.com/algolia/algoliasearch-magento-2/blob/master/view/frontend/templates/instant/stats.phtml) - The template for search statistics

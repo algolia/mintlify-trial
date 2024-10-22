@@ -1,0 +1,116 @@
+---
+title: Query Merchandiser
+description: |-
+  Learn how the Query Merchandiser works in the Algolia extension for Magento 2.
+---
+
+Algolia for Magento 2 | Merchandising Features
+
+By Algolia, 6 min
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The Query Merchandiser is available for all Premium plans. Consider [upgrading](https://dashboard.algolia.com/billing/overview) if you don't have the right plan and want access to this feature.
+</Note>
+
+{/* prettier-ignore-end */}
+
+Based on [Rules](/guides/managing-results/rules/rules-overview/), the Query Merchandiser allows you to enhance the ranking behavior for specific search queries by promoting or demoting certain products for a search.
+
+For any specific search query, you can:
+
+- Add a promotional banner at the top of your search results,
+- Influence search results by adding, promoting, or demoting products by using the visual merchandising tool.
+
+You can use this to:
+
+- Redirect to specific promotional pages for any search related to this promotion,
+- Promote high-performing products for popular searches,
+- Add related products to searches with no results.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Merchandising a query will create a new Rule. Please make sure your plan includes the usage of Rules.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Get started
+
+### Access
+
+You can access the Query Merchandiser directly from your Magento 2 back office, by navigating to **Stores > Algolia Search > Merchandising > Query merchandiser** through the main menu.
+
+### Queries listing
+
+Once you land on the merchandising page, you reach the queries listing.
+
+The listing contains 5 columns:
+
+- **ID**: Magento identifier of the query
+- **Query**: merchandised query
+- **Store view**: Determines on which store the query will be applied
+- **Date Created**: Date of the query's creation
+- **Action**: List the actions available for the query:
+
+  - **Edit** the query (see following section)
+  - **View** a product listing on the frontend with the search input pre-filled with the query.
+  - **Delete** the query (this will completely remove the query entry in the database and its query rule inside the Algolia dashboard)
+
+If no queries have been merchandised yet, a link to create a new merchandised query will be displayed. You can also use the "Merchandise a new query" button on the top-right corner to merchandise a new query.
+
+### Create and edit queries
+
+The edit page will open when you edit or create a merchandised query.
+
+The edit page contains the following buttons:
+
+- **Back**: return to the queries listing.
+- **Delete**: delete the current query and return to the queries listing.
+- **View**: open a product listing on the frontend with the search input pre-filled by the query.
+- **Save and continue edit**: save the query and stay on the page.
+- **Save**: save the query and return to the queries listing.
+
+The edit page consists of two sections, the _Merchandised Products_ section and the _Banners_ section.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  As soon as you save a query, [a Rule](/guides/managing-results/rules/rules-overview/) will be created in the relevant indices on Algolia. This query rule will be automatically deleted when you delete the merchandised query in the Magento back office.
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### Merchandised products
+
+In this section, you can merchandise the query by promoting or demoting related products.
+
+This section is composed of 3 parts:
+
+- **Query**: Type in the search query that you would like to merchandise. Typing something in this field will refresh the "Products shown" part below, where results will adapt to the query.
+- **Store view**: By default set to "All stores", but allows you to specify a particular store if needed.
+- **Products shown**: Shows the results for the specified query. You can promote and demote the products to order them as you want. You can also add other products that would not initially show up in the search results with the "Add another product to promote" search box.
+
+#### Banner
+
+In addition to promoting or demoting products, the Query Merchandiser allows you to display a banner when a certain query is given. The banner will appear on top of the product listing.
+
+This section is divided into 3 parts:
+
+- **Image**: Allows you to upload your image file for the banner. **Please ensure that the dimensions of your banner respect the design of your website.**
+- **Alt text**: Allows you to specify a text that will appear on the "alt" attribute of your image.
+- **URL**: Allows you to add a link on your banner that will open in a new browser tab.
+
+By default, the banner will be displayed on top of the product listing between the stats bar and the first displayed products.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The banner is injected inside the `<div>` with `algolia-banner` as id attribute. If you want to display it somewhere else, you can override the `view/frontend/templates/instant/wrapper.phtml` file and move the `algolia-banner` div to the desired location.
+</Note>
+
+{/* prettier-ignore-end */}
+
+A merchandised query will be applied on **all** product listings on pages that are powered by Algolia, like the catalog search page, category pages, and landing pages. To see what this looks like, you can click the "view" button on the edit page of a merchandised query to view it in your store.

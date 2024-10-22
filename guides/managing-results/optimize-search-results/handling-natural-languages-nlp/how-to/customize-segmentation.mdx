@@ -1,0 +1,90 @@
+---
+title: Customize word segmentation
+description: |-
+  Learn how to customize word segmentation (decompounding) dictionaries through the dashboard.
+---
+
+Word segmentation, also known as decompounding, is the process of splitting a word into its constituent parts. Decompounding is crucial for languages that have many compound words. For example, Algolia splits the Dutch word "eettafel" (dining table) into "eet" and "tafel." Decompounding allows the engine to find more results by searching for a word's constituents and their alternatives.
+
+You can enable decompounding on your records by using the [`decompoundedAttributes`](/api-reference/api-parameters/decompoundedAttributes/) setting. This setting requires you to specify the attributes to decompound and the language or languages to use. Decompounding is enabled by default on the query as long as [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) is properly set.
+
+Decompounding relies on language-specific dictionaries, which Algolia maintains for German, Dutch, Finnish, Swedish, Danish, and Norwegian. While Algolia updates these dictionaries regularly, you can also customize them for your use case.
+
+**Algolia applies segmentation dictionaries at the application rather than index level.** Any customizations on a language's segmentation dictionary impact all indices on your application with [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) set to that language and [`decompoundedAttributes`](/api-reference/api-parameters/decompoundedAttributes/) enabled.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You should use [`decompoundedAttributes`](/api-reference/api-parameters/decompoundedAttributes/) and other language-specific features in conjunction with the [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) setting. Refer to the [guide on how to set an index's query language](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/how-to-set-an-index-query-language/) to learn more.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Inspecting out-of-the box segmentation
+
+You may be curious to see how the engine segments a particular word. Using the dashboard, you can enter it to see how the engine interprets it in a given language, using segmentation.
+
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/segmentation) in the left sidebar menu of the dashboard.
+1. Search for and select the language whose segmentation rules you want to inspect on the screen's top right. **Segmentation dictionaries are language-specific.**
+1. Select the **Words Segmentation** dictionary.
+1. Enter a word into the input bar. **You can't use spaces in this input.**
+1. Below, under **Algolia segmentation**, the dashboard displays how the engine interprets the word. If it segments the word, the dashboard displays its constituent parts below. If it doesn't, the dashboard displays that the word is **being kept as it is**.
+
+## Creating new segmentation rules
+
+You may find that Algolia doesn't segment a word you would expect to. This can particularly be true if a compound word includes a brand name or proper noun. For example, the engine doesn't automatically segment the Dutch word "gyprocplaten" (drywall). This means it only returns exact matches, while you may also want results to include results with either "gyproc" or "platen" and its alternatives. In this case, you should create a new segmentation entry.
+
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/segmentation) in the left sidebar menu of the dashboard.
+1. Search for and select the language whose segmentation rules you want to inspect on the screen's top right. **Segmentation dictionaries are language-specific.**
+1. Select the **Words Segmentation** dictionary.
+1. Enter a word into the input bar. **You can't use spaces in this input.**
+1. Below, under **Algolia segmentation**, the dashboard displays how the engine interprets the word. Select the **Edit** button to the right. An input will appear below with the word from the input autofilled.
+1. Select **Split** as the **Action** and enter the constituent parts you expect under **Output**. In the "gyprocplaten" example, the constituent parts are "gyproc" and "platen".
+1. Select **Review and Save** to save this and any other changes.
+
+## Disabling segmentation
+
+You may find that Algolia segments a word you wouldn't expect. For example, the engine automatically segments the German brand "Volkswagen" as "volks" and "wagen". But as this is a brand name, it shouldn't be segmented for the most relevant results. In this case, you can turn off segmentation for this entry.
+
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/segmentation) in the left sidebar menu of the dashboard.
+1. Search for and select the language whose segmentation rules you want to inspect on the screen's top right. **Segmentation dictionaries are language-specific.**
+1. Select the **Words Segmentation** dictionary.
+1. Enter a word into the input bar. **You can't use spaces in this input.**
+1. Below, under **Algolia segmentation**, the dashboard displays how the engine interprets the word. Select the **Edit** button to the right. An input will appear below with the word from the input autofilled.
+1. Select **Keep as is** as the **Action**.
+1. Select **Review and Save** to save this and any other changes.
+
+## Uploading and downloading customizations
+
+You may have curated your own list of custom segmentation for your use case. You can upload them in bulk in either CSV or JSON format using the **Actions** button with the gear icon.
+
+See the expected formats below.
+
+### CSV format
+
+```csv csv
+word, decomposition, language, objectID
+gyprocplaten,"gyproc,platen",nl,1
+volkswagen,"volkswagen",de,2
+```
+
+### JSON format
+
+```json json
+[
+  {
+    "word": "gyprocplaten",
+    "decomposition": ["gyproc", "platen"],
+    "language": "nl",
+    "objectID": "1"
+  },
+  {
+    "word": "volkswagen",
+    "decomposition": ["volkswagen"],
+    "language": "de",
+    "objectID": "2"
+  }
+]
+```
+
+Using the **Actions** button, you can also download all custom alternatives from a dictionary, either in CSV or JSON format. You may choose to do this regularly to keep track of alternatives you added at a particular time.

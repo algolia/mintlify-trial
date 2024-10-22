@@ -1,0 +1,28 @@
+---
+title: Monitor BigCommerce indexing
+description: |-
+  How to monitor the Bigcommerce indexing process.
+---
+
+How to monitor the Bigcommerce indexing process
+
+## Monitor BigCommerce indexing
+
+You can add BigCommerce products to an Algolia index in the following ways:
+
+- **Manually** indexing all products for a particular source
+- Through **real-time updates**, which are triggered automatically when a product is updated and published in BigCommerce
+
+To check the progress of an indexing operation, follow these steps:
+
+1. Go to the source list for your BigCommerce channel
+
+1. Click **Real-time updated** to view the real time indexing log. Click **Reindexes** to view manually triggered indexing operations.
+
+1. The _Reindex Runs_ box shows reindexing details such as the status, the destination index, and a timestamp for each run.
+
+1. Click a reindex run from the list to open the _Run Details_ box, which shows the progress and details of an individual reindexing run.
+
+1. To check the API responses for all events associated with the reindex run, click **Events** in the _Run Details_ dialog. Any errors in this indexing run are shown in the _Errors_ tab.
+
+The number of products you can index depends on your [Algolia plan](https://www.algolia.com/pricing/). If you run into "Record quota exceeded" errors, check your [Algolia account](https://dashboard.algolia.com/billing/overview/).

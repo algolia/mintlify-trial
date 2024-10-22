@@ -1,0 +1,51 @@
+---
+title: Google BigQuery
+description: |-
+  Index your data from a Google BigQuery table.
+---
+
+The BigQuery connector lets you read data from a BigQuery table and store it in an Algolia index.
+
+## Authentication
+
+To authenticate the connector,
+you need a [Google service account](https://cloud.google.com/iam/docs/service-account-overview) with the following permissions:
+
+```txt txt
+bigquery.datasets.get
+bigquery.datasets.getIamPolicy
+bigquery.jobs.create
+bigquery.models.export
+bigquery.models.getData
+bigquery.models.getMetadata
+bigquery.models.list
+bigquery.routines.get
+bigquery.routines.list
+bigquery.tables.createSnapshot
+bigquery.tables.export
+bigquery.tables.get
+bigquery.tables.getData
+bigquery.tables.getIamPolicy
+bigquery.tables.list
+resourcemanager.projects.get
+```
+
+## Custom SQL statement
+
+The connector imports your selected table by default.
+To use a custom SQL statement, replace your table name with `%s`:
+
+```sql sql
+SELECT * FROM %s WHERE Status="Available"
+```
+
+Each row must have a unique identifier that Algolia uses as the [object ID](/guides/sending-and-managing-data/send-and-update-your-data/#unique-object-identifiers).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To stay within your BigQuery quota,
+  don't schedule tasks to run at most once per day.
+</Note>
+
+{/* prettier-ignore-end */}

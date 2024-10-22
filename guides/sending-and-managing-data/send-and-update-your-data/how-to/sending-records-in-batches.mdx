@@ -1,0 +1,319 @@
+---
+title: Sending records in batches
+description: |-
+  Learn how to send record updates to Algolia for faster indexing and less network calls.
+---
+
+When [sending data to Algolia](/guides/sending-and-managing-data/send-and-update-your-data/), it's best to send several records simultaneously instead of individually. It reduces network calls and speeds up indexing, especially when you have a lot of records, but everyone should send indexing operations in batches whenever possible.
+
+For example, you might decide to send all the data from your database and end up with a million records to index. That's too big to send all at once because Algolia limits you to 1 GB per batch per request.
+In reality, sending that much data in a single network call would fail _before_ reaching the API. You _could_ loop over each record and send them with the [`saveObjects`](/api-reference/api-methods/save-objects/) method. The problem is that **you would perform a million individual network calls**, which would take way too long and saturate your Algolia [cluster](/guides/scaling/servers-clusters/) with indexing jobs.
+
+A leaner approach is to **split your collection of records into smaller collections, then send each chunk one by one.** For optimal indexing performance, aim for a batch size of about 10 MB, representing between 1,000 and 10,000 records, depending on the average record size.
+
+- **Batching records doesn't reduce your operations count.** [Algolia counts indexing operations per record](https://support.algolia.com/hc/en-us/articles/18138875086865), not per method call, so from a pricing perspective, batching records is the same as indexing records individually.
+- **Be careful when approaching your plan's [maximum number of records](https://www.algolia.com/pricing/).** If you're close to the record limit,
+  batch operations may fail. The error message
+  "You have exceeded your Record quota" means the engine doesn't know if the batch operation will update records or add new ones.
+  If this happens, upgrade to a plan with a higher record limit _or_ reduce your batch size.
+
+## Using the API
+
+When using the [`saveObjects`](/api-reference/api-methods/save-objects/) method, the API client automatically chunks your records into batches of 1,000 objects.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you want to upload large files, consider using the Algolia CLI with the [`algolia objects import`](/tools/cli/commands/algolia-objects/#algolia-objects-import) command.
+</Note>
+
+{/* prettier-ignore-end */}
+
+<CodeGroup>
+  ```csharp csharp
+  using System;
+  using System.Collections.Generic;
+  using System.IO;
+  using Algolia.Search.Clients;
+  using Newtonsoft.Json;
+
+  public class Actor
+  {
+      public string Name { get; set; }
+      public string ObjectId { get; set; }
+      public int Rating { get; set; }
+      public string ImagePath { get; set; }
+      public string AlternativePath { get; set; }
+  }
+
+  public class AlgoliaIntegration
+  {
+      private SearchClient client;
+      private SearchIndex index;
+
+      public AlgoliaIntegration(string ApplicationID, string apiKey)
+      {
+          client = new SearchClient("YourApplicationID", "YourWriteAPIKey");
+          index = client.InitIndex("actors");
+
+          // Assuming the actors.json file is in the same directory as the executable
+          string json = File.ReadAllText("actors.json");
+          var settings = new JsonSerializerSettings
+          {
+              ContractResolver =
+                  new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+          };
+          IEnumerable<Actor> actors = JsonConvert.DeserializeObject<IEnumerable<Actor>>(
+              json,
+              settings
+          );
+
+          // Batching/Chunking is done automatically by the API client
+          bool autoGenerateObjectIDIfNotExist = true;
+          index.SaveObjects(actors, autoGenerateObjectIDIfNotExist);
+      }
+  }
+
+  // To use the above class, you would instantiate it somewhere in your application startup logic
+  // Example:
+  // var algoliaIntegration = new AlgoliaIntegration("YourApplicationID", "YourWriteAPIKey");
+  ```
+
+  ```go go
+  package main
+
+  import (
+  	"encoding/json"
+  	"io/ioutil"
+
+  	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
+  )
+
+  type Actor struct {
+  	Name            string `json:"name"`
+  	Rating          int    `json:"rating"`
+  	ImagePath       string `json:"image_path"`
+  	AlternativeName string `json:"alternative_name"`
+  	ObjectID        string `json:"objectID"`
+  }
+
+  func main() {
+  	client := search.NewClient("YourApplicationID", "YourWriteAPIKey")
+  	index := client.InitIndex("actors")
+
+  	var actors []Actor
+  	data, _ := ioutil.ReadFile("actors.json")
+  	_ = json.Unmarshal(data, &actors)
+
+  	// Batching is done automatically by the API client
+  	_, _ = index.SaveObjects(actors)
+  }
+  ```
+
+  ```java java
+  import java.io.FileInputStream;
+  import java.io.InputStream;
+  import com.fasterxml.jackson.databind.ObjectMapper;
+
+  public class Actor {
+      // Getters/Setters ommitted
+      private String name;
+      private String objectId;
+      private int rating;
+      private String imagePath;
+      private String alternativePath;
+  }
+
+  // Synchronous version
+  SearchClient client =
+  DefaultSearchClient.create("YourApplicationID", "YourWriteAPIKey");
+
+  SearchIndex<Actor> index = client.initIndex("actors", Actor.class);
+
+  ObjectMapper objectMapper = Defaults.getObjectMapper();
+
+  InputStream input = new FileInputStream("actors.json");
+  Actor[] actors = objectMapper.readValue(input, Actor[].class);
+
+  // Batching/Chuking is done automatically by the API client
+  boolean autoGenerateObjectIDIfNotExist = true;
+  index.saveObjects(Arrays.asList(actors), autoGenerateObjectIDIfNotExist);
+  ```
+
+  ```js js
+  const algoliasearch = require("algoliasearch");
+  const fs = require("fs");
+  const StreamArray = require("stream-json/streamers/StreamArray");
+
+  const client = algoliasearch("YourApplicationID", "YourWriteAPIKey");
+  const index = client.initIndex("actors");
+
+  const stream = fs
+    .createReadStream("actors.json")
+    .pipe(StreamArray.withParser());
+  let chunks = [];
+
+  stream
+    .on("data", ({ value }) => {
+      chunks.push(value);
+      if (chunks.length === 10000) {
+        stream.pause();
+        index
+          .saveObjects(chunks, { autoGenerateObjectIDIfNotExist: true })
+          .then(() => {
+            chunks = [];
+            stream.resume();
+          })
+          .catch(console.error);
+      }
+    })
+    .on("end", () => {
+      if (chunks.length) {
+        index
+          .saveObjects(chunks, {
+            autoGenerateObjectIDIfNotExist: true,
+          })
+          .catch(console.error);
+      }
+    })
+    .on("error", (err) => console.error(err));
+  ```
+
+  ```kotlin kotlin
+  val client = ClientSearch(ApplicationID("YourApplicationID"), APIKey("YourWriteAPIKey"))
+  val index = client.initIndex(IndexName("actors"))
+  val string = File("actors.json").readText()
+  val actors = Json.plain.parse(JsonObjectSerializer.list, string)
+
+  index.apply {
+      actors
+          .chunked(1000)
+          .map { saveObjects(it) }
+          .wait() // Wait for all indexing operations to complete.
+  ```
+
+  ```php php
+  $client = new \AlgoliaSearch\Client('YourApplicationID', 'YourWriteAPIKey');
+  $index = $client->initIndex('actors');
+
+  $records = json_decode(file_get_contents('actors.json'), true);
+
+  // Batching is done automatically by the API client
+  $index->saveObjects($records, ['autoGenerateObjectIDIfNotExist' => true]);
+  ```
+
+  ```python python
+  import json
+  from algoliasearch.search_client import SearchClient
+
+  client = SearchClient.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("actors")
+
+  with open("actors.json") as f:
+      records = json.load(f)
+
+  # Batching is done automatically by the API client
+  index.save_objects(records, {"autoGenerateObjectIDIfNotExist": True})
+  ```
+
+  ```ruby ruby
+  require "json"
+  require "algolia"
+
+  client = Algolia::Search::Client.create("YourApplicationID", "YourWriteAPIKey")
+  index = client.init_index("actors")
+  file = File.read("actors.json")
+  records = JSON.parse(file)
+
+  # The API client automatically batches your records
+  index.save_objects(records, {auto_generate_object_id_if_not_exist: true})
+  ```
+
+  ```scala scala
+  package algolia
+
+  import java.io.FileInputStream
+
+  import algolia.AlgoliaDsl._
+  import org.json4s._
+  import org.json4s.native.JsonMethods._
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  case class Actor(
+    name: String,
+    rating: Int,
+    image_path: String,
+    alternative_path: Option[String],
+    objectID: String)
+
+  object Main {
+
+    def main(args: Array[String]): Unit = {
+      val client = new AlgoliaClient("YourApplicationID", "YourWriteAPIKey")
+
+      val records = parse(new FileInputStream("actors.json")).extract[Seq[Actor]]
+
+      records
+        .grouped(10000)
+        .map(g => {
+          client.execute {
+            index into "actors" objects g
+          }
+        })
+    }
+
+  }
+  ```
+
+  ```swift swift
+  let filePath = Bundle.main.path(forResource: "actors", ofType: "json")!
+  let contentData = FileManager.default.contents(atPath: filePath)!
+  let records = try! JSONSerialization.jsonObject(with: contentData, options: []) as! [[String: Any]]
+
+  let chunkSize = 10000
+
+  for beginIndex in stride(from: 0, to: records.count, by: chunkSize) {
+    let endIndex = min(beginIndex + chunkSize, records.count)
+    index.addObjects(Array(records[beginIndex..<endIndex]))
+  }
+  ```
+</CodeGroup>
+
+With this approach, you would make 100 API calls instead of 1,000,000. Depending on your records' sizes and your network speed, you could create bigger or smaller chunks.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Scaling to larger datasets](/guides/scaling/scaling-to-larger-datasets/)
+  - [Importing with the API](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-with-the-api/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Using the dashboard
+
+You can also send your records in your Algolia dashboard.
+
+### Add records manually
+
+1. Go to your dashboard, select the **Data Sources** icon, and then select your index.
+1. Click the **Add records** tab and select **Add manually**.
+1. Copy/paste your chunk in the JSON editor, then click **Push record**.
+1. Repeat for all your chunks.
+
+### Upload a file
+
+1. Go to your dashboard and select your index.
+1. Click the **Add records** tab and select **Upload file**.
+1. Either click the file upload area to select the file where your chunk is or drag it onto the page.
+1. Upload starts automatically.
+1. Repeat for all your chunks.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Importing from the dashboard](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard/)
+</Info>
+
+{/* prettier-ignore-end */}

@@ -1,0 +1,33 @@
+---
+title: Moving to production
+description: |-
+  What needs to be done when pushing the store to production.
+---
+
+When the store is launched and moved from testing / staging environment to production, **2** steps need to be done before going live:
+
+## 1. Change index prefix
+
+Navigate to Algolia configuration in Magento and change the index prefix to be unique for the production environment. For example `magento2_prod_`.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Each environment (_testing_, _staging_, _production_, ...) needs to have its own unique index prefix. If the index prefixes are the same, the environments will override each other's data and it might happen that searching on production will return data from the staging environment.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## 2. Reindex data
+
+When the index prefix is changed, the indices with the new (prefixed) name need to be populated. In order to do that, reindex the [complete catalog](/integration/magento-2/how-it-works/indexing/).
+
+When the reindexing is done, the search is ready to be used in production.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you have the indexing Queue enabled in your new environment and you require it to run automatically, please ensure that the cronjob has been added to this new environment.
+</Note>
+
+{/* prettier-ignore-end */}

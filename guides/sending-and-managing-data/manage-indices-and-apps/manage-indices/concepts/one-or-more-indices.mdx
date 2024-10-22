@@ -1,0 +1,104 @@
+---
+title: Choosing between one or more indices
+description: |-
+  Learn when to use one index or several indices, depending on your relevance strategy and the user experience you want to create.
+---
+
+Should you create one large index for all your records,
+or create multiple indices?
+It depends on your ranking strategy and which user experience you want to create.
+
+By default, you can create up to 1,000 (Premium), 50 (Grow), or 10 (Build) indices per Algolia application.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [How many indices can I create?](https://support.algolia.com/hc/en-us/articles/4406981895313-How-many-indices-can-I-create-)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## One index or multiple indices for federated search
+
+Federated search describes searching multiple types of data sources.
+One data source may be your product catalog.
+Another data source may be a support FAQ, or Query Suggestions.
+
+Depending on how you want to organize and present the search results,
+you can create one index for all data sources or separate indices for each data source.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Multi-index search with InstantSearch.js](/guides/building-search-ui/ui-and-ux-patterns/multi-index-search/js/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Multiple indices for federated search
+
+Using multiple indices is useful when:
+
+- You need to configure each index independently.
+  For example, one index for movies, another for actors.
+  With federated search, you can show results from both indices in the same interface,
+  allowing users to search for both actors and movies.
+
+- You want to **use different ranking strategies** for the same data.
+  For example, showing highest-rated and showing most recent movies.
+
+### Single index for federated search
+
+Using a single index is useful when you want to use a **single ranking strategy**.
+Users can search for anything, see movies and actors in the same results list,
+ranked by the same relevance configuration.
+
+## Multiple indices for Query Suggestions
+
+Query Suggestions suggest popular search queries to users to help them search faster.
+Since Query Suggestions are stored in a separate index, you'd use **multiple indices**:
+one for your content, and one for the Query Suggestions.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Query Suggestions](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Multiple indices for different ranking strategies
+
+Each Algolia index can have one ranking strategy.
+If you want to let users switch between different ranking strategies,
+for example, to allow sorting by price, you can use **replica indices**— one index per sorting strategy.
+
+A replica index is a copy of the main index with the same records, but a different ranking strategy.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Understanding replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/)
+  - [Create a replica index](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Multiple indices for different environments
+
+If you use different environments, for example, staging and production environments,
+it's best to use separate indices for each environment.
+This prevents your [Analytics](/guides/search-analytics/overview/)
+from getting skewed by test queries, prevents indexing accidents, and keeps each environment more secure.
+
+You can use common prefixes to distinguish the different environments, for example, `staging_products` and `prod_products`.
+To reduce the number of indexing operations, you can reduce the number of records in your staging environments,
+for example, only using 10% of your records.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Manage your Algolia applications](/guides/sending-and-managing-data/manage-indices-and-apps/manage-your-apps/)
+</Info>
+
+{/* prettier-ignore-end */}

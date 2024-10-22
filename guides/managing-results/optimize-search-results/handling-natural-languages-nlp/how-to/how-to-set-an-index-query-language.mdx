@@ -1,0 +1,127 @@
+---
+title: Set an index's query language
+description: |-
+  Learn how to set an index's query language through the dashboard and the API.
+---
+
+Most of Algolia's textual matching is language agnostic, meaning **the matching and ranking processes are the same for every language**. If a search textually matches a record, that record is returned. This approach ensures that Algolia works for any language without any extra customization.
+
+However, there are circumstances where knowledge of the query language is vital for accurate search. For example, by identifying your query language, **you can treat plurals and singulars as equivalent**. If your users search for "mice", you most likely don't want to treat the singular "mouse" as a typo.
+
+Two parameters rely on query language:
+
+- [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/), which treats the singular _and_ plural forms of a word as equivalent (they match even if they're spelled differently).
+- [`removeStopWords`](/api-reference/api-parameters/removeStopWords/), which prevents stop words from being processed as a part of the query. English stop words include "the", "a", "an", "and".
+  Use [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) to set the languages that these parameters use to determine stop words or plurals.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  You should always set [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) and [`indexLanguages`](/api-reference/api-parameters/indexLanguages/) for your indices. If you don't, the engine uses either the default (all [supported languages](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages/)) or the list of languages specified in [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) and [`removeStopWords`](/api-reference/api-parameters/removeStopWords/).
+  **This can lead to unexpected search results.**
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Set the index language in the dashboard
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. On the **Configuration** tab, click **Language**.
+
+1. Click **Select one or more languages** under the **Query Languages** section, and enter your desired language. You can enter as many languages as you want.
+   Likewise, you can also [set `ignorePlurals`](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-plurals-and-other-declensions/#using-the-dashboard) and [`removeStopWords`](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-stop-words/) in the Algolia dashboard.
+
+1. Save your changes.
+
+## Set the index language with the API
+
+To set an index's language through the API, use the [`setSettings`](/api-reference/api-methods/set-settings/) method.
+
+In the following example, [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) is set to English and [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) is set to `true`. This means "mice" and "mouse" are treated as equal.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings();
+  settings.QueryLanguages = new List<string> { "en" };
+  settings.IgnorePlurals = true;
+
+  index.SetSettings(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	QueryLanguages: opt.QueryLanguages("en"),
+  	IgnorePlurals:  opt.IgnorePlurals(true),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings()
+      .setQueryLanguages(Collections.singletonList("en"))
+      .setIgnorePlurals(IgnorePlurals.of(true))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      queryLanguages: ["en"],
+      ignorePlurals: true,
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      queryLanguages {
+          +English
+      }
+      ignorePlurals = IgnorePlurals.True
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'queryLanguages' => ['en'],
+    'ignorePlurals' => true
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"queryLanguages": ["en"], "ignorePlurals": True})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      queryLanguages: ["en"],
+      ignorePlurals: true
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      queryLanguages = Some(QueryLanguages.list(Seq("en"))),
+      ignorePlurals = Some(IgnorePlurals.`true`))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "queryLanguages": ["en"],
+    "ignorePlurals": true,
+  ])
+  ```
+</CodeGroup>

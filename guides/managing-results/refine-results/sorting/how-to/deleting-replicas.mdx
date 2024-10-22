@@ -1,0 +1,94 @@
+---
+title: Delete a replica index
+description: |-
+  Learn how to delete replica indices in the dashboard and with the API.
+---
+
+In the Algolia dashboard, you can delete replica indices like regular indices.
+For more information, see [Delete indices in the Algolia dashboard](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/delete-indices/#delete-indices-in-the-algolia-dashboard).
+
+Using the API, you can delete a replica index in two steps:
+
+1. Unlink the replica index from its primary.
+   This turns the replica into a regular index.
+1. Delete the (former) replica index.
+
+## Unlink replica indices with the API
+
+To unlink a replica index from its primary index,
+remove it from the [`replicas`](/api-reference/api-parameters/replicas/) setting of the primary index,
+using the [`setSettings`](/api-reference/api-methods/set-settings/) method:
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings { Replicas = new List<string> { } };
+
+  // Set Settings--Synchronous
+  primary_index.SetSettings(settings);
+
+  // Set Settings--Asynchronous
+  await primary_index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res1, err := primaryIndex.SetSettings(search.Settings{
+  	Replicas: opt.Replicas(),
+  })
+  ```
+
+  ```java java
+  primary_index.setSettings(
+    new IndexSettings().setReplicas(Arrays.asList(""))
+  );
+  ```
+
+  ```js js
+  primaryIndex.setSettings({
+    replicas: [],
+  });
+  ```
+
+  ```php php
+  $primary_index->setSettings([
+    'replicas' => []
+  ]);
+  ```
+
+  ```python python
+  primary_index.set_settings({"replicas": []})
+  ```
+
+  ```ruby ruby
+  primary_index.set_settings(
+    {
+      replicas: []
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "primary_index" `with` IndexSettings(
+      replicas = Some(Seq("")))
+  }
+  ```
+
+  ```swift swift
+  primary_index.setSettings([
+    "replicas": []
+  ])
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  If want to keep other replicas,
+  don't remove them from the `replicas` setting.
+  If you set `replicas` to an empty string or list,
+  **all** replicas will be unlinked.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+Now, you can [delete your replica index](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/delete-indices/#delete-indices-with-the-api).

@@ -1,0 +1,54 @@
+---
+title: Grouping results
+description: |-
+  Learn about combining, consolidating, aggregating, deduplicating records using Algolia's Distinct feature.
+---
+
+Grouping records usually refers to the process of **combining multiple records into a single result**, or **consolidating many similar records into two or three results**.
+This kind of deduplication or aggregation of results has three primary use cases:
+
+- **Item variations**, where any item with variations is displayed only once.
+  A t-shirt that comes in five colors should only appear once in the results, with all five color options displayed somewhere in the description.
+- **Long documents**, where you first break up large record into smaller sub-records, and then during the search, if several of these sub-records match, you display the most relevant one.
+- **Grouping by attribute**, where you group records depending on the value of one of their attributes.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Item variations](/guides/managing-results/refine-results/grouping/how-to/item-variations/)
+  - [Indexing long pages](/guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents/)
+  - [How to group results](/guides/managing-results/refine-results/grouping/how-to/grouping-by-attribute/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Introducing Algolia's distinct feature
+
+Algolia's distinct feature solves all these scenarios.
+_Distinct_ is a term borrowed from the SQL world. Algolia is not meant to be used as a traditional database - it's a search engine.
+Still, it's sometimes useful to borrow some concepts from the database world.
+Two of those concepts are `distinct` and `group by`: both can be applied with the [`distinct`](/api-reference/api-parameters/distinct/) parameter.
+
+## Item variations
+
+Anytime you have items that come in variations - for example, in different versions or colors - you most likely have a situation that requires grouping.
+
+This can happen with t-shirts of different colors, or with computers of different memory and power.
+Less obvious use cases are TV series with different seasons or episodes, or car parts that are compatible with different models and years of cars.
+
+These examples all share the same problem, which is mostly a UI issue: **how to display the variety of a single product without hiding other products**.
+
+Consider what happens if you don't do anything.
+The most relevant product shows up first in the results, and just below that, all of its variations appear, like the same t-shirt in red, blue, green, and so on.
+You'll get a flood of a single product on the first page, pushing all other products off the screen.
+Another unwanted effect could be that to have only two or three products scattered in seemingly random order - a few green t-shirts there, another yellow one here, etc.
+Neither of these results is meaningful.
+You need some way to avoid this flood or randomness.
+
+**Distinct helps you remove the multiplicity and show only a single hit per item.**
+
+## Grouping by attribute
+
+When you have one-to-many relationships in your records, but you want to display data selectively, **you need to flatten your records and repeat data**.
+For example, imagine you're developing a job search with companies and job openings.
+Several companies may have many job openings, but you only want to show the most relevant ones per company.

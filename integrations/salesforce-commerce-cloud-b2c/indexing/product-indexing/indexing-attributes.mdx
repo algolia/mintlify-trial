@@ -1,0 +1,543 @@
+---
+title: Indexing attributes
+description: |-
+  Learn how to index data to Algolia daily.
+---
+
+The cartridge can index various **product**, **price**, **inventory** and **categories** data from Salesforce B2C Commerce environments.
+
+## Default records
+
+The cartridge can generate two types of records, depending on your **record model** preference:
+
+- **Variation Product** records: create one record per product variant (default).
+- **Base Product** records: create one record per base product, containing all the variants in a `variants` attribute.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  For more information about which model best suits your needs, see [Ecommerce records](/guides/sending-and-managing-data/prepare-your-data/how-to/ecommerce-records/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Variant-level default model
+
+```json json
+{
+  "name": "Apple iPod Classic",
+  "primary_category_id": "electronics-digital-media-players",
+  "categories": [
+    [
+      {
+        "id": "electronics-digital-media-players",
+        "name": "iPod & MP3 Players"
+      },
+      {
+        "id": "electronics",
+        "name": "Electronics"
+      }
+    ]
+  ],
+  "in_stock": true,
+  "price": { "USD": 219.99 },
+  "image_groups": [
+    {
+      "_type": "image_group",
+      "images": [
+        {
+          "_type": "image",
+          "alt": "Apple iPod Classic, Silver, large",
+          "dis_base_link": "/images/large/ipod-classic-silver.jpg",
+          "title": "Apple iPod Classic, Silver"
+        }
+      ],
+      "view_type": "large"
+    }
+  ],
+  "url": "/electronics/ipod%20%26%20mp3%20players/apple-ipod-classic-silver-120gM.html"
+  "__primary_category": {
+    "0": "Electronics",
+    "1": "Electronics > iPod & MP3 Players"
+  },
+  "objectID": "apple-ipod-classic-silver-120gM"
+}
+```
+
+### Product-level default model
+
+```json json
+{
+  "name": "Apple iPod Classic",
+  "primary_category_id": "electronics-digital-media-players",
+  "categories": [
+    [
+      {
+        "id": "electronics-digital-media-players",
+        "name": "iPod & MP3 Players"
+      },
+      {
+        "id": "electronics",
+        "name": "Electronics"
+      }
+    ]
+  ],
+  "__primary_category": {
+    "0": "Electronics",
+    "1": "Electronics > iPod & MP3 Players"
+  },
+  "defaultVariantID": "apple-ipod-classic-silver-120gM",
+  "variants": [
+    {
+      "variantID": "apple-ipod-classic-silver-120gM",
+      "in_stock": true,
+      "price": { "USD": 219.99 },
+      "color": "Silver",
+      "url": "/electronics/ipod%20%26%20mp3%20players/apple-ipod-classic-silver-120gM.html"
+    },
+    {
+      "variantID": "apple-ipod-classic-black-120gM",
+      "in_stock": true,
+      "price": { "USD": 199 },
+      "color": "Black",
+      "url": "/electronics/ipod%20%26%20mp3%20players/apple-ipod-classic-black-120gM.html"
+    }
+  ],
+  "colorVariations": [
+    {
+      "image_groups": [
+        {
+          "_type": "image_group",
+          "images": [
+            {
+              "_type": "image",
+              "alt": "Apple iPod Classic, Silver, large",
+              "dis_base_link": "/images/large/ipod-classic-silver.jpg",
+              "title": "Apple iPod Classic, Silver"
+            }
+          ],
+          "view_type": "large"
+        }
+      ],
+      "variationURL": "/electronics/ipod%20%26%20mp3%20players/apple-ipod-classicM.html?dwvar_apple-ipod-classicM_color=Silver",
+      "color": "Silver"
+    },
+    {
+      "image_groups": [
+        {
+          "_type": "image_group",
+          "images": [
+            {
+              "_type": "image",
+              "alt": "Apple iPod Classic, Black, large",
+              "dis_base_link": "/images/large/ipod-classic-black.jpg",
+              "title": "Apple iPod Classic, Black"
+            }
+          ],
+          "view_type": "large"
+        }
+      ],
+      "variationURL": "/electronics/ipod%20%26%20mp3%20players/apple-ipod-classicM.html?dwvar_apple-ipod-classicM_color=Black",
+      "color": "Black"
+    }
+  ],
+  "in_stock": true,
+  "objectID": "apple-ipod-classicM"
+}
+```
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To optimize record size, `image_groups` aren't stored in each variant.
+  For a given color, all size variations have the same `image_groups`.
+  Instead of duplicating `image_groups` in all variants, only one is stored for each color: in the `colorVariations` attribute.
+  The Algolia integration for Salesforce B2C Commerce uses a variant's `color` information to determine which image to display.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Example
+
+A site might have the following configurations:
+
+- hostname: `example.com`
+- site-id: `clothing`
+- Two locales: `en_US`, `fr_FR`
+- Two currencies: `USD`, `EUR`
+- Five additional product attributes: `short_description`, `long_description`, `brand`, `color`, `size`
+
+This setup will generate the following indices in Algolia:
+
+- `example-com__clothing__products__en_US`
+- `example-com__clothing__products__fr_FR`
+- `example-com__clothing__categories__en_US`
+- `example-com__clothing__categories__fr_FR`
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Algolia generates a separate product and category index for each locale to give you the most flexibility in terms of configuration. This setup lets you to have synonyms, rules, and other locale-specific settings on your index without interfering with the settings for other locales.
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The prefix `${hostname}__${site_id}` prevents accidental name collisions between your environments. It makes using a single Algolia application [with multiple sandboxes or sites completely safe](/integration/salesforce-commerce-cloud-b2c/guides/multi-instance-indexing/).
+  You can always change the prefix with the **Algolia\_IndexPrefix** custom site preference.
+</Note>
+
+{/* prettier-ignore-end */}
+
+A typical _variant-level_ record in these indices has the following structure:
+
+```jsonc jsonc
+// index: example-com__clothing__products__en_US
+
+// Base set (non-configurable attributes)
+// theses fields are always added to your product record
+{
+  "objectID": "8987698M",
+  "categories": [
+    [
+      { "id": "womens-tops-tshirts", "name": "T-Shirts" },
+      { "id": "womens-tops", "name": "Tops" },
+      { "id": "womens", "name": "Women" },
+    ],
+  ],
+  "__primary_category": {
+    "0": "Womens",
+    "1": "Womens > Tops",
+    "2": "Womens > Tops > T-shirts",
+  },
+  "in_stock": true,
+  "price": {
+    "USD": 12.99,
+    "EUR": 11.99,
+  },
+  // configurable attributes
+  "name": "Red T-shirt from PopularBrand",
+  "short_description": "Short description of this red t-shirt",
+  "long_description": "A much longer description of this red t-shirt",
+  "brand": "PopularBrand",
+  "color": "Red",
+  "size": "L",
+  "image_groups": [
+    /* */
+  ],
+  "url": "/s/RefArch/womens/tops/tshirts/8987698M?lang=en_US",
+}
+```
+
+## Configure product records attributes
+
+You can configure the list of attributes that are exported to your Algolia index. The list has a set of base attributes which you can extend to match your business needs.
+Configure the product attributes to send to Algolia by adding them to the **Additional Product Attributes** preference.
+You should do this _before_ performing a complete (re)index of your data.
+
+1. Go to **Merchant Tools > Algolia > Algolia**
+
+1. Set up your **Additional Product Attributes**:
+
+### Base attributes (non-configurable)
+
+The base set of attributes is always included in product indexing, except when using the [`attributeListOverride` job step parameter](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing/#algoliaproductdeltaindex-job-step-parameters), which overrides both the base attributes and any additional product attributes configured for that job.
+
+| Attribute             | Description                                                                                                                                                                                      |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                | Name of the product                                                                                                                                                                              |
+| `primary_category_id` | Primary category ID                                                                                                                                                                              |
+| `categories`          | Array of categories assigned to the product, with all their parent categories                                                                                                                    |
+| `url`                 | URL pointing to the product's PDP (Product Detail Page).                                                                                                                                         |
+| `image_groups`        | Array of product image URLs                                                                                                                                                                      |
+| `in_stock`            | `true` if the number of products available is greater than the [InStock Threshold](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/) you've set, `false` otherwise |
+| `price`               | Product price                                                                                                                                                                                    |
+
+### Configurable attributes
+
+You can choose to send additional Product record attributes such as the following to Algolia by defining them in **Additional Product Attributes**.
+
+You should start with the following attributes: `short_description`, `long_description`, then expand the list according to your use case (for example `brand`, `color`, `size`).
+
+| Attribute             | Description                                                                                                                                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EAN`                 | The European Article Number of the product.                                                                                                                                                          |
+| `UPC`                 | The Universal Product Code of the product.                                                                                                                                                           |
+| `brand`               | The brand of the product.                                                                                                                                                                            |
+| `bundle`              | Identifies if this product instance is a product bundle.                                                                                                                                             |
+| `bundled`             | Identifies if this product instance is bundled within at least one product bundle.                                                                                                                   |
+| `bundledProducts`     | A collection containing all products that participate in the product bundle.                                                                                                                         |
+| `color`               | The product's color.                                                                                                                                                                                 |
+| `colorVariations`     | An array containing an entry for each color variation. Each entry contains the `image_groups` of the variation, the `variationUrl`, and the variation `color`.                                       |
+| `long_description`    | Full description of product.                                                                                                                                                                         |
+| `lsImage`             | Expose the first product image at the root of the Algolia record. Used by the [Looking Similar widget](/integration/salesforce-commerce-cloud-b2c/guides/algolia-recommend/#looking-similar-widget). |
+| `manufacturerName`    | The name of the product manufacturer.                                                                                                                                                                |
+| `manufacturerSKU`     | The value of the manufacturer's stock keeping unit.                                                                                                                                                  |
+| `master`              | Identifies if this product instance is a product master.                                                                                                                                             |
+| `masterID`            | ID of the master product.                                                                                                                                                                            |
+| `online`              | The online status of the product. This is determined based on the product's online status flag, and the onlineFrom and onlineTo dates.                                                               |
+| `optionProduct`       | Identifies if the product has options.                                                                                                                                                               |
+| `pageDescription`     | Returns product's page description in the default locale.                                                                                                                                            |
+| `pageKeywords`        | The product's page keywords in the default locale.                                                                                                                                                   |
+| `pageTitle`           | The product's page title in the default locale.                                                                                                                                                      |
+| `productSetProduct`   | `true` if this product is part of any product set, otherwise `false`.                                                                                                                                |
+| `productSet`          | Returns `true` if the instance represents a product set, otherwise `false`.                                                                                                                          |
+| `promotionalPrice`    | Product's lowest promotional price, from the currently active promotions.                                                                                                                            |
+| `refinementColor`     | Search Refinement Bucket of the `color`.                                                                                                                                                             |
+| `searchable`          | Identifies if the product is searchable.                                                                                                                                                             |
+| `size`                | The product's size.                                                                                                                                                                                  |
+| `short_description`   | Short description of product.                                                                                                                                                                        |
+| `unit`                | The products sales unit.                                                                                                                                                                             |
+| `variant`             | Identifies if this product instance belongs to a product master.                                                                                                                                     |
+| `newArrivalsCategory` | If this product is part of the new arrivals category.                                                                                                                                                |
+
+### New arrivals facet
+
+To ensure the custom logic in the Algolia cartridge correctly displays the _new arrivals_ facet:
+
+1. Add the `newArrivalsCategory` attribute to the **Additional Product Attributes** list to send it to Algolia.
+1. Declare `newArrivalsCategory` as an [attribute for faceting in the Algolia dashboard](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting-with-dashboard/).
+
+### Flexible attribute indexing based on default behavior
+
+From version 24.5.0, the Algolia cartridge supports indexing any product attribute, even if they aren't explicitly listed as [configurable attributes](#configurable-attributes).
+This feature simplifies the process of indexing custom or specific attributes, allowing for more flexible and comprehensive product data in your Algolia index without requiring extensive configuration.
+
+For attributes that aren't explicitly listed, the cartridge uses the following default indexing configuration:
+
+```js js
+{
+    attribute: attributeName,
+    localized: false,
+    variantAttribute: true
+}
+```
+
+This means that by default, all unlisted attributes:
+
+- Aren't localized
+- Are indexed in the `variants` array (for the [product-level record model](#product-level-default-model))
+- Use the default Salesforce B2C Commerce attribute name (with dot notation)
+
+To change this default behavior, override it with [advanced attributes configuration](#advanced-attributes-configuration).
+
+#### Nested attributes
+
+The cartridge supports indexing nested attributes up to two levels deep.
+Nested attributes are grouped under their parent object in the Algolia record.
+For example:
+If you want to index `activeData.impressionsDay` and `activeData.revenueDay`, they will be indexed in Algolia as:
+
+```json json
+{
+  "activeData": {
+    "impressionsDay": 5,
+    "revenueDay": 141
+  }
+}
+```
+
+If you prefer indexing these attributes at the root level of your Algolia records, use the method described in the [advanced attributes configuration](#advanced-attributes-configuration) section.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  The cartridge doesn't support three or more levels of nested attributes or function calls in the `attribute` property.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+### Usage
+
+To use this feature:
+
+1. Add the corresponding Salesforce B2C attribute names (including nested attributes) to the **Additional Product Attributes** list in the Algolia Business Manager module [Custom Preferences](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/). Refer to custom attributes as `custom.<attribute_name>`.
+1. Apply the Custom Preference changes and run a full [re-index](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing/).
+
+Check your Algolia index after the indexing job finishes.
+It should contain these new attributes in the product records now.
+
+## Advanced attributes configuration
+
+### Extend attributes declarations
+
+The cartridge has an extension mechanism that lets you add new attributes, modify existing ones, or remove [base attributes](#base-attributes-non-configurable).
+
+Create a `productAttributesConfig.js` file in the `int_algolia/cartridge/configuration/` directory.
+For an example, see [this file in the cartridge code](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/master/cartridges/int_algolia/cartridge/configuration/productAttributesConfig.example.js).
+This file must export a configuration object. The keys of this object are the name of the attributes in your Algolia records.
+Each key holds an object with the following properties:
+
+| Property Name             | Type                 | Description                                                                                                                                                                                                                           |
+| ------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `attribute`               | `string or function` | The attribute declaration. It can be:<br />- The full path to the SFCC Product attribute name, separated by dots.<br />- A function that takes the current product as parameter and returns data to be indexed in the Algolia record. |
+| `localized`               | `boolean`            | (_Optional_, default: `false`) Should be true if the attribute is localized.                                                                                                                                                          |
+| `variantAttribute`        | `boolean`            | (_Optional_, default: `false`) Only used for the [product-level](#product-level-default-model) record model, to identify attributes indexed in the `variants` array.                                                                  |
+| `computedFromBaseProduct` | `boolean`            | (_Optional_, default: `false`) Only used for the [variant-level](#variant-level-default-model) record model, to identify attributes computed once from the base product, and indexed into each variant.                               |
+
+The `attribute` property lets you declare attributes with their direct name (simple values like `name`, `brand`, etc.) or their "path", for nested values with direct access.
+For example, you can access the `revenueWeek` attribute of a product's `activeData` object by declaring `activeData.revenueWeek`.
+
+Other values are more complex and must be computed.
+For that, the `attribute` property accepts a function to define how to export such complex attributes.
+
+```js js
+/* productAttributesConfig.js */
+module.exports = {
+  /* ... */
+  algoliaAttributeName: {
+    /* Access directly a product's property (or nested property) */
+    attribute: "activeData.revenueWeek",
+    localized: false,
+  },
+  siblings: {
+    /* Compute an array of variants IDs from the base product */
+    attribute: function (product) {
+      const variantIds = [];
+      const variantsIt = product.variants.iterator();
+      while (variantsIt.hasNext()) {
+        var variant = variantsIt.next();
+        if (variant.getAvailabilityModel().isInStock()) {
+          variantIds.push(variant.ID);
+        }
+      }
+      return variantIds;
+    },
+    computedFromBaseProduct: true,
+  },
+};
+```
+
+A more complete example is available [in the cartridge code](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/master/cartridges/int_algolia/cartridge/configuration/productAttributesConfig.example.js).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Any new attribute declared must be added to the **Additional Product Attributes** site preference in the Algolia BM module.
+
+  You can also remove the base attributes by adding an empty declaration:
+
+  ```js js
+  module.exports = {
+      "in_stock": {},
+  }
+  ```
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  The frontend uses the following attributes. Removing or modifying them can break the default UI:
+
+  - `id`
+  - `primary_category_id`
+  - `__primary_category`
+  - `categories`
+  - `variants`
+</Warning>
+
+{/* prettier-ignore-end */}
+
+### Post-processing customization
+
+To customize your records just before sending them to Algolia,
+create a `productRecordCustomizer.js` file in the `int_algolia/cartridge/configuration/` directory.
+This permits to do post-processing operations on the final records, after fetching all attributes.
+This file must export a function that takes as parameter the final Algolia record and does modifications on it:
+
+```js js
+/* productRecordCustomizer.js */
+module.exports = function (productRecord) {
+  if (productRecord.colorVariations) {
+    productRecord["availableColors"] = productRecord.colorVariations.length;
+  }
+};
+```
+
+## Configure extra attributes for `AlgoliaProductPriceIndex_v2` and `AlgoliaProductInventoryIndex_v2`
+
+To extend the list of attributes sent by these jobs, select the job you want to configure in BM, go to the **Jobs Steps** tab, select the job step and edit the `attributeListOverride` parameter.
+Additional attributes can increase the job's total runtime depending on the complexity of retrieving the attribute:
+
+- Nested attributes from B2C model classes take longer to retrieve than the product's own properties
+- Calculated values take longer to retrieve than static values.
+
+By default, these jobs send the following attributes:
+
+- `AlgoliaProductPriceIndex_v2`: `price`
+- `AlgoliaProductInventoryIndex_v2`: `in_stock`
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you extend the list of exported attributes, make sure to add the same attributes to the **Additional Product Attributes** site preference in the Algolia BM module as well so that the product delta export job also includes those attributes and updates them during its run.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Index active data such as revenue data
+
+Indexing revenue metrics as an attribute in Algolia lets you use this data in your [ranking formula](/guides/managing-results/must-do/custom-ranking/#algolias-ranking-strategy).
+
+By default, the Algolia cartridge for Salesforce B2C Commerce supports many product attributes.
+Attributes like Active Revenue data, which aren't [supported](#configure-product-records-attributes), can be indexed in Algolia.
+Use the default behavior or specify a custom behavior in a configuration file.
+
+### Using the default method
+
+You can refer to attributes in the **Additional Product Attributes** Custom Preference]\(/doc/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/) in the Algolia Business Manager module using the [default behavior](#configure-extra-attributes-for-algoliaproductpriceindex_v2-and-algoliaproductinventoryindex_v2).
+For example, you can refer to `activeData.revenueWeek` to index revenue week data or `availabilityModel.inStock` to index the in-stock status of a product.
+
+### Declaring attributes in the configuration file
+
+You can declare the desired behavior (for example naming, localization, nesting, or a transformation) using the [extension mechanism](#extend-attributes-declarations).
+
+1. In the extension configuration file (`productAttributesConfig.js`), declare each field with their path in the `attribute` property:
+
+   ```js js
+   /* productAttributesConfig.js */
+   module.exports = {
+     /* ... */
+     revenueWeek: {
+       attribute: "activeData.revenueWeek",
+       localized: false,
+     },
+   };
+   ```
+
+1. In your Business Manager, go to **Merchant Tools > Site Preferences > Custom Preferences > Algolia**. Find **Additional Product Attributes** and add all fields, such as `revenueWeek`.
+
+1. Reindex your data by going in **Administration > Operations > Jobs** and running the `AlgoliaProductIndex_v2` job.
+
+### Using a custom function
+
+Using a custom function permits you to regroup the various fields under a common top-level attribute, such as `revenueData`.
+
+1. In the extension configuration file (`productAttributesConfig.js`), add a `revenueData` declaration with the `attribute` property being a function that returns the data to index.
+
+   ```js js
+   /* productAttributesConfig.js */
+   module.exports = {
+     /* ... */
+     revenueData: {
+       attribute: function (product) {
+         var activeData = product.getActiveData();
+         return {
+           quantityLast7Days: activeData.ordersWeek,
+           revenueLast7Days: activeData.revenueWeek,
+           quantityLast30Days: activeData.ordersMonth,
+           revenueLast30Days: activeData.revenuesMonth,
+         };
+       },
+       localized: false,
+     },
+   };
+   ```
+
+1. In your Business Manager, go to **Merchant Tools > Site Preferences > Custom Preferences > Algolia**. Find **Additional Product Attributes** and add `revenueData`.
+
+1. To reindex your data, go to **Administration > Operations > Jobs** and run the `AlgoliaProductIndex_v2` job.

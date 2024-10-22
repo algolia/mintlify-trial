@@ -1,0 +1,432 @@
+---
+title: Preventing typosquatting
+description: |-
+  How to prevent typosquatting using Algolia's sort-by feature.
+---
+
+Algolia and other search engines default to giving preference for exact matches. In some use cases, this can be used to **take advantage of people's typing mistakes and get ranked high on a popular search query**.
+
+For example, consider Twitter users. An example of typosquatting is the account @BarakObama, which has 15.8k followers, but isn't @BarackObama (Barack Obama's official account). Because Algolia prioritizes exact matches, typing "BarakObama" would return the "BarakObama" record first, regardless of custom ranking.
+
+**Not all use cases need to prevent typosquatting**.
+
+However, if this is your case, which often happens when you have to deal with user-generated content, you may need to put a strategy in place.
+
+## Dataset example
+
+Back to the Twitter example: assume you have an index called `twitter_accounts` that looks like this:
+
+```json json
+[
+  {
+    "twitter_handle": "BarackObama",
+    "nb_followers": 103500000
+  },
+  {
+    "twitter_handle": "BarakObama",
+    "nb_followers": 15800
+  }
+]
+```
+
+Even if you set descending custom ranking on `nb_followers`, because Algolia prioritizes exact results, the @BarakObama account would benefit from the traffic coming from users making a typo when searching for the official Barack Obama account.
+
+You can short-circuit this issue by leveraging Algolia's [sort-by attribute feature](/guides/managing-results/refine-results/sorting/how-to/sort-by-attribute/).
+
+## Update the dataset
+
+The recommended solution is to add a boolean attributes that separates popular records from the rest. For example, you could add something like `is_verified_account = true`, or `is_popular = true`, and sort on that attribute.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  For this approach to work well, **the number of records with `is_popular` or `is_verified_account`**
+  **set to `true` should be a small subset of the dataset** (around 1% of the dataset maximum).
+</Warning>
+
+{/* prettier-ignore-end */}
+
+You have a popularity metric (`nb_followers`), so you can use it to define a rule that determines if a record is popular or not. In this example, you could say that a user is popular if they have more than a million followers.
+
+You can use the [`browse`](/api-reference/api-methods/browse/) method to update the index:
+
+<CodeGroup>
+  ```csharp csharp
+  var hits = index.BrowseAll(new Query());
+  List<JObject> records = new List<JObject>();
+
+  foreach (var hit in hits)
+  {
+      hit["is_popular"] = (long)hit["nb_followers"] > 1000000;
+      records.Add(hit);
+
+      if (records.Count > 1000)
+      {
+          index.AddObjects(hits);
+          records.Clear();
+      }
+  }
+
+  index.AddObjects(records);
+  ```
+
+  ```go go
+  type User struct {
+  	ObjectID    string `json:"objectID"`
+  	NbFollowers int    `json:"nb_followers"`
+  	IsPopular   bool   `json:"is_popular"`
+  }
+
+  var users []User
+  var user User
+  it, _ := index.BrowseObjects()
+
+  for {
+  	_, err := it.Next(&user)
+  	if err != nil {
+  		if err == io.EOF {
+  			break
+  		}
+  		// error handling
+  	}
+
+  	user.IsPopular = user.NbFollowers > 1000000
+  	users = append(users, user)
+  }
+
+  res, err := index.SaveObjects(users)
+  ```
+
+  ```java java
+  SearchIndex<Record> index = client.initIndex("YourIndexName", Record.class);
+
+  IndexIterable<Record> iterator = index.browseObjects(new BrowseIndexQuery());
+  ArrayList<Record> records = new ArrayList<>();
+
+  iterator.forEach(record -> {
+      boolean isPopular = record.getNbFollowers() > 1000000;
+      record.setPopular(isPopular);
+      records.add(record);
+  });
+
+  index.saveObjects(records);
+  ```
+
+  ```js js
+  index
+    .browseObjects({
+      batch(hits) {
+        records = records.concat(
+          hits.map((hit) => {
+            return {
+              ...hit,
+              is_popular: hit.nb_followers > 1000000,
+            };
+          }),
+        );
+      },
+    })
+    .then(() => index.saveObjects(records))
+    .then(({ objectIDs }) => {
+      console.log(objectIDs);
+    });
+  ```
+
+  ```kotlin kotlin
+  val records = index.browseObjects().flatMap { response ->
+      response.hits.map {
+          val map = it.toMutableMap()
+          val nbFollowers = it.getValue("nb_followers").primitive.long
+
+          map["is_popular"] = JsonLiteral(nbFollowers > 1000000)
+          JsonObject(map)
+      }
+  }
+
+  index.saveObjects(records)
+  ```
+
+  ```php php
+  $records = [];
+
+  foreach ($index->browseObjects() as $hit) {
+    $hit['is_popular'] = ($hit['nb_followers'] > 1000000);
+    $records[] = $hit;
+  }
+
+  $index->saveObjects($records);
+  ```
+
+  ```python python
+  records = []
+  for hit in index.browse_objects():
+      hit["is_popular"] = hit["nb_followers"] > 1000000
+      records.append(hit)
+
+  index.save_objects(records)
+  ```
+
+  ```ruby ruby
+  records = []
+
+  index.browse do |hit|
+    hit["is_popular"] ||= hit["nb_followers"] > 1_000_000
+    records << hit
+  end
+
+  index.save_objects(records)
+  ```
+
+  ```scala scala
+  case class User(objectID: String, nb_followers: Int, is_popular: Option[Boolean]) extends ObjectID
+
+  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
+  implicit val awaitDuration = 10 seconds
+
+  val syncHelper = AlgoliaSyncHelper(client)
+
+  val futures =
+    syncHelper
+      .browse[User]("myIndex", Query())
+      .map { hits =>
+        hits
+          .map { hit =>
+            User(
+              objectID = hit.objectID,
+              nb_followers = hit.nb_followers,
+              is_popular = Some(hit.nb_followers > 1000000), )
+          }
+      }
+      .map { batch =>
+        client.execute {
+          index into "myIndex" objects batch
+        }
+      }
+
+  Await.ready(Future.sequence(futures), awaitDuration)
+  System.exit(0)
+  ```
+</CodeGroup>
+
+Once updated, your dataset would look like this:
+
+```json json
+[
+  {
+    "twitter_handle": "BarackObama",
+    "nb_followers": 103500000,
+    "is_popular": true
+  },
+  {
+    "twitter_handle": "BarakObama",
+    "nb_followers": 15800,
+    "is_popular": false
+  }
+]
+```
+
+By default, the first rule in [Algolia's ranking formula](/guides/managing-results/must-do/custom-ranking/#algolias-ranking-strategy) is `typo` (which, for the vast majority of use cases, is a sensible default value).
+
+To prevent typosquatting, you need to add another ranking signal that's higher than the `typo` rule. This is what Algolia commonly refers to as a sort-by attribute.
+
+When your ranking has been applied, searching for "BarakObama" will first return the "BarackObama" record.
+
+## Add a sort-by attribute in the dashboard
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. On the **Configuration** tab, select **Ranking and Sorting**.
+
+1. Click **Add sort-by attribute** and type or select your attributes.
+
+1. Save your changes.
+
+## Add a sort-by attribute with the API
+
+To set a sort-by attribute, you need to use the [`ranking`](/api-reference/api-parameters/ranking/) with the [`setSettings`](/api-reference/api-methods/set-settings/) method.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      CustomRanking = new List<string>
+      {
+          "desc(is_popular)",
+          "typo",
+          "geo",
+          "words",
+          "filters",
+          "proximity",
+          "attribute",
+          "exact",
+          "custom"
+      }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  index.SetSettings(search.Settings{
+  	Ranking: opt.Ranking(
+  		"desc(is_popular)",
+  		"typo",
+  		"geo",
+  		"words",
+  		"filters",
+  		"proximity",
+  		"attribute",
+  		"exact",
+  		"custom",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+  new IndexSettings()
+    .setRanking(
+      Arrays.asList(
+        "desc(is_popular)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom"
+      )
+    )
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      ranking: [
+        "desc(is_popular)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom",
+      ],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      ranking {
+          +Desc("is_popular")
+          +Typo
+          +Geo
+          +Words
+          +Filters
+          +Proximity
+          +Attribute
+          +Exact
+          +Custom
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'ranking' => [
+      "desc(is_popular)",
+      "typo",
+      "geo",
+      "words",
+      "filters",
+      "proximity",
+      "attribute",
+      "exact",
+      "custom"
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "ranking": [
+              "desc(is_popular)",
+              "typo",
+              "geo",
+              "words",
+              "filters",
+              "proximity",
+              "attribute",
+              "exact",
+              "custom",
+          ]
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      ranking: [
+        "desc(is_popular)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      ranking = Some(Seq(
+        Ranking.desc("is_popular"),
+        typo,
+        geo,
+        words,
+        filters,
+        proximity,
+        attribute,
+        exact,
+        custom, )), )
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "ranking": [
+      "desc(is_popular)",
+      "typo",
+      "geo",
+      "words",
+      "filters",
+      "proximity",
+      "attribute",
+      "exact",
+      "custom",
+    ]
+  ])
+  ```
+</CodeGroup>

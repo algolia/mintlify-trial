@@ -1,0 +1,81 @@
+---
+title: Configure commercetools sources for Algolia
+description: |-
+  Learn how to configure the sources for Algolia's commercetools integration.
+---
+
+To configure the commercetools connector:
+
+1. [Configure your data source](#configure-your-data-source)
+1. [Configure your destination](#configure-your-destination)
+1. [Configure your task](#configure-your-task)
+
+## Configure your data source
+
+A _source_ defines how to authenticate with your commercetools project, and which store and languages you want to index.
+
+In the **Configure your data source** form, paste the [curl command from your commercetools API client](/integration/commercetools/get-started/installation/#create-a-commercetools-api-client). This automatically fills the form with details about your commercetools project and creates an authentication method.
+
+If you want to enter custom information, manually fill the form.
+
+This form includes information about:
+
+- The **OAuth 2.0** authentication so that Algolia can connect to your commercetools project.
+- The **API URL** and **Project Key** to identify which project to fetch.
+- The **Store** and **Languages** to index.
+- The **Fallback stock value** which determines which value is stored in the Algolia record if there is no inventory information on the product.
+
+Select the commercetools store you want to index.
+Under **Languages**, select one or more product data languages for your store.
+
+After filling the form, click **Create source** to set up the source.
+
+## Configure your destination
+
+A _destination_ defines where and how the data will be stored in the Algolia indices.
+
+After selecting an index name and providing the credentials,
+choose if you want to index products or product-variants:
+
+- **Product**. A record is assigned to each product.
+- **Variant**. A record is assigned to each [product variant](https://docs.commercetools.com/learning-composable-commerce-administrator/product-modeling/products).
+
+Finally, you can add a list of attributes you want to exclude from your records.
+
+Once finished, click **Create destination** to set up the destination.
+
+## Configure your task
+
+A _task_ is the link between source and destination.
+You run tasks to launch the indexing process.
+
+In the **Failure threshold** option, select a percentage when your indexing should be considered failed. For example, a failure threshold of 10% requires 90% of your records to import without errors.
+
+Finish the setup by clicking **Create task**.
+
+This creates two tasks:
+
+- An **On demand** task which you can use to trigger a full reindex of your products.
+- A **Subscription** task which automatically triggers a product reindex when a product is updated and published in commercetools.
+
+You can choose when to index your products. Click **Run** to immediately start indexing your commercetools products.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You won't see your products in your Algolia index until you trigger a full reindex.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Trigger a full reindex
+
+After installing a commercetools connector, you need to trigger a full reindex at least once.
+
+You should also reindex if you changed, added, or deleted a source or a destination.
+
+To trigger a full reindex, run the **On demand** task by clicking **Run task**:
+
+Confirm by clicking **Run**.
+
+To check the progress and status of your reindex run, go to the [Connector Debugger](https://dashboard.algolia.com/connectors/debugger) in the Algolia dashboard.

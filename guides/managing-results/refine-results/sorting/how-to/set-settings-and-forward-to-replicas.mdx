@@ -1,0 +1,155 @@
+---
+title: Manage multiple indices
+description: |-
+  Copying index settings to replicas and other indices.
+---
+
+It's common to have several replica indices that differ from their primary index by a single setting, such as the sorting strategy. Products in an ecommerce store are a good example. You may have a primary index sorted by ascending price, and one or more replicas that sort products by descending price, descending popularity, descending rating, etc.
+
+Despite these different sorting settings, **you may still want to copy settings from one index to its replicas or other indices**. For example, if you decide to change the [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/) setting, you probably want it to apply to all indices.
+
+The `forwardToReplicas` parameter allows you to forward new settings to replicas. From there, you can change _only_ the settings that need to be different and keep all others synchronized.
+
+## Example of multiple indices
+
+You have a primary index called `products` and a `products_price_desc` replica. Both indices have the same data and settings, apart from the [`ranking`](/api-reference/api-parameters/ranking/) setting.
+
+If you want to change the [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/) setting to include a new `description` attribute for all indices, primary and replicas, use the `forwardToReplicas` parameter.
+
+## Using the API
+
+The [`setSettings`](/api-reference/api-methods/set-settings/) method, along with all [synonyms](/api-client/methods/synonyms/) and [Rules](/api-client/methods/rules/) methods, have a `forwardToReplicas` parameter. By default, `forwardToReplicas` is `false`, so any setting, synonym, or Rule change only applies to the target index. By setting it to `true`, you can forward these changes to all the replicas belonging to the index you target.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string> { "name", "description" },
+  };
+
+  replicaIndex.SetSettings(settings, forwardToReplicas: true);
+
+  // Asynchronous
+  await replicaIndex.SetSettingsAsync(settings, forwardToReplicas: true);
+  ```
+
+  ```go go
+  settings := search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		"name",
+  		"description",
+  	),
+  }
+
+  res, err := index.SetSettings(settings, opt.ForwardToReplicas(true))
+  ```
+
+  ```java java
+  boolean forwardToReplicas = true;
+
+  index.setSettings(
+    new IndexSettings()
+      .setSearchableAttributes(Arrays.asList(
+        "name",
+        "description"
+      ))
+    forwardToReplicas
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings(
+      {
+        searchableAttributes: ["name", "description"],
+      },
+      {
+        forwardToReplicas: true,
+      },
+    )
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+        +"name"
+        +"description"
+      }
+  }
+
+  index.setSettings(settings, forwardToReplicas = true)
+  ```
+
+  ```php php
+  $forwardToReplicas = true;
+
+  $index->setSettings(
+    [
+      'searchableAttributes' => ['name', 'description'],
+    ],
+    $forwardToReplicas
+  );
+  ```
+
+  ```python python
+  index.set_settings(
+      {"searchableAttributes": ["name", "description"]},
+      {
+          "forwardToReplicas": True,
+      },
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings({searchableAttributes: ["name", "description"]}, {forwardToReplicas: true})
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(
+        Seq(
+          SearchableAttributes.attribute("name"),
+          SearchableAttributes.attribute("description"))),
+      forwardToReplicas = Some(forwardToReplicas.`true`))
+  }
+  ```
+
+  ```swift swift
+  let settings = Settings()
+    .set(\.searchableAttributes, to: [.default(["name", "description"])])
+
+  index.setSettings(settings, forwardToReplicas: true) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Settings are only forwarded to existing replicas. If you want to forward settings _and_ create a replica, you first have to create the replica and forward the settings after. These must be separate operations.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Using the dashboard
+
+Whenever you make settings changes, Algolia's dashboard will prompt you to review them before saving and gives you the option to **Copy these settings to other indices and replicas**.
+
+**Whenever you copy settings changes to indices, you replace the previous setting on the index.** For example, if you change the ranking formula on the primary index to include a sort on an `inventory` attribute, and then choose to copy the updated [`ranking`](/api-reference/api-parameters/ranking/) setting to all replicas, you overwrite any previously set sorts on other attributes on the replicas.
+
+When altering the ranking formula on indices with replicas, you are recommended to do it on a per index basis.
+
+While [`customRanking`](/api-reference/api-parameters/customRanking/) is part of the ranking formula, it's a setting as well. You can alter the custom ranking and forward the change to your replicas without worrying about overwriting the entire ranking formula.
+
+**You usually don't need to worry about overwriting settings, since you typically want most settings to be the same between replicas.** Notable exceptions include [`ranking`](/api-reference/api-parameters/ranking/) and [`typoTolerance`](/api-reference/api-parameters/typoTolerance/).
+
+### Copy synonyms and rules
+
+You can import and export synonyms and rules [from the Algolia dashboard](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/export-import-indices/).

@@ -1,0 +1,130 @@
+---
+title: Custom ranking
+description: |-
+  Learn about how Algolia ranks, using its tie-breaking algorithm, and how you can control that ranking with Custom Ranking.
+---
+
+The main goal of search is to help users find what they are looking for. Search breaks down into two crucial steps: **returning accurate results** and **ranking these results**. This guide focuses on how Algolia natively ranks results and how you can impact it with custom ranking.
+
+Algolia first orders results with its default ranking strategy, then with custom ranking. Custom ranking increases the visibility of your most important content, and increasing visibility helps users find what they're looking for.
+
+**Custom ranking is a direct and powerful way to adapt Algolia to your business.** When you classify records with business metrics such as popularity or rating, your best products appear higher in search results.
+
+## Algolia's ranking strategy
+
+Ranking is the second half of the relevance equation. Once the engine has found matching records, it needs to rank them, putting the best matches at the top.
+
+### The ranking criteria
+
+Algolia uses a tie-breaking algorithm, which reuses much of the same [textual matching criteria](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/) to determine the best matches.
+
+A good example is typos and spelling differences.
+
+When searching, you might accidentally swap letters, miss or add extra characters, or use a different spelling from the one in the index.
+
+For example, you could type "iphoen" instead of "iphone", or use the British spelling "theatre" while the index you search into uses "theater".
+**Thanks to typo tolerance, the engine returns exact matches and records with typos.** Now, Algolia can reuse typo tolerance to rank records: all exact matches rank higher than records with typos. The tie-breaking algorithm privileges the best matches. If your index contained both "theater" and "theatre", Algolia would return records for both, with the ones containing "theatre" first.
+
+The ranking criteria are, in order:
+
+- [Number of typos](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#typo)
+- [Geolocation](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#geo-if-applicable)
+- [Number of words in the query matching the result](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#words-if-applicable)
+- [Filters](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#filters)
+- [Distance between words](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#proximity)
+- [Best matching attribute in the record](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#attribute)
+- [Number of words matching exactly (without typos)](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#exact)
+- [Custom ranking](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#custom)
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  You can change the order of the default criteria,
+  but **you shouldn't**.
+  The [out-of-the-box ranking order](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/) works for most uses.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+### How tie-breaking works
+
+Most search engines use a coefficient-based approach and rank results based on a unique float value, and that's hard, if not impossible, to decipher.
+
+Algolia uses a tie-breaking algorithm:
+
+1. It orders all matching records according to the first criterion (number of typos, so exact matches rank first).
+1. For all tied records, it orders them according to the second criterion (geolocation).
+1. If there are still tied records (with the exact geolocation), it orders them according to the third criterion (filters) and so on until each record in the search results has a distinct ranking position.
+1. If, after going through the first seven criteria, there are still tied records, Algolia uses each of your custom ranking attributes to break the tie.
+
+Back to the "theatre" example.
+
+If two records have the same spelling, they will be tied. The algorithm needs to break the tie.
+
+The next criterion is Geo.
+If the first record is geographically closer to the user than the second one, the Geo criterion breaks the tie, and the first record ranks higher than the second one.
+
+If the movie theaters were within the same geographical range, the engine needs to go to the third applicable criterion.
+If you provided a search filter (for features such as "3D", "IMAX"), and users select "3D", but only the second record has "3D" in its filters, then it breaks the tie, and the second record ranks before the first record.
+
+## Custom ranking
+
+Finding matching records using typos, geolocation, filters, and so on is only part of what makes a compelling search experience. Algolia's default ranking formula handles this kind of record-matching relevance well.
+
+However, ordering on such properties alone undermines the value of thoughtfully ordering results based on custom metrics within each record. Custom ranking gives you direct control and is often the deciding factor on which records appear in the first set of results.
+
+Here are some examples that apply popularity to the ranking formula:
+
+- For a movie database app, if users type "spielberg films", the custom ranking puts Spielberg's most popular films at the top of the results.
+- For a retail store, if users type "t-shirt", the most popular t-shirts appear at the top.
+- For a blog website, if users type "positive thinking", the most popular articles on that subject appear at the top.
+
+Typical custom ranking attributes include number of sales, views, likes, ratings, release date, etc. **Any boolean or numeric attribute works with custom ranking.**
+This kind of control over ranking lets you achieve many business goals: showcase your product line, encourage people to stay on your site and view as many products as possible, increase sales, and many more.
+
+Defining custom ranking with business metrics is crucial for any successful search configuration.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Create custom ranking attributes](/guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking/)
+  - [Boosting or penalizing records](/guides/managing-results/must-do/custom-ranking/how-to/boost-or-penalize-some-records/)
+  - [Custom ranking for business relevance](https://www.algolia.com/ecommerce-merchandising-playbook/custom-ranking/)
+  - [Using business performance data to improve search](https://www.algolia.com/blog/engineering/12-ways-to-improve-your-search-index/)
+  - [Using custom ranking to reflect popularity](https://www.algolia.com/blog/engineering/12-ways-to-improve-your-search-index/)
+  - [Using custom ranking to personalize a Google-like search](https://www.algolia.com/blog/algolia/query-suggestion-ux-like-googles/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+The following dataset illustrates a common uses case and has custom ranking on the `popularity` attribute (descending):
+
+```json json
+[
+  {
+    "name": "iPhone 6 Plus",
+    "popularity": 20
+  },
+  {
+    "name": "iPhone 6",
+    "popularity": 10
+  },
+  {
+    "name": "iPhone 7",
+    "popularity": 200
+  }
+]
+```
+
+With this configuration, if a user were to search for "iphone", they would first get the iPhone 7, followed by the iPhone 6 Plus, and finally, the iPhone 6.
+You can decide whether you want the order to be descending (greater values first) or ascending (smaller values first).
+
+### Custom ranking precision
+
+Tie-breaking only works if there are tied records to begin with.
+If a particular custom ranking metric is too precise, the next custom metric might never come into play.
+That's why [reducing precision is critical to effective tie-breaking](/guides/managing-results/must-do/custom-ranking/how-to/controlling-custom-ranking-metrics-precision/).
+
+Consider a custom ranking configuration for movies that sets both `rating` and `views` (in that order) as custom ranking attributes. If the rating across records is unnecessarily precise—say "4.321321"—the views may never be used to break the tie. However, the search results may not be more relevant. A movie with a slightly lower rating but many more views would rank lower, while you would expect it to rank higher.
+
+To fix the situation, create another attribute (say `truncated_rating`) with values rounded to one decimal place. In this example, "4.321321" becomes "4.3". By reducing the precision of the `rating` attribute, it makes it more likely to have several records with the same `truncated_rating`, allowing them to tie-break on the `count` attribute.

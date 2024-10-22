@@ -1,0 +1,44 @@
+---
+title: Start indexing your data
+description: |-
+  Learn how to index your Salesforce B2C Commerce catalog data into Algolia.
+---
+
+The Algolia B2C cartridge comes with five Salesforce B2C Commerce jobs that can build, synchronize, and clear product and category indices, and one for content indices.
+
+The `AlgoliaProductIndex_v2`, `AlgoliaProductDeltaIndex_v2`, `AlgoliaProductPriceIndex_v2`, and `AlgoliaProductInventoryIndex_v2` jobs synchronize product data. The `AlgoliaCategoryIndex_v2` job synchronizes category data.
+The `AlgoliaContentIndex_v2` job synchronizes content data.
+
+## Initial indexing
+
+To start indexing your product data to Algolia for the first time, follow these steps:
+
+1. Go to **Administration > Operations > Jobs**.
+
+1. Select `AlgoliaProductIndex_v2` and go to the **Job Steps** section.
+
+1. Set the execution scope to the site you want to run the job for.
+
+1. Run the job.
+
+Repeat the same steps for `AlgoliaCategoryIndex_v2`.
+
+When both jobs are finished, you can check the new indices created in the [Algolia dashboard](https://dashboard.algolia.com/explorer/).
+
+## Ongoing indexing
+
+For ongoing updates of your product data:
+
+- For keeping Algolia in sync with your product catalog, see [Ongoing indexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing/).
+- For reindexing the product catalog, see [Full catalog indexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing/#indexing-products-with-algoliaproductindex_v2).
+
+For ongoing updates of your categories data, regularly re-run the `AlgoliaCategoryIndex_v2` job.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Product indexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview/)
+  - [Content indexing](/integration/salesforce-commerce-cloud-b2c/indexing/content-indexing/fundamentals/)
+</Info>
+
+{/* prettier-ignore-end */}

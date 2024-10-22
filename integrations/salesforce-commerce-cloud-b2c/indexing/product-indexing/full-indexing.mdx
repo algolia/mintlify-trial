@@ -1,0 +1,65 @@
+---
+title: Full catalog indexing
+description: |-
+  Learn how to export your entire catalog.
+---
+
+A full catalog index exports all your B2C Product objects with all their configured attributes.
+For more information, see [Indexing attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/).
+
+The two use cases for full catalog index updates are:
+
+- **Initial indexing.** See [Start indexing your data](/integration/salesforce-commerce-cloud-b2c/getting-started/start-indexing-your-data/#initial-indexing)
+- **Reindexing (rebuilding your entire index).** See [Full reindexing](/guides/sending-and-managing-data/send-and-update-your-data/in-depth/the-different-synchronization-strategies/#full-reindexing)
+
+In both cases, use the `AlgoliaProductIndex_v2` job for indexing product, price and inventory data,
+and the `AlgoliaCategoryIndex_v2` job for indexing category data.
+
+For an overview of the Algolia B2C jobs, see [Indexing Overview](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview/).
+
+## Indexing products with `AlgoliaProductIndex_v2`
+
+This job performs a full catalog index.
+
+You can use it for initial product indexing or for periodically reindexing your entire catalog.
+
+**Which objects are included:** All B2C Product objects assigned to the configured site and their related price and inventory data.
+
+### Job configuration
+
+You can find the Job configuration in the **Job Steps** tab.
+
+#### Scope
+
+Change the scope to **Specific Sites** and select all the sites you'd like to run the job for.
+
+#### `algoliaProductIndex` job step parameters
+
+- **attributeListOverride** (comma-separated values, empty by default): if set, only this list of properties is exported by the job, otherwise the [base attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#base-attributes-non-configurable) and the values from the [Additional Product Attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#configurable-attributes) site preference are used.
+
+- **indexingMethod**:
+
+  - `fullCatalogReindex`: reindex all products and remove stale records.
+  - `partialRecordUpdate`: only the specified attributes are updated or added for each record without affecting other attributes. If the record doesn't exist, a new one is created.
+  - `fullRecordUpdate`: replace the entire record or create new records in the index with the specified data without removing stale or deleted records.
+
+- **failureThresholdPercentage** (integer, default: `0`): the maximum percentage of records allowed to have errors during indexing. For example, if the threshold is 10%, the indexing job fails if more than 10% of your records have an error during indexing. If `indexingMethod` is `fullCatalogReindex`, the temporary index isn't moved to production if the failure rate exceeds this threshold. For other methods, successfully imported records successfully are kept in the Algolia indices.
+
+- **localesForIndexing** (comma-separated values, empty by default): if set, only this list of locales are indexed, otherwise the job uses the value of the `LocalesForIndexing` custom preference.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  By default (with its `indexingMethod` parameter set to `fullCatalogReindex`), this job performs an **atomic** reindex (also called a **zero-downtime** reindex).
+  This method indexes all your records to a temporary index, `<INDEX_NAME>.tmp` (keeping your previous index settings), and moves (renames) the temporary index to the final one on completion.
+  This guarantees that your index is never empty and is the safest way to reindex all your product data.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Indexing categories with `AlgoliaCategoryIndex_v2`
+
+This job creates your category indices.
+
+The category index stores your category structure.
+Use it for initial category indexing or for periodically reindexing all your categories.

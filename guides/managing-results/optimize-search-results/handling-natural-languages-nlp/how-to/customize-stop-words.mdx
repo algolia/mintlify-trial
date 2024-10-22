@@ -1,0 +1,129 @@
+---
+title: Customize stop words
+description: |-
+  Learn how to customize stop words dictionaries through the dashboard.
+---
+
+Stop words are the most common words in a language, such as "the", "that", and "it" in English. These words don't usually provide helpful clues in a search. It's likely that many records, even unrelated ones, contain them—leading to false positives in the search results.
+
+When searching, many people use only keywords and already remove these words themselves. However, if your users tend to search with these words, or with a natural language syntax, as is common in [voice search](/guides/solutions/ecommerce/voice-search/), it's a good idea to remove stop words from the search query. This is precisely what the [`removeStopWords`](/api-reference/api-parameters/removeStopWords/) feature does.
+
+This parameter relies on language-specific stop word dictionaries, which Algolia maintains for around 50 languages. You can view the complete list of supported languages in the [`removeStopWords`](/api-reference/api-parameters/removeStopWords/) [usage notes](/api-reference/api-parameters/removeStopWords/#usage-notes). You can add, turn off, and delete stop words from them using your [Algolia dashboard](https://dashboard.algolia.com/dictionaries/stopwords).
+
+**Stop words dictionaries are applied at the application rather than index level.** If you want to ignore certain words only when searching certain indices, consider using the [`optionalWords`](/api-reference/api-parameters/optionalWords/) feature.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You should use [`removeStopWords`](/api-reference/api-parameters/removeStopWords/) and other language-specific features in conjunction with the [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) setting. Refer to the [guide on how to set an index's query language](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/how-to-set-an-index-query-language/) to learn more.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Inspecting stop words
+
+If you want to see which stop words are already included in the default dictionary for a particular language,
+you can search and filter stop words in the Algolia dashboard.
+For example, you can filter the dictionary for words that Algolia provided by default, words you added,
+and you can filter for active and inactive stop words.
+
+1. Select the **Search** product icon on your dashboard.
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/stopwords) in the left sidebar menu of the dashboard.
+1. Search for and select the language whose stop words you want to inspect on the screen's top right. **Stop words dictionaries are language-specific.**
+1. Select the **Words Ignored** dictionary.
+1. You can search for a specific stop word by typing it into the input bar.
+1. Using the **Filter** button, you can filter stop words by **Status** (Enabled or Disabled) or by **Type** (provided by Algolia, or words you added yourself).
+
+## Disabling and deleting stop words
+
+You may find that a particular stop word is important to your use case and want to disable it from a dictionary.
+
+For example, "down" is a stop word that you would normally remove from searches. If your product catalog includes "down jackets" as well as other (not down) jackets, then this word is a crucial signifier and needs to be included in queries for the most relevant results.
+
+In this case, you need to disable the stop word from taking effect.
+
+1. Select the **Search** product icon on your dashboard.
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/stopwords) in the left sidebar menu of the dashboard.
+1. Search for and select the language whose stop words you want to customize on the screen's top right. **Stop words dictionaries are language-specific.**
+1. Select the **Words Ignored** dictionary.
+1. Use the input bar to search for a stop word to see if it exists.
+1. If you added the stop word, you can either delete it entirely by clicking the **Remove** button with a trash can icon or temporarily disable it using the **Disable** button.
+1. If the stop word is provided by Algolia, you can only **Disable** it, using the **Disable** button.
+1. Select **Review and Save** to save this and any other changes.
+
+You can also delete or disable multiple stop words simultaneously by clicking the respective buttons next to each stop word, then reviewing the changes at once.
+
+## Adding custom stop words
+
+You may find that your users are searching with words that don't signify any essentials differences between results and may not appear in your records at all.
+
+For example, your users could be searching with your brand name, even though they're already on your site. Since all your records are of this brand, the brand name may not appear anywhere in your records.
+
+In this case, it helps to make the brand name a stop word, as it's already understood and doesn't need to be searched for.
+
+1. Select the **Search** product icon on your dashboard.
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/stopwords) in the left sidebar menu of the dashboard.
+1. Search for and select the language whose stop words you want to customize on the screen's top right. **Stop words dictionaries are language-specific.**
+1. Select the **Words Ignored** dictionary.
+1. Use the input bar to search for a stop word to see if it exists.
+1. If it doesn't exist, select the **+ (Add as a custom stop word)** button to add it to your stop words dictionary for this language.
+1. Select **Review and Save** at the bottom of the screen to save this and any other changes. After you add a word to a dictionary, it's active by default.
+
+## Creating your own custom stop word dictionary
+
+You may have curated your own list of stop words for your use case. To apply only stop words you provided, you can turn off all Algolia-provided stop words using the **Actions** button. Then, add your own stop words manually or upload them in bulk.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Even if you want to create a completely custom, language-agnostic dictionary, you still need to select a particular language's dictionary to customize. Then, be sure to set this language as the [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) and enable [`removeStopWords`](/api-reference/api-parameters/removeStopWords/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+1. Select the **Search** product icon on your dashboard.
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/stopwords) in the left sidebar menu of the dashboard.
+1. Search for and select the language whose stop words you want to customize on the screen's top right. **Stop words dictionaries are language-specific.**
+1. Select the **Words Ignored** dictionary.
+1. Click the **Actions** button with the gear icon and select **Disable Algolia words**.
+1. Click the **Actions** button with the gear icon and select **Upload your list of words**.
+1. Drop and drag or select a CSV or JSON file with your stop words. See the examples below for the expected format.
+
+### Create a custom stop word dictionary in CSV format
+
+```csv csv
+word, language, state, objectID, type
+custom, en, enabled, 1, custom
+stop, en, disabled, 2, custom
+words, en, enabled, 3, custom
+```
+
+### Create a custom stop word dictionary in JSON format
+
+```json json
+[
+  {
+    "word": "custom",
+    "language": "en",
+    "state": "enabled",
+    "objectID": 1,
+    "type": "custom"
+  },
+  {
+    "word": "stop",
+    "language": "en",
+    "state": "disabled",
+    "objectID": 2,
+    "type": "custom"
+  },
+  {
+    "word": "words",
+    "language": "en",
+    "state": "enabled",
+    "objectID": 3,
+    "type": "custom"
+  }
+]
+```
+
+Using the **Actions** button, you can also download all custom stop words from a dictionary, either in CSV or JSON format. You may choose to do this regularly to keep track of which custom stop words you added or enabled at a particular time.

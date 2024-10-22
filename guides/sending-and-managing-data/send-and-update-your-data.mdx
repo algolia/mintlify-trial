@@ -1,0 +1,146 @@
+---
+title: Send and update your data
+description: |-
+  How to send your data to Algolia, batch large datasets, synchronize with incremental updates and atomic reindexing, or handle concurrency.
+---
+
+After you have [structured your data](/guides/sending-and-managing-data/prepare-your-data/) into records, you need to send it to Algolia to make it searchable.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Push data to Algolia with API clients](https://academy.algolia.com/guides/5d8a66aa-c439-11ee-96f2-06d3877cd55d/tasks/41bbe352-b158-11ee-8b2d-06ff0cab3fa7)
+  - [Push data to Algolia with the CLI](https://academy.algolia.com/guides/5d8c866a-c439-11ee-96f2-06d3877cd55d/tasks/76e5c2b0-b170-11ee-993d-02601ed2c0f1)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Index your data without coding
+
+- [Dashboard](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard/)
+- [No-code connectors](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-with-no-code-connectors/)
+- [Crawler](/tools/crawler/getting-started/overview/)
+- [Ecommerce integrations](/guides/getting-started/how-algolia-works/in-depth/ecosystem/#ecommerce-integrations)
+- [Algolia CLI](/tools/cli/get-started/overview/)
+
+## Index your data with coding
+
+- [API clients](/api-reference/api-methods/save-objects/)
+- [Web frameworks](/guides/getting-started/how-algolia-works/in-depth/ecosystem/#framework-integrations)
+- [Search API](/rest-api/search/)
+
+## Name your index
+
+Choose a unique, readable name, and make sure you don't use any sensitive or personally identifiable information (PII) as your index name. This includes usernames, user IDs, or email addresses. As index names appear in network requests, you must **consider them as being publicly available.**
+
+## Authenticate with Algolia
+
+You need an [application ID and a valid API key](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-with-the-api/#application-id) to push your data. These credentials protect your data, and you can set different access levels for your team.
+
+Every indexing operation requires these credentials. The application ID gives you access to your indices, and the appropriate API key gives you the permission to perform indexing operations.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [API keys](/guides/security/api-keys/)
+  - [Security best practices](/guides/security/security-best-practices/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Unique object identifiers
+
+The engine identifies each record with a unique `objectID`, ideally, one you set yourself. If you don't, Algolia generates them for you. You can retrieve the `objectID` by browsing the index. Later on, when you need to update or delete records, you must provide the `objectID`.
+
+## Send records in batches
+
+Algolia lets you send one or more records in a single API call or _batch_ records. You can batch your indexing operations with the API or the dashboard.
+
+For optimal indexing performance, **you should send your records in batches**. An ideal batch size is \~10 MB, representing 1,000 to 10,000 records, depending on the average record size.
+
+Batching **reduces network calls and speeds up indexing**. You'll see the most significant performance improvements if you have many records, but it's good practice for everyone to batch indexing operations whenever possible.
+
+**Batching doesn't change [how Algolia counts indexing operations](https://support.algolia.com/hc/en-us/articles/18138875086865).**
+Every indexing operation adds to your count.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Sending records in batches](/guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches/)
+  - [Scaling to larger datasets](/guides/scaling/scaling-to-larger-datasets/)
+  - [Index operations are asynchronous](/guides/sending-and-managing-data/send-and-update-your-data/in-depth/index-operations-are-asynchronous/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Update your data
+
+After the initial data import, you need to keep your index up-to-date with the latest changes on your app or website. The appropriate update frequency depends on **how often your content changes and how fast you need it to be searchable**.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Since the **engine prioritizes search over indexing updates,** you should expect some delays when updating an index.
+</Note>
+
+{/* prettier-ignore-end */}
+
+Take the example of an ecommerce store:
+
+- You want to update price changes or product availability in real time.
+- You don't need to update the number of sales (used for custom ranking) as often, so you can periodically send them in batches.
+
+Aim to find a balance between:
+
+- Getting fresh information into the search experience as quickly as possible
+- Reducing the number of operations (which affects your performance and, potentially, the Algolia pricing).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Incremental updates](/guides/sending-and-managing-data/send-and-update-your-data/how-to/incremental-updates/)
+  - [Data synchronization strategies](/guides/sending-and-managing-data/send-and-update-your-data/in-depth/the-different-synchronization-strategies/)
+  - [Save objects](/api-reference/api-methods/save-objects/)
+  - [Partial update objects](/api-reference/api-methods/partial-update-objects/)
+  - [Delete objects](/api-reference/api-methods/delete-objects/)
+  - [Delete by](/api-reference/api-methods/delete-by/)
+  - [Move index](/api-reference/api-methods/move-index/)
+  - [Replace all objects](/api-reference/api-methods/replace-all-objects/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## How to handle multiple users
+
+You can use **[security-filtering](/guides/security/api-keys/how-to/user-restricted-access-to-data/)** to restrict the data users can see when searching. This allows for dedicated searchable content, which isn't visible to unauthorized users.
+
+## Concurrency
+
+When working in a concurrent environment, you might need more control to guarantee data consistency. The engine supports built-in operations that allow conditional updates based on [versioning and optimistic locking](/guides/sending-and-managing-data/send-and-update-your-data/in-depth/handling-concurrency-with-versioning/).
+
+## Third-party integrations
+
+You may use a framework or platform to power your app. Most of these solutions have their own databases and front ends. The goal is to send your data from these platforms to Algolia and manage data updates and search configurations.
+
+Algolia offers several official integrations to simplify the indexing process for popular frameworks and platforms. If you're using one of the solutions listed below, you can install the corresponding extension to index your content.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Magento 2](/integration/magento-2/getting-started/quick-start/)
+  - [Shopify](/integration/shopify/getting-started/quick-start/)
+  - [Salesforce](/guides/sending-and-managing-data/send-and-update-your-data/tutorials/salesforce-algolia/)
+  - [Salesforce B2C Commerce](/integration/salesforce-commerce-cloud-b2c/getting-started/introduction/)
+  - [Commercetools](/integration/commercetools/getting-started/installation/)
+  - [Bigcommerce](/integration/bigcommerce/get-started/installation/)
+  - [Rails](/framework-integration/rails/getting-started/setup/)
+  - [Laravel](/framework-integration/laravel/getting-started/introduction-to-scout-extended/)
+  - [Symfony](/framework-integration/symfony/getting-started/algolia-searchbundle/)
+  - [Django](/framework-integration/django/setup/)
+  - [Confluence](/guides/sending-and-managing-data/send-and-update-your-data/tutorials/confluence-algolia/)
+  - [Jira](/guides/sending-and-managing-data/send-and-update-your-data/tutorials/jira-algolia/)
+  - [Google Drive](/guides/sending-and-managing-data/send-and-update-your-data/tutorials/google-drive-algolia/)
+  - [Parse](/guides/sending-and-managing-data/send-and-update-your-data/tutorials/parse-algolia/)
+</Info>
+
+{/* prettier-ignore-end */}

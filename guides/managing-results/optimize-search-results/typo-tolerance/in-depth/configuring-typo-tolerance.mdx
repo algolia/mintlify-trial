@@ -1,0 +1,65 @@
+---
+title: Configuring typo tolerance
+description: |-
+  Learn how to configure typo tolerance and turn it on or off.
+---
+
+Typo tolerance is on by default. You can change the typo tolerance behavior in the **Typo-Tolerance** section of [Algolia's dashboard](https://dashboard.algolia.com/explorer/configuration/typo-tolerance/) or with the [`typoTolerance`](/api-reference/api-parameters/typoTolerance/) parameter:
+
+- `true`: turns typo tolerance on (the default, suggested value).
+- `false`: turns typo tolerance off.
+- `min`: only keeps results with the lowest number of typos. This means that if you have one or more records that match, you'll only receive those records, but if you have no records that match, you'll receive records with typo counts of 1 (or 2 if there are none with 1). When using a [sort-by attribute](/guides/managing-results/refine-results/sorting/how-to/sort-by-attribute/), set typo tolerance to `min` to reduce irrelevant search results.
+- `strict`: like `min` but keeps the **two** lowest number of typos. This is useful when you want to ensure more results. When typo tolerance is `strict`, the [Typo criterion](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#typo) is forced to be first in the ranking formula.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  When typo tolerance is `true`, `min` or `strict`, Algolia enables [splitting and concatenation](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Configure word size threshold for typos
+
+Each word in a query can have up to two typos:
+
+- **One typo.** Typo tolerance is only considered when a user has typed 4 characters (by default). Change this default with the [`minWordSizefor1Typo`](/api-reference/api-parameters/minWordSizefor1Typo/) parameter or the **Min chars to accept 1 typo** setting in the [dashboard](https://dashboard.algolia.com/explorer/configuration/typo-tolerance/).
+- **Two typos.** _Two_ typos are considered when a user has entered 8 characters (by default). Change this default with the [`minWordSizefor2Typos`](/api-reference/api-parameters/minWordSizefor2Typos/) parameter or the **Min chars to accept 2 typos** in the [dashboard](https://dashboard.algolia.com/explorer/configuration/typo-tolerance/).
+
+Reducing these limits can be beneficial, depending on your specific needs.
+Experiment with different settings to see what works best for your users.
+
+### Benefits of reducing word size threshold
+
+- **Increased typo tolerance.** This can be helpful for mobile apps where typing errors are common.
+- **Improved results for short words.** If your records contain many short words, reducing the threshold can help users find these words even if they make a typo.
+
+### Drawbacks of reducing word size threshold
+
+- **Increases irrelevant results.** If a user makes a typo in a short word, irrelevant but valid results could be shown.
+
+## Treat singular and plural words the same
+
+[Singular and plural word forms](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/language-specific-configurations/#ignoring-plurals-and-other-alternative-forms) aren't the same by default: `foot ≠ feet`.
+
+Change this default behavior, so that `foot = feet`, by setting the [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) parameter to `true`, or in the **Language** configuration page in the [dashboard](https://dashboard.algolia.com/explorer/configuration/language/).
+
+## Typo tolerance and numbers
+
+Typo tolerance is active on numbers by default.
+This, for example, allows users to make one or two wrong entries in a telephone number.
+For attributes such as postal codes, it makes sense to turn off typo tolerance for numbers since any typo will return many _false positive_ results.
+
+Change this default behavior by setting the [`allowTyposOnNumericTokens`](/api-reference/api-parameters/allowTyposOnNumericTokens/) parameter to `false` or in the **Typo-Tolerance** section in the [dashboard](https://dashboard.algolia.com/explorer/configuration/language/).
+
+## Turn off typo tolerance for specific attributes
+
+You can turn off typo tolerance for specific [searchable attributes](/guides/managing-results/must-do/searchable-attributes/). This is useful, for example, to turn off typo tolerance on product SKU codes.
+
+Specify the attributes with the [`disableTypoToleranceOnAttributes`](/api-reference/api-parameters/disableTypoToleranceOnAttributes/) parameter or in the **Typo-Tolerance** section in the [dashboard](https://dashboard.algolia.com/explorer/configuration/typo-tolerance/).
+
+## Turn off typo tolerance for certain words
+
+You can define a list of words for which you wish to turn typo tolerance off. This is useful, for example, with acronyms like "mysql," "php", or "mamp".
+
+Specify the words with the [`disableTypoToleranceOnWords`](/api-reference/api-parameters/disableTypoToleranceOnWords/) parameter or in the **Typo-Tolerance** section in the [dashboard](https://dashboard.algolia.com/explorer/configuration/typo-tolerance/).

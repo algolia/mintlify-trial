@@ -1,0 +1,683 @@
+---
+title: Indexing
+description: |-
+  Learn how the indexing works in the Algolia extension for Magento Open Source and Adobe Commerce.
+---
+
+To provide fast and relevant search, the Algolia extension for Magento Open Source and Adobe Commerce takes your products, categories, and pages from your store and transforms them into searchable data. This process is called _indexing_.
+
+You can index your data through these methods:
+
+- Automatically with an [indexing queue](/integration/magento-2/how-it-works/indexing-queue/)
+- Manually from the Magento console
+- Manually on the command-line
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Algolia extension for Magento Open Source and Adobe Commerce](https://academy.algolia.com/training/900ba68e-d3ca-11e9-a937-06c0361096e5/overview)
+</Info>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Send and update your data](/guides/sending-and-managing-data/send-and-update-your-data/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Check the [troubleshooting guide](/integration/magento-2/troubleshooting/data-indexes-queues/) if you have any issues with your data, indexes, or queue.
+</Note>
+
+{/* prettier-ignore-end */}
+
+To provide the best search experience for your users, the extension automatically keeps all your data up to date, offering two indexing mechanisms in Magento:
+
+- **Section reindex.** An entire section of the catalog (products, categories, pages) is uploaded to Algolia's servers and reindexed.
+- **Single item reindex.** - A single resource (product, category, page) is uploaded to the servers and reindexed.
+  Single item reindexing happens when a resource is updated.
+
+By default, the indexing operations run synchronously, and you must wait until the indexing process finishes before you can continue. This is inconvenient and can have [unexpected side effects](/integration/magento-2/troubleshooting/data-indexes-queues/).
+Therefore, you should instead use the [indexing queue](/integration/magento-2/how-it-works/indexing-queue/), which processes all index operations in the background and avoids some sources of errors.
+
+## Section reindex with an indexing queue
+
+The [indexing queue](/integration/magento-2/how-it-works/indexing-queue/) uses temporary indices to reindex products.
+Instead of updating the production index directly, Algolia creates a copy and replaces the production index **only when the update is complete.**
+
+This approach has several advantages:
+
+- Higher reindexing speed
+- No inaccuracies with deleted products
+- Fewer indexing operations
+
+Changes to the index will be visible once the temporary index completely replaces the production index.
+
+## Section reindex without an indexing queue
+
+Without the indexing queue, reindexing the complete catalog is synchronous: everything has to wait until the process completes.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Processing [large indices](/integration/magento-2/troubleshooting/data-indexes-queues/) synchronously may trigger PHP timeouts.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+Without a queue, reindexing takes more time _and_ resources. It's also less reliable: if products are updated while the reindexing is in process, the data on Algolia's servers may not be up to date.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Enable the indexing queue for any full reindexing, especially if you have large catalogs.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Automatic indexing
+
+The Algolia extension for Magento sends every change and deletion on products or categories to Algolia's servers to keep all data up to date.
+
+## Manual indexing
+
+To index your data manually, first turn off the [indexing queue](/integration/magento-2/how-it-works/indexing-queue/): set **Stores > Configuration > Algolia Search > Indexing Queue/Cron > Enable Indexing Queue** to _No_ in the Magento dashboard.
+
+You can now use the command-line to send manual updates to Algolia's server. For example, to completely reindex all products:
+
+```sh sh
+php path/to/magento/bin/magento indexer:reindex algolia_products
+```
+
+Use the same command for all other indices created by the extension:
+
+| Command                       | Action                                        |
+| ----------------------------- | --------------------------------------------- |
+| `algolia_products`            | Reindex all products                          |
+| `algolia_categories`          | Reindex all categories                        |
+| `algolia_pages`               | Reindex all CMS pages                         |
+| `algolia_suggestions`         | Reindex all search query suggestions          |
+| `algolia_additional_sections` | Reindex all additional sections               |
+| `algolia_queue_runner`        | Process jobs in the indexing queue            |
+| `algolia_delete_products`     | Remove inactive products from Algolia indices |
+
+## Manual indexing with the indexing queue turned on
+
+To reindex with the indexing queue turned on, manually trigger the queue runner,
+or let the cron job process it when your data is updated.
+To do this, and add _all_ your products to the indexing queue, run:
+
+1. `php path/to/magento/bin/magento indexer:reindex algolia_products`
+1. `PROCESS_FULL_QUEUE=1 php path/to/magento/bin/magento indexer:reindex algolia_queue_runner`
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You should only implement this as a [troubleshooting](/integration/magento-2/troubleshooting/data-indexes-queues/) activity, not as a regular task.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Indexing products
+
+It's essential for your business to have exact and up-to-date product data in your search.
+
+### Full reindexing
+
+To fully reindex all your products:
+
+```sh sh
+php path/to/magento/bin/magento indexer:reindex algolia_products
+```
+
+### Indexable products
+
+To prevent too many indexed products and save indexing operations,
+Algolia only indexes products that actually appear in the online store.
+
+Algolia only indexes products that are:
+
+- Visible - either in the catalog, the search, or both
+- Enabled
+- Not deleted
+- In stock - unless Magento is configured to show out-of-stock products, too.
+
+If you miss a product in your search, make sure the product meets all four criteria.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Troubleshooting Data, Index, and Queue Issues](/integration/magento-2/troubleshooting/data-indexes-queues/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Missing products
+
+If search can't find some products, go the [Algolia dashboard](https://dashboard.algolia.com/explorer), select the index that contains your products and search there.
+
+- If you can find the product, confirm that is has the correct [visibility](#indexable-products) setting. If products are only visible in the catalog, they won't show up while searching. They will only show up on the InstantSearch page (in the category section).
+- If you can't find the product, it hasn't been indexed. Make sure it adheres to the [indexing requirements](#indexable-products). If the product meets the requirements, **Reindex** it.
+
+If the problem persists, turn on logging and investigate the log files to see what's going on during the reindexing process.
+
+### Searchable attributes
+
+You can configure which attributes should be searched when users type their queries. To configure the list of [searchable attributes](/guides/managing-results/must-do/searchable-attributes/), go to **Stores > Configuration > Algolia Search > Products**.
+
+In the **Products** tab, you can set each attribute as _searchable_, _retrievable_, or _ordered_. By default, all attributes are set to be searched as _unordered_. This is usually the best choice, and you shouldn't change it without specific reasons.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Configuring searchable attributes the right way](/guides/managing-results/must-do/searchable-attributes/how-to/configuring-searchable-attributes-the-right-way/#word-position)
+</Info>
+
+{/* prettier-ignore-end */}
+
+#### Default indexed attributes
+
+Some attributes are always indexed, regardless of your configuration. These attributes aren't all _searchable_ but can be used for filtering, sorting, customizing the ranking, and building the results page.
+
+These product attributes are **always** indexed:
+
+| Attribute                 | Description                                |
+| ------------------------- | ------------------------------------------ |
+| `name`                    | Name                                       |
+| `url`                     | URL                                        |
+| `visibility_search`       | Visibility in the search                   |
+| `visibility_catalog`      | Visibility in the catalog                  |
+| `categories`              | Categories, formatted as a tree path       |
+| `categories_without_path` | Categories, without the tree path          |
+| `thumbnail_url`           | Thumbnail image                            |
+| `image_url`               | Main image                                 |
+| `in_stock`                | Stock availability                         |
+| `price`                   | Price                                      |
+| `type_id`                 | Type (simple, configurable, bundled, etc.) |
+
+#### `image_url` start with `/pub`
+
+This error can occur when your app has the `pub/` directory as the root directory for the Magento installation.
+This is usually considered a good practice, but it has some drawbacks.
+The extension can't know which directory is the root folder for Magento, so it always assume the base directory is your root folder.
+
+The best way to handle this problem is to [make your server](https://gist.github.com/julienbourdeau/ad4fadd9bbf9f99c46f8f8e28fb14ffc) ignore `/pub` in the URL.
+
+If it's not possible to change the server configuration, a setting is provided in **Stores > Configuration > Algolia Search > Advanced > Remove /pub/ from image URLs**.
+When this setting is changed, reindex the catalog.
+
+### Facets
+
+Facets are attributes used to filter search results. Common facets include price, color, categories, and brand. You may need to adjust the facets of the products you sell and how your users search for these products.
+
+For each facet, you can specify:
+
+- The attribute
+- The label - this will be displayed above the filter
+- The facet type
+
+Select one of the modifiers from the **Options** drop-down menu to make facet values [searchable, not searchable, or filterable (not "facetable")](/api-reference/api-parameters/attributesForFaceting/#modifiers).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Use the `filterOnly` modifier if you _only_ want to use the filtering feature. This will help optimize search speed and reduce index size.
+</Note>
+
+{/* prettier-ignore-end */}
+
+You can attach facets to [rules](/guides/managing-results/rules/rules-overview/).
+If you set **Create Query rule** to **Yes**, Algolia uses the attribute as a [filter](/guides/managing-results/rules/detecting-intent/).
+Suppose you create a rule for the _color_ attribute and users search for products with a specific color, for example, "red shorts". In that case, Algolia filters all results with "red" as the _color_ attribute.
+
+When a rule is attached to an attribute, it's applied to both the Autocomplete menu and InstantSearch results page.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Rules are only available on [Grow and Premium plans](https://www.algolia.com/pricing/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+By default, the extension provides facets on the _price_, _categories_, and _color_ attributes. Any numeric attribute, for example, price, is shown as a slider in the user interface.
+
+Attributes specified as facets are automatically indexed as retrievable but **not** searchable. You don't need to add them manually to the [searchable attributes](#searchable-attributes).
+
+#### How to add numeric attributes as non-castable
+
+To access the configuration page for Algolia in your Magento project, go to **Stores > Algolia Search > Credentials and Basic Setup > Advanced** in the Admin panel.
+
+From there, you can specify which text fields or non-castable attributes to include under **Product numeric textfield attributes** that should not be converted into a numeric field by Magento.
+
+#### 'No' values in filters
+
+If a product doesn't have any value assigned to an attribute, the value of this attribute will be automatically set to 'No' by Magento.
+To turn off indexing for 'No' values, set the _Index empty value_ setting in your [searchable attributes](/integration/magento-2/how-it-works/indexing/#searchable-attributes) to _No_ for the attributes you want to ignore 'No' values for.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Changing any index setting requires a full reindex of all data.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Sorting strategies
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Sorting is only available on the InstantSearch Results page. By default, the Algolia Magento 2 extension uses the _exhaustive_ sorting strategy with **Standard Replicas**, but you can switch to the _relevant_ sorting strategy using [**Virtual Replicas**](/guides/managing-results/refine-results/sorting/in-depth/replicas/#standard-and-virtual-replicas).
+</Note>
+
+{/* prettier-ignore-end */}
+
+When searching for products, users may expect multiple ways to sort the result set. For example, they want to sort by relevance, popularity, price, or date.
+
+The default sorting strategy when searching is sorting by relevance. Any other sorting strategy needs to be defined in the Sort Settings.
+
+For each strategy, define an attribute, sort order (ascending or descending), and label.
+
+You can also specify whether to create a virtual replica (instead of a standard replica) for the sorting strategy.
+
+By default, there are three sorting strategies:
+
+1. From lowest price to highest price
+1. From highest price to lowest price
+1. From newest to oldest
+
+If you've chosen to use standard replicas, each sorting strategy creates a new standard replica index, which increases the [number of records](#number-of-records-created) used by your plan.
+
+Attributes configured for sorting are automatically indexed as retrievable but **not** searchable. You don't need to add them manually to the [searchable attributes](#searchable-attributes).
+
+Replicas are configured in Algolia whenever you save changes to the sorting configuration in your store's Admin.
+If a sorting attribute is deleted from the configuration in your store's Admin, the corresponding replica index will be deleted in Algolia.
+
+If you experience issues with your replica configuration in Algolia or can't save changes from your store's Admin, refer to the [Troubleshooting guidance](/integration/magento-2/troubleshooting/back-end-issues/#migrate-to-granular-virtual-replicas).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  You can now also apply sorting strategies to your InstantSearch results pages in your store's Admin with [Merchandising Studio](/integration/magento-2/merchandising/merchandising-studio/#a-new-way-to-merchandise-with-magento).
+  With this method, you can add [rules](/guides/managing-results/rules/rules-overview/) that apply alternative sorting strategies when certain conditions are met.
+  The extension doesn't manage these indices.
+</Info>
+
+{/* prettier-ignore-end */}
+
+#### Number of records created
+
+To provide fast results, Algolia pre-computes a part of the order at indexing time.
+This means only one sorting is available for a single index.
+Each additional sort will result in an additional index.
+Sorting indices may take up significantly increased storage depending on whether standard (default) or virtual replicas are enabled for the corresponding sorting attribute configuration.
+
+In Magento, this means that by default these indices are created:
+
+- One per store
+- One per store per additional sort order (such as by price or by date)
+
+To calculate the amount of records this generates, take a look at the following example:
+
+A Magento app has two stores (for two languages) which both have 100 products.
+Both stores have additional sorts on price and date, resulting in a total of four additional sorts.
+
+Using this scenario, you would need to index:
+
+| Sort              | Records | Total |
+| ----------------- | ------- | ----- |
+| Default sorting   | 100×2   | 200   |
+| Custom sorting    | 100×2×4 | 800   |
+| **Total records** |         | 1000  |
+
+If the _customer group_ feature is enabled, each customer group will result in an extra index on **the pricing sorting**.
+Following the preceding example, but with a total of 5 customer groups will result in:
+
+| Sort              | Records   | Total |
+| ----------------- | --------- | ----- |
+| Default sorting   | 100×2     | 200   |
+| Pricing sorting   | 100×2×2×5 | 2000  |
+| Custom sorting    | 100×2×2   | 400   |
+| **Total records** |           | 2600  |
+
+The number of indexed records can be lowered by either removing some sorting strategies or by converting them to using [virtual replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/#standard-and-virtual-replicas).
+(Virtual replicas do require _some_ additional storage but this is [marginal relative to the number of records](/guides/managing-results/refine-results/sorting/in-depth/replicas/#differences).)
+
+Sorts can be configured in the extensions' administration panel:
+
+#### Switching to virtual replicas
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Virtual replicas are not available on the [Grow](https://www.algolia.com/pricing/) plan.
+</Note>
+
+{/* prettier-ignore-end */}
+
+To configure Virtual Replicas for Sorting, go to **Stores > Configuration > Algolia Search > InstantSearch Results Page > Sorting**.
+
+In the grid, enable virtual replicas for each desired attribute by setting **Enable Virtual Replica?** to **Yes**.
+
+When you switch a sorting attribute to a virtual replica, Algolia deletes the _standard_ replica and creates a _virtual_ replica index in its place. If you reset this value to **No**, the opposite will happen.
+
+Virtual replicas slightly increase the primary index's size (less than 10 MB per million records), but they don't affect the number of records.
+For more information, see [Standard and virtual replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/#standard-and-virtual-replicas).
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  You can enable [up to 20 virtual replicas](/guides/scaling/algolia-service-limits/#application-record-and-index-limits) per index. The extension will inform you if you have exceeded this limit.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+#### Scoped configuration
+
+The extension will create a product index for each Algolia-enabled store (or "store view") in your Magento instance.
+To keep within the virtual replica limits on a single index, use the [store view selector](/integration/magento-2/troubleshooting/back-end-issues/?client=php#different-configuration-on-store-view-or-website-level) to configure your sorting attributes for each store independently.
+
+Choose the website or store view where you wish to apply the desired changes.
+
+For a website scope, remove the **Use Default** check mark and configure your sorting attributes accordingly:
+
+For a store scope, remove the **Use Website** check mark:
+
+For more information, see [Adobe's official documentation](https://experienceleague.adobe.com/en/docs/commerce-admin/start/setup/websites-stores-views).
+
+### Index settings
+
+Configure these settings in the Magento dashboard:
+
+- [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/)
+- [`customRanking`](/api-reference/api-parameters/customRanking/)
+- [`unretrievableAttributes`](/api-reference/api-parameters/unretrievableAttributes/)
+- [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/)
+- [`maxValuesPerFacet`](/api-reference/api-parameters/maxValuesPerFacet/)
+- [`removeWordsIfNoResults`](/api-reference/api-parameters/removeWordsIfNoResults/)
+
+Manage additional index settings in the [Algolia dashboard](https://dashboard.algolia.com/dashboard). To change the settings programmatically, you can hook into the `algolia_products_index_before_set_settings` event provided by the extension. See [Custom backend events](/integration/magento-2/customize/custom-back-end-events/) for more information.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Any changes in the Algolia dashboard override these settings **until** you perform a full reindex from the Magento dashboard.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Indexing categories
+
+To keep the number of records and indexing operations as low as possible, Algolia only indexes active categories.
+To show all categories in the Autocomplete menu and InstantSearch Results page, set **Show categories that are not included in the navigation menu** to **Yes**.
+
+### Full reindexing
+
+```sh sh
+php path/to/magento/bin/magento indexer:reindex algolia_categories
+```
+
+### Searchable attributes
+
+You can configure which attributes should be searched when users type their queries. To configure the list of [searchable attributes](/guides/managing-results/must-do/searchable-attributes/), go to **Stores > Algolia Search > Categories**.
+
+In the **Categories** tab, you can set each attribute as _searchable_, _retrievable_, or _ordered_. By default, all attributes are set to be searched as _unordered_. This is usually the best choice, and you shouldn't change it without specific reasons.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Configuring searchable attributes the right way](/guides/managing-results/must-do/searchable-attributes/how-to/configuring-searchable-attributes-the-right-way/#word-position)
+</Info>
+
+{/* prettier-ignore-end */}
+
+#### Default searchable category attributes
+
+Some attributes are always indexed, regardless of your configuration. These attributes aren't all _searchable_ but can be used for filtering, sorting, customizing the ranking, and building the results page.
+
+These category attributes are **always** indexed:
+
+| Attribute         | Description                             |
+| ----------------- | --------------------------------------- |
+| `name`            | Name                                    |
+| `url`             | URL                                     |
+| `path`            | Path (parent categories)                |
+| `level`           | Level in the category tree              |
+| `include_in_menu` | Visibility in the menu                  |
+| `_tags`           | _Filled automatically by the extension_ |
+| `popularity`      | Popularity                              |
+| `product_count`   | Amount of products                      |
+
+### Index settings
+
+Configure these settings in the Magento dashboard:
+
+- [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/)
+- [`customRanking`](/api-reference/api-parameters/customRanking/)
+- [`unretrievableAttributes`](/api-reference/api-parameters/unretrievableAttributes/)
+
+Manage additional index settings in the [Algolia dashboard](https://dashboard.algolia.com/dashboard). To change the settings programmatically, you can hook into the `algolia_categories_index_before_set_settings` event provided by the extension. See [Custom backend events](/integration/magento-2/customize/custom-back-end-events/) for more information.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Any changes in the Algolia dashboard override these settings **until** you perform a full reindex from the Magento Dashboard.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Indexing pages
+
+To turn indexing of CMS pages on or off, go to **Stores > Algolia Search > Credentials and Basic Setup > Enable Pages Index**. When set to `Yes` the Algolia extension automatically indexes CMS pages, allowing users to search for pages in the Autocomplete menu. All active pages are indexed by default.
+
+You can exclude specific pages, like error pages, so they don't appear in the search results.
+
+Turn off this indexing of pages in **Additional Sections**.
+
+### Full reindexing
+
+```sh sh
+php path/to/magento/bin/magento indexer:reindex algolia_pages
+```
+
+### Searchable attributes
+
+You can't configure the searchable attributes for pages in the Magento dashboard. However, you can change them programmatically, by hooking into the `algolia_after_create_page_object` event provided by the extension. See [Custom backend events](/integration/magento-2/customize/custom-back-end-events/) for more information.
+
+#### Default searchable page attributes
+
+These attributes are indexed by default and aren't all _searchable_ (some are). You can use them for filtering, sorting, custom ranking and building the search results page.
+
+These page attributes are **always** indexed:
+
+| Attribute | Description |
+| --------- | ----------- |
+| `name`    | Name        |
+| `url`     | URL         |
+| `slug`    | Slug        |
+| `content` | Content     |
+
+Any records larger that [your plan's limit](https://support.algolia.com/hc/en-us/articles/4406981897617-Is-there-a-size-limit-for-my-index-records) won't be indexed.
+In this case, only the page's name would be searchable.
+
+### Index settings
+
+The following settings are always set and can't be changed through the extension's interface:
+
+- [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/): `unordered(slug)`, `unordered(name)` and `unordered(content)`
+- [`attributesToSnippet`](/api-reference/api-parameters/attributesToSnippet/): `content:7`
+
+Manage additional index settings in the [Algolia dashboard](https://dashboard.algolia.com/dashboard). You can also change the settings programmatically, by hooking into the `algolia_pages_index_before_set_settings` event provided by the extension. See [Custom Backend Events](/integration/magento-2/customize/custom-back-end-events/) for a list of events provided by the extension.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Any changes in the Algolia dashboard override these settings **until** a full reindex is performed from the Magento Dashboard.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Indexing suggestions
+
+Magento stores every query, the number of results, and the number of searches in the `catalogsearch_query` table in the database.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Magento only stores backend searches. As-you-type searches aren't stored.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+Algolia's Magento extension lets you index queries that are performed regularly. In the settings, you can filter relevant queries, for example, by the minimum number of results or minimum popularity.
+
+To turn this behavior on or off, go to **Stores > Algolia Search > Credentials and Basic Setup > Enable Query Suggestions Index**
+
+To ensure the data in the suggestion index is relevant, enable backend search with the Algolia extension by turning on **Enable Search** and **Make SEO Request** in the Magento dashboard.
+
+With these options enabled, the extension processes backend searches. Since the data in `catalogsearch_query` is also updated, the queries in this table will become more relevant over time.
+
+By default, suggestions aren't indexed. When enabling the indexing of suggestions, you need to trigger a manual reindex.
+Another way to start the indexing of suggestions is by adding a recurring job to the cron table:
+
+```txt txt
+1 * * * * php path/to/magento/bin/magento indexer:reindex algolia_suggestions
+```
+
+Instead of Magento suggestions, you can also use Algolia's Query Suggestions feature.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Implement Algolia's Query Suggestions](/integration/magento-2/guides/algolia-query-suggestions/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Full reindexing
+
+```sh sh
+php path/to/magento/bin/magento indexer:reindex algolia_suggestions
+```
+
+### Searchable attributes
+
+You can't configure searchable attributes for suggestions in the Magento dashboard. However, you can change them programmatically by hooking them into the `algolia_after_create_suggestion_object` event provided by the extension.
+
+See [Custom backend events](/integration/magento-2/customize/custom-back-end-events/) for more information.
+
+#### Default searchable query attributes
+
+These attributes are always indexed and aren't all _searchable_. You can use these attributes for filtering, sorting, custom ranking, and building the search results page.
+
+These query attributes are **always** indexed:
+
+| Attribute           | Description           |
+| ------------------- | --------------------- |
+| `query`             | Value                 |
+| `number_of_results` | Number of results     |
+| `popularity`        | Number of searches    |
+| `updated_at`        | Last update timestamp |
+
+### Index settings
+
+The following settings are always set and can't be changed in the Magento dashboard:
+
+- [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/): `unordered(query)`
+- [`customRanking`](/api-reference/api-parameters/customRanking/): `desc(popularity)`, `desc(number_of_results)`
+- [`typoTolerance`](/api-reference/api-parameters/typoTolerance/): `false`
+- [`attributesToRetrieve`](/api-reference/api-parameters/attributesToRetrieve/): `query`
+- [`removeWordsIfNoResults`](/api-reference/api-parameters/removeWordsIfNoResults/): `lastWords`
+
+Manage additional settings in the [Algolia dashboard](https://dashboard.algolia.com/dashboard). To change the settings programmatically, you can hook into the `algolia_suggestions_index_before_set_settings` event provided by the extension. See [Custom backend events](/integration/magento-2/customize/custom-back-end-events/) for more information.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Any changes in the Algolia dashboard override these settings **until** you perform a full reindex from the Magento dashboard.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Indexing additional sections
+
+The Autocomplete menu lets you display other sections from attributes, such as colors and brands.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  For this feature to work, you **must** enable the InstantSearch Results Page.
+</Note>
+
+{/* prettier-ignore-end */}
+
+The attributes used for the additional sections have to be set as attributes for faceting.
+
+```sh sh
+php path/to/magento/bin/magento indexer:reindex algolia_additional_sections
+```
+
+### Searchable attributes
+
+Manage additional index settings in the [Algolia dashboard](https://dashboard.algolia.com/dashboard). It's also possible to change the settings programmatically, by hooking into the `algolia_additional_sections_index_before_set_settings` event provided by the extension.
+
+See [Custom Backend Events](/integration/magento-2/customize/custom-back-end-events/) for a list of events provided by the extension.
+
+#### Default searchable attributes
+
+These attributes are indexed by default and aren't all _searchable_ (some are). They can be used for filtering, sorting, customizing the ranking and building the results page.
+
+The attributes that are **always** indexed:
+
+| Attribute | Description |                                                    |
+| --------- | ----------- | -------------------------------------------------- |
+|           | **value**   | The attributes' value, for example, Red, XL, Nike. |
+
+### Index settings
+
+The following settings are always set and can't be changed through the extension's interface:
+
+- [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/): `unordered(value)`
+
+Manage additional index settings in the [Algolia dashboard](https://dashboard.algolia.com/dashboard). It's also possible to change the settings programmatically, by hooking into the `algolia_additional_sections_index_before_set_settings` event provided by the extension.
+See [Custom Backend Events](/integration/magento-2/customize/custom-back-end-events/) for a list of events provided by the extension.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Any changes in the Algolia dashboard override these settings **until** a full reindex is performed from the Magento Dashboard.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+## Removing inactive products
+
+To remove products from your Algolia index, use the `algolia_delete_products` indexer:
+
+```sh sh
+php path/to/magento/bin/magento indexer:reindex algolia_delete_products
+```
+
+This indexer removes all products from Algolia indices that you don't want to include in your search. This can be useful when you delete or deactivate products directly in Magento's database, and the extension could reindex and remove them regularly.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The reindexer doesn't delete products from your Magento database.
+  Products are only removed from Algolia indices.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Incorrect links
+
+Sometimes, links of the Magento installation can show up with an additional `/magento/` in the URL.
+Most likely, this is because _web server rewrites_ are turned off.
+Go to **Stores > Configuration > General > Web > Search Engine Optimization** and set the field **Use Web Server Rewrites** to **Yes**.
+When this setting is updated, a full reindex is required for the changes to take effect.

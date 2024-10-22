@@ -1,0 +1,61 @@
+---
+title: Uninstall Algolia for BigCommerce
+description: |-
+  Uninstalling the Algolia for BigCommerce app.
+---
+
+To uninstall the Algolia BigCommerce app:
+
+1. If the InstantSearch categories feature is enabled in your Algolia for BigCommerce app, turn it off. If you uninstall the application without turning InstantSearch categories off, you may leave behind unused metafields.
+
+1. If the Recommend widget template has been enabled in your Algolia for BigCommerce app, remove it in the Recommend tab. If you omit this step, the widget template may be left on your store.
+
+1. Click **Delete integration** in the [Algolia for BigCommerce app](https://www.bigcommerce.com/apps/algolia-search-discovery/)
+
+1. [Uninstall](https://support.bigcommerce.com/s/article/How-do-I-access-and-install-the-new-single-click-apps-within-my-Bigcommerce-store-control-panel#uninstalling) the app in BigCommerce.
+
+1. (Optional) To confirm deletion of pages, scripts, and widgets, follow the [Manual removal](#manual-removal) process.
+
+## Manual removal
+
+**If you didn't follow the preceding automatic process,** you must manually remove pages, scripts, and widgets.
+
+## Remove the InstantSearch page
+
+1. Examine the [BigCommerce web pages](https://support.bigcommerce.com/s/article/Web-Pages) created for each of your store's channels.
+
+1. The InstantSearch **Page name** matches what you called it in your [configuration](/integration/bigcommerce/search-settings/instantsearch/#configuration).
+
+1. If you can find the InstantSearch page, [delete it](https://support.bigcommerce.com/s/article/Web-Pages#deleting)
+
+## Remove Algolia for BigCommerce scripts
+
+1. Use the [BigCommerce Script Manager](https://support.bigcommerce.com/s/article/Using-Script-Manager) to examine all scripts in each of your store's channels.
+1. [Delete](https://support.bigcommerce.com/s/article/Using-Script-Manager#delete) the following Algolia for BigCommerce scripts:
+   - Algolia Autocomplete Script
+   - Algolia InstantSearch Script
+   - Algolia InstantSearch Form Script
+
+## Remove Algolia for BigCommerce widgets
+
+1. Go to the [BigCommerce Page Builder](https://support.bigcommerce.com/s/article/Page-Builder)
+
+1. Click **Layers** in the sidebar.
+
+1. Make a note of your **Placement region** name in your [Autocomplete configuration](/integration/bigcommerce/search-settings/autocomplete/#configuration).
+
+1. Click the **Layer** of the **Placement region** (used to display the layer's widgets): it's labeled as **Static Widget**.
+
+1. Click the **Static Widget** in your placement to display the HTML code editor.
+
+1. Use the code editor to verify you are viewing the correct widget
+
+1. Delete the widget.
+
+1. [Save and publish](https://support.bigcommerce.com/s/article/Page-Builder#using) the theme.
+
+## Remove Algolia for BigCommerce widget templates
+
+1. Retrieve all widget templates from the [BigCommerce API](https://developer.bigcommerce.com/docs/rest-content/widgets/widget-template#get-all-widget-templates) and make a note of the **Algolia Recommend** template's UUID.
+1. Use the UUID to [delete](https://developer.bigcommerce.com/docs/rest-content/widgets/widget-template#delete-a-widget-template) the **Algolia Recommend** template. Deleting the widget template will delete all instances of the widget on your store.
+1. (Optional) Check the [BigCommerce Page Builder](https://support.bigcommerce.com/s/article/Page-Builder) to ensure the widget template is removed.

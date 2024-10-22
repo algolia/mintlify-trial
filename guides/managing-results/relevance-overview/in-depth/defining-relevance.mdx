@@ -1,0 +1,68 @@
+---
+title: Defining relevance
+description: |-
+  Relevance is about finding and ranking results from your index in a way that matches the users' needs and expectations.
+---
+
+Relevance is about finding and ranking results from your index in a way that matches the users' needs and expectations.
+
+Relevance is a balance between finding all the records that match a search and ranking them so that the most important results are returned first.
+What _important_ means depends on your and your users' goals.
+While finding all matches is essential, if the _best_ match is somewhere among hundreds of results, your search isn't relevant.
+
+## Finding (intelligent matching)
+
+Relevance makes sure that a search finds **all records that match a query**.
+Relevance is an **intelligent matching** process that takes into account [typo tolerance](/guides/managing-results/optimize-search-results/typo-tolerance/), [partial word matching](/guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/adjust-exact-settings/), the spatial distance between matching words, the number of attributes that match, [synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/), [Rules](/guides/managing-results/rules/rules-overview/), [natural language characteristics](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/) (like stop words and plurals), [geolocation](/guides/managing-results/refine-results/geolocation/#enabling-geo-search-by-adding-geolocation-data-to-records), and many other aspects of what users expect from a modern search experience.
+
+## Ranking (putting the best at the top)
+
+Finding records is only part of the story.
+Ranking ensures that the records most closely related to the search appear first, while less related records are shown further down the list of results.
+
+- **Textual relevance** is about how well a record matches the search terms. Records that are a better match are ranked higher.
+- **Custom ranking.** If several records have equal textual relevance, Algolia lets you determine the order of results with custom metrics appropriate for your organization.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Algolia's [ranking criteria](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/) define where a record will sit in the list of results for a query.
+  If you want to find out why a record is ranked the way it is, you can [do this in the dashboard or with the API](/guides/managing-results/troubleshooting/troubleshooting-relevance/#the-engines-ranking-decisions).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Promote your content
+
+Relevant results help promote your content and give users what they're looking for through the use of:
+
+- [Custom ranking](/guides/managing-results/must-do/custom-ranking/)
+- [Merchandising](/guides/managing-results/rules/merchandising-and-promoting/)
+- [Personalization](/guides/personalization/classic-personalization/what-is-personalization/)
+- [Analytics](/guides/search-analytics/overview/).
+
+When a search matches the user's [intent](/guides/managing-results/rules/detecting-intent/), your relevance is good.
+
+## Discovery
+
+Users may not always be actively searching for specific items: sometimes, they **discover** them intentionally or unexpectedly.
+Discovery is a user-driven process where they browse and define what they need with each new query.
+A well-designed frontend UI/UX helps a user discover what they want.
+
+## UI/UX
+
+The UI/UX should allow users to find results, navigate them, discover more content, and refine their search. A good UI/UX incorporates rapid searching, highlighting key terms in results, faceting, infinite scrolling, and more.
+
+## Further reading
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Relevance overview](/guides/managing-results/relevance-overview/)
+  - [Search is more than textual matching](/guides/managing-results/relevance-overview/in-depth/textual-matching/)
+  - [The speed and relevance of a search engine](https://www.algolia.com/blog/product/defining-what-a-search-index-is-and-the-speed-and-relevance-of-a-search-engine-index/)
+  - [What is search relevance?](https://www.algolia.com/blog/product/what-is-search-relevance/)
+  - [Mobile search and discovery](https://www.algolia.com/blog/ux/mobile-search-ux-best-practices/)
+</Info>
+
+{/* prettier-ignore-end */}

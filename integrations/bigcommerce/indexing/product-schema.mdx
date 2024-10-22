@@ -1,0 +1,151 @@
+---
+title: Product schema
+description: |-
+  Understand the format of your product records in Algolia for BigCommerce.
+---
+
+Algolia's BigCommerce integration stores your product data in an extensible format that's optimal for search.
+The search record format has two options: product-level or variant-level indexing.
+Product-level indices have variants embedded in the entity, while variant-level produces one record per variant.
+
+## Product-level schema
+
+Algolia stores [BigCommerce products](https://developer.bigcommerce.com/docs/rest-catalog/products) in the following format:
+
+```json json
+{
+  "brand_id": 37,
+  "brand_name": "My Brand",
+  "categories": {
+    "lvl0": ["Library", "New Products", "Publications"]
+  },
+  "category_ids": [20, 23, 24],
+  "custom_fields": {},
+  "date_created": "2015-07-03T20:55:30Z",
+  "date_modified": "2023-11-22T10:26:41Z",
+  "default_price": 37,
+  "description": "...",
+  "image_url": "https://...",
+  "in_stock": true,
+  "inventory": 90,
+  "inventory_tracking": "variant",
+  "is_visible": true,
+  "metafields": {},
+  "name": "My Awesome Product",
+  "objectID": "111",
+  "option_names": ["Publisher", "Edition"],
+  "prices": { "EUR": 11.112, "USD": 34.65 },
+  "product_images": [
+    {
+      "description": "",
+      "is_thumbnail": false,
+      "url_thumbnail": "https://..."
+    },
+    {
+      "description": "",
+      "is_thumbnail": true,
+      "url_thumbnail": "https://..."
+    }
+  ],
+  "retail_prices": { "EUR": 0, "USD": 0 },
+  "sales_prices": { "EUR": 0, "USD": 0 },
+  "sku": "MAP0001",
+  "url": "/my-awesome-product/",
+  "variant_ids": [1210, 1211],
+  "variants": [
+    {
+      "id": 1210,
+      "image_url": "",
+      "in_stock": false,
+      "inventory": 0,
+      "metafields": {},
+      "options": { "Premium": "Yes", "Toto": "test" },
+      "prices": { "EUR": 11.112, "USD": 34.65 },
+      "retail_prices": { "EUR": 0, "USD": 0 },
+      "sales_prices": { "EUR": 0, "USD": 0 },
+      "sku": "MAP0001-A"
+    },
+    {
+      "id": 1211,
+      "image_url": "",
+      "in_stock": true,
+      "inventory": 10,
+      "metafields": {},
+      "options": { "Publisher": "My Publisher", "Edition": "2024" },
+      "prices": { "EUR": 11.112, "USD": 34.65 },
+      "retail_prices": { "EUR": 0, "USD": 0 },
+      "sales_prices": { "EUR": 0, "USD": 0 },
+      "sku": "MAP0001-B"
+    }
+  ],
+  "upc": "123456789",
+  "mpn": "123456789",
+  "gtin": "123456789"
+}
+```
+
+## Variant-level schema
+
+Algolia stores [BigCommerce product variants](https://developer.bigcommerce.com/docs/rest-catalog/products) in the following format:
+
+```json json
+{
+  "brand_id": 37,
+  "brand_name": "My Brand",
+  "categories": {
+    "lvl0": ["Library", "New Products", "Publications"]
+  },
+  "category_ids": [20, 23, 24],
+  "custom_fields": {},
+  "date_created": "2015-07-03T20:55:30Z",
+  "date_modified": "2023-11-22T10:26:41Z",
+  "default_price": 37,
+  "description": "...",
+  "image_url": "https://...",
+  "in_stock": false,
+  "inventory": 0,
+  "inventory_tracking": "variant",
+  "is_visible": true,
+  "name": "My Awesome Product",
+  "objectID": "1",
+  "option_names": ["Publisher", "Edition"],
+  "options": { "Publisher": "My Publisher", "Edition": "2024" },
+  "prices": { "EUR": 34.262, "USD": 34.65 },
+  "product_id": 111,
+  "product_images": [
+    {
+      "description": "",
+      "is_thumbnail": false,
+      "url_thumbnail": "https://..."
+    },
+    {
+      "description": "",
+      "is_thumbnail": true,
+      "url_thumbnail": "https://..."
+    }
+  ],
+  "product_metafields": {},
+  "retail_prices": { "EUR": 0, "USD": 0 },
+  "sales_prices": { "EUR": 0, "USD": 0 },
+  "sku": "MAP00001",
+  "url": "/my-awesome-product/",
+  "variant_id": 1,
+  "variant_metafields": {},
+  "upc": "123456789",
+  "mpn": "123456789",
+  "gtin": "123456789"
+}
+```
+
+## Changes to your BigCommerce inventory
+
+Algolia's BigCommerce integration monitors inventory changes and sets the isInStock value for each affected SKU.
+
+`isInStock` is set to `true` if `inventory_level` is greater than zero for that SKU.
+
+## Prices
+
+The `prices` attribute consists of key-value pairs:
+
+- The key is a currency code, such as "USD".
+- The value is the product price for that currency code.

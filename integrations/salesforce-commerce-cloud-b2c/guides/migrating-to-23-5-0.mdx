@@ -1,0 +1,427 @@
+---
+title: Migrating to v23.5.x
+description: |-
+  Migration steps to upgrade to cartridge version 23.5.x.
+---
+
+Cartridge versions 23.4.x and lower ("Gen 1") are deprecated and will be ["sunset"](https://www.algolia.com/blog/algolia/sunsetting-salesforce-b2c-commerce-cartridge-gen-1/) on October 31, 2024.
+For more information, see the [release notes](https://github.com/algolia/algoliasearch-sfcc-b2c/releases).
+
+The following guidance describes how to upgrade to the "Gen 2" cartridges (>23.5.x).
+
+## Overview of the v2 jobs
+
+For an overview of the v2 job system, see [Indexing overview](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview/).
+
+## Before you begin
+
+### Delta exports
+
+To take advantage of this new, more efficient job type for incremental product updates, raise a [Salesforce support ticket](https://help.salesforce.com/s/cases) to activate the feature.
+
+For more information, see [Ongoing indexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing/#product-data-index-jobs).
+
+## Estimated upgrade duration
+
+The duration of the upgrade depends on the extent of customization you have applied to the jobs and whether you plan to continue using the v1 jobs.
+
+If you plan to fully transition to the v2 jobs without any extra customizations, the upgrade should take about **30 minutes to 2 hours** to complete (excluding testing).
+
+If you have made customizations or extensions to the v1 jobs and want to apply them to the v2 jobs as well, the upgrade duration depends on the extent of these.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Before attempting any such customizations, consult your Solutions Engineer, Customer Success Manager/Engineer, or submit a [Support ticket](https://support.algolia.com/hc/en-us/requests/new) to discuss recommended integration approaches.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Comparison of the jobs
+
+### The old jobs (v1)
+
+- Relied on the old B2C job framework (no `steptypes.json`)
+- Were sequential (no parallelization)
+- Relied on intermediary XML files to store data temporarily
+- Relied on a middleware to split the data into multiple indices by locale
+- Delta calculation was slow with large datasets due to calculating the delta by comparing the current full catalog export to a previous one (snapshot) and writing the diff into a file
+- Couldn't be used for multi-instance indexing (where part of the product data is sent from Staging, while another part from Production)
+- Use a less error-resilient and scalable end-to-end indexing approach and have limited monitoring and logging capabilities
+
+#### List of v1 jobs
+
+- `AlgoliaCategoriesIndex` - for indexing the category tree
+- `AlgoliaProductsIndex` - for indexing product data - both full catalog indexing and product delta updates
+- `AlgoliaProductsDeltaExport` (v23.4.x only) - an earlier, sequential version of the v2 delta job
+- `AlgoliaProductPricesExport` (v23.4.x only) - an earlier, sequential version of the v2 price job
+- `AlgoliaProductInventoryExport` (v23.4.x only) - an earlier, sequential version of the v2 inventory job
+
+### The new jobs (v2)
+
+- Rely on the newer B2C job framework (`steptypes.json`)
+
+- Are chunk-based and parallelized (chunks are executed in parallel). [Full (atomic) reindexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing/#indexing-products-with-algoliaproductindex_v2) provides a zero-downtime full catalog reindexing option, useful for removing stale records
+
+- Use no intermediary XML files. Data is processed in chunks and sent immediately at the end of each chunk
+
+- Send data directly to Algolia
+  - Data is split into multiple indices by the B2C job internally
+  - There's less possibility for error due to the end-to-end chain being shorter
+
+- [Delta calculation](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing/#algoliaproductdeltaindex_v2) is fast since it uses the platform's built-in delta export mechanism
+
+  - Temporary data isn't written to a file before sending
+  - B2C delta exports provide a fast and efficient way to determine which products have changed since the last export
+
+- Can be used for multi-instance indexing (part of the product data can be sent from staging, while another part, such as inventory or price data, from production)
+  - Partial updates allow for more frequent, lightweight updating of specific attributes rather than the entire record (for example price or inventory data only)
+
+- Text-based logs are more verbose, they cover more edge cases and error messages contain more information
+
+- Have a more extensive [job reporting and monitoring system](/integration/salesforce-commerce-cloud-b2c/troubleshooting/monitoring/) where reports are stored as custom objects instead of an XML file and are cleaned up automatically after a predetermined amount of time
+
+#### List of v2 jobs
+
+- `AlgoliaCategoryIndex_v2` - for indexing the category tree
+- `AlgoliaProductIndex_v2` - for [full catalog indexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing/) (incl. full reindexing)
+- `AlgoliaProductDeltaIndex_v2` - for product delta updates
+- `AlgoliaProductInventoryIndex_v2` - for indexing inventory data only
+- `AlgoliaProductPriceIndex_v2` - for indexing price data only
+
+For more details about v2 jobs, see the [Indexing overview](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview/) page.
+
+## Changes from previous versions
+
+The list of base (non-configurable) attributes has changed, as well as the recommended starting list of **Additional Product Attributes** (configurable), which was previously called "Custom Fields".
+
+#### Base attributes
+
+- Changed from: `id, primary_category_id, in_stock, price, categories`
+- To: `name, primary_category_id, in_stock, price, categories, image_groups, url`
+
+{/* prettier-ignore-start */}
+
+<Note>
+  `id` is always sent (as the `objectID` field).
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### **Additional Product Attributes** recommended starting list
+
+- Changed from: `name, short_description, long_description, price, brand, color, size, image_groups`
+- To: `short_description, long_description`
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can extend this list with any other attributes you like to index, see [Indexing attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Items added or updated in the latest version
+
+#### Jobs
+
+- `AlgoliaCategoryIndex_v2`
+- `AlgoliaProductIndex_v2`
+- `AlgoliaProductDeltaIndex_v2`
+- `AlgoliaProductInventoryIndex_v2`
+- `AlgoliaProductPriceIndex_v2`
+
+#### Services
+
+- `algolia.http.search.write` - used by the v2 jobs
+
+#### Site Preferences
+
+- `Algolia_AdditionalAttributes` (from `Algolia_CustomFields`)
+
+### Deprecated items to be removed
+
+These items can be removed if you don't plan on using the v1 jobs anymore (see more detailed instructions below).
+
+They are now considered deprecated and will be removed in a future cartridge version with `mode="delete"`.
+
+#### Jobs
+
+- `AlgoliaCategoriesIndex`
+- `AlgoliaProductsIndex`
+- `AlgoliaProductsDeltaExport`
+- `AlgoliaProductPricesExport`
+- `AlgoliaProductInventoryExport`
+
+#### Services
+
+- `algolia.http.api` (versions before v23.3.0) and related credentials and profile
+- `algolia.http.export` (versions after v23.3.0) and related credentials and profile
+- `algolia.http.ingestion` and related credentials and profile
+
+#### Site preferences
+
+- `Algolia_HostBase`
+- `Algolia_OCAPIClientID`
+- `Algolia_OCAPIClientPassword`
+- `Algolia_CustomFields` (renamed to `Algolia_AdditionalAttributes`). You can remove `Algolia_CustomFields` if you're not planning on using the v1 jobs in the future
+
+## Migration steps
+
+Take care when upgrading customized files so that you don't overwrite any customizations.
+
+For any customizations and extensions you've made to the cartridge, consider whether they're still applicable as they may now be supported by the cartridge natively:
+
+- [Partial updates](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing/#algoliaproductdeltaindex_v2) (including for price and inventory data updates)
+- Multi-instance indexing
+- [Facet bucketing](/integration/salesforce-commerce-cloud-b2c/guides/facet-bucketing/)
+- Server-side rendering of category landing page and search results (first page only, can be extended) for improved SEO
+- Starting in **v24.3.0**, the cartridge offers ways to do [advanced product attributes customizations](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#advanced-attributes-configuration) without having to modify the jobs' code. You should use it for all customizations.
+- [Configurable base product vs variant product-level](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#default-records) record structure (starting in v.24.2.0)
+
+See the [**What's Changed** notes on GitHub](https://github.com/algolia/algoliasearch-sfcc-b2c/releases) for an up-to-date list of all new capabilities.
+
+For more details, contact your Solutions Engineer, Customer Success Manager/Engineer, or submit a [Support ticket](https://support.algolia.com/hc/en-us/requests/new).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To ensure backward compatibility, upgrading the cartridge version won't remove the old jobs, but new installations will no longer create the old jobs on your instance. They are now considered deprecated and will be removed at a later time with `mode="delete"` upon import.
+</Note>
+
+{/* prettier-ignore-end */}
+
+v2 jobs have new names and a "\_v2" suffix to differentiate them from the old job system, so they won't overwrite any existing jobs.
+
+### Update the code
+
+1. Download the latest cartridge version from [Algolia B2C Cartridge GitHub repository](https://github.com/algolia/algoliasearch-sfcc-b2c/releases).
+1. Update the code
+   1. If you want to transition to the v2 jobs and don't plan on using the v1 jobs anymore, remove the previous cartridge version from your repository and add the v2 version to ensure that no outdated files are retained in your repository.
+   1. If you made customizations to the v1 jobs and plan to keep using them, selectively update the cartridge files, taking care that any customized files/scripts are not overwritten entirely. You can use [GitHub's release comparison feature](https://docs.github.com/en/repositories/releasing-projects-on-github/comparing-releases) to create and apply a diff manually.
+
+#### Code changes highlights
+
+To help you migrate your customizations, this section highlights the main logic changes between the two cartridges.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The v1 jobs code hasn't been overwritten.
+  V2 jobs live in separate files to ease the transition:
+
+  - `algoliaProduct.js` (the data model) can now be found in `algoliaLocalizedProduct.js`
+  - `productIndexJob.js` (the main job logic) can now be found in `algoliaProductIndex.js`
+</Note>
+
+{/* prettier-ignore-end */}
+
+##### Generated data
+
+Before version **23.5.x** (v1), jobs built the records data with the `AlgoliaProduct` model ([`algoliaProduct.js`](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/24.1.0/cartridges/int_algolia/cartridge/scripts/algolia/model/algoliaProduct.js)).
+For each product, this model generates a JSON object, where each attribute is an object containing values for each enabled site locale.
+The final object looks like this:
+
+```json json
+{
+  "name": {
+    "en_US": "Draped Cowl Neck",
+    "fr_FR": "Top à col drapé"
+  },
+  "color": {
+    "en_US": "Ivory"
+    "fr_FR": "Ivoire",
+  },
+  "price": {
+    "USD": 61.99,
+    "EUR": 44.63
+  },
+  "in_stock": true,
+  "primary_category_id": "womens-clothing-tops",
+  "categories": [
+    [
+      {
+        "id": "womens-clothing-tops",
+        "name": {
+          "en_US": "Tops",
+          "fr_FR": "Tops"
+        }
+      },
+      {
+        "id": "womens-clothing",
+        "name": {
+          "en_US": "Clothing",
+          "fr_FR": "Vêtements"
+        }
+      },
+      {
+        "id": "womens",
+        "name": {
+          "en_US": "Womens",
+          "fr_FR": "Femme"
+        }
+      }
+    ]
+  ]
+}
+```
+
+In version **23.5.x** and greater (v2), the cartridge directly builds the final Algolia records.
+For each product, the job generates one separate `AlgoliaLocalizedProduct` object ([`algoliaLocalizedProduct.js`](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/24.1.0/cartridges/int_algolia/cartridge/scripts/algolia/model/algoliaLocalizedProduct.js)) for each desired locale.
+A typical record from this model looks like this:
+
+```json json
+{
+  "name": "Draped Cowl Neck",
+  "color": "Ivory",
+  "price": {
+    "USD": 61.99,
+    "EUR": 44.63
+  },
+  "in_stock": true,
+  "primary_category_id": "womens-clothing-tops",
+  "categories": [
+    [
+      {
+        "id": "womens-clothing-tops",
+        "name": "Tops"
+      },
+      {
+        "id": "womens-clothing",
+        "name": "Clothing"
+      },
+      {
+        "id": "womens",
+        "name": "Womens"
+      }
+    ]
+  ]
+}
+```
+
+##### Jobs logic
+
+The v1 job code:
+
+1. Generates models with the [`getNextProductModel()`](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/24.1.0/cartridges/int_algolia/cartridge/scripts/algolia/job/productsIndexJob.js#L112) helper
+1. Wraps the models into an [`UpdateProductModel`](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/24.1.0/cartridges/int_algolia/cartridge/scripts/algolia/job/productsIndexJob.js#L170) object. This object is sent to the indexing middleware.
+1. The middleware splits the provided object to create one final record per locale. This is then sent to the corresponding Algolia index.
+
+In v2, the cartridge doesn't use the indexing middleware.
+It's the job itself that loops on enabled locales and directly creates the final Algolia records.
+You can see this logic in the [`algoliaProductIndex.js`](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/24.1.0/cartridges/int_algolia/cartridge/scripts/algolia/steps/algoliaProductIndex.js#L222) file.
+
+Thus, one of the main differences between v1 and v2 is the location of the loop handling the locales:
+
+For v1 jobs, the loop is inside the `AlgoliaProduct` model, when fetching a product attribute value:
+
+```js js
+// algoliaProduct.js
+value = {};
+for (var l = 0; l < siteLocalesSize; l += 1) {
+  var localeName = siteLocales[l];
+  request.setLocale(localeName);
+  value[localeName] = aggregatedValueHandlers[attributeName]
+    ? aggregatedValueHandlers[attributeName](product)
+    : ObjectHelper.getAttributeValue(product, config.attribute);
+}
+```
+
+For v2 jobs, the local handling loop is processed before generating the record:
+
+```js js
+// algoliaProductIndex.js
+for (var l = 0; l < siteLocales.size(); ++l) {
+  var locale = siteLocales[l];
+  var indexName = algoliaData.calculateIndexName("products", locale);
+  var localizedProduct = new AlgoliaLocalizedProduct({
+    product: product,
+    locale: locale,
+    attributeList: attributesToSend,
+  });
+  // ...
+}
+```
+
+### Update metadata, jobs, and services
+
+1. Import **metadata** files from the `metadata/algolia/meta` folder in the repository: `system-objecttype-extensions.xml` and `custom-objecttype-definitions.xml`
+1. Import **job definitions: `metadata/algolia/jobs.xml`**
+1. Import **services: `metadata/algolia.services.xml`**
+
+{/* prettier-ignore-start */}
+
+<Note>
+  For detailed instructions on importing files in Business Manager, see the [Set up the Algolia cartridge](/integration/salesforce-commerce-cloud-b2c/getting-started/set-up-the-algolia-cartridge/) page.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Business Manager configuration updates
+
+1. Go to the **Merchant Tools > Algolia > Algolia** in Business Manager
+1. Fill in your **Additional Product Attributes** according to your use case.
+
+   You can start with `short_description, long_description`.
+
+### Job configuration
+
+1. Go to **Administration > Operations > Jobs** in Business Manager
+1. For each of the v2 jobs, set the execution site by clicking on the job, then go to **Job Steps**. Click **Scope** and then select the sites you want to run the jobs for.
+1. Click **AlgoliaProductDeltaIndex\_v2**, click **Job Steps**, then \* _Job Parameters_
+1. Click the **catalogIDs** parameter and add the catalogIDs assigned to your sites.
+
+For more information about setting up the jobs, see [Start indexing your data](/integration/salesforce-commerce-cloud-b2c/getting-started/start-indexing-your-data/).
+
+## Using v1 jobs after the upgrade
+
+If you intend to fully transition to the v2 jobs, you can remove the old jobs and some of the related metadata and configurations.
+
+From 31 October, 2024, the following features will cease to function:
+
+- v1 jobs. Jobs that aren't based on the new Gen 2 indexing jobs (ending in "\_v2")
+- Direct calls to \[Stream]\([https://sfcc-stream.algolia.com\\](https://sfcc-stream.algolia.com\\)]\([https://sfcc-stream.algolia.com](https://sfcc-stream.algolia.com))
+
+Don't use v1 jobs unless you intend to fully retire them by this date.
+
+#### Jobs
+
+Go to **Administration > Operations > Jobs** and remove the v1 jobs:
+
+- `AlgoliaCategoriesIndex`
+- `AlgoliaProductsIndex`
+
+#### Services
+
+Go to **Administration > Operations > Services** and remove the following services:
+
+- `algolia.http.api` and related credentials and profile
+- `algolia.http.export` and related credentials and profile
+- `algolia.http.ingestion` and related credentials and profile
+
+#### Site Preferences
+
+Go to **Administration > Site Development > System Object Types > SitePreferences > Attribute Definitions** and filter for preferences starting with "Algolia\_" by searching for " `Algolia_*`". Remove the following site preferences:
+
+- `Algolia_HostBase`
+- `Algolia_OCAPIClientID`
+- `Algolia_OCAPIClientPassword`
+- `Algolia_CustomFields` (renamed to `Algolia_AdditionalAttributes`)
+
+  - you can safely remove `Algolia_CustomFields` if you're not planning on using the v1 jobs in the future
+
+#### Old reporting data
+
+The v2 cartridge version comes with a [new job reporting section](/integration/salesforce-commerce-cloud-b2c/troubleshooting/monitoring/) in the Algolia Business Manager module called **v2 Job Reports**, but the old reports are still displayed on the page (**v1 Job Report (Deprecated)**).
+
+To remove the **v1 Job Reports** section in the Algolia Business Manager module, go to **Administration > Site Development > Development Setup > Folder Browser > Impex > src > Algolia** and delete all files containing "lastUpdateLog" there.
+
+## Confirm the success of the upgrade
+
+Your **Application ID**, **Search API key**, and **Admin API key** should be configured already from your previous installation (go to the Algolia Business Manager module and set them up if not).
+
+After performing the preceding steps to upgrade to the v2 jobs, you should have the [five new Algolia jobs](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview/#overview-of-the-indexing-jobs) in Business Manager under **Administration > Operations > Jobs**.
+
+Run all the jobs, one after the other, and verify whether they finish with an `OK` status.
+
+Go to your [Algolia dashboard](https://dashboard.algolia.com/) and confirm that your indices were updated.

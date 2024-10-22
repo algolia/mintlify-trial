@@ -1,0 +1,209 @@
+---
+title: Handling data relationships
+description: |-
+  Structuring simple and complex data relationships, hierarchies, nesting.
+---
+
+When you want to index relational data into Algolia, deciding on how to structure it can be a head-scratcher. Algolia is schemaless, so there are no right or wrong answers: it's all about **what search experience you want to create**.
+
+Imagine you're developing a marketplace for third-parties to sell second-hand games.
+You could build your search experience by displaying:
+
+- Sellers and their full game catalogs
+- Games titles and a list of people who sell them
+- Classified ads, ranked by business relevance (such as seller's popularity)
+
+Depending on the experience, **you need to represent data relationships differently**.
+
+The good news is, Algolia doesn't impose a data schema. You can organize your data the way you want. Therefore, depending on what you want to achieve, you can rearrange your data as you see fit.
+
+## Data source
+
+When you're fetching from a relational database like as MySQL, you usually have one entity per table and join tables for many-to-many mappings. After making a `JOIN` request, serialized data might look like this:
+
+```json json
+[
+  {
+    "id": 1,
+    "name": "Alice",
+    "popularity": 1000,
+    "total_sales": 13,
+    "country": "France",
+    "games": [
+      {
+        "id": 1,
+        "title": "Grand Theft Auto V"
+      },
+      {
+        "id": 2,
+        "title": "The Legend of Zelda: Ocarina of Time"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Bob",
+    "popularity": 900,
+    "total_sales": 42,
+    "country": "United States",
+    "games": [
+      {
+        "id": 3,
+        "title": "Mass Effect 3"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Mass Effect Fan",
+    "popularity": 800,
+    "total_sales": 50,
+    "country": "United States",
+    "games": [
+      {
+        "id": 1,
+        "title": "Grand Theft Auto V"
+      }
+    ]
+  }
+]
+```
+
+## Displaying sellers and their catalog
+
+A nested data structure would work well to create a search experience where you would display **a list of sellers and their associated games**.
+
+From there, you could streamline the data by removing unnecessary attributes, and index it as follows:
+
+```json json
+[
+  {
+    "name": "Alice",
+    "popularity": 1000,
+    "country": "France",
+    "games": ["Grand Theft Auto V", "The Legend of Zelda: Ocarina of Time"]
+  },
+  {
+    "name": "Bob",
+    "popularity": 900,
+    "country": "United States",
+    "games": ["Mass Effect 3"]
+  },
+  {
+    "name": "Mass Effect Fan",
+    "popularity": 800,
+    "country": "United States",
+    "games": ["Grand Theft Auto V"]
+  }
+]
+```
+
+### Searchable attributes
+
+This experience focuses on sellers, which means you might want to search seller data in priority. For example, when a user searches for "mass effect", you may want seller Mass Effect Fan to show up before sellers who sell Mass Effect 3, even if Mass Effect Fan doesn't sell this game. To do so, you can create an order of priority in your [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/), by setting `name` first and `games` second.
+
+## Displaying game titles and their sellers
+
+You can use the same structure to create a search experience where you would display **a list of games and their associated sellers**.
+
+To achieve this, all you would need to do is to reverse the relationship: instead of nesting games per seller, you would nest sellers per game.
+
+```json json
+[
+  {
+    "name": "Grand Theft Auto V",
+    "sellers": [
+      {
+        "name": "Alice",
+        "popularity": 1000,
+        "country": "France"
+      },
+      {
+        "name": "Mass Effect Fan",
+        "popularity": 800,
+        "country": "United States"
+      }
+    ]
+  },
+  {
+    "name": "The Legend of Zelda: Ocarina of Time",
+    "sellers": [
+      {
+        "name": "Alice",
+        "popularity": 1000,
+        "country": "France"
+      }
+    ]
+  },
+  {
+    "name": "Mass Effect 3",
+    "sellers": [
+      {
+        "name": "Bob",
+        "popularity": 900,
+        "country": "United States"
+      }
+    ]
+  }
+]
+```
+
+### Searchable attributes
+
+This experience focuses on games, meaning you might want to search game data in priority. For example, when a user searches for "mass effect", you may want game Mass Effect 3 to show up before seller Mass Effect Fan, especially if they don't sell that game. For this, you can create an order of priority in your [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/), by setting `name` first and `sellers.name` second.
+
+## Displaying classified ads ranked by business relevance
+
+The first two experiences focus on exhaustiveness.
+No matter what users are looking for, they should get all possible options (all sellers per game or all games per seller).
+Another approach to building search is to be relevance-oriented: **instead of showing all possibilities, you only show the best ones**.
+
+For example, if users search for "grand theft auto", they may not need to see all classified ads for Grand Theft Auto V. Instead, you could only show them the ones from the most popular sellers.
+
+In this case, you need to **split your data and use a flat structure**.
+
+```json json
+[
+  {
+    "game_title": "Grand Theft Auto V",
+    "seller_name": "Alice",
+    "seller_popularity": 1000,
+    "seller_country": "France"
+  },
+  {
+    "game_title": "Grand Theft Auto V",
+    "seller_name": "Mass Effect Fan",
+    "seller_popularity": 800,
+    "seller_country": "United States"
+  },
+  {
+    "game_title": "The Legend of Zelda: Ocarina of Time",
+    "seller_name": "Alice",
+    "seller_popularity": 1000,
+    "seller_country": "France"
+  },
+  {
+    "game_title": "Mass Effect 3",
+    "seller_name": "Bob",
+    "seller_popularity": 900,
+    "seller_country": "United States"
+  }
+]
+```
+
+By breaking up games by seller, you can add more granular popularity attributes to each record. This way, you ensure that the game with the best seller ranks better by leveraging the [`customRanking`](/api-reference/api-parameters/customRanking/) attribute.
+
+This structure involves data duplication, so you can use Algolia's [distinct feature](/guides/managing-results/refine-results/grouping/) to deduplicate records on `game_title`.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Create custom ranking attributes](/guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking/)
+  - [Indexing long pages](/guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Searchable attributes
+
+This experience focuses on classified ads, so you may want to prioritize searching on game data. For example, when a user searches for "mass effect", you may want ads for game Mass Effect 3 to show up before ads by user Mass Effect Fan. For this, you can create an order of priority in your [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/), by setting `game_title` first and `seller_name` second.

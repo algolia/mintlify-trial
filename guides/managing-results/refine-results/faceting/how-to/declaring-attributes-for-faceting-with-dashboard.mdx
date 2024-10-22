@@ -1,0 +1,47 @@
+---
+title: How to declare attributes for faceting in the dashboard
+description: |-
+  How to declare attributes for faceting in the Algolia dashboard.
+---
+
+Algolia lets you create categories based on specific attributes so users can filter search results by those categories
+For example, if you have an index of books, you could categorize them by author and genre.
+This allows users to filter search results by their favorite author or discover new genres.
+
+To enable this categorization, first declare your attributes for faceting.
+To do this:
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. On the **Configuration** tab, click **Facets** (in the _Filtering and faceting_ section).
+
+1. In **Attributes for faceting**, click **Add an Attribute**
+
+1. Set the attribute as:
+
+   - **searchable** if you want to use the attribute for both searching and filtering. For example, if a product has a `color` attribute, users can search for products of a specific color and also filter search results by color.
+   - **filter-only** if you want to use the attribute only for filtering.
+   - **not searchable** if you want the attribute to be used only as a facet.
+
+For more information, see [Difference between facets and filters](/guides/managing-results/refine-results/faceting/#difference-between-filters-and-facets)
+
+7. Click **Review and Save Settings**
+
+## See also
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [How to declare attributes for faceting with the API](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/)
+  - [Faceting](/guides/managing-results/refine-results/faceting/)
+  - [Auto-selected facets](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/auto-selected-facets/)
+  - [Filter suggestions](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/filter-suggestions/)
+  - [Guided search](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/guided-search/)
+  - [Visual facets](/guides/solutions/ecommerce/filtering-and-navigation/tutorials/visual-facets/)
+</Info>
+
+{/* prettier-ignore-end */}

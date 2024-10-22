@@ -1,0 +1,120 @@
+---
+title: Relevant sorting
+description: |-
+  Learn about the relevant sorting feature and how you can use it to provide more relevant results for users.
+---
+
+Use relevant sorting to only show the most relevant results for a user's search instead of displaying _all_ the records (exhaustive sorting).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Relevant sorting is available on the Build and Premium [pricing plans](https://www.algolia.com/pricing/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Examples
+
+These examples illustrate the difference between [exhaustive](/guides/managing-results/refine-results/sorting/in-depth/exhaustive-sort/) and relevant sorting.
+
+Exhaustive sorting returns and sorts all results that match the search term "iphone": here, a list of phone cases appear at the top of the results.
+
+For the same search term, relevant sorting has applied a virtual replica's [custom ranking](/guides/managing-results/must-do/custom-ranking/) criteria to ensure that iPhone devices appear at the top of the results.
+
+### Exhaustive sorting
+
+### Relevant sorting
+
+## Effect of relevant sorting on the ranking formula
+
+Algolia's [ranking formula](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/) isn't overridden when you use relevant sorting. Instead, the relevant sorting algorithm:
+
+1. Selects results using the primary index's ranking formula.
+1. Selects the most relevant results. You can determine how strict this should be by adjusting [`relevancyStrictness`](/api-reference/api-parameters/relevancyStrictness/) on a [virtual replica](/guides/managing-results/refine-results/sorting/in-depth/replicas/#standard-and-virtual-replicas).
+1. Orders the selected results according to the virtual replica's [`customRanking`](/api-reference/api-parameters/customRanking/) criteria.
+1. Returns the relevant results.
+
+The ranking formula determines which results are most relevant to the search query, but custom ranking determines the _order_ of results. This means that parameters that affect the ranking formula, such as [`optionalFilters`](/api-reference/api-parameters/optionalFilters/), don't affect result ordering.
+
+If multiple results have the same value for a sorting attribute, the other sorting attributes are used to decide which one comes first. For example, if you sort according to price and then popularity, and three results have the same cost, the engine will prioritize them according to their popularity score.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Sort by attribute](/guides/managing-results/refine-results/sorting/how-to/sort-by-attribute/)
+  - [Sort an index by date](/guides/managing-results/refine-results/sorting/how-to/sort-an-index-by-date/)
+  - [Sort an index alphabetically](/guides/managing-results/refine-results/sorting/how-to/sort-an-index-alphabetically/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Relevant sorting considerations
+
+Relevant sorting interacts with other features in ways you might not expect.
+
+### Caution: other re-ranking features can affect results
+
+Other re-ranking features, such as Rules, apply _after_ relevant sorting and will modify sort order. For example, if [Personalization](/guides/personalization/classic-personalization/what-is-personalization/) promotes expensive items for a particular user based on their past actions, that user might see expensive items at the top of the results, even if they've chosen to _relevant sort_ from lowest to highest price.
+
+To ensure predictable behavior, don't use the following features or parameters with relevant sorting:
+
+- [`distinct`](/api-reference/api-parameters/distinct/) > 1
+- [Dynamic Re-ranking](/guides/algolia-ai/re-ranking/)
+- [Personalization](/guides/personalization/classic-personalization/personalizing-results/)
+
+### Facets count
+
+When relevant sorting is enabled, the engine still computes facets on all results, not just those defined by the relevant sort.
+A [UI banner](/guides/managing-results/rules/merchandising-and-promoting/how-to/add-banners/) detailing the behavior of the relevant sort may help manage user expectations.
+
+### Enabling relevant sorting reduces the number of results
+
+Essentially, that's the point: it gives users _more relevant_ results, not _all_ results ([exhaustive sorting](/guides/managing-results/refine-results/sorting/in-depth/exhaustive-sort/)).
+
+For example, you search for "chromebook" on an ecommerce site and get Chromebook computers at the top of your results (so far, so good).
+
+However, if you then sort by ascending price (because you want a cheaper computer), the top (cheapest) listed items might be "Chromebook power adapters". With a relevant sort, you get fewer results but only see the relevant items (computers).
+
+Using a virtual replica even with `relevancyStrictness` set to 0 can't mimic the exhaustive sorting of a standard replica because it doesn't use the same algorithm. Be aware that a virtual replica:
+
+- Doesn't duplicate the data. It sorts at query time.
+- Can only retrieve a maximum of 20k results, so there's no guarantee that it will fetch the "deepest" hits.
+
+## How to configure relevant sorting
+
+### Step one - Create a virtual replica index
+
+If you want to configure relevant sorting, you first need to create a [virtual replica index](/guides/managing-results/refine-results/sorting/in-depth/replicas/#standard-and-virtual-replicas) for each attribute you want to sort by.
+
+Virtual replicas provide an alternative "view" of the primary index. Virtual replicas reuse the primary's ranking formula to return relevant results. For that reason, you can't change the [`ranking`](/api-reference/api-parameters/ranking/) on virtual replicas but can use [`customRanking`](/api-reference/api-parameters/customRanking/) to define the sort criteria.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Understanding replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/)
+  - [What is the effect of a replica on the number of records?](/guides/managing-results/refine-results/sorting/in-depth/replicas-impact-on-pricing/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Step two - Connect your UI to your index
+
+Virtual replica indices manage the backend of sorting, but you still need to implement the frontend. You can do this with either custom logic or [InstantSearch](/guides/building-search-ui/what-is-instantsearch/js/).
+If you're using InstantSearch, you should use the [`sortBy` UI widget](/guides/managing-results/refine-results/sorting/how-to/use-sorting-ui-widget/).
+
+To ensure users understand how relevant sort works and how they can control their experience:
+
+- Indicate that sorting removed _some_ results
+- Offer them the option of displaying more.
+
+You can do this with the `relevantSort` widget:
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [sortBy widget](/api-reference/widgets/sort-by/js/)
+  - [relevantSort widget](/api-reference/widgets/relevant-sort/js/)
+</Info>
+
+{/* prettier-ignore-end */}

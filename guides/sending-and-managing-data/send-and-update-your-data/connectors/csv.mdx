@@ -1,0 +1,16 @@
+---
+title: CSV
+description: |-
+  Index your data from a CSV file you host.
+---
+
+The CSV connector lets you read rows from a CSV file and store them in an Algolia index.
+
+The connector expects a CSV file where each row represents a record.
+Each row must have a unique identifier that Algolia uses as the [object ID](/guides/sending-and-managing-data/send-and-update-your-data/#unique-object-identifiers).
+
+```csv csv
+userID,firstName,lastName
+1001,Marianne,Neal
+1002,Austin,Wolfe
+```

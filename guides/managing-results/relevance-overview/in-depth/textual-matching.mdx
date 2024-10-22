@@ -1,0 +1,51 @@
+---
+title: Search is more than textual matching
+description: |-
+  Understand that a good search experience is more than textual matching.
+---
+
+Search isn't just a letter-by-letter comparison.
+Compare searches on these sentences ([records](/guides/sending-and-managing-data/prepare-your-data/#algolia-records)):
+
+1. To be or not to be that is the question
+1. This was the best of times the worst of times
+1. Ask not what your country asks of you but what you can do for your country
+1. For a long time I used to go to bed early
+1. Shakespeare and Dickens are both famous British authors
+1. By George, I should've known that! I'll be a dickens!
+1. An accomplished woman almost always knows more than we men, though her knowledge is of a different sort
+
+- A search for "ask" returns one result: sentence 3.
+- A search for "time" returns two result: sentences 2 and 4.
+- A search for "be" returns four results: sentence 1 and 6 "be", sentence 2 " **be** st", and sentence 4 " **be** d".
+
+## Where textual matching doesn't work
+
+Consider these searches on the preceding sentences:
+
+- "qestion" ("question" mistyped). No sentences are returned.
+- "be". What sentence should come first? The ones that match exactly (the word "be")? Or some other criteria?
+- "literary quotes"? Textual matching doesn't know anything about these sentences - are these political or literary quotes? The quotes need to be classified, tagged as coming from novels, politicians, authors, countries.
+
+All these queries require something more.
+
+## Going beyond textual matching
+
+Simple textual matching won't solve every search problem: it's only the starting point.
+
+## Add structure
+
+By adding more information to the preceding sentences (records), their relevance can be improved:
+
+1. "To be or not to be, that is the question", shakespeare, british, hamlet, theater
+1. "It was the best of times, it was the worst of times", dickens, british, tale of two cities, novel
+1. "Ask not what your country asks of you but what you can do for your country", kennedy, american, speech, politics
+1. "For a long time I used to go to bed early", proust, french, recherche, novel
+1. "Shakespeare and Dickens are both famous British authors", georgette, british, history of british literature, essay
+1. "By George, I should've known that! I'll be a dickens!", landly, british, my fair lady, theater
+1. "An accomplished woman almost always knows more than we men, though her knowledge is of a different sort.", george elliot, british, middlemarch, novel
+
+## Going further
+
+A good search experience also needs to consider [filtering](/guides/managing-results/refine-results/filtering/), [attribute priorities](/guides/managing-results/must-do/searchable-attributes/), [custom ranking](/guides/managing-results/must-do/custom-ranking/), [handling typos](/guides/managing-results/optimize-search-results/typo-tolerance/), [synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/), and more.
+Insights from [user actions](/guides/sending-events/getting-started/), [analytics](/guides/search-analytics/overview/), [personalization](/guides/personalization/classic-personalization/what-is-personalization/), and [A/B testing](/guides/ab-testing/what-is-ab-testing/) can also help you fine-tune your search experience to better meet the needs of your users.

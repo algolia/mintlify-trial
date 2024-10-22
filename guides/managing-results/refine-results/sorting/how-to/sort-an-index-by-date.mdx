@@ -1,0 +1,382 @@
+---
+title: Sort an index by date
+description: |-
+  How to sort your records by date.
+---
+
+By design, Algolia provides one [ranking strategy](/guides/managing-results/must-do/custom-ranking/#algolias-ranking-strategy) per [index](/guides/sending-and-managing-data/prepare-your-data/in-depth/prepare-data-in-depth/#algolia-index): when you want to provide different rankings for the same data, **you need to use different indices for each ranking**.
+These indices are called [replicas](/guides/managing-results/refine-results/sorting/in-depth/replicas/).
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To set up sorting by attribute, you first need to understand how [replica indices](/guides/managing-results/refine-results/sorting/in-depth/replicas/) work.
+</Note>
+
+{/* prettier-ignore-end */}
+
+To sort by attribute, create a replica index and then change the ranking formula of the replica.
+You can do this from Algolia's dashboard or through the API.
+
+For chronological sorting, consider [how Algolia handles dates](/guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record/#dates).
+For example, you have a blog and want to create a replica to sort search results from the most recent to the oldest post.
+Because Algolia doesn't interpret dates as ISO 8601 strings (such as "2008-09-15T15:53:00"),
+**you must convert your dates into Unix timestamps** (numeric values such as 1221486780) before sorting them.
+
+## Convert dates into Unix timestamps: an example
+
+### Before
+
+Say you have an index called `articles`:
+
+```json json
+[
+  {
+    "post_title": "Let's start the adventure",
+    "post_date": "2012-07-01",
+    "author_name": "Nicolas Dessaigne",
+    "author_image_url": "https://secure.gravatar.com/avatar/785489bc2ac2e08ae66648a8936c1101?s=40&d=mm&r=g",
+    "permalink": "https://blog.algolia.com/lets-start-the-adventure/",
+    "excerpt": "Welcome to The Algolia Blog! It's always difficult to write the first post of a blog! What should I talk about? The company, the founders, the business, the culture? And all that knowing that virtually nobody will read except diggers in a few years (hopefully)!\nLet's concentrate instead on what we'll be blogging about. Company news obviously, but not only. I expect we'll write quite a few posts about technology, algorithms, entrepreneurship, marketing, and whatever else we'll want to share with you 🙂\nAnd most important, feel free to participate in comments or by contacting us directly. We appreciate your feedback!\nWelcome to the Algolia blog!"
+  },
+  {
+    "post_title": "Great discussions at LeWeb'12 London",
+    "post_date": "2012-07-03",
+    "author_name": "Nicolas Dessaigne",
+    "author_image_url": "https://secure.gravatar.com/avatar/785489bc2ac2e08ae66648a8936c1101?s=40&d=mm&r=g",
+    "permalink": "https://blog.algolia.com/great-discussions-at-leweb12-london/",
+    "image": "https://blog.algolia.com/wp-content/uploads/2014/03/latency-360x200.png",
+    "excerpt": "... take long for us to decide it was the way to go, since the perception of speed is so natural that the benefit far outweighs the longer integration code. We'll now work on simplifying it!\nWe'll soon do a post about this demo. In the meantime, stay tuned!\n&nbsp;\n&nbsp;"
+  }
+]
+```
+
+### After
+
+You want to create a replica that sorts your data by date. The problem is that the `post_date` attribute has dates formatted as strings, which Algolia can't process for sorting. Before creating a replica, you must transform these dates into [Unix timestamps](https://wikipedia.org/wiki/Unix_time).
+
+You don't have to remove or change `post_date`. Add a `post_date_timestamp` attribute with the proper format instead.
+
+```json json
+[
+  {
+    "post_title": "Let's start the adventure",
+    "post_date": "2012-07-01",
+    "post_date_timestamp": 1341100800,
+    "author_name": "Nicolas Dessaigne",
+    "author_image_url": "https://secure.gravatar.com/avatar/785489bc2ac2e08ae66648a8936c1101?s=40&d=mm&r=g",
+    "permalink": "https://blog.algolia.com/lets-start-the-adventure/",
+    "excerpt": "Welcome to The Algolia Blog! It's always difficult to write the first post of a blog! What should I talk about? The company, the founders, the business, the culture? And all that knowing that virtually nobody will read except diggers in a few years (hopefully)!\nLet's concentrate instead on what we'll be blogging about. Company news obviously, but not only. I expect we'll write quite a few posts about technology, algorithms, entrepreneurship, marketing, and whatever else we'll want to share with you 🙂\nAnd most important, feel free to participate in comments or by contacting us directly. We appreciate your feedback!\nWelcome to the Algolia blog!"
+  },
+  {
+    "post_title": "Great discussions at LeWeb'12 London",
+    "post_date": "2012-07-03",
+    "post_date_timestamp": 1341273600,
+    "author_name": "Nicolas Dessaigne",
+    "author_image_url": "https://secure.gravatar.com/avatar/785489bc2ac2e08ae66648a8936c1101?s=40&d=mm&r=g",
+    "permalink": "https://blog.algolia.com/great-discussions-at-leweb12-london/",
+    "image": "https://blog.algolia.com/wp-content/uploads/2014/03/latency-360x200.png",
+    "excerpt": "... take long for us to decide it was the way to go, since the perception of speed is so natural that the benefit far outweighs the longer integration code. We'll now work on simplifying it!\nWe'll soon do a post about this demo. In the meantime, stay tuned!\n&nbsp;\n&nbsp;"
+  }
+]
+```
+
+## Create a replica
+
+Now, create a replica of your `articles` index.
+The recommendation is to name your replica indices with a prefix or suffix describing its sorting strategy (for example, `articles_date_desc`).
+
+First, [create a standard or virtual replica](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/) (`articles_date_desc`) from the primary index.
+The primary index is likely sorted by relevance but you want to change that for `articles_date_desc`.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      Replicas = new List<string>
+      {
+          "articles_date_desc" // Create a standard replica
+          // "virtual(articles_date_desc)" // Create a virtual replica
+      }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	Replicas: opt.Replicas("articles_date_desc"), // Create a standard replica
+  	// Replicas: opt.Replicas("virtual(articles_date_desc)"), // Create a virtual replica
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+          new IndexSettings().setReplicas(Collections.singletonList(
+                  "articles_date_desc" // Create a standard replica
+                  // "virtual(articles_date_desc)" // Create a virtual replica
+          ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      replicas: [
+        "articles_date_desc", // Create a standard replica
+        // 'virtual(articles_date_desc)' // Create a virtual replica
+      ],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```php php
+  $index->setSettings([
+    'replicas' => [
+      'articles_date_desc' // Create a standard replica
+      // 'virtual(articles_date_desc)' // Create a virtual replica
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings(
+      {
+          "replicas": [
+              "articles_date_desc"  # Create a standard replica
+              # 'virtual(articles_date_desc)' # Create a virtual replica
+          ]
+      }
+  )
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      replicas: [
+        # Create a standard replica
+        "articles_date_desc"
+        # 'virtual(articles_date_desc)' # Create a virtual replica
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "products" `with` IndexSettings(
+      replicas = Some(Seq(
+        "articles_date_desc" // Create a standard replica
+      // "virtual(articles_date_desc)" // Create a virtual replica
+      )))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "replicas": [
+      "articles_date_desc"  // Create a standard replica
+      // "virtual(articles_date_desc)" // Create a virtual replica
+    ]
+  ])
+  ```
+</CodeGroup>
+
+Then, use the `post_date_timestamp` attribute to sort the `articles_date_desc` virtual index by date in descending order:
+
+### Sort a standard replica
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      Ranking = new List<string> { "desc(post_date_timestamp)" }
+  };
+
+  articles_date_desc.SetSettings(settings);
+
+  // Asynchronous
+  await articles_date_desc.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := articles_date_desc.SetSettings(search.Settings{
+  	Ranking: opt.Ranking(
+  		"desc(post_date_timestamp)",
+  	),
+  })
+  ```
+
+  ```java java
+  articles_date_desc.setSettings(
+        new IndexSettings().setRanking(Arrays.asList(
+                "desc(post_date_timestamp)"
+                ))
+  );
+  ```
+
+  ```js js
+  articles_date_desc
+    .setSettings({
+      ranking: ["desc(post_date_timestamp)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      ranking {
+          +Desc("post_date_timestamp")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $articles_date_desc->setSettings([
+    'ranking' => [
+      'desc(post_date_timestamp)',
+    ]
+  ]);
+  ```
+
+  ```python python
+  articles_date_desc.set_settings(
+      {
+          "ranking": [
+              "desc(post_date_timestamp)",
+          ]
+      }
+  )
+  ```
+
+  ```ruby ruby
+  articles_date_desc.set_settings(
+    {
+      ranking: [
+        "desc(post_date_timestamp)"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "articles_date_desc" `with` IndexSettings(
+      ranking = Some(Seq(
+        Ranking.desc("post_date_timestamp"))))
+  }
+  ```
+
+  ```swift swift
+  articles_date_desc.setSettings([
+    "ranking": [
+      "desc(post_date_timestamp)"
+    ]
+  ])
+  ```
+</CodeGroup>
+
+### Sort a virtual replica
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      CustomRanking = new List<string> { "desc(post_date_timestamp)" }
+  };
+
+  articles_date_desc.SetSettings(settings);
+
+  // Asynchronous
+  await articles_date_desc.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := articles_date_desc.SetSettings(search.Settings{
+  	CustomRanking: opt.CustomRanking(
+  		"desc(post_date_timestamp)",
+  	),
+  })
+  ```
+
+  ```java java
+  articles_date_desc.setSettings(
+        new IndexSettings().setCustomRanking(Arrays.asList(
+                "desc(post_date_timestamp)"
+                ))
+  );
+  ```
+
+  ```js js
+  articles_date_desc
+    .setSettings({
+      customRanking: ["desc(post_date_timestamp)"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      customRanking {
+          +Desc("post_date_timestamp")
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $articles_date_desc->setSettings([
+    'customRanking' => [
+      'desc(post_date_timestamp)',
+    ]
+  ]);
+  ```
+
+  ```python python
+  articles_date_desc.set_settings(
+      {
+          "customRanking": [
+              "desc(post_date_timestamp)",
+          ]
+      }
+  )
+  ```
+
+  ```ruby ruby
+  articles_date_desc.set_settings(
+    {
+      customRanking: [
+        "desc(post_date_timestamp)"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "articles_date_desc" `with` IndexSettings(
+      customRanking = Some(Seq(
+        CustomRanking.desc("post_date_timestamp"))))
+  }
+  ```
+
+  ```swift swift
+  articles_date_desc.setSettings([
+    "customRanking": [
+      "desc(post_date_timestamp)"
+    ]
+  ])
+  ```
+</CodeGroup>

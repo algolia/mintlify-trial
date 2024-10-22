@@ -1,0 +1,62 @@
+---
+title: Update the facet configuration in InstantSearch
+description: |-
+  Update the facet configuration for refinementList widgets in your Shopify app to enhance the user experience.
+---
+
+The facets are configured within the Shopify-Algolia integration, but there may be scenarios when you want to configure more advanced options within the relevant facet types that are used.
+
+An example of this could be handling a scenario when there are long lists of facet values.
+
+The [`refinementList`](/api-reference/widgets/refinement-list/js/) widget is used to lets users refine the search results by facets that are configured as _conjunctive_ or _disjunctive_ facet types
+within the [Shopify search configuration](/integration/shopify/building-search-ui/instant-search/#configuration).
+
+By default, the `refinementList` widget [shows 10 items](/api-reference/widgets/refinement-list/js/#widget-param-limit) and hides the rest.
+
+While you can change the total number of items shown in a list with the [`beforeInstantSearchFacetLimitNumber`](/integration/shopify/building-search-ui/frontend-custom-events/#beforeinstantsearchfacetlimitnumber) hook, this updates all `refinementList` widgets which could still end up having some values hidden.
+
+In this scenario, it's best to show a smaller number of items and to have a **Show more** button to view the rest of the items.
+
+You can achieve this with the [`beforeInstantSearchOptions`](/integration/shopify/building-search-ui/frontend-custom-events/#beforeinstantsearchoptions) hook.
+
+## Example
+
+This example updates the configuration of all `refinementList` widgets to show only 5 facets, and to display a **Show more** button for revealing the rest of the facets.
+
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  algoliaShopify.hooks.registerHook(
+    "beforeInstantSearchOptions",
+    function (options) {
+      // Loop through the facet widgets.
+      const widgets = options.facets.widgets.map((widget) => {
+        // Only update the refinementList widget params.
+        if (widget.name !== "refinementList") {
+          return widget;
+        }
+
+        // This updates all `refinementList` widgets.
+        // If you only want to update specific facet(s),
+        // you can target them by checking the value of `widget.params.container`.
+
+        return {
+          ...widget,
+          params: {
+            ...widget.params,
+            limit: 5,
+            showMore: true,
+          },
+        };
+      });
+
+      return {
+        ...options,
+        facets: {
+          ...options.facets,
+          widgets,
+        },
+      };
+    },
+  );
+});
+```
