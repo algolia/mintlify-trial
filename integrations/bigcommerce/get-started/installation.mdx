@@ -1,0 +1,61 @@
+---
+title: Install Algolia for BigCommerce
+description: |-
+  Connect your BigCommerce store with Algolia in a few clicks without writing code.
+---
+
+Connect your BigCommerce store to Algolia with a couple of clicks.
+Index your products and keep your product data in sync with Algolia without writing code.
+
+The Algolia BigCommerce integration handles the data connection between your BigCommerce store and Algolia.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [BigCommerce](https://academy.algolia.com/guides/40be82ce-826a-11ee-be19-02fa2169d497/tasks/6556331c-8269-11ee-a55e-0208cfe3ff89)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Before you begin
+
+To connect BigCommerce and Algolia, you need a BigCommerce store with owner access and an Algolia application with administrator access on a [build, premium, elevate plan](https://www.algolia.com/pricing/). You can [create one for free](/guides/sending-and-managing-data/manage-indices-and-apps/manage-your-apps/).
+
+## Install the Algolia for BigCommerce app
+
+1. Go to the [Algolia for BigCommerce app](https://www.bigcommerce.com/apps/algolia-search-discovery/).
+1. Click **Get this app**.
+1. Existing BigCommerce store - Log in
+1. New to BigCommerce - Sign up
+1. Click **Install**.
+
+## Connect BigCommerce with Algolia
+
+1. Select the Algolia Search app from the app list in the sidebar.
+
+1. Select **Confirm** on the permissions prompt.
+
+1. Select **Login With Algolia**.
+
+1. A popup window appears to sign in to Algolia. If you're not already logged into Algolia, enter your Algolia credentials.
+
+1. Select the Algolia app you want to connect to your BigCommerce store.
+
+1. Select the BigCommerce channel you want to connect to your Algolia application.
+
+1. Name the index and choose between product or variant-level indexing:
+   - **Product level indexing.** Each product has a record assigned to it.
+   - **Variant level indexing.** Each [product variant](https://developer.bigcommerce.com/docs/rest-catalog/product-variants) has a record assigned to it.
+
+1. Choose one or more currencies for indexing.
+
+1. Enter a indexing success threshold in percent to indicate how many products must be imported without issues for a successful indexing.
+
+1. Click **Connect to BigCommerce**.
+
+1. You can choose when to index your products. Select:
+
+- **Yes, index now** if you want to index your BigCommerce products now.
+- **No, index later** if you want to index your products later.
+
+You won't see your products in an Algolia index until you [trigger a full reindex](/integration/bigcommerce/get-started/configuration/#trigger-a-full-reindex).

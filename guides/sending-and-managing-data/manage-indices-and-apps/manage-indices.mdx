@@ -1,0 +1,46 @@
+---
+title: Manage indices
+description: |-
+  Learn how to copy, rename, or delete your indices and understand the effect on analytics. Learn how you can build a sitemap from your index for SEO.
+---
+
+Managing indices involves tasks like renaming, copying, or deleting indices, as well as exporting and importing settings.
+You can complete most tasks in the Algolia dashboard or using the API.
+If you want to copy an index between different Algolia applications,
+you have to use the API.
+
+An index's analytics data is tied to its index.
+See [Indices and analytics](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/concepts/indices-analytics/)
+to learn more about the effect of renaming, copying, and deleting indices on their analytics data.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Prepare your records for indexing](/guides/sending-and-managing-data/prepare-your-data/)
+  - [Send your data to an index](/guides/sending-and-managing-data/send-and-update-your-data/)
+  - [Export and import indices and settings](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/export-import-indices/)
+  - [Move indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/move-indices/)
+  - [Copy indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/copy-indices/)
+  - [Delete indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/delete-indices/)
+  - [Manage indices API client methods](/api-client/methods/manage-indices/)
+  - [Settings API client methods](/api-client/methods/settings/)
+  - [Algolia indices](/tools/cli/commands/algolia-indices/)
+  - [Algolia objects](/tools/cli/commands/algolia-objects/)
+  - [Algolia settings](/tools/cli/commands/algolia-settings/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Indices and applications
+
+It's likely that you'll use multiple indices,
+for example, if you're using Query Suggestions, or implement sorting.
+See [Choose between one or more indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/concepts/one-or-more-indices/) to learn more.
+
+In addition, you can also use multiple Algolia applications, for example, to create testing, staging, and production environments.
+See [Manage your Algolia apps](/guides/sending-and-managing-data/manage-indices-and-apps/manage-your-apps/) for more information.
+
+## Creating sitemaps from your indices
+
+To let search engines like Google or Bing find content from your Algolia indices, for example, product pages or category pages,
+you can [create sitemaps](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/tutorial/generate-sitemap-from-index/).

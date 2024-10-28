@@ -1,0 +1,481 @@
+---
+title: PWA Kit demo and starter code
+description: |-
+  Learn how to integrate Algolia into your Salesforce Commerce Cloud PWA Kit project.
+---
+
+The PWA demo showcases Algolia's search and discovery features using the [Salesforce Commerce Cloud PWA Kit](https://developer.salesforce.com/docs/commerce/pwa-kit-managed-runtime/guide/pwa-kit-overview.html).
+This starter code helps you incorporate Algolia into your PWA Kit project.
+It uses the following Algolia features:
+
+- **Autocomplete** for intelligent query suggestions and previews
+- **InstantSearch** for product listings and search results
+- **Recommend** for product recommendations
+
+[Live Demo](https://algolia-pwa-demo-production.mobify-storefront.com) [Source Code](https://github.com/algolia/algolia-pwa-demo)
+
+## Integration with Salesforce Commerce Cloud PWA Kit
+
+The Algolia PWA Demo uses the template extensibility feature of the official Salesforce PWA Kit.
+This approach lets you use the `@salesforce/retail-react-app` repository as a base template and include only the overridden or customized files from the original template.
+
+You can selectively incorporate the relevant files or changes into your repositories or use the entire demo repository as starter code for your project.
+
+For more information about template extensibility in the Salesforce PWA Kit, refer to the [Salesforce documentation](https://developer.salesforce.com/docs/commerce/pwa-kit-managed-runtime/guide/template-extensibility.html).
+
+## Before you begin
+
+This guide requires [Node.js version 18 or later](https://nodejs.org/en/download/package-manager), [npm 9 or later](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), and an [Algolia account](https://dashboard.algolia.com/users/sign_up) .
+
+## Installation
+
+This guide covers `@salesforce/retail-react-app` version `3.0.1`.
+If you use a different version, some configurations may differ.
+Check the [changelog](https://github.com/SalesforceCommerceCloud/pwa-kit/releases) for your specific version to see any relevant changes.
+
+### Run the Algolia demo application
+
+1. [Setup your API access](https://developer.salesforce.com/docs/commerce/pwa-kit-managed-runtime/guide/setting-up-api-access.html) to Salesforce Commerce Cloud.
+
+1. [Index your products and content](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview/) from your Salesforce Commerce Cloud instance into Algolia.
+
+   The demo assumes you're using:
+
+   - Salesforce's [storefront data](https://github.com/SalesforceCommerceCloud/storefrontdata), sample catalog, and content library
+   - Algolia's cartridge for [product indexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview/).
+   - Using the default [variant-level model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/?client=javascript#variant-level-default-model)
+   - Specify `color`, `size`, `colorVariations`, `masterID`, `lsImage`, `short_description`, `long_description`, `pricebooks`, `brand`, `name`, `in_stock` as `Additional Product Attributes` in the [custom preferences](/integration/salesforce-commerce-cloud-b2c/getting-started/custom-preferences/).
+     If you're using other datasets or a custom indexing approach, adjust your implementation accordingly.
+
+1. Configure your indices in the Algolia Dashboard:
+
+   - [Create a new Query suggestions index](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/#set-up-query-suggestions).
+   - [Configure facets](/integration/salesforce-commerce-cloud-b2c/getting-started/configure-your-search/#configure-your-facets) for categories, brands, colors, and sizes for the primary product index.
+   - [Create replicas](/integration/salesforce-commerce-cloud-b2c/getting-started/configure-your-search/#configure-your-replicas) for sorting options.
+   - [Create a rule](/guides/managing-results/rules/rules-overview/) for the primary product index to enable the rendering of quick views in the autocomplete section.
+
+To import the following pre-configuration JSON, click the **Enhanced > Rules > Import/Export** icon.
+
+```json json
+{
+  "conditions": [
+    {
+      "anchoring": "is",
+      "pattern": "",
+      "alternatives": false,
+      "context": "quickAccess"
+    }
+  ],
+  "consequence": {
+    "userData": {
+      "items": [
+        {
+          "href": "/category/womens-outfits",
+          "image": "https://res.cloudinary.com/hilnmyskv/image/upload/v1645453369/sales_banner_y1hsr8.jpg",
+          "subtitle": "Women",
+          "template": "sales-banner",
+          "title": "Outfits"
+        },
+        {
+          "date": "Till March 25th",
+          "href": "/category/womens",
+          "image": "https://res.cloudinary.com/hilnmyskv/image/upload/v1645453422/sales_code_vuatep.jpg",
+          "subtitle": "with the code CODE_ALGOLIA",
+          "template": "sales-code",
+          "title": "Sale on Women Top"
+        },
+        {
+          "href": "/category/top-seller",
+          "image": "https://res.cloudinary.com/hilnmyskv/image/upload/v1645453466/new_collection_nloeb6.jpg",
+          "subtitle": "spring / summer 2024",
+          "template": "new-collection",
+          "title": "Top sellers"
+        },
+        {
+          "href": "/category/womens-jewelry",
+          "links": [
+            {
+              "href": "/category/womens-jewelry",
+              "text": "Track my order"
+            },
+            {
+              "href": "/category/womens-jewelry",
+              "text": "Delivery & Returns"
+            },
+            {
+              "href": "/category/womens-jewelry",
+              "text": "FAQ"
+            }
+          ],
+          "template": "help",
+          "title": "how can we help?"
+        }
+      ]
+    },
+    "filterPromotes": true
+  },
+  "enabled": true,
+  "description": "Autocomplete quick access on empty query state"
+}
+```
+
+- Train the Recommend models by [sending the events and training data](/guides/algolia-recommend/how-to/set-up/) for this demo.
+
+4. Clone the Algolia PWA Demo repository from GitHub and go to the cloned repository:
+
+   ```sh sh
+   git clone https://github.com/algolia/algolia-pwa-demo.git
+   ```
+
+   ```sh sh
+   cd algolia-pwa-demo
+   ```
+
+4. Install the dependencies:
+
+   ```sh sh
+   npm install
+   ```
+
+4. Create an `algolia-config.json` file in your `config` folder or use and rename the [example file](https://github.com/algolia/algolia-pwa-demo/blob/master/config/algolia-config.example.json), then update the Algolia app credentials and indices in it.
+
+4. Create a `commerce-api-config.json` file in your `config` folder or use and rename the [example file](https://github.com/algolia/algolia-pwa-demo/blob/master/config/commerce-api-config.example.json), then update the Salesforce Commerce Cloud API credentials in it.
+
+4. Set the `PWA_KIT_SLAS_CLIENT_SECRET` in your environment variables.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can find instructions on how to create [Shopper Login and API Access Service (SLAS)](https://developer.salesforce.com/docs/commerce/commerce-api/guide/slas.html) credentials and get the necessary Salesforce Commerce Cloud API credentials in the [PWA-Kit documentation](https://developer.salesforce.com/docs/commerce/pwa-kit-managed-runtime/guide/build-customize.html).
+</Note>
+
+{/* prettier-ignore-end */}
+
+1. Start the development server:
+
+   ```sh sh
+   npm run start
+   ```
+
+The demo runs on `localhost:3000` using the default Algolia app credentials in the [`algolia-config.json`](#algolia-configjson-file) file.
+
+### Integrate Algolia into your existing PWA Kit project
+
+1. Create your Algolia indices using SFCC Jobs.
+
+1. Create an `algolia-config.json` file in your root folder or use and rename the [example file.](https://github.com/algolia/algolia-pwa-demo/blob/master/algolia-config.example.json)
+
+1. Adjust your Commerce API and PWA Kit configuration as needed.
+   Refer to the Salesforce [documentation](https://developer.salesforce.com/docs/commerce/pwa-kit-managed-runtime/guide/configuration-options.html) for more information.
+
+1. Install the necessary dependencies to use Algolia styles in your PWA application:
+
+   ```sh sh
+   npm install autoprefixer css-loader postcss-loader style-loader --save-dev
+   ```
+
+   Copy the `babel.config.js` and `postcss.config.js` files from the demo repository to your project's root directory.
+
+1. Copy the [`overrides/app/components/algolia`](https://github.com/algolia/algolia-pwa-demo/tree/master/overrides/app/components/algolia) directory from the demo repository to your project.
+
+1. Update your [`overrides/app/route.jsx`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/routes.jsx) file to include the Algolia product list and detail pages:
+
+   ```jsx jsx
+   const ProductList = loadable(() => import("./pages/algolia-product-list"), {
+     fallback,
+   });
+
+   const ProductDetail = loadable(
+     () => import("./pages/algolia-product-detail"),
+     {
+       fallback,
+     },
+   );
+
+   const routes = [
+     // ...
+     {
+       path: "/search",
+       component: ProductList,
+     },
+     {
+       path: "/category/:categoryId",
+       component: ProductList,
+     },
+     {
+       path: "/product/:productId",
+       component: ProductDetail,
+     },
+     // ...
+   ];
+   ```
+
+   {/* prettier-ignore-start */}
+
+   <Note>
+     The `productDetail` page now showcases recommendation widgets. If the
+     recommendation widgets on the product detail page aren't required, you can
+     remove the `ProductDetail` component as necessary.
+   </Note>
+
+   {/* prettier-ignore-end */}
+
+### [`algolia-config.json`](https://github.com/algolia/algolia-pwa-demo/blob/master/algolia-config.example.json) file
+
+```js js
+algolia: {
+  appId: 'xxx',
+  apiKey: 'xxx',
+  indices: {
+    querySuggestions: 'pwa__products__en_GB_query_suggestions',
+    contents: 'pwa__contents__en_GB',
+    faq: 'pwa__contents__en_GB',
+    categories: 'pwa__categories__en_GB',
+    primary: {
+      label: 'Sort By: Best Matches',
+      value: 'pwa__products__en_GB'
+    },
+    replicas: [
+      {
+        label: 'Sort By: Price Low to High',
+        value: 'pwa__products__en_GB_price_asc'
+      },
+      {
+        label: 'Sort By: Price High to Low',
+        value: 'pwa__products__en_GB_price_desc'
+      }
+    ]
+  }
+},
+```
+
+- `appId`: your Algolia application ID, which you can find in the [Algolia dashboard](https://dashboard.algolia.com/account/api-keys/all)
+- `apiKey`: your Algolia API key, which you can find in the Algolia dashboard
+- `indices.querySuggestions`: the Query Suggestions index name
+- `indices.primary.label`: the label for the default sorting option
+- `indices.primary.value`: the primary product index name
+- `indices.replicas`: a sorting options array and their corresponding index names
+- `indices.contents`: the content index name
+- `indices.faq`: the FAQ index name.
+  You can use a specific index; the content index serves demonstration purposes.
+- `indices.categories`: the categories index name.
+
+## InstantSearch implementation
+
+The Algolia PWA demo uses the `algolia-product-list` page for the `/search` and `/category/:categoryId` routes.
+It uses the following npm packages for building the InstantSearch experience:
+
+- [`react-instantsearch`](https://www.npmjs.com/package/react-instantsearch)
+- [`algoliasearch`](https://www.npmjs.com/package/algoliasearch)
+
+InstantSearch in the demo provides the following features:
+
+- Search
+- Listing category pages
+- Filtering on category, color, size, price, and brand
+- Pagination
+- Three different sorting strategies: best match, price low to high, price high to low
+- Content search results with a secondary search tab
+- Color swatches, which lets users see all the color alternatives on the product listing page.
+
+To customize filtering, change the hardcoded `hierarchicalCategoryAttributes`, and `filterEls` variables in the [`overrides/app/pages/algolia-product-list/index.jsx`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/pages/algolia-product-list/index.jsx) file.
+For example, to use a different refinement like "collection" instead of "brand", update the `AlgoliaCheckboxRefinements` attributes:
+
+```jsx jsx
+const filterEls = (
+  <>
+    <Accordion allowMultiple>
+      <AlgoliaHierarchicalRefinements
+        attributes={hierarchicalCategoryAttributes}
+        title="Category"
+      />
+      <AlgoliaColorRefinements attribute="color" title="Color" />
+      <AlgoliaCheckboxRefinements attribute="size" title="Size" />
+      <AlgoliaRangeRefinements attribute="price.USD" title="Price" />
+      <AlgoliaCheckboxRefinements attribute="collection" title="Collections" />
+    </Accordion>
+  </>
+);
+```
+
+Or if you want to add a new facet like "material", add a new `AlgoliaCheckboxRefinements` component with necessary attributes in the `filterEls`.
+
+```jsx jsx
+const filterEls = (
+  <>
+    <Accordion allowMultiple>
+      <AlgoliaHierarchicalRefinements
+        attributes={hierarchicalCategoryAttributes}
+        title="Category"
+      />
+      <AlgoliaColorRefinements attribute="color" title="Color" />
+      <AlgoliaCheckboxRefinements attribute="size" title="Size" />
+      <AlgoliaRangeRefinements attribute="price.USD" title="Price" />
+      <AlgoliaCheckboxRefinements attribute="brand" title="Brand" />
+      <AlgoliaCheckboxRefinements attribute="material" title="Material" />
+    </Accordion>
+  </>
+);
+```
+
+For a detailed understanding of the InstantSearch implementation, refer to the [`overrides/app/pages/algolia-product-list/index.jsx`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/pages/algolia-product-list/index.jsx) file and the components inside the [`overrides/app/pages/algolia-product-list/partials`](https://github.com/algolia/algolia-pwa-demo/tree/master/overrides/app/pages/algolia-product-list/partials) directory, as well as the complete [InstantSearch documentation](/guides/building-search-ui/what-is-instantsearch/react/).
+
+## Autocomplete implementation
+
+The Algolia PWA Demo overrides the default search bar with Algolia's [Autocomplete widget](/ui-libraries/autocomplete/introduction/what-is-autocomplete/).
+The Autocomplete component resides in the [`overrides/app/components/algolia/autocomplete`](https://github.com/algolia/algolia-pwa-demo/tree/master/overrides/app/components/algolia/autocomplete) directory.
+The main file for the Autocomplete implementation is [`overrides/app/components/algolia/autocomplete/index.jsx`](https://github.com/algolia/algolia-pwa-demo/tree/master/overrides/app/components/algolia/autocomplete/index.jsx).
+It imports various plugins and components to create a feature-rich autocomplete experience.
+
+The Autocomplete component uses the following [plugins](/ui-libraries/autocomplete/core-concepts/plugins/):
+
+### [`recentSearchesPlugin`](/ui-libraries/autocomplete/api-reference/autocomplete-plugin-recent-searches/)
+
+Displays recent searches for each customer.
+It uses the [`createLocalStorageRecentSearchesPlugin`](/ui-libraries/autocomplete/api-reference/autocomplete-plugin-recent-searches/createLocalStorageRecentSearchesPlugin/).
+The plugin stores recent searches in the browser's local storage under the key 'pwa-recent-searches'.
+
+### [`querySuggestionsPlugin`](/ui-libraries/autocomplete/api-reference/autocomplete-plugin-query-suggestions/)
+
+Provides query suggestions based on the user's input.
+It uses the [`createQuerySuggestionsPlugin`](/ui-libraries/autocomplete/api-reference/autocomplete-plugin-query-suggestions/createQuerySuggestionsPlugin/) and fetches suggestions from the `indices.querySuggestions` index in the configuration.
+
+### `categoriesPlugin`
+
+Fetches and displays category suggestions.
+It uses the [`getAlgoliaResults`](/ui-libraries/autocomplete/api-reference/autocomplete-js/getAlgoliaResults/) function to retrieve category results from the `indices.categories` index in the configuration.
+
+### `brandsPlugin`
+
+Displays popular brands based on Algolia's Trending Facets feature.
+It uses the [`getAlgoliaFacets`](/ui-libraries/autocomplete/api-reference/autocomplete-js/getAlgoliaFacets/) function to fetch trending brands from the `indices.primary.value` index in the configuration.
+
+### `faqPlugin`
+
+Provides FAQ suggestions based on the user's input.
+It fetches results from the `algolia.indices.faq` index using the [`getAlgoliaResults`](/ui-libraries/autocomplete/api-reference/autocomplete-js/getAlgoliaResults/) function.
+
+### `popularPlugin`
+
+Displays popular searches based on Algolia's Query Suggestions feature.
+It uses the [`createQuerySuggestionsPlugin`](/ui-libraries/autocomplete/api-reference/autocomplete-plugin-query-suggestions/createQuerySuggestionsPlugin/) to retrieve popular searches from the `indices.querySuggestions` index in the configuration.
+
+### `popularCategoriesPlugin`
+
+Fetches and displays popular categories based on Algolia's facet values.
+It uses the [`getAlgoliaFacets`](/ui-libraries/autocomplete/api-reference/autocomplete-js/getAlgoliaFacets/) function to retrieve popular categories from the `indices.primary.value` index in the configuration.
+
+### `productPlugin`
+
+Fetches and displays product suggestions based on the user's input.
+It uses the [`getAlgoliaResults`](/ui-libraries/autocomplete/api-reference/autocomplete-js/getAlgoliaResults/) function to retrieve product results from the `indices.primary.value` index in the configuration.
+
+#### Customization and extensibility
+
+The `popularCategoriesPlugin` helps display popular product categories based on search results.
+It uses hardcoded images.
+Change them in the file [`popularCategoriesPlugin.tsx`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/components/algolia/autocomplete/plugins/popularCategoriesPlugin.tsx).
+
+The `QuickAccessPlugin` showcases [Rules](/guides/managing-results/rules/rules-overview/) and always returns the same result that depends on the rule configuration.
+The [`overrides/app/components/algolia/autocomplete/plugins/quickAccessPlugin.tsx`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/components/algolia/autocomplete/plugins/quickAccessPlugin.tsx) file includes an example configuration.
+
+The `RecentSearchesPlugin` uses local storage for each user.
+For demonstration purposes, the [`overrides/app/components/algolia/autocomplete/index.jsx`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/components/algolia/autocomplete/index.jsx) file includes sample data.
+The [`overrides/app/components/algolia/style.css`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/components/algolia/style.css) file includes all the styles for Algolia components.
+You can customize the styles according to your design requirements.
+
+These plugins work together to provide a comprehensive autocomplete experience, offering suggestions for recent searches, query suggestions, categories, brands, FAQs, popular searches, popular categories, and products.
+
+## Recommend implementation
+
+The Algolia PWA Demo includes several [Recommend](/guides/algolia-recommend/overview/) components to showcase how to add personalized product recommendations to your PWA Kit project.
+These components are in the [`overrides/app/components/algolia/recommend`](https://github.com/algolia/algolia-pwa-demo/tree/master/overrides/app/components/algolia/recommend) directory.
+
+The available Recommend components are:
+
+- `FrequentlyBoughtTogether`: displays products frequently bought with the current product
+- `LookingSimilar`: shows products that look like the current product
+- `RelatedProducts`: displays products with similar attributes as the current product
+- `TrendingItems`: displays trending products (based on a specific facet name and facet values).
+- `TrendingFacets`: shows trending facet values for a facet name.
+
+Each Recommend component uses the `@algolia/recommend-react` package to fetch recommendations from Algolia.
+
+The following are examples of the Recommend components.
+Import them from the [`overrides/app/components/algolia/recommend`](https://github.com/algolia/algolia-pwa-demo/tree/master/overrides/app/components/algolia/recommend) directory for use anywhere in your project.
+
+FrequentlyBoughtTogether:
+
+```jsx jsx
+<FrequentlyBoughtTogether product={currentProduct} />
+```
+
+LookingSimilar:
+
+```jsx jsx
+<LookingSimilar product={currentProduct} />
+```
+
+RelatedProducts:
+
+```jsx jsx
+<RelatedProducts product={currentProduct} />
+```
+
+TrendingItems:
+
+```jsx jsx
+<TrendingItems facetName="brand" facetValue="Example Brand" />
+```
+
+TrendingFacets:
+
+```jsx jsx
+<TrendingFacets facetName="category" />
+```
+
+Find examples of how to use the `FrequentlyBoughtTogether`, `RelatedProducts`, and `LookingSimilar` components in the [`overrides/app/pages/algolia-product-detail/index.jsx`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/pages/algolia-product-detail/index.jsx) file.
+
+In the preceding examples:
+
+- `product` represents the current product object for displaying recommendations.
+  It's like the [`context-object`](https://help.salesforce.com/s/articleView?id=cc.b2c_einstein_validator_responses.htm\&type=5) in Einstein Recommendation [`isslots`](https://developer.salesforce.com/docs/commerce/b2c-commerce/guide/b2c-isslot.html).
+- `facetName` and `facetValue` specify the facet name and value for fetching trending items.
+
+The Recommend components also include extra props for customization, such as:
+
+- `recommendClient` to specify the Algolia Recommend client
+- `indexName` to specify the index to fetch recommendations from
+- `headerComponent` and `itemComponent` for rendering custom headers and items.
+
+To use the Recommend components in your PWA Kit project:
+
+1. Import the desired Recommend component from the [`overrides/app/components/algolia/recommend`](https://github.com/algolia/algolia-pwa-demo/tree/master/overrides/app/components/algolia/recommend) directory.
+
+1. Configure the necessary props, such as the current product, click event handlers, and any extra customization options.
+
+1. Place the Recommend component in the appropriate location within your product detail page or any other relevant page.
+
+1. Ensure you have [trained recommendation models](/guides/algolia-recommend/how-to/set-up/#train-the-recommend-models) in your Algolia account.
+
+## Next steps
+
+Some parts of the starter code are solely for demonstration purposes.
+Extend, customize, or remove parts of the implementation according to your needs.
+Here are some areas to consider:
+
+- Integrate [conversion events](/guides/building-search-ui/events/react/)
+- Customize the image logic in [`overrides/app/components/algolia/autocomplete/plugins/popularCategoriesPlugin.tsx`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/components/algolia/autocomplete/plugins/popularCategoriesPlugin.tsx)
+- Add localization and multi-site support
+- Adjust the FAQ plugin configuration to use a specific index
+
+## Troubleshooting common issues
+
+| Problem                                  | Solution                                                                                                                                                                                                                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Index not found                          | Check if you have created the index and pointed to it in the [`algolia-config.json`](https://github.com/algolia/algolia-pwa-demo/blob/master/algolia-config.example.json) file.                                                                                           |
+| Recommend model not found                | [Train the model for the corresponding index](/guides/algolia-recommend/overview/)                                                                                                                                                                                        |
+| Query Suggestions not found              | [Create a Query Suggestions index](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/#set-up-query-suggestions) and point to it in the [`algolia-config.json`](https://github.com/algolia/algolia-pwa-demo/blob/master/algolia-config.example.json) file |
+| Quick View section doesn't work          | [Create a rule with the appropriate data](#run-the-algolia-demo-application)                                                                                                                                                                                              |
+| Broken page when clicking a product tile | Set the `isPWA` hardcoded variable to `true` in the [`modelHelper.js`](https://github.com/algolia/algoliasearch-sfcc-b2c/blob/master/cartridges/int_algolia/cartridge/scripts/algolia/helper/modelHelper.js) file.                                                        |
+| Broken color codes                       | Update or add missing color codes in `cssColorGroups` in the [`overrides/app/constants.js`](https://github.com/algolia/algolia-pwa-demo/blob/master/overrides/app/constants.js) file                                                                                      |

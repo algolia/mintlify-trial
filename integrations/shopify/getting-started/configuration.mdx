@@ -1,0 +1,138 @@
+---
+title: Configuration
+description: |-
+  How to configure Algolia inside your Shopify site.
+---
+
+Algolia Search and Discovery is a **Shopify Plus certified app**.
+You can use it with your Shopify Plus or Shopify stores.
+
+After [installing](/integration/shopify/getting-started/quick-start/) the Algolia AI Search & Discovery app, configure your store.
+
+## Indexing
+
+As soon as you update your credentials, Algolia begins indexing your content.
+
+Algolia stores your data in [indices](/integration/shopify/sending-and-managing-data/introduction-to-shopify-indexing/). View and edit your indices in the [**Indices** tab](https://dashboard.algolia.com/explorer) of your Algolia dashboard.
+
+An Algolia index is composed of **records**: a record could be one of your products or a blog post in Shopify. These products have **attributes**, which are stored as key-value pairs. For example, a product attribute could be the description of a shirt, a link to a picture of it, or its price. Default attributes for different Shopify records are described in the [schemas section](/integration/shopify/sending-and-managing-data/schemas/) of the documentation.
+
+You can index four types of Shopify data:
+
+- Products (and their variants)
+- Collections
+- Blog posts and articles
+- Pages
+
+Select the attributes you want to make searchable by toggling the relevant **Enable** buttons and then save your changes.
+
+## Store configuration
+
+After your data is indexed and you have installed the Algolia AI Search & Discovery app in your theme, you can integrate the following Algolia features:
+
+- An **autocomplete menu** implemented with the [`autocomplete`](/api-reference/widgets/autocomplete/js/) widget.
+- A **search results page** that includes a bundle of [`instantsearch`](/api-reference/widgets/instantsearch/js/) widgets.
+
+From the **Search options** tab in the Algolia Search and Discovery app, you can choose to use the autocomplete menu and InstantSearch results page to replace Shopify's default results page.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If this doesn't fit your needs, you can [customize the frontend code](/integration/shopify/advanced-customization/custom-instant-search-implementation/)
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Search options
+
+### Sort orders
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This option only applies if you plan to use the Algolia **InstantSearch results page**.
+</Note>
+
+{/* prettier-ignore-end */}
+
+In the **Search options** tab of the Algolia AI Search & Discovery app, you can choose which "sort orders" to activate, how to name them, and which ones to display first.
+
+[Sorting](/guides/managing-results/refine-results/sorting/) is done at indexing time. This means that for each sort order, a new index is created. The new index contains the same amount of records as the main one.
+**Ensure any increase in record count is within your [plan's quota](https://www.algolia.com/pricing/).**
+
+### Faceting
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This option only applies if you plan to use the Algolia **InstantSearch results page**.
+</Note>
+
+{/* prettier-ignore-end */}
+
+[Faceting](/guides/managing-results/refine-results/faceting/) is the technical word used to describe navigation using filters. Facets are primarily used to refine searches.
+
+Configure facets in the **Search options** tab of the Algolia Search and Discovery app.
+
+Drag potential facets to choose their order and mark them as active or inactive.
+
+Hover over a facet and click the edit button to set its name, type, and indicate if it's searchable. Marking a facet as searchable allows a user to search through its subcategories. Only mark you should mark a facet as searchable when it has too many subcategories to display simply.
+
+#### Facet types
+
+The Algolia AI Search & Discovery app offers five facet types:
+
+- **slider**: A simple slider for numeric values.
+- **conjunctive**: Filters using AND between refinements.
+- **disjunctive**: Filters using OR between refinements.
+- **menu**: A list of possible values from which one can be selected.
+- **hidden**: A hidden facet in the active list is added to the [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/) setting but not displayed on the search page.
+
+#### Facet sources
+
+Facets can come from four different sources:
+
+- **Default attributes**: these attributes are detailed in the [schemas section](/integration/shopify/sending-and-managing-data/schemas/)
+- **Variant options**: If you're using aspects like "Color" to distinguish your variants, this will show up here
+- **[Named tags](/integration/shopify/sending-and-managing-data/named-tags/)**
+- **[Metafields](/integration/shopify/sending-and-managing-data/metafields/)**.
+
+#### Facets on product collections
+
+To facet on collections of products, go to the [**Collection pages**](/integration/shopify/advanced-customization/collection-search-page/) tab of the Algolia AI Search & Discovery app and enable it.
+
+- **Collections indexing** enables searching within collections.
+- **Collection page indexing** enables collection faceting for the InstantSearch results page.
+
+#### Add custom facets
+
+You can add custom facets in the Algolia AI Search & Discovery app to ensure they're added as attributes for faceting.
+
+### Which settings are handled by the Algolia AI Search & Discovery app and which by the Algolia dashboard?
+
+Algolia AI Search & Discovery handles these settings:
+
+- Indexing (products, collections, indexing queue)
+- Sorting strategies
+- Facets
+- Click and conversion events
+- UI widgets (InstantSearch and Autocomplete)
+
+Go to the [Algolia dashboard](https://dashboard.algolia.com/dashboard) to change these settings:
+
+- Searchable and irretrievable attributes (on top of the default ones)
+- Relevance settings
+- Synonyms
+- Query Suggestions
+- Rules (transform queries, return custom data)
+- Personalization and AI features
+
+For **merchandising** you can use either the Algolia dashboard or the Shopify admin.
+
+Any change you make in the Algolia dashboard overwrites the default index settings,
+**except** facets ([`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/)) and the sort order of the products index.
+Updating settings for faceting and sort order from within the Shopify admin overwrites changes made to these settings in the Algolia dashboard.
+
+## Synonyms
+
+[Configure synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/) from the Algolia dashboard.

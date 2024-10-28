@@ -1,0 +1,51 @@
+---
+title: Geo ranking info
+description: |-
+  The data Algolia uses for geo ranking.
+---
+
+When you use Algolia's Geo feature, you can get information about each record's geo ranking. This information can be useful to detect bad or missing geo data, and can indicate whether you need to adjust [precision](/guides/managing-results/refine-results/geolocation/in-depth/geo-ranking-precision/) or [tweak your geo settings](/guides/managing-results/refine-results/geolocation/).
+
+To get geo-ranking data, you need to set [`getRankingInfo=true`](/api-reference/api-parameters/getRankingInfo/) on your query parameter. Doing this adds two new attributes to `_rankingInfo`: `matchedGeoLocation` and `aroundLatLng`.
+
+## `matchedGeoLocation` attribute
+
+The `matchedGeoLocation` attribute will contain geo-related information, including the geo-location that matched when you were performing a geo-query. By using this information, you'll be able to identify the geo-location that was used and to retrieve some associated information like the name.
+
+`matchedGeoLocation`:
+
+- geo location that matched the query
+- lat (float): latitude of matched location
+- lng (float): longitude of matched location
+- distance (integer): distance between the matched location and the search location (in meters). Caution: contrary to geoDistance, this value is not divided by the geo precision.
+
+Here is an example of `_rankingInfo` attribute returned on a record with several geo-location (the `matchedGeoLocation` attribute will be in `_rankingInfo` only if a geo-query is performed):
+
+```json json
+{
+  "_rankingInfo": {
+    "nbTypos": 0,
+    "firstMatchedWord": 0,
+    "proximityDistance": 0,
+    "userScore": 7,
+    "geoDistance": 1600,
+    "geoPrecision": 1,
+    "nbExactWords": 0,
+    "words": 0,
+    "filters": 0,
+    "matchedGeoLocation": {
+      "lat": 37.3688,
+      "lng": -122.036,
+      "distance": 1600
+    }
+  }
+}
+```
+
+## `aroundLatLng` attribute
+
+`aroundLatLng` (string, optional):
+
+- Only returned when aroundLatLngViaIP is set
+- Computed geo location
+- Legacy reason (`param` is a string not an object) –> `${lat}, ${lng}`

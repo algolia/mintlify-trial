@@ -1,0 +1,47 @@
+---
+title: Autocomplete
+description: |-
+  Learn how to configure Algolia Autocomplete for BigCommerce.
+---
+
+The Algolia integration for BigCommerce includes an autocomplete menu that replaces the default BigCommerce search box and provides results as-you-type.
+The autocomplete menu uses Algolia's [Autocomplete UI library](/ui-libraries/autocomplete/introduction/what-is-autocomplete/).
+
+## Configuration
+
+To configure the autocomplete menu, select a channel in your BigCommerce app and go to the **Search settings** tab.
+
+The **Desktop CSS Selector** option targets the search box on large screens.
+The default value is `#quickSearch`.
+
+If your theme uses separate search boxes for large and small screens, use the **Mobile CSS Selector** option to target the search box on small screens. The default value is `.navPages-quickSearch`.
+
+When providing a mobile selector, use the **Max Mobile Width** option to specify the breakpoint for switching between the small screen and large screen versions of the search box. The default value is `800px`.
+
+After making changes to the settings, click **Save**.
+
+## Customize the Autocomplete menu
+
+Autocomplete is pre-configured for the Cornerstone theme in BigCommerce.
+For other themes, you might need to tweak the Autocomplete menu to match.
+You can adjust both the CSS and JavaScript for Autocomplete.
+
+To configure the Autocomplete CSS and JavaScript, go to the Search settings tab and pick Edit CSS or Edit JS.
+
+Selecting **Edit CSS** or **Edit JavaScript** presents the editor. In this interface, you can change the Autocomplete CSS or JavaScript.
+
+When you're done, click **Save** at the bottom left of the editor. After that, hit **Save** on the main search settings page for Autocomplete to publish your changes.
+
+## Restore default CSS and JavaScript
+
+1. Head to the **Search settings** tab and choose **Edit CSS** or **Edit JavaScript**.
+1. Pick **Reset to default** located at the bottom right of the editor.
+1. Confirm that you want to reset the CSS or JavaScript code to its default. This action overwrites any changes you've made.
+1. Click **Save** at the bottom left within the editor, then click **Save** on the main search settings page for Autocomplete to publish your changes.
+
+## Updating Autocomplete CSS and JavaScript
+
+When there's an Autocomplete CSS and JavaScript update, a red banner is displayed in the Search settings tab.
+To update the CSS or JavaScript, click **Edit CSS** or **Edit JavaScript**.
+
+After clicking **Edit CSS** or **Edit JavaScript**, the editor displays the contrasts between your existing code and the new version. Paste your custom code and hit **Apply Changes** to update.

@@ -1,0 +1,173 @@
+---
+title: Export and import indices and settings
+description: |-
+  Export and your records and settings from your Algolia index from the dashboard or the API.
+---
+
+You can export the configuration of one index and import it in another index.
+This can be useful if you want to:
+
+- Back up your index configuration
+- Track changes to the index configuration—for example, with a version control system
+- Apply the same configuration to multiple indices—for example, moving between staging and production environments,
+  or when you have different indices for different geographical regions
+
+If you want to copy an index's settings to another index, see [Copy indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/copy-indices/).
+
+## Export records from your indices
+
+You can export the records in your indices as a [JSON](https://wikipedia.org/wiki/JSON) file using one of these methods:
+
+- Use the [`algolia objects browse`](/tools/cli/commands/algolia-objects/#algolia-objects-browse) command with the Algolia CLI
+- Use the [`browse`](/api-reference/api-methods/browse/) method with an API client
+
+You can convert the resulting file to other formats like CSV: programmatically or with a JSON conversion tool.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You can't export records from the Algolia dashboard.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Import records
+
+If you want to upload records to Algolia, see these pages for more information:
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Importing from the dashboard](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard/)
+  - [Importing with the API](/guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-with-the-api/)
+  - [algolia objects import](/tools/cli/commands/algolia-objects/#algolia-objects-import)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## What's included in the index configuration
+
+Your index configuration includes values for:
+
+- Settings, such as:
+  - [Searchable attributes](/guides/managing-results/must-do/searchable-attributes/)
+  - [Custom ranking](/guides/managing-results/must-do/custom-ranking/)
+  - [Typo tolerance](/guides/managing-results/optimize-search-results/typo-tolerance/in-depth/configuring-typo-tolerance/)
+  - [Stop words](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-stop-words/)
+- [Synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/)
+- [Rules](/guides/managing-results/rules/rules-overview/)
+
+## Export index configuration in the Algolia dashboard
+
+To export the configuration of an index from the Algolia dashboard as a JSON file:
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. Select **Manage index > Export Configuration**.
+
+1. Select what you want to export: **Settings**, **Synonyms**, or **Rules**.
+
+1. Click **Export Configuration** to download a JSON file with the index configuration.
+
+## Export index configuration with the Algolia CLI
+
+To export the configuration of an index with the Algolia CLI, run:
+
+```sh sh
+algolia indices config export YOUR_INDEX_NAME
+```
+
+You can select what you want to export by providing the `--scope` option.
+This command saves a JSON file with your index configuration.
+You can use this JSON file to [import](#import-index-configuration-in-the-algolia-dashboard)
+your index configuration in the dashboard—for example, in another index.
+
+You can also export your settings, rules, and synonyms individually with these commands:
+
+- [`algolia settings get`](/tools/cli/commands/algolia-settings/#algolia-settings-get)
+- [`algolia rules browse`](/tools/cli/commands/algolia-rules/#algolia-rules-browse)
+- [`algolia synonyms browse`](/tools/cli/commands/algolia-synonyms/#algolia-synonyms-browse)
+
+Check the [Algolia CLI usage examples](/tools/cli/examples/recipes/#export-to-files) for more information.
+
+## Export index configuration with the API
+
+Using the API, you can export the index settings, rules, and synonyms in any format.
+To export your settings, rules, and synonyms, you need an API key with [`settings`](/guides/security/api-keys/#access-control-list-acl) permissions.
+
+You can obtain the index configuration with the following methods:
+
+- [`getSettings`](/api-reference/api-methods/get-settings/)
+- [`exportRules`](/api-reference/api-methods/export-rules/)
+- [`exportSynonyms`](/api-reference/api-methods/export-synonyms/)
+
+## Import index configuration in the Algolia dashboard
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+
+1. On the left sidebar, select **Search**.
+
+1. Select your Algolia index:
+
+1. Select **Manage index > Import Configuration**.
+
+1. Select the JSON file you want to import.
+
+1. Choose what you want to import: **Settings**, **Synonyms**, or **Rules**.
+
+1. Type `IMPORT` to confirm and click **Import Configuration**.
+
+   {/* prettier-ignore-start */}
+
+   <Warning>
+     Importing settings **replaces all existing index settings** with the
+     imported ones. Synonyms and rules are replaced if the synonym or rule
+     already exists. Otherwise, new synonyms or rules are added.
+   </Warning>
+
+   {/* prettier-ignore-end */}
+
+## Import index configuration with the Algolia CLI
+
+To import the configuration of an index with the Algolia CLI, run:
+
+```sh sh
+algolia indices config import YOUR_INDEX_NAME
+```
+
+The command asks you which JSON file you want to upload and which scopes (settings, rules, synonyms)
+you want to import. The JSON file must be an object with `settings`, `synonyms`, or `rules` keys—for example,
+exported from the dashboard or the Algolia CLI.
+
+You can also use these commands to import settings, rules, and synonyms individually:
+
+- [`algolia settings import`](/tools/cli/commands/algolia-settings/#algolia-settings-import)
+- [`algolia rules import`](/tools/cli/commands/algolia-rules/#algolia-rules-import)
+- [`algolia synonyms import`](/tools/cli/commands/algolia-synonyms/#algolia-synonyms-import)
+
+Check the [Algolia CLI usage examples](/tools/cli/examples/recipes/#import-from-files-or-standard-input) for more information.
+
+## Import index configuration with the API
+
+After importing a file with the index configuration,
+you can use these methods to change the configuration.
+You need an API key with [`editSettings`](/guides/security/api-keys/#access-control-list-acl) permissions.
+
+You can change the index configuration with the following methods:
+
+- [`setSettings`](/api-reference/api-methods/set-settings/)
+- [`saveRule`](/api-reference/api-methods/save-rule/)
+- [`saveSynonym`](/api-reference/api-methods/save-synonym/)
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Rules overview](/guides/managing-results/rules/rules-overview/)
+  - [Synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/)
+</Info>
+
+{/* prettier-ignore-end */}

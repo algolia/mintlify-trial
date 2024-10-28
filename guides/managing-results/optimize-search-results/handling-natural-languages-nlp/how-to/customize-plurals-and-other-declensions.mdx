@@ -1,0 +1,121 @@
+---
+title: Customize plurals and other declensions
+description: |-
+  Learn how to customize plurals and other declensions dictionaries through the Algolia dashboard.
+---
+
+Depending on the language, words can have multiple declined forms based on the number (singular or plural), gender (masculine, feminine, neuter), and the case (nominative, accusative, genitive, etc.).
+When you enable [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) and set the appropriate languages using [`queryLanguages`](/api-reference/api-parameters/queryLanguages/), these variations are considered to be equivalent during search.
+
+For example, with [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) enabled and [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) set to English, the queries "shirt" and "shirts" return the same results.
+
+With [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) enabled and [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) set to German, the queries "hemd", "hemde", "hemds", "hemden", and "hemdes" return the same results. Some groups of declined forms also include common diminutives. For example, the Dutch declensions dictionary includes "hemd", "hemden", "hemdje", and "hemdjes" in its group of alternatives.
+
+The [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) parameter relies on [language-specific dictionaries](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages/).
+You can customize which words to consider as declined forms using the [Algolia dashboard](https://dashboard.algolia.com/dictionaries/declensions).
+
+**Each Algolia application uses one declension dictionary per language.** This means that you can't create different customizations for the same language for different indices in one Algolia application. If you want to create certain equivalencies only when searching certain indices, consider using [synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/) instead.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You should use [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) and other language-specific features in conjunction with the [`queryLanguages`](/api-reference/api-parameters/queryLanguages/) setting.
+  For more information, see [How to set an index query language](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/how-to-set-an-index-query-language/) to learn more.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Inspecting plurals and other declined forms
+
+You can use the dashboard to search for declined forms and their alternatives for a particular language:
+
+1. Select the **Search** product icon on your dashboard.
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/declensions) in the left sidebar menu of the dashboard.
+1. Select the language whose declined forms you want to inspect on the screen's top right. **Plural and declension dictionaries are language-specific.**
+1. Select the dictionary.
+1. Search for a specific word by typing it into the input box. If there are Algolia alternatives or if you created custom alternatives, these appear below the input box.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Searching for words or their declined forms is _exact_. A word and its alternatives only appear once you've fully and correctly entered it: the input box doesn't use prefix searching or typo tolerance.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Adding a missing group of alternatives
+
+You may search for a word and find that it doesn't have any alternatives associated with it.
+This can happen when your use case includes English vocabulary in the context of another language or if you have use-case specific vocabulary.
+
+For example, a brand-specific word like "iPhone" isn't included in Algolia's dictionary, but you may want searches for "iPhone" and "iPhones" to return the same results. In this case, you can add a custom group of alternatives so that "iPhones" is recognized as the plural of "iPhone".
+
+### Using the dashboard
+
+1. Select the **Search** product icon on your dashboard.
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/declensions) in the left sidebar menu of the dashboard.
+1. Search for and select the language whose declined forms you want to customize on the screen's top right. **Plural and declension dictionaries are language-specific.**
+1. Select the dictionary.
+1. Search for a specific word by typing it into the input box. If there are Algolia alternatives or if you created custom alternatives, these appear below the input box.
+1. If no entry exists, the **Add** (+) button to the right of the input box becomes enabled. When you click it, an input appears below with the searched-for word.
+1. In the input field, enter each word that should be considered an alternative for the word and then click **Save**.
+1. Click **Review and Save** on the bottom of the screen to save this and any other changes.
+
+## Customizing a group of alternatives
+
+You may find that a particular group of declined form doesn't include an alternative you would expect or contains a word that shouldn't be considered equivalent for your use case. In this case, you should customize the existing group of alternatives from the dashboard:
+
+1. Select the **Search** product icon on your dashboard.
+1. Navigate to the [**Dictionaries** page](https://dashboard.algolia.com/dictionaries/declensions) in the left sidebar menu of the dashboard.
+1. Search for and select the language whose declined forms you want to customize on the screen's top right. **Plural and declension dictionaries are language-specific.**
+1. Select the dictionary.
+1. Search for a specific word by typing it into the input field. If there are Algolia alternatives or if you created custom alternatives, these appear below the input box.
+1. If an entry exists, you can either add new words or remove existing words from the list of alternatives by selecting the **Edit** option to the right of the group.
+1. Add new alternatives by typing it in the input or remove alternatives by clicking the **Delete** (x) button next to it. Click **Save**.
+1. Click **Review and Save** on the bottom of the screen to save this and any other changes.
+
+Editing an out-of-the-box group of alternatives results in the creation of a custom group. The out-of-the-box group of alternatives also remains. **When performing a search, if both an out-of-the-box group and custom group exist for a word, only the custom group is used to determine equivalences.**
+
+{/* prettier-ignore-start */}
+
+<Note>
+  While you can delete custom groups of alternatives, you can't delete out-of-the-box groups. To turn off all alternatives for a certain word, create a custom group where it is the only word. You can do this by editing a an out-of-the-box group and removing all alternatives.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Uploading and downloading customizations
+
+You may have curated your own list of alternative forms for your use case. You can upload them in bulk in either CSV or JSON format using the **Actions** button with the gear icon.
+
+### CSV format
+
+```csv csv
+language, words, objectID, type
+de, hund,hunde,hunds,hunden,hundes,hundchen,hundchens, 1, custom
+```
+
+The list of words must be a comma-separated list without any spaces.
+
+### JSON format
+
+```json json
+[
+  {
+    "language": "de",
+    "words": [
+      "hund",
+      "hunde",
+      "hunds",
+      "hunden",
+      "hundes",
+      "hundchen",
+      "hundchens"
+    ],
+    "objectID": 1,
+    "type": "custom"
+  }
+]
+```
+
+Using the **Actions** button, you can also download all custom alternatives from a dictionary, either in CSV or JSON format. You may choose to do this regularly to keep track of alternatives you added at a particular time.

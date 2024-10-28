@@ -1,0 +1,138 @@
+---
+title: UI sorting widgets
+description: |-
+  How to sort in InstantSearch using the sortBy and relevantSort UI widgets.
+---
+
+Using replicas with different sorting strategies provides a way for users to change sorting on the frontend.
+For example, if you have an ecommerce website, and by default, want to sort search results from cheapest to most expensive.
+You might want to provide a drop-down menu or toggle switch to let users sort from most expensive to cheapest.
+
+Because you have one replica index per sorting strategy, you need to **change what index Algolia must search into when users change the sorting method**.
+
+While you could [handle it yourself](/guides/managing-results/refine-results/sorting/how-to/search-in-a-replica-index/), it's easier to use the InstantSearch [`sortBy`](/api-reference/widgets/sort-by/js/) and [`relevantSort`](/api-reference/widgets/relevant-sort/js/) widgets.
+
+## Setting up replicas
+
+Before you implement the search, you need to have replicas for each sorting strategy you want to provide.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Sort by attribute](/guides/managing-results/refine-results/sorting/how-to/sort-by-attribute/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Sorting widget
+
+### Sort dropdown with `sortBy`
+
+Dropdowns are a familiar widget, common in ecommerce scenarios and power user workflows.
+[InstantSearch](/guides/building-search-ui/what-is-instantsearch/js/) provides sorting dropdowns with the [`sortBy`](/api-reference/widgets/sort-by/js/) widget.
+
+<CodeGroup>
+  ```html angular
+  <ais-sort-by
+    [items]="[
+      { value: 'products', label: 'Most relevant' },
+      { value: 'products_price_desc', label: 'Highest price' }
+    ]"
+  >
+  </ais-sort-by>
+  ```
+
+  ```js instantsearch.js
+  search.addWidgets([
+    instantsearch.widgets.sortBy({
+      container: "#sort-by-container",
+      items: [
+        { value: "products", label: "Most relevant" },
+        { value: "products_price_desc", label: "Highest price" },
+      ],
+    }),
+  ]);
+  ```
+
+  ```jsx react
+  <SortBy
+    defaultRefinement="products"
+    items={[{ value: "products_price_desc", label: "Highest price" }]}
+  />
+  ```
+
+  ```vue vue
+  <ais-sort-by
+    :items="[
+      {
+        value: 'products',
+        label: 'Most relevant',
+      },
+      {
+        value: 'products_price_desc',
+        label: 'Highest price',
+      },
+    ]"
+  />
+  ```
+</CodeGroup>
+
+### Relevance sort toggle with `relevantSort`
+
+If you're using [Relevant sort](/guides/managing-results/refine-results/sorting/in-depth/relevant-sort/) you can use the [`relevantSort`](/api-reference/widgets/relevant-sort/js/) widget to let users toggle between relevant and regular sorting.
+The [`relevantSort`](/api-reference/widgets/relevant-sort/js/) widget comes with recommended patterns when using Relevant sort, such as displaying the number of sorted results out of the total number of results, and letting users see more results.
+
+<CodeGroup>
+  ```js instantsearch.js
+  search.addWidgets([
+    instantsearch.widgets.relevantSort({
+      container: "#relevant-sort",
+      templates: {
+        button({ isRelevantSorted }) {
+          return isRelevantSorted ? "See all results" : "See relevant results";
+        },
+      },
+    }),
+  ]);
+  ```
+
+  ```jsx react
+  const TextComponent = ({ isRelevantSorted }) => (
+    <p>
+      {isRelevantSorted
+        ? "We removed some search results to show you the most relevant ones"
+        : "Currently showing all results"}
+    </p>
+  );
+
+  const ButtonTextComponent = ({ isRelevantSorted }) => (
+    <span>{isRelevantSorted ? "See all results" : "See relevant results"}</span>
+  );
+
+  <RelevantSort
+    textComponent={TextComponent}
+    buttonTextComponent={ButtonTextComponent}
+  />;
+  ```
+
+  ```vue vue
+  <ais-relevant-sort>
+    <template v-slot:text="{ isRelevantSorted }">
+      <template v-if="isRelevantSorted">
+        We removed some search results to show you the most relevant ones
+      </template>
+      <template>
+        Currently showing all results
+      </template>
+    </template>
+    <template v-slot:button="{ isRelevantSorted }">
+      <template v-if="isRelevantSorted">
+        See all results
+      </template>
+      <template>
+        See relevant results
+      </template>
+    </template>
+  </ais-relevant-sort>
+  ```
+</CodeGroup>

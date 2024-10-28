@@ -1,0 +1,40 @@
+---
+title: Autocomplete menu
+description: |-
+  Replace the default Shopify search box with an Algolia Autocomplete menu that updates results as-you-type.
+---
+
+Algolia AI Search & Discovery includes an autocomplete menu that replaces the default Shopify search box and provides results as-you-type.
+The menu is powered by the [Autocomplete UI library](/ui-libraries/autocomplete/introduction/what-is-autocomplete/).
+
+## Enabling the Autocomplete menu
+
+Algolia uses [Shopify's App Embed](https://help.shopify.com/en/manual/online-store/themes/theme-structure/extend/apps) to provide an Autocomplete menu.
+To enable the Autocomplete menu, add the [Algolia Search App Embed](/integration/shopify/getting-started/quick-start/#enable-algolia-on-your-theme) to your theme.
+
+## Configuration
+
+To configure the Autocomplete menu, go to the **Search options** tab in your Shopify admin.
+
+### Advanced customization
+
+You can use [custom hooks](/integration/shopify/building-search-ui/frontend-custom-events/#autocomplete-hooks) for advanced customization.
+
+### Autocomplete version 1
+
+If your Autocomplete drop-down menu isn't displaying with Autocomplete version 1, check that you're using the appropriate CSS selectors for Autocomplete:
+
+- Autocomplete version 1 adds the menu to a container element, such as a `div` or a `form`
+- Autocomplete version 0 adds the menu to an `input` element.
+
+To make the menu work with both Autocomplete versions 1 and 0, you can add multiple CSS selectors, separated by a comma.
+In your Algolia for Shopify app, open the **Search options** tab. In the **CSS selector** field, enter the CSS selectors for adding the menu.
+
+For example, in the **Dawn** theme, enter: `form[action="/search"] input[type="text"], form[action="/search"] input[type="/search"], form[action="/search"]`.
+
+## Redirects
+
+The Autocomplete menu includes the [redirect plugin](/ui-libraries/autocomplete/api-reference/autocomplete-plugin-redirect-url/createRedirectUrlPlugin/) by default.
+You can create a [redirect rule](/guides/managing-results/rules/merchandising-and-promoting/how-to/redirects/#algolia-out-of-the-box-redirect-solution) that's triggered when users search for a specific term.
+
+If you've customized the Autocomplete menu's main template with [`beforeAutocompleteMainTemplate`](/integration/shopify/building-search-ui/frontend-custom-events/?client=ruby#beforeautocompletemaintemplate), preserve redirect behavior by including the `elements.redirectUrlPlugin` variable.

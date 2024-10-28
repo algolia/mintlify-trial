@@ -1,0 +1,61 @@
+---
+title: Creating and using nested attributes
+description: |-
+  Learn about nested attributes, and when to use them.
+---
+
+With nested attributes, you can add subcategories to your attributes.
+For example, instead of having a single attribute `price`, you might set up different prices as subcategories: `price.net`, `price.gross`, `price.margin`.
+Use 'dot notation' to separate the parent attribute from its child.
+
+## How to create nested attributes
+
+You can create nested attributes by adding a JSON object to your records when you [send them to Algolia](/guides/sending-and-managing-data/prepare-your-data/).
+For example:
+
+```json json
+[
+  {
+    "country": "CA",
+    "price": {
+      "net": 2.3,
+      "gross": 2.62
+    }
+  },
+  {
+    "country": "US",
+    "price": {
+      "net": 1.99,
+      "gross": 1.75
+    }
+  }
+]
+```
+
+## An example of filtering nested attributes with an API client
+
+```js js
+const index = client.initIndex("your_index_name");
+
+index
+  .search("", {
+    filters: "country:US AND price.gross < 2.0",
+  })
+  .then(({ hits }) => {
+    console.log(hits);
+  });
+```
+
+## An example of filtering nested attributes with the Algolia CLI
+
+```sh sh
+algolia search --indexName=your_index_name --filters='country:US AND price.gross < 2.0'
+```
+
+## Where you can use nested attributes
+
+You can use nested attributes wherever you might use a regular attribute, such as [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/#usage-notes) and [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/#usage-notes).
+Just make sure you use the appropriate dot notation such as `price.country` to refer to them.
+
+There's no limit on the number of nested attributes apart from [the default restrictions on record size](/guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations/).
+The depth of nesting is also unlimited: you could use something like `price.net.us.ca`.

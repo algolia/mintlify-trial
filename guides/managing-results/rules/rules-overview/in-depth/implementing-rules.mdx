@@ -1,0 +1,422 @@
+---
+title: Implementing Rules
+description: |-
+  Get started creating Rules. Technical details about how to use Algolia Rules.
+---
+
+## Using the Rules dashboard
+
+**Use the dashboard to familiarize yourself with Rules**. The dashboard provides a responsive interface to create and configure your Rules. And importantly, test your choices using the dashboard's live search interface.
+
+You may never need to go beyond the dashboard if you have a few Rules or if they follow a clearly defined pattern.
+
+In this way, you can consider the dashboard as a way to manage _static_ Rules - Rules that remain in place for some time or whose effect is global and constant.
+
+Go to the Rules tab for a selected index and click **Add Rule**. Here you can choose between two editors:
+
+- The **Visual Editor** allows you to pin results and hide results, boost categories, and filter results through a visual, guided user journey.
+- The **Manual Editor** supports more options but doesn't offer an instant preview of the results.
+
+## Coding Rules with the API client
+
+Coding the Rules using the Rules API becomes necessary when you need more programmatic control. This move from static to more _dynamic_ Rules can arise for several reasons—like when you have too many to manage one-by-one or when you want to start building (and deleting) Rules based on the content of your database. You should use the API if your Rules change with every new update of your index or if you offer a frontend to manage your Rules.
+
+You must set up your index for the API and then set up the Rules at indexing time.
+
+## How Rules works
+
+**The search engine adapts its behavior according to a Rule's consequences**. Rules are _if-then_ configurations or condition/consequence pairs: the consequence applies to the returned results if the condition is satisfied. For example, a Rule with the _condition_ "user's query contains the word red" and the _consequence_ "filter on the facet color:red".
+
+And that's only one kind of consequence. As described in the overview and presented in technical detail below - many kinds of consequences adapt the search and alter the relevance.
+
+Rules are processed at indexing time to prepare the index so that when someone performs a search, the data is ready for the _if-then_ matching.
+
+Keep in mind:
+
+- If the `alternatives` setting of a Rule is `false`, the condition must match the entire word (fully and exactly) for the Rule to be triggered.
+- All text matching is case insensitive.
+- Conditions can match on multiple phrases.
+- A Rule can have multiple conditions and multiple consequences.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Rules have no noticeable impact on performance. Most of the work happens during indexing, so they don't affect search performance.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Turning Rules on and off
+
+Turn a Rule off by setting its `enabled` flag to `false`. Rules that have been turned off remain in the index, meaning they're still searchable, but ignored at query time. This is an alternative to deleting a Rule when you wish to turn it off temporarily.
+
+For even more fine-grained control, you may specify **validity windows** on Rules (via the `validity` attribute). Rules with validity windows only apply during the specified time frames: they're ignored the rest of the time. Rules with no time windows always apply. Like with the `enabled` flag, Rules with validity windows remain searchable all the time.
+
+## API overview
+
+### Pre-processing and post-processing
+
+As suggested, Rules allows fine-tuning results for queries matching specific patterns. They do so in two complementary ways:
+
+1. **Query pre-processing.** Rules may alter the query parameters - not only the query string but also features such filters and facets - _before_ the query is processed.
+
+1. **Results post-processing.** Rules may cause results (_hits_) to be ranked differently for specific queries. They may also add user data to the results.
+
+Rules are complementary to the traditional ranking and textual relevance settings:
+while settings act globally on every search to an index, Rules act selectively.
+
+### Conditions and consequences
+
+The general syntax is as follows:
+
+```jsonc jsonc
+{
+  "conditions": [
+    {
+      /* What the query must match for the rule to be applied.  */
+    },
+  ],
+  "consequence": {
+    /* How the query will be modified if the rule is applied. */
+  },
+}
+```
+
+#### Condition: What the query must match
+
+Conditions identify query strings matching a specific pattern. If the query string matches all the Rule's conditions, it activates the Rule for that search.
+
+More precisely, a condition consists of:
+
+- An optional **query pattern** acting on the whole text query string, that is, the `query` search parameter.
+- Optional **anchoring** defining how the Rule's query pattern compares to user queries.
+- Optional **filters**, which must match the filters applied with the query. These can be [`filters`](/api-reference/api-parameters/filters/) or [`facetFilters`](/api-reference/api-parameters/facetFilters/), but not [`numericFilters`](/api-reference/api-parameters/numericFilters/), [`tagFilters`](/api-reference/api-parameters/tagFilters/), nor [`optionalFilters`](/api-reference/api-parameters/optionalFilters/).
+- An optional **context** must match a context supplied at query time with the [`ruleContexts`](/api-reference/api-parameters/ruleContexts/) parameter
+- Optionally enabled **alternatives**, which indicates whether synonyms and plurals of the query pattern are treated as matches.
+
+#### Consequence: Modify the query
+
+A Rule's consequence can be one or more actions:
+
+- [Add query parameters](/guides/managing-results/rules/merchandising-and-promoting/how-to/rules-query-parameters/)
+- [Automatic facet filter](#automatic-facet-filter)
+- [Automatic optional facet filter](#automatic-optional-facet-filter)
+- [Remove or replace a word from the query string](#remove-or-replace-a-word-from-the-query-string)
+- Replace the query string entirely
+- Promote or hide specific hits
+- Return user data.
+
+## Conditions - adapting the query
+
+A rule can have any number of conditions:
+
+- If a rule has no conditions, it applies to every search.
+- If a rule has more than one condition, it applies when _any_ condition matches.
+
+For more information about multiple conditions, see [Rule structure](/guides/managing-results/rules/rules-overview/#conditions)
+
+### Rule query pattern
+
+The query pattern is the most crucial part of the Rule's condition.
+It consists of a sequence of tokens, treated as a phrase. All tokens must appear contiguously and in the specified order.
+
+The allowed token types are:
+
+- **Literal**: matches a word. The matching is case insensitive. If a Rule's `alternatives` setting is `true`, then matching considers typo tolerance, plurals, and synonyms. If you set [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/) to `true` or [`synonyms`](/api-reference/api-parameters/synonyms/) to `false`, your `alternatives` setting is ignored.
+- **Facet value placeholder**: matches any value of a given facet in the same index.
+
+You must declare the facet in `attributesForFaceting`.
+Matching is case insensitive. Contrary to literals, facet values may be phrases.
+
+The pattern is implicitly a _phrase_. The order of words matters: `foo bar` and `bar foo` aren't identical patterns.
+
+The pattern also has an **anchoring type**,
+depending on whether its boundaries (beginning, end) must coincide with the boundaries of the query string:
+
+- **starts with**: the pattern must match the words at the beginning of the query string, but there may be extra words at the end
+- **ends with**: the pattern must match the words at the end of the query string, but there may be extra words at the beginning
+- **contains**: the pattern must match any contiguous sequence of words of the query string.
+
+#### Escape characters within a pattern
+
+If you want to declare a Rule with a pattern that contains a colon (`:`), or any special character (`}`, `{`, `\`), you need to escape the character.
+For example, to set your query pattern to "thrones: episode", you need to escape the `:` ("thrones\\:episode"). The first `\` is for JSON and the second is for the Rules engine.
+
+### Filters can trigger Rules
+
+[`filters`](/api-reference/api-parameters/filters/) or [`facetFilters`](/api-reference/api-parameters/facetFilters/) can trigger Rules. The primary goal of this condition is to create Rules that are triggered on specific category pages or when a user applies specific filters.
+
+If a Rule's condition has _only_ filters and not query pattern nor context, the engine applies the Rule's consequences. The engine applies the Rule's consequences if a condition _only_ has filters: no query patterns or context. If a condition _also_ has query patterns or context, those must match for the Rule to be triggered.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  To use an attribute in a Rule condition with filters, you must first [declare it in `attributesForFaceting`](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### A single Rule per filter value
+
+Just like only a single Rule can be triggered per word in the query, only a single Rule can be triggered per applied filter. For example:
+
+- Rule A has the filter `brand:Nike` as its condition
+- Rule B has the filter `brand:Nike` and the query "shoes" as its condition
+- If the query is "shoes" and the filter `brand:Nike` is applied, only Rule B is triggered.
+- If the query is anything other than "shoes" and the filter `brand:Nike` is applied, only Rule A is triggered.
+
+This follows the same [precedence logic](/guides/managing-results/rules/rules-overview/in-depth/rule-matching-algorithm/#precedence-logic) applied on Rules on queries and contexts.
+
+#### Matches must be exact
+
+A Rule with filter values in the condition triggers only when the search contains that value just for that filter. For example, if a Rule's condition contains `"filters": "brand:Nike"`, this Rule triggers if **only** the value `Nike` is selected in the filter `brand`. The engine doesn't trigger the Rule for a query filtered on `brand:Nike OR brand:Supreme`.
+
+If a condition has multiple filters, _all_ applied filters must match exactly to trigger the Rule. For example, if the Rule condition is `"filters": "brand:Nike AND color:red"`, then the engine triggers this Rule if only the value `Nike` is selected in the `brand` filter and only the value `red` is selected in the `color` filter. The Rule isn't triggered if only `Nike` is selected without `red`, and it doesn't trigger if `brand:Nike` and `color:red OR color:blue` are selected.
+
+#### Only the filtering attributes in the condition matter
+
+If a Rule's condition includes the filter `brand:Nike` and no other filters, the engine only considers the `brand` attribute's applied filter values to decide whether to trigger the Rule.
+
+For example, if a query filters on `brand:Nike AND color:red`, that Rule doesn't consider the value of the `color` filter because it's not part of the condition. The engine triggers the Rule since `brand` is filtered on `Nike`.
+
+#### Multiple filtering attributes
+
+If a condition has multiple filters, the following applies:
+
+- Multiple values for the same attribute are grouped with an `OR` condition
+- Values for different attributes are grouped with an `AND` condition.
+
+That means the engine interprets a condition containing `brand:Supreme`, `brand:Nike`, `gender:men` as `(brand:Supreme OR brand:Nike) AND (gender:men)`.
+
+In other words, the engine triggers the Rule if a user selects exactly the values (`Supreme`, `Nike` and `men`) in the filters on the frontend.
+
+These conditions only hold if the frontend filters work with the same logic. For example, if a user filters on `Nike`, `Supreme` for brand, and `red` for color, the filtering logic follows the `AND of ORs` pattern: `(brand:Nike OR brand:Supreme) AND color:red`. Thus the filters are compatible with filtering conditions possible on Rules.
+
+Filters in Rules' conditions aren't compatible with `ORs of ANDs`, `ANDs of ANDs` or `ORs of ORs` logic. For example, imagine a real estate search where a user filters for a two-bedroom apartment in Paris with a balcony and fireplace. In this use case, the desired logic would be `ANDs of ANDs`: `bedrooms:2 AND (amenities:balcony AND amenities:fireplace) AND location:Paris`. You can't create a Rule with a condition to match this filtering.
+
+### Context
+
+To narrow, customize, or make Rules query-independent, you can have a Rule respond to the [`ruleContexts`](/api-reference/api-parameters/ruleContexts/) parameter.
+
+The contexts found in the `ruleContexts` of user searches are compared to the contexts you assign to your Rules.
+
+Contexts passed as parameters during your search: doing so activates all Rules that share the context you passed. **Activation means the Rule is considered not to have been applied**. If your Rule's condition only contains a context, the Rules consequence is applied to search results. If your Rule also contains a query pattern, that pattern must match for the consequence to be applied.
+
+For example, you can define a set of Rules with the context "homepage" and pass the same context value along with any search that originates from your homepage. Now you have a set of Rules that apply to the homepage search, giving a more customized experience.
+
+A Rule can have one context at most, but a search may have multiple contexts: these are treated as disjunctive (OR).
+When one or more contexts are specified at query time, Rules matching any of those contexts are activated.
+
+_General Rules are always activated_.
+
+The context's primary goal is to conditionally enable Rules for specific search environments.
+
+If present, the context is a string that must be passed at query time in the `ruleContexts` search parameter
+with the same value for the Rule to be triggered. Matching is case-sensitive.
+
+The `ruleContexts` parameter allows you to enable multiple contexts simultaneously.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  A Rule context must consist only of alphanumeric characters, hyphens, and underscores.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Consequence - adapting the results / relevance
+
+A Rule's consequence can be one or more actions.
+
+### Add query parameters
+
+Any number of valid search parameters are supported. These parameters are literals (constants).
+
+This consequence allows you to add or modify any search settings that can be changed when the query is sent to Algolia. Some settings that affect search, like Searchable Attributes, can only be modified at indexing time, meaning you can't change them at query time.
+
+[Any parameter](/api-reference/api-parameters/) with `search` as part of its scope can be changed at query time.
+
+One common example of a parameter that is useful to change at query time is `filters`. For example, when someone searches "tablet", you want to show not only tablets (products with 'tablets' in their `categories` attribute) but also laptops used as tablets (products with 'hybrids' in their `categories` attribute). To do this in the dashboard, click **Add Query Parameter** when adding a consequence for your Query Rule, and add the following JSON into the editor:
+
+```json json
+{
+  "filters": "categories:tablets OR categories:hybrids"
+}
+```
+
+You can also [add filters with the API](/guides/managing-results/rules/detecting-intent/how-to/applying-a-custom-filter-for-a-specific-query/#using-the-api).
+
+### Automatic facet filter
+
+Automatically transform a word or group of words into a facet filter if it matches a value in a given facet.
+A user enters "red", which is also a value in the color facet. You can set up a Rule to transform red to behave like a filter.
+
+Another approach would be to use the filters parameter (using the "add query parameters" Rule) but, with this approach, you must have one Rule per filter value. If you have 10 color values in your color facet, you must create 10 Rules, one for each color.
+
+It's more powerful to use automatic faceting: instead of creating one rule for each color, you create one rule per facet.
+Whether users types "blue" or "red", this single rule will apply, it also applies to new colors added to the facet.
+
+When the pattern
+matches multiple values of the same facet, filters can be either **conjunctive** (`AND`, default) or **disjunctive** (`OR`). By default, the filters are combined with an `AND` operator. However, if you specify the filter to be
+disjunctive, an `OR` operator is used instead. In both cases, relationships to _other_ filters
+in the query will always be conjunctive (`AND`).
+
+You can also specify a score for the created filter, mainly useful for optional facet filters (see below).
+
+For example, to automatically filter on the `brand` facet, using `OR` in case of multiple occurrences:
+
+```json json
+{
+  "conditions": [
+    {
+      "pattern": "{facet:brand}"
+    }
+  ],
+  "consequence": {
+    "params": {
+      "automaticFacetFilters": [
+        {
+          "facet": "brand",
+          "disjunctive": "true"
+        }
+      ]
+    }
+  }
+}
+```
+
+And if you want to reverse the logic to exclude the captured facet for example, you can use the `negative` field and set it to `true`.
+
+### Automatic optional facet filter
+
+Same as `automaticFacetFilters`, but the filters are optional.
+Behaves like [`optionalFilters`](/api-reference/api-parameters/optionalFilters/).
+
+### Remove or replace a word from the query string
+
+Removing or replacing words is achieved by specifying a list of **edits** to be applied to the query string.
+An edit can either:
+
+- Remove a word (or facet placeholder)
+- Replace a word (or facet placeholder) with another word
+
+For example, the Rule below specifies that when matching `foo bar`, the search engine should remove the word `foo` and the word `bar`
+should be replaced with `baz`:
+
+```json json
+{
+  "condition": [
+    {
+      "pattern": "foo bar"
+    }
+  ],
+  "consequence": {
+    "params": {
+      "query": {
+        "edits": [
+          {
+            "type": "remove",
+            "delete": "foo"
+          },
+          {
+            "type": "replace",
+            "delete": "bar",
+            "insert": "baz"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Words that are removed or replaced from the query string are still highlighted or showing in the snippets in the query's results, so it's not misleading for users.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Replace the query string entirely
+
+To replace the query string entirely, specify a new string for the `query` parameter, as you would do for any
+other search parameters:
+
+```json json
+{
+  "condition": [
+    {
+      "pattern": "original query that will be replaced"
+    }
+  ],
+  "consequence": {
+    "params": {
+      "query": "new text to be searched"
+    }
+  }
+}
+```
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Replacing and removing a word are mutually exclusive Rules. It may also have an impact on subsequent Rules (see [Matching algorithm](/guides/managing-results/rules/rules-overview/in-depth/rule-matching-algorithm/)).
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Promote or hide specific hits
+
+One or more objects from the same index, identified by their `objectID`, are promoted to specific positions in the results list or removed from them. This promotion works seamlessly with Algolia's built-in pagination, mingling promoted hits with regular
+hits and removing hidden hits while keeping pages the same size.
+
+Hit promotion is detailed [below](#hit-promotions-effect-on-relevance).
+
+### Return user data
+
+User data is returned in a dedicated `userData` array. If multiple Rules are applied,
+each set of user data is appended to this array. User data can be used to display specific information that doesn't affect pagination.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Add Banners To Results With `userData`](/guides/managing-results/rules/merchandising-and-promoting/how-to/add-banners/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Some final considerations
+
+### Hit promotion's effect on relevance
+
+You can only promote objects coming from the same index. Promoted objects have to be explicitly identified by their `objectID`.
+
+A promoted object will always be considered a hit, even if it doesn't match the query.
+If it would have matched the query, it's removed from its original position and inserted at its promoted position,
+even if the original position would have been better than the promoted position. In other words, promoted hits can also be "demoted".
+For performance reasons, promoted positions are restricted to the range \[0, 300] (keep in mind that positions are zero-based).
+
+Inside the same Rule, each promoted object must have a different promoted position.
+If promoted objects from two distinct Rules are triggered for the same query:
+
+- Any duplicates are merged using the best position.
+- If the resulting positions conflict between distinct objects, objects are shifted down until a free slot is found.
+- All regular hits are shifted down as many times as necessary to ensure that all promoted objects get as close to their promoted position as possible (modulo conflicts between objects, as stated before).
+
+Hidden objects are removed from the hits. The following hits are shifted up so that pagination works seamlessly.
+
+### Injecting user data
+
+User data allows you to inject data inside the results that aren't in the index,
+and as such, don't compete with other hits for pagination.
+A typical use-case would be to display a banner on top of the result list.
+
+User data can be any JSON object. The API doesn't interpret user data.
+
+If you want to keep your analytics data for longer, [upgrade your plan](https://www.algolia.com/pricing) or contact the [Algolia support](https://support.algolia.com/hc/en-us/requests/new)
+team.
+
+### Importing and exporting
+
+You can import and export Rules [from the Algolia dashboard](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/export-import-indices/).

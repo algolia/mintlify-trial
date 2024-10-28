@@ -1,0 +1,111 @@
+---
+title: Add custom plugin to Autocomplete
+description: |-
+  Add custom plugin to the Autocomplete search in your Shopify app.
+---
+
+The autocomplete menu shows products, collections, articles, and search suggestions from your Shopify store, and updates the results as users type.
+
+You can customize the autocomplete menu by creating a custom plugin.
+This helps in these cases:
+
+- In addition to showing all matching products or articles,
+  you want to show a subset of data differently.
+  For example, you want to show all on-sale products in a separate list,
+  or only show help articles.
+
+- You want to search into data from sources other than Algolia in your autocomplete menu.
+
+You can add a custom plugin using the [`beforeAutocompleteOptions`](/integration/shopify/building-search-ui/frontend-custom-events/#beforeautocompleteoptions) hook.
+
+## Example of sale items
+
+This example shows how to display on-sale products in a separate list (in addition to all other results).
+
+You can achieve this by creating a [source](/ui-libraries/autocomplete/core-concepts/sources/) that searches into your product index, and applies a filter to only include items where the `named_tags.onSale` attribute is true.
+
+```js js
+document.addEventListener("algolia.hooks.initialize", function () {
+  // Add the custom plugin to the Autocomplete.
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteOptions",
+    function (options) {
+      const { searchClient } = window.algoliaShopify;
+      const { getAlgoliaResults } = window.algoliaShopify.externals;
+
+      const saleItemsPlugin = {
+        name: "custom-sale-items-plugin",
+        getSources({ query }) {
+          return [
+            {
+              sourceId: "saleItems",
+              getItems() {
+                return getAlgoliaResults({
+                  searchClient,
+                  queries: [
+                    {
+                      indexName: "shopify_products",
+                      query,
+                      params: {
+                        filters: "named_tags.onSale:true",
+                      },
+                    },
+                  ],
+                });
+              },
+              templates: {
+                header({ html, state }) {
+                  return html` <div class="aa-SourceHeader">
+                    <span class="aa-SourceHeaderTitle">Sale Items</span>
+                    <div class="aa-SourceHeaderLine" />
+                  </div>`;
+                },
+                item({ item, components, html }) {
+                  return html`${item.title}`;
+                },
+              },
+            },
+          ];
+        },
+      };
+      options.plugins.push(saleItemsPlugin);
+
+      return options;
+    },
+  );
+
+  // Add the output of the custom plugin to the autocomplate layout.
+  algoliaShopify.hooks.registerHook(
+    "beforeAutocompleteMainTemplate",
+    function (_defaultTemplate, templateOptions, elements, displaySuggestions) {
+      const { html } = templateOptions;
+
+      // Add the custom plugin output to the Autocomplete template by referencing
+      // the custom plugin sourceId - `saleItems`.
+      return html`
+        <div class="aa-PanelLayout aa-Panel--scrollable">
+          <div class="aa-PanelSections">
+            <div class="aa-PanelSection--left">
+              ${displaySuggestions &&
+              html`
+                <div class="aa-SourceHeader">
+                  <span class="aa-SourceHeaderTitle"
+                    >${algolia.translations.suggestions}</span
+                  >
+                  <div class="aa-SourceHeaderLine" />
+                </div>
+                ${elements.querySuggestionsPlugin}
+              `}
+              ${elements.collections} ${elements.articles} ${elements.pages}
+              ${elements.redirectUrlPlugin}
+            </div>
+            <div class="aa-PanelSection--right">
+              ${elements.saleItems} ${elements.products}
+            </div>
+          </div>
+        </div>
+      `;
+    },
+  );
+});
+```

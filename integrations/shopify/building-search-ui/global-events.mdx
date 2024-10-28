@@ -1,0 +1,29 @@
+---
+title: Shopify Algolia global events
+description: |-
+  The global events emitted by the InstantSearch and Autocomplete libraries.
+---
+
+The InstantSearch and Autocomplete libraries emit global events.
+You can't pass data to the global events but you can listen to them.
+
+- `algolia.autocomplete.beforeInit` is emitted before the Autocomplete library is initialized
+- `algolia.autocomplete.afterInit` is emitted after the Autocomplete library is initialized
+- `algolia.autocomplete.hitClickAction` is emitted when a user clicks on an Autocomplete result
+- `algolia.instantsearch.beforeInit` is emitted before the InstantSearch library is initialized
+- `algolia.instantSearch.afterInit` is emitted after the InstantSearch library is initialized
+- `algolia.instantsearch.hitClickAction` is emitted when a user clicks on an InstantSearch result
+- `algolia.instantSearch.onError` is emitted when the InstantSearch library. reports an [error](/api-reference/widgets/instantsearch/js/#widget-param-error)
+- `algolia.instantSearch.onRender` is emitted when all InstantSearch widgets have been [rendered](/api-reference/widgets/instantsearch/js/#widget-param-render)
+- `algolia.instantsearch.beforeInitSortOrders` is emitted before InstantSearch sorting is initialized
+- `algolia.instantsearch.beforeInitFacets` is emitted before InstantSearch facets are initialized
+- `algolia.hooks.initialize` is emitted before Algolia hooks have been initialized
+- `algolia.analytics.beforeInit` is emitted before the Algolia Insights API has been initialized
+
+## Example
+
+```js js
+document.addEventListener("algolia.autocomplete.afterInit", function () {
+  console.log("Autocomplete.js has been initialized");
+});
+```

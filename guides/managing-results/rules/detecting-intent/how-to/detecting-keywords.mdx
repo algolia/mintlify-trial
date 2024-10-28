@@ -1,0 +1,281 @@
+---
+title: Detecting keywords
+description: |-
+  Detect keywords and reserved words in the query using Rules.
+---
+
+You can use Rules to detect a specific word and modify a query setting because of this word.
+
+## Limiting the search to only a subset of attributes
+
+### Use Case - Title or ID (SKU) searches
+
+_A good example of altering a query is with an online document library that allows keyword searches inside documents. If a user types in the word "article ref21", they are probably signalling to the system that they are looking for an article whose title or ID contains "ref21"._
+
+### Rule
+
+_If query = "article ref21" then remove article and search for an article whose title or ID contains 'ref21'_
+
+### API
+
+<CodeGroup>
+  ```csharp csharp
+  var rule = new Rule
+  {
+      ObjectID = "article-rule",
+      Conditions = new List<Condition>
+      {
+          new Condition { Anchoring = "startsWith", Pattern = "article" }
+      },
+      Consequence = new Consequence
+      {
+          Params = new ConsequenceParams
+          {
+              SearchableAttributes = new List<string> { "title", "book_id" },
+              Edits = new List<Edit>
+              {
+                  new Edit { Type = EditType.Remove, Delete = "article" }
+              }
+          }
+      }
+  };
+
+  index.SaveRule(rule);
+
+  // Asynchronous
+  await index.SaveRuleAsync(rule);
+  ```
+
+  ```go go
+  rule := search.Rule{
+  	ObjectID:   "article-rule",
+  	Conditions: []search.RuleCondition{{Anchoring: search.StartsWith, Pattern: "article"}},
+  	Consequence: search.RuleConsequence{
+  		Params: &search.RuleParams{
+  			Query: search.NewRuleQueryObject(
+  				search.RuleQueryObjectQuery{
+  					Edits: []search.QueryEdit{
+  						search.RemoveEdit("article"),
+  					},
+  				},
+  			),
+  			QueryParams: search.QueryParams{
+  				RestrictSearchableAttributes: opt.RestrictSearchableAttributes(
+  					"title",
+  					"book_id",
+  				),
+  			},
+  		},
+  	},
+  }
+
+  res, err := index.SaveRule(rule)
+  ```
+
+  ```java java
+  Condition condition = new Condition().setPattern("article").setAnchoring("startsWith");
+    Consequence consequence = new Consequence();
+    List<Edit> edits = Collections.singletonList(new Edit().setDelete("article"));
+
+    ConsequenceParams params = new ConsequenceParams();
+    params.setRestrictSearchableAttributes(Arrays.asList("title","book_id"));
+    params.setConsequenceQuery(new ConsequenceQuery().setEdits(edits));
+    consequence.setParams(params);
+
+    Rule rule =
+            new Rule()
+                    .setObjectID("article-rule")
+                    .setConditions(Collections.singletonList(condition))
+                    .setConsequence(consequence);
+
+    index.saveRule(rule);
+  ```
+
+  ```js js
+  // Create the rule
+  const rule = {
+    objectID: "article-rule",
+    conditions: [
+      {
+        pattern: "article",
+        anchoring: "startsWith",
+      },
+    ],
+    consequence: {
+      params: {
+        query: {
+          type: "remove",
+          delete: "article",
+        },
+        restrictSearchableAttributes: ["title", "book_id"],
+      },
+    },
+  };
+
+  // Save the Rule
+  index.saveRule(rule);
+  ```
+
+  ```kotlin kotlin
+  val rules = rules {
+      rule(
+          "rule",
+          listOf(Condition(StartsWith, Literal("article"))),
+          Consequence(
+              query = query {
+                  restrictSearchableAttributes {
+                      +"title"
+                      +"book_id"
+                  }
+              },
+              edits = edits { +"article" }
+          )
+      )
+  }
+
+  index.saveRules(rules)
+  ```
+
+  ```php php
+  // Turn JSON into an array
+  $rule = array(
+    'objectID' => 'article-rule',
+    'conditions' => array(array(
+      'pattern' => 'article',
+      'anchoring' => 'startsWith'
+    )),
+    'consequence' => array(
+      'params' => array(
+        'query' => array(
+          'remove' => 'article'
+        ),
+        'restrictSearchableAttributes' => array(
+          'title',
+          'book_id'
+        )
+      )
+    )
+  );
+
+  // Push Rule to index
+  $index->saveRule($rule);
+  ```
+
+  ```python python
+  # Create the Rule
+  rule = {
+      "objectID": "article-rule",
+      "conditions": [{"pattern": "article", "anchoring": "startsWith"}],
+      "consequence": {
+          "params": {
+              "query": {"type": "remove", "delete": "article"},
+              "restrictSearchableAttributes": ["title", "book_id"],
+          }
+      },
+  }
+
+  # Save the Rule
+  response = index.save_rule(rule)
+  ```
+
+  ```ruby ruby
+  # Create the Rule
+  rule = {
+    objectID: "article-rule",
+    conditions: [
+      {
+        pattern: "article",
+        anchoring: "startsWith"
+      }
+    ],
+    consequence: {
+      params: {
+        query: {
+          type: "remove",
+          delete: "article"
+        },
+        restrictSearchableAttributes: ["title", "book_id"]
+      }
+    }
+  }
+
+  # Save the rule
+  index.save_rule(rule)
+  ```
+
+  ```scala scala
+  val rule = Rule(
+    objectID = "article",
+    conditions = Some(Seq(Condition(
+      anchoring = "startsWith",
+      pattern = "article", ))),
+    consequence = Consequence(
+      params = Some(
+        Map(
+          "query" -> Map("edits" -> Seq(Edit("delete", "article"))),
+          "restrictSearchableAttributes" -> Seq("title", "book_id"), ))))
+
+  client.execute {
+    save rule rule inIndex "indexName"
+  }
+  ```
+
+  ```swift swift
+  // Create the rule
+  let rule = Rule(objectID: "article-id")
+    .set(
+      \.conditions,
+      to: [
+        Rule.Condition()
+          .set(\.anchoring, to: .startsWith)
+          .set(\.pattern, to: .literal("article"))
+      ]
+    )
+    .set(
+      \.consequence,
+      to: Rule.Consequence()
+        .set(
+          \.query,
+          to: Query()
+            .set(
+              \.restrictSearchableAttributes,
+              to: [
+                "title",
+                "book_id",
+              ])
+        )
+    )
+
+  // Save the Rule
+  index.saveRule(rule, forwardToReplicas: true) { result in
+    if case .success(let response) = result {
+      print("Response: \(response)")
+    }
+  }
+  ```
+</CodeGroup>
+
+### Using the dashboard
+
+You can also add your rules in your Algolia dashboard.
+
+1. Select the **Search** product icon on your dashboard and then select your index.
+
+1. Select the **Rules** section from the left sidebar menu in the [Algolia dashboard](https://dashboard.algolia.com/rules).
+
+1. Under the heading **Rules**, select the index you are adding a Rule to.
+
+1. Click the **New rule** button.
+
+1. Select **Create your first rule** or **New rule**. In the dropdown, click on the **Manual Editor** option.
+
+1. In the **Condition(s)** section, keep **Query** toggled on, select **Contains** in the dropdown, and enter "article" in the input field.
+
+1. In the **Consequence(s)** section:
+
+   - Click the **Add consequence** button and select **Add Query Parameter**.
+   - In the input field that appears, enter the JSON search parameter you want to add. For example, `{ "restrictSearchableAttributes": ["title","id"] }`.
+   - Click the **Add consequence** button again and select **Remove Word**.
+   - Type or select "article" in the input field.
+
+1. Don't forget to save your changes.

@@ -1,0 +1,357 @@
+---
+title: Configuring searchable attributes the right way
+description: |-
+  Learn how to select, prioritize, and set up searchable attributes for your Algolia index.
+---
+
+Setting searchable attributes is **one of the most important aspects of configuring your search** and one of the first steps you need to take. It goes much further than telling Algolia which attributes to search for, and it also defines which ones to look at first and what strategy to adopt. A small change in setting searchable attributes could lead to entirely different results. For that reason, it's crucial to understand how it works.
+
+Besides deciding [which attributes Algolia should search](/guides/managing-results/must-do/searchable-attributes/), there are two aspects you can control with searchable attributes:
+
+- The [relative importance](#order-of-attributes) of each attribute
+- Whether the [position of the match](#word-position) in the attribute matters
+
+## Order of attributes
+
+While setting searchable attributes, you can order them, making some more relevant than others.
+
+Knowing how to order your searchable attributes can be challenging, especially when you have several.
+One method is to **compare them in pairs**, each attribute with the previous one, and move them around accordingly.
+This is similar to [insertion sorting](https://wikipedia.org/wiki/Insertion_sort).
+
+For example, suppose you have the following attributes in the records of a "movies" index:
+
+- `director`
+- `cast`
+- `title`
+- `genres`
+- `plot_summary`
+
+1. Compare the first two: `director` and `cast`. If you think `cast` should come before `director` (for example, you want to see movies with Clint Eastwood before movies directed by Clint Eastwood), move `cast` to the first place.
+1. Compare `director` and `title` and decide that the movie's name is more important than the director's. That means you'd move `title` to the second place and compare it with the previous one (`cast`).
+1. Prioritize a match on an actor's name or a movie title. If all records in your index represent movies, it may make sense to prioritize `title`, so you'd move it first. Then, because you don't have any more attributes to compare `title` to, you'd move on to `genres`.
+
+The benefit is that **you're making a thorough, granular comparison of each attribute with the others** and considering your use case for every pair. This method is much more reliable than doing a global, intuitive sort by what _seems_ more important.
+
+### Ordering searchable attributes with different priorities
+
+**The order of searchable attributes directly affects search relevance.** Attributes higher in the list are more relevant than attributes further down. Therefore, you should set attributes higher in the searchable attributes list when their content is more relevant to your users.
+
+Consider a movie database website where users can search movies by title, actors, and director. You may be tempted to prioritize actors before directors Yet, consider the following dataset:
+
+```json json
+[
+  {
+    "title": "Mystic River",
+    "director": "Clint Eastwood",
+    "actors": ["Sean Penn", "Tim Robbins", "Kevin Bacon", "Laurence Fishburne"]
+  },
+  {
+    "title": "In the Line of Fire",
+    "director": "Wolfgang Petersen",
+    "actors": ["Clint Eastwood", "John Malkovich", "Renee Russo"]
+  },
+  {
+    "title": "Invictus",
+    "director": "Clint Eastwood",
+    "actors": ["Morgan Freeman", "Matt Damon"]
+  },
+  {
+    "title": "Million Dollar Baby",
+    "director": "Clint Eastwood",
+    "actors": ["Clint Eastwood", "Hilary Swank", "Morgan Freeman"]
+  }
+]
+```
+
+For a movie search, setting the `title` as the first searchable attribute makes sense. But what if someone searched for "Clint Eastwood"? Would they primarily be looking for movies _with_ Clint Eastwood, _by_ Clint Eastwood, or both? In other words, how should you rank the `director` and `actors` attributes?
+
+By putting `director` first, movies that Clint Eastwood directed would come before those where he appeared as an actor. This may or may not be desirable. For example, if a user types "jane", do you want to first display movies with director Jane Campion or actress Jane Fonda?
+
+There's no one-size-fits-all approach, and the strategy depends on your use case. **Defining a priority order in your searchable attributes isn't trivial**. It can vary depending on your data, how it's structured, what your users search for, and what they expect as results.
+
+### Ordering searchable attributes with the same priority
+
+Sometimes, setting an attribute before or after another doesn't make sense because you want them to be equally considered. Here's another dataset, this time with records representing movies, actors, and directors:
+
+```json json
+[
+  {
+    "movie_title": "John Wick",
+    "cast": ["Keanu Reeves", "Michael Nyqvist", "Alfie Allen"]
+  },
+  {
+    "actor_name": "John Cleese",
+    "filmography": [
+      "Monty Python and the Holy Grail",
+      "Life of Brian",
+      "Harry Potter and the Philosopher's Stone"
+    ]
+  },
+  {
+    "director_name": "John Carpenter",
+    "filmography": ["Halloween", "The Thing", "Escape from New York"]
+  }
+]
+```
+
+If someone typed "John", it wouldn't necessarily make more sense to show movies with "John" in the title than actors or directors named John. Instead, you may want to rely on other criteria, like popularity, to decide what comes first.
+
+In this case, it makes sense to set `movie_title`, `actor_name`, and `director_name` at the same level. This way, if someone types "John", the engine considers all three records equal in the [attribute ranking criterion](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#attribute), and the engine would go to the next [ranking criterion](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/) to try and break the tie.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Attributes with the same priority are always _[unordered](#word-position)_.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Word position
+
+Searchable attributes can be _ordered_ or _unordered_:
+
+- **ordered** means that the engine considers matches at the beginning of an attribute more important than matches in the middle or the end. When an attribute is ordered, the earlier a match occurs, the higher the engine ranks it.
+- **unordered** means that the position of the match within the attribute doesn't affect ranking.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  You should usually set the attribute to be _unordered_ since the position of the matching word in the attribute often doesn't matter.
+</Note>
+
+{/* prettier-ignore-end */}
+
+Consider the following dataset:
+
+```json json
+[
+  {
+    "title": "Avengers: Infinity War",
+    "cast": [
+      "Robert Downey Jr.",
+      "Chris Hemsworth",
+      "Mark Ruffalo",
+      "Chris Evans",
+      "Scarlett Johansson"
+    ]
+  },
+  {
+    "title": "World War Z",
+    "cast": [
+      "Brad Pitt",
+      "Mireille Enos",
+      "Daniella Kertesz",
+      "James Badge Dale",
+      "Ludi Boeken"
+    ]
+  },
+  {
+    "title": "War of the Worlds",
+    "cast": [
+      "Tom Cruise",
+      "Dakota Fanning",
+      "Justin Chatwin",
+      "Miranda Otto",
+      "Tim Robbins"
+    ]
+  },
+  {
+    "title": "Lost in Translation",
+    "cast": ["Scarlett Johansson", "Bill Murray", "Akiko Takeshita"]
+  },
+  {
+    "title": "North",
+    "cast": [
+      "Elijah Wood",
+      "Jason Alexander",
+      "Julia Louis-Dreyfus",
+      "Marc Shaiman",
+      "Scarlett Johansson"
+    ]
+  }
+]
+```
+
+If users type "war," it wouldn't make sense to return "World War Z" before "Avengers: Infinity War" because the query happens to appear earlier in the title.
+The ranking should rely on other criteria like popularity or reviews, so it makes sense to set `title` as `unordered`.
+
+Things are different with the `cast` attribute.
+If users type "Scarlett Johansson," chances are they would be more interested in movies where Scarlett Johansson has a leading role than movies where she played small parts.
+
+Assuming that the order of actors and actresses in the `cast` attribute reflects role size, keeping `cast` ordered makes more sense.
+
+### Set _unordered_ or _ordered_ with the API
+
+You can set attributes as _unordered_ or _ordered_ with [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/) when indexing.
+If _unordered_ isn't set for an attribute, it will default to _ordered_ when set by the API.
+
+<CodeGroup>
+  ```csharp csharp
+  IndexSettings settings = new IndexSettings
+  {
+      SearchableAttributes = new List<string> { "unordered(title)", "cast" }
+  };
+
+  index.SetSettings(settings);
+
+  // Asynchronous
+  await index.SetSettingsAsync(settings);
+  ```
+
+  ```go go
+  res, err := index.SetSettings(search.Settings{
+  	SearchableAttributes: opt.SearchableAttributes(
+  		"unordered(title)",
+  		"cast",
+  	),
+  })
+  ```
+
+  ```java java
+  index.setSettings(
+    new IndexSettings().setSearchableAttributes(Arrays.asList(
+      "unordered(title)",
+      "cast"
+    ))
+  );
+  ```
+
+  ```js js
+  index
+    .setSettings({
+      searchableAttributes: ["unordered(title)", "cast"],
+    })
+    .then(() => {
+      // done
+    });
+  ```
+
+  ```kotlin kotlin
+  val settings = settings {
+      searchableAttributes {
+          +Unordered("title")
+          +"cast"
+      }
+  }
+
+  index.setSettings(settings)
+  ```
+
+  ```php php
+  $index->setSettings([
+    'searchableAttributes' => [
+      "unordered(title)",
+      "cast"
+    ]
+  ]);
+  ```
+
+  ```python python
+  index.set_settings({"searchableAttributes": ["unordered(title)", "cast"]})
+  ```
+
+  ```ruby ruby
+  index.set_settings(
+    {
+      searchableAttributes: [
+        "unordered(title)",
+        "cast"
+      ]
+    }
+  )
+  ```
+
+  ```scala scala
+  client.execute {
+    setSettings of "myIndex" `with` IndexSettings(
+      searchableAttributes = Some(
+        Seq(
+          SearchableAttributes.unordered("title"),
+          SearchableAttributes.attribute("cast"), )))
+  }
+  ```
+
+  ```swift swift
+  index.setSettings([
+    "searchableAttributes": [
+      "unordered(title)",
+      "cast",
+    ]
+  ])
+  ```
+</CodeGroup>
+
+### Set _unordered_ or _ordered_ from the dashboard
+
+1. Select the **Search** product icon on your dashboard.
+1. On the [**Index** page](https://dashboard.algolia.com/explorer/browse), select your index.
+1. Click the **Configuration** tab.
+1. Go to the **Searchable Attributes** section. For each searchable attribute, consider whether it should be [_ordered_ or _unordered_](#word-position).
+1. Save your changes.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  When using the dashboard, the UI defaults to setting your attribute as unordered.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Successful strategies
+
+Setting searchable attributes is more an art than a science and highly depends on your use case. There's no magic formula that works for everyone. However, the following tips will get you started.
+
+### Keeping as few searchable attributes as possible
+
+As a rule of thumb, **the more searchable attributes, the noisier the search**. It may be tempting to add as many searchable attributes as possible to get as many matches as you can. Yet, this reduces search relevance by creating 'noise' (littering good results with not-so-good ones).
+
+Instead, be conservative with your searchable attributes and **focus on what your users tend to search for**. Some attributes, like image URLs or review scores, shouldn't be searchable because they don't have textual value. Some other attributes, like the plot summary of a movie, might look interesting but could be unnecessary. How often do you find a movie by searching for the synopsis? Probably far less often than with the title or lead actors.
+
+The same advice goes for the length of the attribute values. Suppose you have a "movies" index where the records have an `actors` attribute. If this attribute has the entire cast, it's less efficient than if it only had the leading roles. Most users would probably look at leading roles when searching for an actor.
+
+### Properly setting attribute order
+
+Knowing how to order your searchable attributes can be challenging, especially when you have several. One method is to **compare them in pairs**, each attribute with the previous one, and move them around accordingly. The process is like [insertion sorting](https://wikipedia.org/wiki/Insertion_sort).
+
+For example, suppose you have the following attributes in the records of a "movies" index:
+
+- `director`
+- `cast`
+- `title`
+- `genres`
+- `plot_summary`
+
+You would:
+
+1. Compare the first two: `director` and `cast`. If you think `cast` should come before `director` (for example, you want to see movies with Clint Eastwood before movies directed by Clint Eastwood), move `cast` to the first place.
+1. Compare `director` and `title` and decide that the movie's name is more important than the director's. That means you'd move `title` to the second place and compare it with the previous one (`cast`).
+1. Prioritize a match on an actor's name or a movie title. If all records in your index represent movies, it may make sense to prioritize `title`, so you'd move it first. Then, because you don't have any more attributes to compare `title` to, you'd move on to `genres`.
+
+The benefit is that **you're making a thorough, granular comparison of each attribute with the others** and considering your use case for every pair. This method is much more reliable than doing a global, intuitive sort by what _seems_ more important.
+
+### Where to put filters?
+
+Sometimes it's better to prioritize filters over all other attributes. This might not seem intuitive at first, as you may think users tend to search by attributes like `name` or `title`.
+
+Suppose you have a "movies" index where the records have a `genre` attribute with values like "crime" and "action." Films fall into these categories, but there are also films whose titles and descriptions use these exact words, for example, "Crime Doesn't Pay," "Last Action Hero."
+
+In that case, you can decide that when a user searches for words that are more like genres, it's best to search filter attributes before the title. This is guaranteed to return all crime movies whenever someone types in "crime," regardless of the title.
+
+Making this decision when setting up searchable attributes can significantly affect your results.
+
+### Changing your searchable attributes strategy
+
+Be careful before changing your searchable attributes strategy because this affects your entire index. Don't make decisions based on a single query. Instead, experiment with several queries close to what your users search for (use [Algolia analytics](/guides/search-analytics/overview/) to explore their search habits).
+
+## Further reading
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Filtering](/guides/managing-results/refine-results/filtering/)
+  - [Configuring searchable attributes](https://www.algolia.com/ecommerce-merchandising-playbook/searchable-attributes/)
+  - [Fuzzy search and fuzzy matching](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+</Info>
+
+{/* prettier-ignore-end */}

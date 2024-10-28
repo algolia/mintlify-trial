@@ -1,0 +1,205 @@
+---
+title: Ongoing indexing
+description: |-
+  Learn how to index data to Algolia daily.
+---
+
+You can update your Algolia index with data from different B2C objects on an ongoing basis as follows:
+
+- **product data:**
+  - `AlgoliaProductIndex_v2` job (full catalog indexing or reindexing)
+  - `AlgoliaProductDeltaIndex_v2` job (ongoing indexing)
+- **price data:**
+  - `AlgoliaProductPriceIndex_v2` job (variant-level [record model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#default-records) only)
+- **inventory data:**
+  - `AlgoliaProductInventoryIndex_v2` job (variant-level [record model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#default-records) only)
+- **category data:**
+  - `AlgoliaCategoryIndex_v2` job
+
+You can schedule these jobs to run with different frequencies according to your business needs.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The product indexing jobs are configured for single-instance indexing out of the box.
+  This means that in a live environment, they should all be run from the same Production instance.
+  To learn how to configure the jobs so that multiple instances update the same index, see [Mult-instance indexing](/integration/salesforce-commerce-cloud-b2c/guides/multi-instance-indexing/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+For more information about indexing your entire catalog, see [Full catalog indexing](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing/).
+
+## Product data index jobs
+
+### `AlgoliaProductDeltaIndex_v2`
+
+This job performs delta updates on your Algolia product records using the [B2C Delta Export](https://help.salesforce.com/s/articleView?id=cc.b2c_delta_exports.htm\&type=5) feature.
+The job retrieves the list of `productID` s from the output file of the B2C delta export, returns the product objects from the database, enriches/transforms them and sends them to Algolia, fully replacing the product object with the same `objectID` in the index.
+
+**Which objects are included:** B2C Product objects assigned to the site that have changed since the last job run (with either Business Manager or a product feed import), enriched with price and inventory information.
+Changes to master products will cause its variants to be included in the delta as these can inherit attributes from the master.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Only changes to B2C Product attributes will cause a Product to be included in the delta update, changes to price and inventory information will not.
+  However, once a product is included, it will have its price and inventory information indexed. Use the price and inventory jobs to index changes to prices and inventory, respectively.
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The Salesforce B2C Delta Export mechanism doesn't track changes of dynamic values, such as the online status of a product changing at specific times.
+  That's why you need to use the `AlgoliaProductIndex_v2` job, or a create a custom job based on the [`algoliaProductIndex`](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing/#algoliaproductindex-job-step-parameters) step to update changes in dynamically calculated values.
+</Note>
+
+{/* prettier-ignore-end */}
+
+**Record update method:** `fullRecordUpdate` (default) - each exported product object fully replaces the existing Algolia product record with the same ID in the index.
+It includes changes to existing products, as well as the addition and removal of products.
+Fully replacing the product record in the index means that attributes that are not selected for indexing will be removed from the record in the index.
+For more information see [Full record updates](/guides/sending-and-managing-data/send-and-update-your-data/in-depth/the-different-synchronization-strategies/#full-record-updates).
+
+This also deletes old/stale properties from the Algolia index that were removed since the last export.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  The record update method can be changed to `partialRecordUpdate` using the job's `indexingMethod` parameter.
+  This mode performs a partial update on the records in the index, meaning that only the attributes that are sent during the job run are updated for each record, leaving the rest intact.
+  This mode can be used for [multi-instance indexing](/guides/sending-and-managing-data/send-and-update-your-data/in-depth/the-different-synchronization-strategies/#partial-record-updates), where not all ongoing jobs are run from the same Salesforce B2C instance.
+  You can use the [`attributeListOverride`](#algoliaproductdeltaindex-job-step-parameters) job step parameter to define a smaller set of attributes to update when using `partialRecordUpdate`.
+  For more info on partial record updates, see [here](/guides/sending-and-managing-data/send-and-update-your-data/in-depth/the-different-synchronization-strategies/#partial-record-updates).
+</Note>
+
+{/* prettier-ignore-end */}
+
+#### Enable delta export
+
+Create a support ticket with Salesforce to enable the **Delta Export** feature and its prerequisite, the **Change Log** feature on the desired instances.
+
+If you also want to include changes that occur in production through replication, the **Change Log Replication** feature must also be active.
+All three feature switches must be activated in Staging and Production.
+
+#### Job configuration
+
+You can find the job configuration in the **Job Steps** tab.
+
+##### Scope
+
+Change the scope to **Specific Sites** and select all the sites you'd like to run the jobs for.
+
+##### Job parameters
+
+- **catalogIDs** (comma-separated values): add the catalogs you'd like to export the product changes from;
+- **consumer** (default: `algolia`): change this if you'd like the B2C delta export job to use another work directory (see below);
+- **deltaExportJobName** (default: `productDeltaExport`): the B2C `catalogDeltaExport` job step will automatically create a delta export job with this ID under **Site Development > Delta Exports**. This parameter, in conjunction with **consumer**, determines the work directory inside `Impex` (`Impex/ src/platform/outbox/<consumer>/<deltaExportJobName>/`).
+
+##### `algoliaProductDeltaIndex` job step parameters
+
+- **consumer**: controlled by the `consumer` job parameter, leave them linked
+- **deltaExportJobName**: controlled by the `deltaExportJobName` job parameter, leave them linked
+- **attributeListOverride** (comma-separated values, empty by default): if set, only this list of product attributes is exported by the job, otherwise the [base attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#base-attributes-non-configurable) and the values from the [Additional Product Attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#configurable-attributes) site preference are used.
+- **indexingMethod**: `fullRecordUpdate` (default) or `partialRecordUpdate`, as for the preceding [**Record update method**](#algoliaproductdeltaindex_v2).
+- **failureThresholdPercentage** (integer, default: `0`): allowed percentage of records failing to be indexed before marking the job in error. Records successfully sent are kept in the Algolia indices.
+- **localesForIndexing** (comma-separated values, empty by default): if set, only this list of locales are indexed, otherwise the job uses the value of the `LocalesForIndexing` custom preference.
+
+For more information, see [Attributes configuration](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/).
+
+## Price and inventory data index jobs
+
+The `AlgoliaProductPriceIndex_v2` and `AlgoliaProductInventoryIndex_v2` jobs are highly optimized, targeted jobs to update price and inventory data, respectively.
+
+Each of these jobs iterates over all B2C Products assigned to the configured site and updates price/inventory information for your Algolia products with a partial update.
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  These jobs are only compatible with the [variant-level record model](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#variant-level-default-model), as partial updates on objects in an array aren't supported.
+
+  To update the variant-level information in a product-level record model, use the `AlgoliaProductIndex_v2` job, with `attributeListOverride=variants` and `indexingMethod=partialRecordUpdate` as [step parameters](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing/#algoliaproductindex-job-step-parameters).
+</Warning>
+
+{/* prettier-ignore-end */}
+
+**Which objects are updated:** each B2C Product object assigned to the site, but the exported data only contains the product's ID and
+
+- (by default) the `price` Algolia product property for `AlgoliaProductPriceIndex_v2` and
+- (by default) the `in_stock` Algolia product property for `AlgoliaProductInventoryIndex_v2`.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  For more information about extending the list of attributes, see [Indexing attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/#configure-extra-attributes-for-algoliaproductpriceindex_v2-and-algoliaproductinventoryindex_v2).
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Performance considerations
+
+The products to be sent are broken down into chunks (chunk size can be configured) and these chunks are processed and sent concurrently. The number of concurrent threads the job runs on is determined by the B2C platform itself and is dependent on the available resources (should be higher on PIG instances).
+
+The job also uses a retry strategy [similar to other API clients](/guides/scaling/distributed-search-network-dsn/#retries-and-fallback-logic).
+
+In the case of both jobs the list of properties to be exported can be extended, but this may increase the runtime of the job (see below).
+
+### Job configuration (_Job steps_ tab)
+
+Both jobs have the same configuration options.
+Any differences will be pointed out where applicable.
+
+#### Scope
+
+Change the scope to **Specific Sites** and select all the sites you'd like to run each job for.
+
+#### `algoliaProductPricePartialIndex` and `algoliaProductInventoryPartialIndex` job step parameters, respectively
+
+- **attributeListOverride** (comma-separated values): the list of Algolia properties that are exported by this job. Only the attributes defined here are exported by the job. Defaults are:
+
+  - `"price"` for `algoliaProductPricePartialIndex`;
+  - `"in_stock"` for `algoliaProductInventoryPartialIndex`.
+
+- **failureThresholdPercentage** (integer, default: `0`): allowed percentage of failed updates before marking the job as an error. Successful updates are kept in the Algolia indices.
+
+- **localesForIndexing** (comma-separated values, empty by default): if set, only this list of locales are indexed, otherwise the job uses the value of the `LocalesForIndexing` custom preference.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you extend the list of exported attributes, make sure to add the same attributes to the **Additional Product Attributes** site preference in the Algolia BM module as well so that the product delta export job also includes those attributes and updates them during its run.
+</Note>
+
+{/* prettier-ignore-end */}
+
+For more details on extending the list of attributes, see [Indexing attributes](/integration/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes/).
+
+## Category data index jobs
+
+### `AlgoliaCategoryIndex_v2`
+
+Use the `AlgoliaCategoryIndex_v2` job to update your category index.
+You should run it every time your category structure changes.
+
+## When should you schedule your jobs to run?
+
+To keep your Algolia indices in sync with your B2C Commerce data, you can run the following jobs manually or on a regular schedule.
+
+As a general rule of thumb,
+
+- run the `AlgoliaProductDeltaIndex_v2` job every time you know your **product data** has been updated;
+- run the `AlgoliaProductPriceIndex_v2` job every time you know your **price data** has been updated, such as when a promotion or a new price book has been activated;
+- run the `AlgoliaProductInventoryIndex_v2` job every time you know your **inventory data** has been updated; you can run this job frequently to keep your inventory in sync;
+- run the `AlgoliaCategoryIndex_v2` job every time you know your **categories** have been updated.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you want to trigger Algolia index updates following a product/price/inventory import, you can consider creating a job that adds both of these steps to the same sequential job flow.
+  For more info see [the B2C documentation on job flows](https://help.salesforce.com/s/articleView?id=cc.b2c_job_flows.htm\&type=5).
+  For more recommendations on improving indexing performance, see [Performance considerations](/integration/salesforce-commerce-cloud-b2c/guides/performance-considerations/).
+</Note>
+
+{/* prettier-ignore-end */}

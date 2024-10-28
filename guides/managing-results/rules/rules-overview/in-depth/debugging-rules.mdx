@@ -1,0 +1,32 @@
+---
+title: Debugging Rules
+description: |-
+  How to debug Rules.
+---
+
+When you have a large set of Rules, it may be difficult to understand which Rules apply to a given query. Algolia provides tools to help you with this.
+
+The usual [`getRankingInfo`](/api-reference/api-parameters/getRankingInfo/) parameter triggers extra information about Rules:
+
+- **Promoted hits** are labelled with a `"promoted": true` field inside the `_rankingInfo` object. This field is omitted from regular hits.
+- The list of **applied Rules** is available inside the `appliedRules` top-level field. This field is omitted when no Rule has been applied (even if `enableRules` is true).
+
+The `params` response field also has search parameters _after_ Rule application, and as such reflects the side-effects of the Rules.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  When in doubt, you can always run the same query with `enableRules=false` and compare the results you get with and without Rules.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Improving Rules accuracy
+
+Sometimes, creating Rules can lead to lower search accuracy. The following table lists common causes for a lower-than-expected search accuracy when applying Rules.
+
+| Cause of less accurate results                                                           | Solution                                                                                                                                                                                          |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Not adding a "remove word" consequence when turning search phrases into query parameters | [Add a remove word consequence](/guides/managing-results/rules/detecting-intent/how-to/applying-a-custom-filter-for-a-specific-query/#positive-filters) after any add query parameter consequence |
+| Not creating an optional filter as a facet                                               | If you want to use an attribute as an optional filter, [declare it as a facet](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/)                        |
+| Not taking advantage of "add search parameter" consequences                              | See some [common uses for this consequence](/guides/managing-results/rules/merchandising-and-promoting/how-to/rules-query-parameters/)                                                            |

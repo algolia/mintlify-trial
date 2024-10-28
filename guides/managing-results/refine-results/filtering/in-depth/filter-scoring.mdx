@@ -1,0 +1,72 @@
+---
+title: Filter scoring
+description: |-
+  Scoring filters by controlling their weight and therefore impact on searches.
+---
+
+As well as refining results, you can use **filter scoring** to rank records according to how well or poorly they match a set of filters.
+Scoring applies numerical settings to filter values, making some filter values more important than others. Records with the highest filter values sit at the top of the results list.
+
+Consider the case of stock portfolios in which companies are scored according to their monetary significance. You could use filter scoring to rank Google higher than Facebook. For example:
+
+```js js
+index.search("", {
+  filters:
+    "(company:Google<score=3> OR company:Amazon<score=2> OR company:Facebook<score=1>)",
+});
+```
+
+The result is that records with Google stocks sit at the top of the list, higher than Amazon and Facebook.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Optional filters use filter scoring to improve relevance](/guides/managing-results/rules/merchandising-and-promoting/in-depth/optional-filters/)
+  - [Using filter scoring to control the order of records](https://www.algolia.com/blog/engineering/feature-spotlight-optional-filters/)
+  - [Optional filters and filter scoring](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## How scoring is calculated
+
+Filter scores are integer values from 0 to 65,535.
+
+### Default scoring
+
+In the preceding example, any portfolio containing all three companies (Google, Amazon, and Facebook) would score `3`, as **the overall score is based on the highest score**. In other words, by default, there is no accumulation of individual scores.
+
+### Accumulating scores with `sumOrFiltersScores`
+
+You accumulate scores by setting the [`sumOrFiltersScores`](/api-reference/api-parameters/sumOrFiltersScores/) parameter to `true`. In the preceding example, any record with all three companies would have an overall score of 6 (3+2+1).
+
+If `sumOrFiltersScores` is `false`, the default, the system uses the default scoring method: taking the highest score. Using the preceding example and a query filtered on Google and Amazon with `sumOrFiltersScores` = `false` returns a score of 3 (google(3) > amazon(2) > facebook(1)).
+
+```js js
+index.search("", {
+  filters:
+    "(company:Google<score=3> OR company:Amazon<score=2> OR company:Facebook<score=1>)",
+  sumOrFiltersScores: false,
+});
+```
+
+The same query with `sumOrFiltersScores` = `true` returns a score of 6 (google (3) + amazon(2) + facebook(1)).
+
+```js js
+index.search("", {
+  filters:
+    "(company:Google<score=3> OR company:Amazon<score=2> OR company:Facebook<score=1>)",
+  sumOrFiltersScores: true,
+});
+```
+
+## Scoring ANDs and ORs
+
+Use the `OR` operator when you want to weigh terms differently.
+
+- When filtering with `OR`, the overall score is based on the individual `true` value scores. If you have three filter values in your query and all three match, it will have a higher score than another record that matches only one filter value.
+- Filtering only with ANDs removes the effect of scoring. With a group of ANDs, records are only chosen if all filters match: all records will have the same score.
+
+## Scoring using numeric filters
+
+You can't apply scores with numeric filters (like `>=`, `!=`, `>`). Scoring can only be done on facet values using the `attribute:value<score=X>` syntax.

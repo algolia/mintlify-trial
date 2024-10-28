@@ -1,0 +1,65 @@
+---
+title: Analytics overview
+description: |-
+  Learn about the Analytics Overview page in the Algolia extension for Magento 2.
+---
+
+Algolia offers [search analytics](/guides/search-analytics/overview/) to help you understand how your search meets the expectations of your users.
+The Algolia extension for Magento Open Source and Adobe Commerce comes with its own Analytics dashboard that shows some of this data.
+Go to **Stores > Algolia Search > Analytics Overview** to get started.
+
+## Filtering data
+
+You can filter analytics data by store view, index type, and date range.
+The index types are limited to _products_, _categories_, and _pages_.
+
+By default, Algolia retains the last 90 days of your analytics history.
+You can extend your analytics retention up to 365 days.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Extended analytics retention is available as an add-on to your [pricing plan](https://www.algolia.com/pricing/).
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Metrics
+
+The Analytics page provides the following metrics out of the box:
+
+| Metric                  | Description                                                                                                                                                                                                                            |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Total searches**      | How many searches were performed. As-you-type searches are aggregated. For example, if a user searches for "iPad", the queries `i`, `iP`, `iPa`, and `iPad` count as one search                                                        |
+| **Users**               | How many unique users performed a search                                                                                                                                                                                               |
+| **No results rate**     | Percentage of searches that returned 0 results. The lower, the better                                                                                                                                                                  |
+| **Daily searches**      | A bar chart displaying the number of searches per day in the selected date range. You can reveal more daily statistics by hovering over each bar                                                                                       |
+| **Popular searches**    | Which searches are performed most often                                                                                                                                                                                                |
+| **Popular results**     | Results that are displayed most often in the results after a search                                                                                                                                                                    |
+| **No results searches** | Search queries that returned 0 results. Consider [adding synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/) to your index, or improve keywords in your data set to reduce the number of no results searches. |
+
+## Click and conversion analytics
+
+{/* prettier-ignore-start */}
+
+<Note>
+  Algolia tracks a search, when the search request contains the `clickAnalytics=true` parameter.
+  See [Click and conversion analytics](/integration/magento-2/how-it-works/click-and-conversion-analytics/) for more information.
+</Note>
+
+{/* prettier-ignore-end */}
+
+With **Click Analytics** enabled, you can find these additional metrics in the Analytics dashboard:
+
+| Metric                            | Description                                                                                                                                                                                          |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Conversion rate**               | Percentage of tracked searches that lead to a successful conversion. See [Click and conversion analytics](/integration/magento-2/how-it-works/click-and-conversion-analytics/) for more information. |
+| **Conversion rate (Add to Cart)** | Percentage of tracked searches that lead to a customer adding an item to their cart.                                                                                                                 |
+| **Conversion rate (Place Order)** | Percentage of tracked searches that lead to a customer completing a purchase.                                                                                                                        |
+| **Click-through rate (CTR)**      | Percentage of users that click _at least_ one result in a tracked search.                                                                                                                            |
+| **Click position**                | The average position of the clicks in the search results. For example, a click position of 1 indicates that _every_ user clicked on the first result when searching.                                 |
+
+## Algolia cookie configuration
+
+To optimize your analytics, how you choose to collect cookies on your website is important.
+For information about how the Algolia extension determines consent, see [cookie law compliance](/integration/magento-2/how-it-works/cookie-law-compliance/) .

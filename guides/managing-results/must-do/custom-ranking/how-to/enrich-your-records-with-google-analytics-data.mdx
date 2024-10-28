@@ -1,0 +1,442 @@
+---
+title: Enrich your records with Google Analytics data
+description: |-
+  Learn how to add Google Analytics data to your records for a better custom ranking.
+---
+
+You can use data from Google Analytics to enrich your records, and boost search results based on their popularity or any other metric available in Google Analytics. This can help to improve the relevance of your search.
+
+Because both Algolia and GA are API-based platforms, you can create scripts that update Algolia records to include any data from Google Analytics.
+This guide creates a script that fetches the `ga:uniquePageViews` metric from Google Analytics, and add it to a `pageviews` attribute in your Algolia records.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you use [the Crawler](/tools/crawler/getting-started/overview/), you can [link your Google Analytics](/tools/crawler/enriching-data/google-analytics/) account to it to enrich your records with analytics data faster and easier.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Google credentials
+
+The first step is to get the credentials to use the Google Analytics API.
+Google's APIs can be authenticated in many ways but this guide uses [service accounts](https://developers.google.com/identity/protocols/oauth2/service-account).
+These are specifically meant for server-to-server applications.
+
+### Create a service account
+
+First, create a service account through Google API Console.
+
+1. Create a project (or select an existing one) from Google [API Console](https://console.developers.google.com).
+1. Activate the **Analytics Reporting API** in that project.
+1. In the **Credentials** section, create a new service account. You can skip the optional steps.
+1. Open the service account and click **Add key** -> **Create new key**. Select **JSON**, and download the resulting JSON file.
+
+### Grant access to Google Analytics data
+
+Now, an administrator of your Google Analytics account has to provide **read** access to your service account. To do this, follow these steps as an administrator:
+
+1. Log in to [Google Analytics](https://analytics.google.com/analytics/web).
+1. Select the account, property, and view that contain the analytics of your website.
+1. Go to the **Admin** tab.
+1. In the **View** panel (on the right side of the screen), click **View User Management**.
+1. Click the **+** button, then click **Add users**.
+1. Enter the email address of the service account that was generated when creating the service account.
+1. In the **Permissions** panel, make sure that only the "Read & Analyze" permission is enabled.
+1. Click the **Add** button to confirm.
+
+### Get the view ID
+
+To keep the script short, the view ID of your Google Analytics account will be manually retrieved.
+
+1. Return to the **Admin** tab of your Google Analytics View and click **View Settings**.
+1. Copy the **View ID** number. You have to put this in the `GA_PARAMETERS` object of the script later on.
+
+## Prepare your records
+
+The only constraint for this guide, is that your records **must** have an attribute that contains the full URL of their associated page.
+By default, the script expects the `url` attribute to hold this, but you can change that if needed.
+
+## Create the script
+
+Now that you have your credentials and your records ready, you can create a script to fetch the Google Analytics data of your view and inject them into existing records.
+For that, use:
+
+- A [Google API Client](https://github.com/googleapis/google-api-nodejs-client)
+- An [Algolia API Client](https://github.com/algolia/algoliasearch-client-javascript)
+
+### Fetch Google Analytics data
+
+To fetch the Google Analytics (GA) data of your view, use the Google API endpoint [`batchGet`](https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet) method.
+The script specifies the following parameters for this method:
+
+- The `viewId`.
+- The `dateRanges` to specify the period you want to fetch the data for.
+- The `dimensions`: you need the [`ga:hostname`](https://ga-dev-tools.appspot.com/dimensions-metrics-explorer/#ga:hostname) and [`ga:pagePath`](https://ga-dev-tools.appspot.com/dimensions-metrics-explorer/#ga:pagePath) to rebuild full URL of the page.
+- The `metrics` that you want to use in your custom ranking strategy. You can choose any metrics from [the complete list of available metrics](https://ga-dev-tools.appspot.com/dimensions-metrics-explorer/).
+- `orderBys`: In the example, pages are ordered by `uniquePageViews`.
+- `pageSize` and `pageToken` are used for pagination. `batchGet` can only return a maximum of 100,000 rows. To fetch more rows, you need to use pagination.
+
+In the example, GA data fetching is implemented by a `MetricsFetcher` class, which has two methods:
+
+- A `next()` method, which:
+  - Performs calls to `batchGet`,
+  - Keeps track of the pagination cursor,
+  - Transforms the complex [GA response](https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet#response-body) into simple JSON objects.
+- A `fetchAll()` method, which:
+  - Iterates over the `next()` method, until the requested number of records are fetched,
+  - Builds a big JSON object with the full URLs as keys. This will be useful in the second step of the script, where the analytics data associated to a specific URL is retrieved.
+
+The `MetricsFetcher` also handles the authentication with the Service Account JSON file you've downloaded during the [creation of your Google Service Account](#create-a-service-account).
+
+```js js
+class MetricsFetcher {
+  constructor(
+    {
+      /* GA_PARAMETERS */
+    },
+  ) {
+    // Setup the necessary auth scopes
+    this.auth = new google.auth.GoogleAuth({
+      scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
+    });
+    // ... variables initialization
+  }
+
+  async next() {
+    const response = await analytics.reports.batchGet({
+      auth: this.auth,
+      requestBody: {
+        // batchGet options
+        // https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet
+        // ...
+      },
+    });
+
+    if (!response.data.reports || response.data.reports.length <= 0) {
+      return { rows: [], hasMore: false };
+    }
+
+    const { rows } = response.data.reports[0].data;
+    this.pageToken = response.data.reports[0].nextPageToken;
+    if (this.remaining !== null && rows) {
+      this.remaining -= rows.length;
+    }
+
+    const rowsClean = !rows
+      ? []
+      : rows.map((row) => {
+          return {
+            hostname: row.dimensions[0],
+            pagePath: row.dimensions[1],
+            // append one key-value per metric, with integer value
+            ...this.metrics.reduce(
+              (keyVals, metric, idx) => ({
+                ...keyVals,
+                [metric]: parseInt(row.metrics[0].values[idx], 10),
+              }),
+              {},
+            ),
+          };
+        });
+
+    const hasMore =
+      (this.remaining === null || this.remaining > 0) &&
+      this.pageToken !== undefined &&
+      this.pageToken !== null;
+
+    return { rows: rowsClean, hasMore };
+  }
+
+  async fetchAll() {
+    let counter = 0;
+    let batch;
+    const res = {};
+    do {
+      batch = await this.next();
+      batch.rows.forEach((row) => {
+        ++counter;
+        res[getPageUrl(row.hostname, row.pagePath)] = row;
+      });
+    } while (batch.hasMore);
+    return res;
+  }
+}
+```
+
+### Update Algolia records
+
+To update records, use the [`browse`](/api-reference/api-methods/browse/) and [`partialUpdateObjects`](/api-reference/api-methods/partial-update-objects/) methods.
+Then browse the records one by one to see if the URL the record belongs to has any GA data.
+If so, create a partial record with new fields containing the GA metrics.
+When the whole index has been browsed, call a [`partialUpdateObjects`](/api-reference/api-methods/partial-update-objects/) with the partial records.
+
+```js js
+const recordsToUpdate = [];
+await index.browseObjects({
+  query: "", // Empty query will match all records
+  attributesToRetrieve: [URL_ATTRIBUTE],
+  batch: (batch) => {
+    batch.forEach((record) => {
+      if (allGAData[record[URL_ATTRIBUTE]]) {
+        // Create a partial record with a new `pageviews` attribute
+        recordsToUpdate.push({
+          objectID: record.objectID,
+          pageviews: allGAData[record[URL_ATTRIBUTE]][METRICS.uniquePageViews],
+        });
+      }
+    });
+  },
+});
+
+console.log(`Updating ${recordsToUpdate.length} records...`);
+await index.partialUpdateObjects(recordsToUpdate, {
+  createIfNotExists: false,
+});
+```
+
+## Finalize the script
+
+You're using the Node.js clients of both API clients to build the final script.
+The `main` function:
+
+- Fetch the GA data with the `MetricsFetcher`
+- Updates the Algolia records using [`browse`](/api-reference/api-methods/browse/) and [`partialUpdateObjects`](/api-reference/api-methods/partial-update-objects/).
+
+**Note:** You must update the variables in the `// Script parameters` section of the final script:
+
+- `APP_ID`, `API_KEY` and `INDEX_NAME` are your Algolia credentials.
+- `URL_ATTRIBUTE` is the name of the attribute in your Algolia records that contain the URL.
+- The `GA_PARAMETERS` object contains all parameters related to GA. You **must** include your [`viewId`](#get-the-view-id), but you can add and change other parameters as well.
+
+With the script on your machine, you can run it by running the following command (assuming the script is named `ga_connector.js`). The `path/to/your-service-account-file.json` file has to point the JSON file downloaded when you [created a Service Account](#create-a-service-account):
+
+```sh sh
+GOOGLE_APPLICATION_CREDENTIALS=path/to/your-service-account-file.json node ga_connector.js
+```
+
+```js js
+// ga_connector.js
+
+const algoliasearch = require("algoliasearch");
+const { google } = require("googleapis");
+const analytics = google.analyticsreporting("v4");
+
+// GA metrics. Reference doc: https://ga-dev-tools.appspot.com/dimensions-metrics-explorer/
+const METRICS = {
+  pageviews: "ga:pageviews",
+  uniquePageViews: "ga:uniquePageViews",
+  entranceRate: "ga:entranceRate",
+  // ...
+};
+
+// Script parameters
+const APP_ID = "YourApplicationID";
+const API_KEY = "YourWriteAPIKey";
+const INDEX_NAME = "indexName";
+const URL_ATTRIBUTE = "url";
+const GA_PARAMETERS = {
+  viewId: 123456789,
+  metrics: [METRICS.uniquePageViews],
+  startDate: "30daysAgo", // https://developers.google.com/analytics/devguides/reporting/core/v3/reference#startDate
+  endDate: "today",
+  limit: 10000, // number of rows to fetch from GA
+};
+const PROTOCOL = "https://";
+const MAX_PAGE_SIZE = 100000; // 100000 is the max value, according to https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet
+
+/**
+ * This class allows to fetch metrics of an unpredictable number of pages of analytics from GA API.
+ * Instances keep track of the fetching progress, for the next() method.
+ *
+ * It also handles authentication using a service account, if GOOGLE_APPLICATION_CREDENTIALS is correctly set.
+ * See https://github.com/googleapis/google-api-nodejs-client/#using-the-google_application_credentials-env-var
+ *
+ * @param {object} p           - (compound parameters).
+ * @param {number} p.viewId    - Identifier of the Google Analytics' view from which to fetch data.
+ * @param {string[]} p.metrics - Array of GA metric types, as defined in the METRICS dictionary (default = ['ga:uniquePageViews']).
+ * @param {number} p.limit     - Maximum number of URLs to fetch.
+ * @param {string} p.startDate - Period from which analytics must cover until endDate. (default: '7daysAgo').
+ * @param {string} p.endDate   - Period until which analytics must cover. (default: 'today').
+ */
+class MetricsFetcher {
+  constructor({
+    viewId,
+    metrics = [METRICS.uniquePageViews],
+    limit = 100000,
+    startDate = "7daysAgo",
+    endDate = "today",
+  }) {
+    this.auth = new google.auth.GoogleAuth({
+      scopes: ["https://www.googleapis.com/auth/analytics.readonly"],
+    });
+    this.viewId = viewId.toString();
+    this.metrics = metrics.includes(METRICS.uniquePageViews)
+      ? metrics
+      : metrics.concat([METRICS.uniquePageViews]);
+    this.remaining = limit;
+    this.startDate = startDate;
+    this.endDate = endDate;
+    this.pageToken = undefined;
+  }
+
+  /**
+   * Get next page.
+   * Data is ordered by most 'ga:uniquePageViews' first.
+   *
+   * @returns {Object} An object that contains { rows: [{ hostname: string, pagePath: string, [metricName]: number }], hasMore: boolean }.
+   */
+  async next() {
+    console.log(
+      `[GA] batchGet viewId=${this.viewId} remaining=${this.remaining}...`,
+    );
+
+    const response = await analytics.reports.batchGet({
+      auth: this.auth,
+      requestBody: {
+        reportRequests: [
+          {
+            viewId: this.viewId,
+            dateRanges: [
+              {
+                startDate: this.startDate,
+                endDate: this.endDate,
+              },
+            ],
+            // reference doc: https://ga-dev-tools.appspot.com/dimensions-metrics-explorer/#ga:pagePath
+            dimensions: [{ name: "ga:hostname" }, { name: "ga:pagePath" }],
+            metrics: this.metrics.map((metric) => ({ expression: metric })),
+            orderBys: [
+              {
+                fieldName: METRICS.uniquePageViews,
+                sortOrder: "DESCENDING",
+              },
+            ],
+            pageSize:
+              this.remaining !== null && this.remaining < MAX_PAGE_SIZE
+                ? this.remaining
+                : MAX_PAGE_SIZE,
+            pageToken: this.pageToken,
+          },
+        ],
+      },
+    });
+
+    if (!response.data.reports || response.data.reports.length <= 0) {
+      return { rows: [], hasMore: false };
+    }
+
+    const { rows } = response.data.reports[0].data;
+    this.pageToken = response.data.reports[0].nextPageToken;
+    if (this.remaining !== null && rows) {
+      this.remaining -= rows.length;
+    }
+
+    console.log(
+      `[GA] fetched a page of ${rows ? rows.length : 0} rows from Google Analytics (viewId=${this.viewId})`,
+    );
+
+    const rowsClean = !rows
+      ? []
+      : rows.map((row) => {
+          return {
+            hostname: row.dimensions[0],
+            pagePath: row.dimensions[1],
+            // append one key-value per metric, with integer value
+            ...this.metrics.reduce(
+              (keyVals, metric, idx) => ({
+                ...keyVals,
+                [metric]: parseInt(row.metrics[0].values[idx], 10),
+              }),
+              {},
+            ),
+          };
+        });
+
+    const hasMore =
+      (this.remaining === null || this.remaining > 0) &&
+      this.pageToken !== undefined &&
+      this.pageToken !== null;
+
+    return { rows: rowsClean, hasMore };
+  }
+
+  /**
+   * Get All GA data of the view.
+   *
+   * @returns {Object} An object with the following structure:
+   *   {
+   *     `${url1}`: { hostname: string, pagePath: string, [metricName]: number },
+   *     `${url2}`: { hostname: string, pagePath: string, [metricName]: number },
+   *   }.
+   */
+  async fetchAll() {
+    let counter = 0;
+    let batch;
+    const res = {};
+    do {
+      batch = await this.next();
+      batch.rows.forEach((row) => {
+        ++counter;
+        res[getPageUrl(row.hostname, row.pagePath)] = row;
+      });
+    } while (batch.hasMore);
+    console.log(`=> fetched ${counter} rows from GA view: ${this.viewId} 📚`);
+    return res;
+  }
+}
+
+/**
+ * Helper to rebuild the complete page URL from GA data, as set in the Algolia records.
+ * Google Analytics doesn't store the protocol so we are re-adding it.
+ * Another way is to store the URLs without the protocol in your Algolia records.
+ *
+ * @param {string} hostname - The hostname returned by GA.
+ * @param {string} pagePath - The pagePath returned by GA.
+ * @returns {string} The full page URL.
+ */
+function getPageUrl(hostname, pagePath) {
+  // When google analytics is misconfigured, the pagePath can contain a path prefixed by the hostname (www.example.com/)
+  if (!pagePath.startsWith("/")) {
+    // the path is prefixed by a host name => let's use it as-is
+    return `${PROTOCOL}${pagePath}`;
+  } else {
+    // generate the full URL
+    return `${PROTOCOL}${hostname}${pagePath}`;
+  }
+}
+
+// Main
+(async () => {
+  console.log(`Fetching Google Analytics data...`);
+  const metricsFetcher = new MetricsFetcher(GA_PARAMETERS);
+  const allGAData = await metricsFetcher.fetchAll();
+
+  console.log("Browsing Algolia index and creating partial records...");
+  const client = algoliasearch(APP_ID, API_KEY);
+  const index = client.initIndex(INDEX_NAME);
+  const recordsToUpdate = [];
+  await index.browseObjects({
+    query: "", // Empty query will match all records
+    attributesToRetrieve: [URL_ATTRIBUTE],
+    batch: (batch) => {
+      batch.forEach((record) => {
+        if (allGAData[record[URL_ATTRIBUTE]]) {
+          // Create a partial record with a new `pageviews` attribute
+          recordsToUpdate.push({
+            objectID: record.objectID,
+            pageviews:
+              allGAData[record[URL_ATTRIBUTE]][METRICS.uniquePageViews],
+          });
+        }
+      });
+    },
+  });
+
+  console.log(`Updating ${recordsToUpdate.length} records...`);
+  await index.partialUpdateObjects(recordsToUpdate, {
+    createIfNotExists: false,
+  });
+  console.log("Records updated.");
+})();
+```

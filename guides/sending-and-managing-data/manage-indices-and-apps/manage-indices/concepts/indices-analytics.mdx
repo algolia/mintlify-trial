@@ -1,0 +1,65 @@
+---
+title: Indices and analytics
+description: |-
+  Learn the impact of renaming, deleting or copying an index on analytics.
+---
+
+Algolia **stores analytics data on dedicated servers**, separate from the indices.
+Analytics data is collected by Algolia asynchronously, in parallel to search.
+This way, gathering analytics never impacts the speed of search.
+
+Because indices and analytics are separate data sets,
+copying, moving, and deleting an index has no effect on the analytics data.
+
+**Analytics data is referred to by the name of its index.** This reference never changes.
+
+## Renaming an index
+
+**Changing the name of an index doesn't change the name of the index's analytics.**
+The analytics belonging to the original index keep their original name.
+A new set of analytics is started with the new name.
+The old and new analytics aren't merged.
+To preserve an index's analytics history, you need to keep using the old name.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Move indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/move-indices/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Deleting an index
+
+**Deleting an index doesn't delete the index's analytics.**
+The analytics data remains available under the deleted index's name.
+You can use the index's name to export the analytics data using the [Analytics API](/rest-api/analytics/).
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Delete indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/delete-indices/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Copying an index
+
+**Copying an index doesn't copy the associated analytics data.**
+
+{/* prettier-ignore-start */}
+
+<Warning>
+  Be careful when overwriting an existing index while copying.
+  The analytics data will remain associated with the index's name.
+</Warning>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Copy indices](/guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/copy-indices/)
+</Info>
+
+{/* prettier-ignore-end */}

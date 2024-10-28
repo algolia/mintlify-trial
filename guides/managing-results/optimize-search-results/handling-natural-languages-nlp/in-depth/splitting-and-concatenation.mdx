@@ -1,0 +1,120 @@
+---
+title: Splitting and concatenation
+description: |-
+  Learn about splitting and concatenation in the Algolia engine.
+---
+
+Splitting long words into shorter ones and combining (_concatenating_) short words into longer ones
+help users find results even if what they're searching for doesn't exactly match what's in your index.
+
+Algolia splits and concatenates your search queries by default.
+You can adjust this setting in the [Algolia dashboard](https://dashboard.algolia.com//explorer/configuration/typo-tolerance),
+or with the [`typoTolerance`](/api-reference/api-parameters/typoTolerance/) API parameter.
+
+To learn more about how the search engine processes your search query,
+see [Tokenization](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization/).
+
+## Splitting
+
+During a search, the engine divides each non-separator token into two parts at every possible spot.
+The first part can be up to 12 characters, while the second part can be of any length.
+
+For example, the query `katherinejohnson` is divided like this:
+
+- `katherinejohnson`
+- `k`, `atherinejohnson`
+- `ka`, `therinejohnson`
+- `kat`, `herinejohnson`
+- `kath`, `erinejohnson`
+- `kathe`, `rinejohnson`
+- `kather`, `inejohnson`
+- `katheri`, `nejohnson`
+- `katherin`, `ejohnson`
+- `katherine`, `johnson`
+- `katherinej`, `ohnson`
+- `katherinejo`, `hnson`
+- `katherinejoh`, `nson`
+
+For each split, the engine looks for matches in your index.
+If there's a match, the split is added as an alternative search term.
+For example, `katherine` and `johnson` might be in your index and would be
+used as search terms.
+But `kath` and `etherinejohnson` wouldn't be used as search terms
+if they're not in your index.
+
+To keep your search fast, query words are split into just two parts.
+For example, the query `jamesearljones` is split into `james` and `earljones`,
+but not into `james`, `earl`, and `jones`.
+
+If the engine finds multiple valid splits,
+it chooses the one with the most matches.
+For instance, "nowhere" could be split into `no` and `where`, or `now` and `here`.
+The split used depends on which segments appear more frequently in your records.
+
+Splitting starts with queries with at least as many characters as determined by the [`minWordSizefor1Typo`](/api-reference/api-parameters/minWordSizefor1Typo/) parameter.
+By default, `minWordSizefor1Typo` is 4, so splitting starts with the query `kath`.
+
+## Concatenation
+
+Concatenation means combining tokens into one.
+This makes finding certain content easier, such as acronyms or contractions.
+
+### Concatenation during indexing
+
+While indexing, during the [tokenization](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization/),
+the engine combines tokens that are separated by specific characters:
+
+- `.` (period)
+- `'` (apostrophe)
+- `®` (registered symbol)
+- `©` (copyright symbol)
+
+This approach works well for acronyms such as `B.C.E.` and contractions like `don't`.
+
+For example, `hello.world` initially creates the tokens `hello`, `.`, `world`, and then `helloworld` after concatenation.
+The `.` is a separator and not indexed by default (see the [`separatorsToIndex`](/api-reference/api-parameters/separatorsToIndex/) parameter).
+
+Tokens shorter than three characters are also not indexed.
+For example, `B.C.E.` creates the tokens `B`, `.`, `C`, `.`, `E` and `BCE`.
+Only `BCE` is indexed, but not `B`, `C`, `E`, or the separator `.`.
+
+### Concatenation at query time
+
+The search engine performs the same concatenation in search queries as it does during indexing.
+Plus, it uses these additional concatenations:
+
+- **Bi-gram concatenation**. The engine merges each pair of adjacent tokens for the first five words in the query.
+- **All-word concatenation**. If the query contains three or more words, the engine combines all words into a single token.
+
+For example, the search query `a wonderful day in the neighborhood` results in these tokens:
+
+- Initial tokenization: `a`, `wonderful`, `day`, `in`, `the`, `neighborhood`
+- Bi-gram concatenation: `awonderful`, `wonderfulday`, `dayin`, `inthe`
+- All-word concatenation: `awonderfuldayintheneighborhood`
+
+### Concatenation with numbers
+
+The engine has special rules for the concatenation of tokens with numbers and separators.
+
+**If the first character of a token is a number, it won't be merged with adjacent tokens.**
+For example, `m.55` creates the token `m55`, but `5.mm` forms the tokens `5` and `mm`, but not `5mm`.
+This rule helps searching for floating point numbers, ensuring `1.3GB` isn't mistaken as `13GB`.
+
+**Whenever there's a number next to a separator, any adjacent non-separator tokens are indexed**,
+regardless of their length.
+For example, `3.GB` creates the tokens `3`, `.`, and `GB`.
+The tokens `3` and `GB` are indexed, but `3GB` is not,
+because it starts with a number.
+Likewise, in `1.5`, both `1` and `5` are indexed.
+
+**The engine doesn't use bi-gram concatenation on adjacent tokens if the first token ends with a digit and the second token starts with a digit.**
+This helps with searches like: `XC90 2020 Volvo`, where users wouldn't want to search for `XC902020`.
+
+This rule might affect searches for hyphenated numbers, such as International Standard Book Numbers (ISBNs).
+They're 13-digits long and are formatted with hyphens—for example, `978-3-16-148410-0`.
+If you indexed this ISBN as `9783161484100`,
+a user can still find it by searching with hyphens `978-3-16-148410-0` or spaces `978 3 16 148410 0` (all-word concatenation).
+However, searches like `978316148410-0` or `978316148410 0` won't find the record,
+as the engine doesn't merge tokens that begin or end with numbers and are next to each other.
+
+For more information, see [searching in hyphenated attributes](/guides/managing-results/optimize-search-results/typo-tolerance/how-to/how-to-search-in-hyphenated-attributes/),

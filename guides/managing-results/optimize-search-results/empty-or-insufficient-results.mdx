@@ -1,0 +1,208 @@
+---
+title: Empty or insufficient results
+description: |-
+  How to ensure that your users always get results.
+---
+
+Displaying no results gives the impression that you don't offer what your users want. Always displaying results gives the opposite impression: you _do_ offer something for everybody and every situation.
+
+For example, no results could occur when:
+
+- User queries are _too specific_.
+- Users enter multi-word queries encompassing several categories. On an ecommerce site, compare the queries `tables chairs cutlery` and `round outdoor table`: the first might reference three different categories of product, and the second might reference only one.
+- Due to [poor data](#good-data), users get no results for queries that _should_ return results.
+
+## UI solutions
+
+Here's what you can do on the UI:
+
+- Show a set of _related_ but less relevant results. Consider [Query Suggestions](/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/) to help display results even when there are none.
+- Show a UI-friendly "no results" page, with hints for other queries and a selection of meaningful content. You can do this with the InstantSearch or Autocomplete UI libraries.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Handling no results (InstantSearch)](/guides/building-search-ui/going-further/conditional-display/js/#handling-no-results)
+  - [noResults template (Autocomplete)](/ui-libraries/autocomplete/core-concepts/templates/#render-a-no-results-state)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## How to avoid no results
+
+The first step is to review your current solution.
+
+- [Rework your content to ensure good data](#good-data)
+- [Make sure your basic search and index settings are optimally configured](#basic-configuration)
+- [Use analytics to see which queries return no results](#using-analytics).
+
+The next step is to use [advanced settings](#advanced-settings-to-avoid-insufficient-results) to bring back more results.
+
+### Good data
+
+Consider:
+
+- The descriptive text you use in your records, especially their variety and precision. Vary your descriptions - even restating content if different phrasing and vocabulary could be equally relevant (think about the words your users might use).
+- Adding keywords to records.
+- The number of attributes. Don't be too minimal: include all useful data. Being exhaustive will help users find what they need. You can't predict the kinds of queries users will make, so you should cover all possibilities.
+- Using analytics to see if there are any words and phrases that you could add to your data.
+
+### Basic configuration
+
+Algolia offers many settings that help you ensure relevant results for most queries. The following often have the most impact:
+
+- **Synonyms.** Supporting a variety of vocabulary is essential to obtain relevant results. Alternative words and spellings are common in every industry, and users have come to expect a search engine to know the lingo.
+- **Typo tolerance.** If you turn typo tolerance off, you'll reduce your results. This is because Algolia will then only return exact letter-by-letter matches. If you consistently get no results, consider re-enabling typo tolerance. You can always [turn off typo tolerance for specific attributes](/guides/managing-results/optimize-search-results/typo-tolerance/in-depth/configuring-typo-tolerance/#turn-off-typo-tolerance-for-specific-attributes).
+- **Removing stop words.** By removing common words like "the", "a", and "it", Algolia needs to match fewer words in a query, thereby increasing the number of results. A user may receive no results when searching for "The Invisible Man" because the film's title is "Invisible Man". By removing "The" from the query, users can find the movie.
+- **Ignoring plurals.** This means that singular and plural forms of the same word will find each other, which can significantly increase results. Without this feature, a query with a singular form ("spy") won't find a record with the plural ("spies").
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Typo tolerance](/guides/managing-results/optimize-search-results/typo-tolerance/)
+  - [Synonyms](/guides/managing-results/optimize-search-results/adding-synonyms/)
+  - [`ignorePlurals`](/api-reference/api-parameters/ignorePlurals/)
+  - [`removeStopWords`](/api-reference/api-parameters/removeStopWords/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Using analytics
+
+Regularly reviewing your analytics reports helps you analyze your incoming queries and think about getting better results. By looking at your **top 10 queries**, the most popular words and phrases, and perhaps most importantly, **which searches return no results**, you can make intelligent choices about your content, search, and index settings.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Search analytics](/guides/search-analytics/overview/)
+  - [Search analytics metrics](/guides/search-analytics/concepts/metrics/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Advanced settings to avoid insufficient results
+
+Algolia offers some settings explicitly designed to resolve insufficient results.
+
+- [Removing words when no results are found](#remove-words-if-no-results).
+- [Matching individual words instead of all words in a query](#matching-individual-words).
+- [Create a list of words that Algolia can remove from a query](#creating-a-list-of-optional-words).
+- [Adjusting prefix search](#adjusting-prefix-search).
+
+### Remove words if no results
+
+The general idea is that if the initial query doesn't return any results, Algolia will remove one of the words from the query and redo the search.
+It will keep doing this until results are found or there are no more words to remove.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  This technique only works with multi-word queries.
+</Note>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [`removeWordsIfNoResults`](/api-reference/api-parameters/removeWordsIfNoResults/)
+  - [Removing words to improve results](/guides/managing-results/optimize-search-results/empty-or-insufficient-results/in-depth/why-use-remove-words-if-no-results/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+### Matching individual words
+
+This only works with multi-word queries.
+
+By default, Algolia returns matches that contain _all_ a query's words:
+
+```txt txt
+"big hamster wheel" => "big" AND "hamster" AND "wheel"
+```
+
+Every result must contain all three words.
+
+You can change this by allowing Algolia to return matches that contain only one of the words.
+
+```txt txt
+"big hamster wheel" => "big" OR "hamster" OR "wheel"
+```
+
+Now, if you have a record with "big" but not "hamster" or "wheel", it will still be returned.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Doing an OR between all words of a query](/api-reference/api-parameters/optionalWords/#doing-an-or-between-all-words-of-a-query)
+</Info>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Note>
+  **Changing this behavior will affect ranking.** Records that match all three words will be ranked higher than records with only two, and records with two words are higher than records with only one. This is due to the ["Words" criterion](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#words-if-applicable) in the ranking formula.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Creating a list of optional words
+
+You can create a list of words that, if present in a query, will be removed by Algolia.
+Algolia will run the query with the words _and then_ without the words.
+This "double-querying" increases the number of results.
+
+For example, say you provide online videos.
+If users query "action video", you might want to make "video" an optional word.
+By doing this, you're instructing Algolia to run two separate queries - "action video" and "action" - and then combine them for the ranking.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [An example of optional words](/guides/managing-results/optimize-search-results/empty-or-insufficient-results/in-depth/why-use-remove-words-if-no-results/)
+  - [`optionalWords`](/api-reference/api-parameters/optionalWords/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+{/* prettier-ignore-start */}
+
+<Note>
+  **Changing this behavior will affect ranking:** Records that match with all words present are ranked higher than words without the optional words. This is due to the ["Words" criterion](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/#words-if-applicable) in the ranking formula.
+</Note>
+
+{/* prettier-ignore-end */}
+
+### Adjusting prefix search
+
+Prefix matching is central to Algolia's as-you-type search experience since it enables matching records based on partial words.
+For example, records containing `apricot` are immediately returned when a user types `a`, `ap`, `apr`.
+Algolia doesn't need to wait for a full-word match before displaying results.
+
+Hence prefix matching helps avoid insufficient results, but you can also use prefix matching to bring back even more results.
+By default, Algolia uses a "prefix last" logic, where only the last word in a query is treated as a prefix. All other text in the query must fully match.
+For example, the query "ja" will find the sentence "Jack and Jill went up the hill". But "ja wat" won't. That's because only the last term, "wat", will be used as a prefix, and the unfinished "ja" will be required to match as a complete word, which isn't possible.
+
+You can get more results by making _all_ text in a query match a prefix. Now "ja wat" will find "Jack and Jill went up the hill" because "ja" matches "Jack", and "wat" can be ignored.
+
+However, **this won't improve relevance**. Only do this when you want some randomness or have many records and care less about relevance. Image search is a good example of when _near_ matches are desirable.
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Prefix search](/guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/prefix-searching/)
+  - [`queryType`](/api-reference/api-parameters/queryType/)
+</Info>
+
+{/* prettier-ignore-end */}
+
+## Further reading
+
+{/* prettier-ignore-start */}
+
+<Info>
+  - [Fuzzy search: removing words if no results](https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/)
+</Info>
+
+{/* prettier-ignore-end */}

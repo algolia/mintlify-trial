@@ -1,0 +1,153 @@
+---
+title: Search in a replica index
+description: |-
+  How to search a replica index, to create different sorting options for your users.
+---
+
+A [replica index](/guides/managing-results/refine-results/sorting/in-depth/replicas/) is a copy of your primary index that sorts results in alternative ways.
+For instance, on an ecommerce site, you might want to sort search results by default from cheapest to most expensive.
+You also offer a drop-down menu to let users sort from most expensive to cheapest.
+
+{/* prettier-ignore-start */}
+
+<Note>
+  If you're using InstantSearch, use the [`sort-by`](/api-reference/widgets/sort-by/js/) widget to let users choose their sorting strategy.
+</Note>
+
+{/* prettier-ignore-end */}
+
+## Create replica indices
+
+Let users sort results in various ways by [creating a replica](/guides/managing-results/refine-results/sorting/how-to/creating-replicas/) for each sorting strategy.
+That sorting strategy might order results by price, date, relevance, or any other criteria you provide.
+
+## Switch index as required
+
+When users change the sorting strategy, ensure you switch to the appropriate index (primary or replica).
+
+<CodeGroup>
+  ```csharp csharp
+  // 1. Change the sort dynamically based on the UI events
+  bool sortByprice = false;
+
+  // 2. Get the index name based on sortByPrice
+  string indexName = sortByprice ? "products_price_desc" : "products";
+
+  // 3. Search on dynamic index name (primary or replica)
+  SearchIndex index = client.InitIndex(indexName);
+  index.Search(new Query("phone"));
+  ```
+
+  ```go go
+  // 1. Change the sort dynamically based on UI events
+  sortByPrice := false
+
+  // 2. Get the index name based on sortByPrice
+  var indexName string
+  if sortByPrice {
+  	indexName = "products_price_desc"
+  } else {
+  	indexName = "products"
+  }
+
+  // 3. Search on dynamic index name (primary or replica)
+  client.InitIndex(indexName).Search("phone")
+  ```
+
+  ```java java
+  // 1. Change the sort dynamically based on the UI events
+  boolean sortByprice = false;
+
+  // 2. Get the index name based on sortByPrice
+  String indexName = sortByprice ? "products_price_desc" : "products";
+
+  // 3. Search on dynamic index name (primary or replica)
+  SearchIndex index = client.initIndex(indexName);
+  index.search(new Query("phone"));
+  ```
+
+  ```js js
+  // 1. Change the sort dynamically based on UI events
+  const sortByPrice = false;
+
+  // 2. Get the index name based on sortByPrice
+  const indexName = sortByPrice ? "products_price_desc" : "products";
+
+  // 3. Search on dynamic index name (primary or replica)
+  client
+    .initIndex(indexName)
+    .search("phone")
+    .then(({ hits }) => {
+      console.log(hits);
+    });
+  ```
+
+  ```kotlin kotlin
+  val sortByPrice = false
+  val indexName = if (sortByPrice) "products_price_desc" else "products"
+  val index = client.initIndex(IndexName(indexName))
+
+  index.search(Query("phone"))
+  ```
+
+  ```php php
+  // 1. Change the sort dynamically based on the UI events
+  $sortByPrice = false;
+
+  // 2. Get the index name based on sortByPrice
+  $indexName = $sortByPrice ? 'products_price_desc' : 'products';
+
+  // 3. Search on dynamic index name (primary or replica)
+  $client->initIndex($indexName)->search('phone');
+  ```
+
+  ```python python
+  # 1. Change the sort dynamically based on the UI events
+  sort_by_price = False
+
+  # 2. Get the index name based on sort_by_price
+  index_name = "products_price_desc" if sort_by_price else "products"
+
+  # 3. Search on dynamic index name (primary or replica)
+  client.init_index(index_name).search("phone")
+  ```
+
+  ```ruby ruby
+  # 1. Change the sort dynamically based on UI events
+  sort_by_price = false
+
+  # 2. Get the index name based on sort_by_price
+  index_name = sortByPrice ? "products_price_desc" : "products"
+
+  # 3. Search for 'phone' on dynamic index name (primary or replica)
+  client.init_index(indexName).search("phone")
+  ```
+
+  ```scala scala
+  // 1. Change the sort dynamically based on UI events
+  val sortByPrice = false
+
+  // 2. Get the index name based on sortByPrice
+  val indexName = if (sortByPrice) "products_price_desc" else "products"
+
+  // 3. Search on dynamic index name (primary or replica)
+  client.execute {
+    search into indexName query Query(
+      query = Some("phone"), )
+  }
+  ```
+
+  ```swift swift
+  // 1. Change the sort dynamically based on the UI events
+  let sortByprice = false
+
+  // 2. Get the index name based on sortByPrice
+  let indexName = sortByprice ? "products_price_desc" : "products"
+
+  // 3. Search on dynamic index name (primary or replica)
+  let index = client.index(withName: indexName)
+  index.search(Query(query: "phone")) { (result, error) in
+    // use result and error
+  }
+  ```
+</CodeGroup>
