@@ -108,7 +108,8 @@
             "guides/send-events/connectors/segment",
             "guides/send-events/connectors/tealium"
           ]
-        }
+        },
+    {
       "group": "Send and manage data",
       "pages": [
         {
