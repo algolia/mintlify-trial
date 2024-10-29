@@ -1,0 +1,112 @@
+---
+title: Track usage and performance in the dashboard
+description: |-
+  Learn how to monitor your Algolia usage and performance on the dashboard.
+---
+
+To optimize your configuration and monitor billable activities in your Algolia account,
+you can inspect the peformance and usage in the Algolia dashboard.
+
+<Card title="Algolia Academy" icon="photo-film" href="https://academy.algolia.com/guides/963d1096-0715-11ef-9b8d-02cd6c51e67b/tasks/2e5595de-f838-11ee-8f99-062c0f29fdc9" horizontal="true" color="#c7519c">
+Algolia usage
+</Card>
+
+## Performance metrics
+
+To monitor the performance of the Algolia API for your application:
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
+1. On the left sidebar, select <Icon icon="chart-simple" color="5468ff" iconType="regular" /> **API Monitoring**.
+1. Open the **Performance** page.
+
+    ![Performance overview section in the dashboard](/images/getting-started/dashboard-section-click.jpg)
+
+On this page you see how many search and indexing requests Algolia processed for your Algolia application,
+and how long it took to process them.
+You can view graphs for a day, a month, or a year.
+
+![Graph with the average response time of your search operations](/images/getting-started/dashboard-search-response-time.jpg)
+
+Use the **Maximum queries per second** view to check if a high user search activity impacts your performance.
+
+### Speed
+
+Algolia measures speed in milliseconds.
+Larger values might indicate a performance problem.
+
+Since processing time only measures the speed of the Algolia servers,
+you need to add network latency and frontend display times to measure the full user experience.
+Delivering the best UX means that the total time, from keystroke to displaying search results, should be less than 100 ms,
+as this delivers a real search as you type experience.
+Thus, with this 100 ms benchmark, and an average latency of 70 ms, Algolia's processing time should be no greater than 30 ms,
+and ideally a lot lower.
+
+## Usage activity
+
+Open the **Usage** tab to see the total number of records, and the number of search and indexing operations for the current billing cycle.
+The **Records** graph always shows your monthly usage, whether you have a monthly or annual subscription.
+
+![Inspect your usage](/images/getting-started/dashboard-tab-1-usage.jpg)
+
+This section includes timelines for search and indexing operations, broken down by type.
+Just like on the **Performance** page, you can view the timelines by day, month, or year.
+
+For example, the **Record Operations** graph shows the number of record operations in the selected time frame. Record operations are further broken down by type:
+**Get**, **Add**, **Batch**, **Delete**, **Partial update**, **Update** and **Delete by Query**.
+
+![Overview of record operations](/images/getting-started/dashboard-records-operations.jpg)
+
+<Note>
+    The usage statistics don't include indexing operations on **replicas**.
+    Algolia keeps replicas in sync internally.
+</Note>
+
+## Status page
+
+The **Status** page includes information about the availability of your Algolia servers and clusters.
+The same information is also available at [https://status.algolia.com/](https://status.algolia.com/).
+
+### Incidents
+
+At the top, you'll see all recent incidents, such as, issues with processing API requests.
+Any incident with a green circle and the message "Everything operating normally" is resolved.
+
+### Availability
+
+![Check the availability of your servers in the Algolia dashboard](/images/getting-started/dashboard-tab-4-summary.png)
+
+Algolia uses clusters to process every indexing
+and search operation. Each cluster has three servers.
+
+- If one server goes down, the cluster operates normally.
+  The status shows **100% availability** (green).
+
+- If a second server goes down, the remaining server still processes all search requests.
+  Indexing operations are added to a queue and will be processed after the cluster returns to "green".
+  This status is shown as **Minor downtime** (yellow).
+
+- If all three servers are down, the whole cluster is down.
+  This is shown as **Major downtime** (red).
+
+Availability is checked every 10 minutes.
+
+## Latest operations
+
+In the **Search API Logs** section,
+you can watch operations as they occur on Algolia's servers.
+
+![Check the latest operations in the dashboard](/images/getting-started/dashboard-latest-operations.jpg)
+
+## Alerts
+
+![Alert types](/images/getting-started/dashboard-tab-alerts.jpg)
+
+You can configure two types of alerts:
+
+- **Status**. Configure an email or a phone number to receive incident reports as they occur.
+- **Capacity**. Configure one or more alerts to warn you **before** your servers consume too much memory or CPU.
+  For more information, see [How to set up capacity alerts](https://www.algolia.com/doc/guides/scaling/servers-clusters/how-to/how-to-receive-capacity-alerts-from-my-dedicated-servers/).
+
+    <Note>
+        You can set up capacity alerts **only if you're on a plan with dedicated servers**.
+    </Note>

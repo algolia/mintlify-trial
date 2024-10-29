@@ -1,0 +1,103 @@
+---
+title: Quick start
+description: |-
+  Whether you're a developer or a business user, you can try Algolia's Search and Discovery products for yourself.
+---
+
+If you want to see how Algolia works, [sign up](https://dashboard.algolia.com/users/sign_up) for free and try things out for yourself.
+Try out one or more of the tutorials, find out how you can use your data, and read about how analytics, relevance, and insightscan help measure the success of your implementation.
+
+
+## Run the Quickstart Assistant tutorial
+
+When you create a new Algolia account, [the dashboard's](https://dashboard.algolia.com/) **Quickstart Assistant** will offer you several choices.
+Choose **New to Algolia** to begin thisinteractive tutorial.
+
+1. Follow the **Quickstart Assistant** prompts. You can use your data, the data provided by the assistant, or import [the data](https://github.com/algolia/datasets/blob/master/ecommerce/records.json) used in the ['Bootstrap' tutorial](#create-a-bootstrapped-search-project).
+1. Click on **Indices** in the dashboard's sidebar menu, click the **UI Demos** tab, and then the **Generate a UI demo** button.
+1. Complete the fields you require and **Save**.
+1. Click the _eye icon_ next to your newly saved demo to preview it.
+
+## Try the onboardong tutorial
+
+The two-minute [interactive tutorial](https://www.algolia.com/doc/onboarding/) walks you through the steps required to build an Algolia user interface.
+It covers choosing a dataset, sending that data to Algolia, examining the effect of changing relevance, and building a user interface.
+
+## Create a "bootstrapped" search project
+
+For each library supported by Algolia, there is a 'bootstrap' tutorial that takes you through the following:
+
+1. Installing and initializing the pre-built project
+1. Adding code to display a user interface: a search box with highlighted results
+1. Adding more elements to the UI: filters and pagination
+1. Adding more information and styling to search results.
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/getting-started/android/" horizontal="true">
+    Android
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/getting-started/flutter/" horizontal="true">
+    Fliutter
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/getting-started/ios/" horizontal="true">
+    iOS
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/getting-started/js/" horizontal="true">
+    JavaScript
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/getting-started/react/" horizontal="true">
+    React
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/getting-started/vue/" horizontal="true">
+    Vue
+  </Card>
+</CardGroup>
+
+Once you have explored the bootstrap tutorial, try using _your_ data instead.
+It will help your overall implementation if you also consider how to measure the success of your Algolia implementation once it's live by understanding how to interpret [analytics, tweak relevance, and capture user insights](#analytics-relevance-and-insights).
+
+## Use your data
+
+In the preceding tutorials, you were probably using pre-built datasets. In reality, you need to transform your data into [an acceptable JSON format](/doc/guides/sending-and-managing-data/prepare-your-data/#algolia-records) and then send that data to Algolia using [an Algolia API client, no-code connector, CLI, Crawler, or dashboard)](/doc/guides/sending-and-managing-data/send-and-update-your-data/).
+
+<Note>
+    On a live site, you need to create a script to [update your index](/guides/sending-and-managing-data/send-and-update-your-data/how-to/incremental-updates/) whenever the site content changes: new material, edits, and deletions.
+    However, if you're using them, the no-code connector and Crawler will handle this synchronization for you.
+</Note>
+
+## Analytics, relevance, and insights
+
+Search relevance measures the accuracy of the relationship between the search query and the search results. Algolia has good relevance out of the box, thanks to its [ranking criteria](/doc/guides/managing-results/relevance-overview/in-depth/ranking-criteria/). The system also provides tools to help fine-tune your users' search experience. Of these, the most important ones are:
+
+- [Deciding which attributes you want to use for searching and in what order and manner to search them](/guides/managing-results/must-do/searchable-attributes/searchable-attributes/)
+- [Applying tweaks to improve the relevance for your specific needs using custom ranking](/guides/managing-results/must-do/custom-ranking/).
+
+### Use analytics to review the effectiveness of search
+
+[Review your analytics](https://www.algolia.com/doc/guides/search-analytics/overview/) for details such as popular and 'no results' phrases to verify that any changes you made to relevance have positively affected your users' behavior.
+These insights let you make informed decisions about adjusting searchable attributes, custom ranking, and other aspects of relevance.
+
+[Consider using A/B testing](https://www.algolia.com/doc/guides/ab-testing/what-is-ab-testing/) to compare one set of adjustments with another to see which performs best.
+
+### Insights: what happens after the search
+
+Often, search isn't a standalone goal: it's an aid to achieving broader aims.
+For example, the aim of an ecommerce site may be to increase sales, increase profits, or drive a particular product range.
+[By capturing user behavior](/guides/send-events/get-started/), you can see what happens _after_ they have performed a search and determine if the search implementation has helped achieve your goals.
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/getting-started/ecosystem/" horizontal="true">
+    Algolia's ecosystem helps connect your data and configure Algolia for your site or app.
+  </Card>
+  <Card title="Algolia Academy" icon="photo-film" href="https://academy.algolia.com/" horizontal="true">
+    Get up to speed with the core search concepts
+  </Card>
+  <Card title="Code Exchange" icon="globe-pointer" href="https://www.algolia.com/developers/code-exchange/" horizontal="true">
+    Take a look at some sample apps.
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/sending-and-managing-data/prepare-your-data/" horizontal="true">
+    Prepare your data
+  </Card>
+</CardGroup>

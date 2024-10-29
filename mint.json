@@ -29,13 +29,6 @@
     "name": "Home",
     "icon": "book-open"
   },
-  "anchors": [
-    {
-      "name": "Community",
-      "icon": "discord",
-      "url": "https://www.algolia.com"
-    }
-  ],
   "primaryTab": {
     "name": "Guides"
   },
@@ -51,18 +44,32 @@
     {
       "name": "API reference",
       "url": "api-reference"
+    },
+    {
+      "name": "Community",
+      "icon": "discord",
+      "url": "https://www.algolia.com"
     }
+  
   ],
   "navigation": [
     {
       "group": "Get started",
       "pages": [
-        "launchpad/get-started",
-        "launchpad/import-data",
-        "launchpad/design-results",
-        "launchpad/searchable-attributes",
-        "launchpad/relevancy",
-        "launchpad/implement-search"
+        "guides/getting-started/what-is-algolia",
+        "guides/getting-started/neuralsearch",
+        "guides/getting-started/how-algolia-works",
+        "guides/getting-started/ecosystem",
+        "guides/getting-started/features",
+        {
+          "group": "Quick start",
+          "pages": [
+            "guides/getting-started/quick-start/quick-start",
+            "guides/getting-started/quick-start/get-started-with-the-dashboard",
+            "guides/getting-started/quick-start/track-usage-and-performance-in-the-dashboard"
+          ]
+        },
+        "guides/getting-started/glossary"
       ]
     },
     {
