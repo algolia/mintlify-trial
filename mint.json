@@ -490,6 +490,29 @@
       ]
     },
     {
+      "group": "Algolia Recommend",
+      "pages": [
+          "guides/algolia-recommend/overview",
+          {
+              "group": "Upgrade",
+              "pages": [
+                  "guides/algolia-recommend/upgrade/recommend-js",
+                  "guides/algolia-recommend/upgrade/recommend-react"
+              ]
+          },
+          {
+              "group": "How to",
+              "pages": [
+                  "guides/algolia-recommend/how-to/csv-upload",
+                  "guides/algolia-recommend/how-to/set-up",
+                  "guides/algolia-recommend/how-to/looking-similar",
+                  "guides/algolia-recommend/how-to/recommend-rules",
+                  "guides/algolia-recommend/how-to/deduplication"
+              ]
+          }
+      ]
+    },
+    {
       "group": "Libraries",
       "pages": [
         "libraries/python"

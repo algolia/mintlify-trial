@@ -1,0 +1,1097 @@
+---
+title: Upgrade from Recommend React to React InstantSearch
+sidebarTitle: Recommend React
+description: |-
+  The Recommend widgets are part of React InstantSearch.
+  Learn how you can upgrade from Recommend React.
+---
+
+The components for displaying recommendations are part of React InstantSearch,
+starting with version 7.9.0.
+The Algolia JavaScript API client supports the Recommend API starting with
+version 4.23.2.
+With this, you can integrate recommendations seamlessly into your React InstantSearch app, without having to install additional packages.
+
+## Packages
+
+Add the `react-instantsearch` and `algoliasearch` packages to your project,
+and remove the `@algolia/recommend` and `@algolia/recommend-js` packages:
+
+```sh Shell
+yarn add algoliasearch react-instantsearch
+yarn remove @algolia/recommend-react @algolia/recommend
+# or
+npm install algoliasearch react-instantsearch
+npm uninstall @algolia/recommend-react @algolia/recommend
+```
+
+## Imports
+
+Import the Recommend components from React InstantSearch:
+
+```diff JSX
+- import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
++ import { FrequentlyBoughtTogether } from 'react-instantsearch';
+```
+
+Some imports are no longer available:
+
+- The `<TrendingFacets>` component
+- The `useTrendingFacets()` Hook
+- The `useRecommendations()` Hook
+- The `<Recommend>` context provider
+
+For more information, see [Components](#components) and [Hooks](#hooks).
+
+## Usage
+
+Recommend widget must be children of the `instantsearch component.
+Pass the API client and index name to the `InstantSearch` component:
+
+```diff JSX
+- import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
++ import { InstantSearch, FrequentlyBoughtTogether } from 'react-instantsearch';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+  function App() {
+    return (
++     <InstantSearch
++       searchClient={searchClient}
++       indexName="YOUR_INDEX_NAME"
++     >
+        <FrequentlyBoughtTogether
+-         recommendClient={recommendClient}
+-         indexName="YOUR_INDEX_NAME"
+          objectIDs={['5723537']}
+        />
++     </InstantSearch>
+    );
+  }
+```
+
+## Components
+
+| Recommend React | React InstantSearch | Changes |
+| --------------- | ------------------- | ------- |
+| `<FrequentlyBoughtTogether>` | `frequently-bought-together` | [Prop changes](#changes-for-frequentlyboughttogether) |
+| `<RelatedProducts>` | `related-products` | [Prop changes](#changes-for-relatedproducts) |
+| `<TrendingItems>` | `trending-items` | [Prop changes](#changes-for-trendingitems) |
+| `<TrendingFacets>` | Removed | [Alternative](#alternative-for-trendingfacets) |
+| `<LookingSimilar>` | `looking-similar` | [Prop changes](#changes-for-lookingsimilar) |
+| `<Recommend>` | Removed | [Alternative](#remove-recommend-context-provider) |
+
+### Changes for `<FrequentlyBoughtTogether>`
+
+#### Move `recommendClient` and `indexName` to `<InstantSearch>`
+
+The `frequently-bought-together` component no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JSX
+- import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
++ import { InstantSearch, FrequentlyBoughtTogether } from 'react-instantsearch';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+ function App() {
+   return (
++   <InstantSearch searchClient={searchClient} indexName="YOUR_INDEX_NAME">
+      <FrequentlyBoughtTogether
+-       recommendClient={recommendClient}
+-       indexName="YOUR_INDEX_NAME"
+      />
++   </InstantSearch>
+  );
+}
+```
+
+#### Replace `children` and `view` with the `layoutComponent` prop or the `useFrequentlyBoughtTogether()` Hook
+
+The `frequently-bought-together` component no longer provides `children` and `view` props.
+To fully customize the UI, use either the `layoutComponent` prop or the frequently-bought-together` Hook instead.
+
+##### Layout
+
+<Tabs>
+  <Tab title="children">
+    ```diff JSX
+      import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
+
+      function Recommendations() {
+        return (
+          <FrequentlyBoughtTogether
+            objectIDs={['5723537']}
+    +       layoutComponent={() => <div>{/* … */}</div>}
+    +     />
+    -       <div>{/* … */}</div>
+    -     </FrequentlyBoughtTogether>
+        );
+      }
+    ```
+  </Tab>
+  <Tab title="view">
+    ```diff JSX
+      import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
+
+      function Recommendations() {
+        return (
+          <FrequentlyBoughtTogether
+            objectIDs={['5723537']}
+    -       view={() => {
+    +       layoutComponent={() => {
+              return <div>{/* … */}</div>;
+            }}
+          />
+        );
+      }
+    ```
+  </Tab>
+</Tabs>
+
+##### Hook
+
+<Tabs>
+  <Tab title="children">
+    ```diff JSX
+    - import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
+    + import { useFrequentlyBoughtTogether } from 'react-instantsearch';
+
+      function Recommendations() {
+    +   const { items } = useFrequentlyBoughtTogether();
+
+        return (
+    -     <FrequentlyBoughtTogether objectIDs={['5723537']}>
+    -       <div>{/* … */}</div>
+    -     </FrequentlyBoughtTogether>
+    +     <CustomFrequentlyBoughtTogether objectIDs={['5723537']} />
+        );
+      }
+
+    + function CustomFrequentlyBoughtTogether(props) {
+    +   const { items } = useFrequentlyBoughtTogether(props);
+      
+    +   return <div>{/* … */}</div>;
+    + }
+    ```
+  </Tab>
+  <Tab title="view">
+    ```diff JSX
+    - import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
+    + import { useFrequentlyBoughtTogether } from 'react-instantsearch';
+
+      function Recommendations() {
+    +   const { items } = useFrequentlyBoughtTogether();
+
+        return (
+    -     <FrequentlyBoughtTogether
+    -       objectIDs={['5723537']}
+    -       view={() => {
+    -         return <div>{/* … */}</div>;
+    -       }}
+    -     />
+    +     <CustomFrequentlyBoughtTogether objectIDs={['5723537']} />
+        );
+      }
+
+    + function CustomFrequentlyBoughtTogether(props) {
+    +   const { items } = useFrequentlyBoughtTogether(props);
+      
+    +   return <div>{/* … */}</div>;
+    + }
+    ```
+  </Tab>
+</Tabs>
+
+#### Replace `fallbackComponent` with `emptyComponent`
+
+The `emptyComponent` prop replaces the `fallbackComponent` prop.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <FrequentlyBoughtTogether
+-     fallbackComponent={() => <p>No recommendations.</p>}
++     emptyComponent={() => <p>No recommendations.</p>}
+    />
+  );
+}
+```
+
+#### Replace `maxRecommendations` with `limit`
+
+The `limit` prop replaces the `maxRecommendations` prop.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <FrequentlyBoughtTogether
+-     maxRecommendations={3}
++     limit={3}
+    />
+  );
+}
+```
+
+#### Remove `environment`
+
+The `environment` prop is no longer needed.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <FrequentlyBoughtTogether
+-     environment={global}
+    />
+  );
+}
+```
+
+#### Replace `classNames`
+
+The `classNames` keys have changed.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <FrequentlyBoughtTogether
+      classNames={{
+        root: 'MyCustomFrequentlyBoughtTogether',
++       emptyRoot: 'MyCustomFrequentlyBoughtTogether-emptyRoot',
+        title: 'MyCustomFrequentlyBoughtTogether-title',
+        container: 'MyCustomFrequentlyBoughtTogether-container',
+        list: 'MyCustomFrequentlyBoughtTogether-list',
+        item: 'MyCustomFrequentlyBoughtTogether-item',
+      }}
+    />
+  );
+}
+```
+
+### Changes for `<RelatedProducts>`
+
+#### Move `recommendClient` and `indexName` to `<InstantSearch>`
+
+The `related-products` component no longer needs `recommendClient` and `indexName` props. Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JSX
+- import { RelatedProducts } from '@algolia/recommend-react';
++ import { InstantSearch, RelatedProducts } from 'react-instantsearch';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+ function App() {
+   return (
++   <InstantSearch searchClient={searchClient} indexName="YOUR_INDEX_NAME">
+      <RelatedProducts
+-       recommendClient={recommendClient}
+-       indexName="YOUR_INDEX_NAME"
+      />
++   </InstantSearch>
+  );
+}
+```
+
+#### Replace `children` and `view` with the `layoutComponent` prop or the `useRelatedProducts()` Hook
+
+The `related-products` component no longer provides `children` and `view` props.
+To fully customize the UI, use either the `layoutComponent` prop or the `related-products` Hook instead.
+
+##### Layout
+
+<Tabs>
+  <Tab title="children">
+    ```diff JSX
+      import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
+
+      function Recommendations() {
+        return (
+          <FrequentlyBoughtTogether
+            objectIDs={['5723537']}
+    +       layoutComponent={() => <div>{/* … */}</div>}
+    +     />
+    -       <div>{/* … */}</div>
+    -     </FrequentlyBoughtTogether>
+        );
+      }
+    ```
+  </Tab>
+  <Tab title="view">
+    ```diff JSX
+      import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
+
+      function Recommendations() {
+        return (
+          <FrequentlyBoughtTogether
+            objectIDs={['5723537']}
+    -       view={() => {
+    +       layoutComponent={() => {
+              return <div>{/* … */}</div>;
+            }}
+          />
+        );
+      }
+    ```
+  </Tab>
+</Tabs>
+
+##### Hook
+
+<Tabs>
+  <Tab title="children">
+    ```diff JSX
+    - import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
+    + import { useFrequentlyBoughtTogether } from 'react-instantsearch';
+
+      function Recommendations() {
+    +   const { items } = useFrequentlyBoughtTogether();
+
+        return (
+    -     <FrequentlyBoughtTogether objectIDs={['5723537']}>
+    -       <div>{/* … */}</div>
+    -     </FrequentlyBoughtTogether>
+    +     <CustomFrequentlyBoughtTogether objectIDs={['5723537']} />
+        );
+      }
+
+    + function CustomFrequentlyBoughtTogether(props) {
+    +   const { items } = useFrequentlyBoughtTogether(props);
+      
+    +   return <div>{/* … */}</div>;
+    + }
+    ```
+  </Tab>
+  <Tab title="view">
+    ```diff JSX
+    - import { FrequentlyBoughtTogether } from '@algolia/recommend-react';
+    + import { useFrequentlyBoughtTogether } from 'react-instantsearch';
+
+      function Recommendations() {
+    +   const { items } = useFrequentlyBoughtTogether();
+
+        return (
+    -     <FrequentlyBoughtTogether
+    -       objectIDs={['5723537']}
+    -       view={() => {
+    -         return <div>{/* … */}</div>;
+    -       }}
+    -     />
+    +     <CustomFrequentlyBoughtTogether objectIDs={['5723537']} />
+        );
+      }
+
+    + function CustomFrequentlyBoughtTogether(props) {
+    +   const { items } = useFrequentlyBoughtTogether(props);
+      
+    +   return <div>{/* … */}</div>;
+    + }
+    ```
+  </Tab>
+</Tabs>
+
+#### Replace `fallbackComponent` with `emptyComponent`
+
+The `emptyComponent` prop replaces the `fallbackComponent` prop.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <RelatedProducts
+-     fallbackComponent={() => <p>No recommendations.</p>}
++     emptyComponent={() => <p>No recommendations.</p>}
+    />
+  );
+}
+```
+
+#### Replace `maxRecommendations` with `limit`
+
+The `limit` prop replaces the `maxRecommendations` prop.
+
+The `related-products` component now takes an optional `maxRecommendations` prop which replaces `limit`.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <RelatedProducts
+-     maxRecommendations={3}
++     limit={3}
+    />
+  );
+}
+```
+
+#### Remove `environment`
+
+The `environment` prop is no longer needed.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <RelatedProducts
+-     environment={global}
+    />
+  );
+}
+```
+
+#### Replace `classNames`
+
+The `classNames` keys have changed.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <RelatedProducts
+      classNames={{
+        root: 'MyCustomRelatedProducts',
++       emptyRoot: 'MyCustomRelatedProducts-emptyRoot',
+        title: 'MyCustomRelatedProducts-title',
+        container: 'MyCustomRelatedProducts-container',
+        list: 'MyCustomRelatedProducts-list',
+        item: 'MyCustomRelatedProducts-item',
+      }}
+    />
+  );
+}
+```
+
+### Changes for `<TrendingItems>`
+
+#### Move `recommendClient` and `indexName` to `<InstantSearch>`
+
+The `trending-items` component no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JSX
+- import { TrendingItems } from '@algolia/recommend-react';
++ import { InstantSearch, TrendingItems } from 'react-instantsearch';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+ function App() {
+   return (
++   <InstantSearch searchClient={searchClient} indexName="YOUR_INDEX_NAME">
+      <TrendingItems
+-       recommendClient={recommendClient}
+-       indexName="YOUR_INDEX_NAME"
+      />
++   </InstantSearch>
+  );
+}
+```
+
+#### Replace `children` and `view` with the `layoutComponent` prop or the `useTrendingItems()` Hook
+
+The `trending-items` component no longer provides `children` and `view` props.
+To fully customize the UI, use either the `layoutComponent` prop or the `trending-items` Hook instead.
+
+##### Layout
+
+<Tabs>
+  <Tab title="children">
+     ```diff JSX
+      import { TrendingItems } from '@algolia/recommend-react';
+
+      function Recommendations() {
+        return (
+          <TrendingItems
+    +       layoutComponent={() => <div>{/* … */}</div>}
+    +     />
+    -       <div>{/* … */}</div>
+    -     </TrendingItems>
+        );
+      }
+    ```
+  </Tab>
+  <Tab title="view">
+     ```diff JSX
+      import { TrendingItems } from '@algolia/recommend-react';
+
+      function Recommendations() {
+        return (
+          <TrendingItems
+    -       view={() => {
+    +       layoutComponent={() => {
+              return <div>{/* … */}</div>;
+            }}
+          />
+        );
+      }
+    ```
+  </Tab>
+</Tabs>
+
+##### Hook
+
+<Tabs>
+  <Tab title="children">
+    ```diff JSX
+    - import { TrendingItems } from '@algolia/recommend-react';
+    + import { useTrendingItems } from 'react-instantsearch';
+
+      function Recommendations() {
+    +   const { items } = useTrendingItems();
+
+        return (
+    -     <TrendingItems>
+    -       <div>{/* … */}</div>
+    -     </TrendingItems>
+    +     <CustomTrendingItems />
+        );
+      }
+
+    + function CustomTrendingItems(props) {
+    +   const { items } = useTrendingItems(props);
+      
+    +   return <div>{/* … */}</div>;
+    + }
+    ```
+  </Tab>
+  <Tab title="view">
+     ```diff JSX
+    - import { TrendingItems } from '@algolia/recommend-react';
+    + import { useTrendingItems } from 'react-instantsearch';
+
+      function Recommendations() {
+    +   const { items } = useTrendingItems();
+
+        return (
+    -     <TrendingItems
+    -       view={() => {
+    -         return <div>{/* … */}</div>;
+    -       }}
+    -     />
+    +     <CustomTrendingItems />
+        );
+      }
+
+    + function CustomTrendingItems(props) {
+    +   const { items } = useTrendingItems(props);
+      
+    +   return <div>{/* … */}</div>;
+    + }
+    ```
+  </Tab>
+</Tabs>
+
+#### Replace `fallbackComponent` with `emptyComponent`
+
+The `emptyComponent` prop replaces the `fallbackComponent` prop.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <TrendingItems
+-     fallbackComponent={() => <p>No recommendations.</p>}
++     emptyComponent={() => <p>No recommendations.</p>}
+    />
+  );
+}
+```
+
+#### Replace `maxRecommendations` with `limit`
+
+The `limit` prop replaces the `maxRecommendations` prop.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <TrendingItems
+-     maxRecommendations={3}
++     limit={3}
+    />
+  );
+}
+```
+
+#### Remove `environment`
+
+The `environment` prop is no longer needed.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <TrendingItems
+-     environment={global}
+    />
+  );
+}
+```
+
+##### Replace `classNames`
+
+The `classNames` keys have changed.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <TrendingItems
+      classNames={{
+        root: 'MyCustomTrendingItems',
++       emptyRoot: 'MyCustomTrendingItems-emptyRoot',
+        title: 'MyCustomTrendingItems-title',
+        container: 'MyCustomTrendingItems-container',
+        list: 'MyCustomTrendingItems-list',
+        item: 'MyCustomTrendingItems-item',
+      }}
+    />
+  );
+}
+```
+
+### Alternative for `<TrendingFacets>`
+
+The `<TrendingFacets>` component isn't available in React InstantSearch.
+If you need it, use the `<TrendingFacets>` component from the deprecated Recommend React library.
+
+### Changes for `<LookingSimilar>`
+
+#### Move `recommendClient` and `indexName` to `<InstantSearch>`
+
+The `looking-similar` component no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JSX
+- import { LookingSimilar } from '@algolia/recommend-react';
++ import { InstantSearch, LookingSimilar } from 'react-instantsearch';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+ function App() {
+   return (
++   <InstantSearch searchClient={searchClient} indexName="YOUR_INDEX_NAME">
+      <LookingSimilar
+-       recommendClient={recommendClient}
+-       indexName="YOUR_INDEX_NAME"
+      />
++   </InstantSearch>
+  );
+}
+```
+
+#### Replace `children` and `view` with the `layoutComponent` prop or the `useLookingSimilar()` Hook
+
+The `looking-similar` component no longer provides `children` and `view` props.
+To fully customize the UI, use either the `layoutComponent` prop or the `looking-similar` Hook instead.
+
+##### Layout
+
+<Tabs>
+  <Tab title="children">
+     ```diff JSX
+      import { LookingSimilar } from '@algolia/recommend-react';
+
+      function Recommendations() {
+        return (
+          <LookingSimilar
+            objectIDs={['5723537']}
+    +       layoutComponent={() => <div>{/* … */}</div>}
+    +     />
+    -       <div>{/* … */}</div>
+    -     </LookingSimilar>
+        );
+      }
+    ```
+  </Tab>
+  <Tab title="view">
+    ```diff JSX
+      import { LookingSimilar } from '@algolia/recommend-react';
+
+      function Recommendations() {
+        return (
+          <LookingSimilar
+            objectIDs={['5723537']}
+    -       view={() => {
+    +       layoutComponent={() => {
+              return <div>{/* … */}</div>;
+            }}
+          />
+        );
+      }
+    ```
+  </Tab>
+</Tabs>
+
+##### Hook
+
+<Tabs>
+  <Tab title="children">
+     ```diff JSX
+    - import { LookingSimilar } from '@algolia/recommend-react';
+    + import { useLookingSimilar } from 'react-instantsearch';
+
+      function Recommendations() {
+    +   const { items } = useLookingSimilar();
+
+        return (
+    -     <LookingSimilar objectIDs={['5723537']}>
+    -       <div>{/* … */}</div>
+    -     </LookingSimilar>
+    +     <CustomLookingSimilar objectIDs={['5723537']} />
+        );
+      }
+
+    + function CustomLookingSimilar(props) {
+    +   const { items } = useLookingSimilar(props);
+      
+    +   return <div>{/* … */}</div>;
+    + }
+    ```
+  </Tab>
+  <Tab title="view">
+    ```diff JSX
+    - import { LookingSimilar } from '@algolia/recommend-react';
+    + import { useLookingSimilar } from 'react-instantsearch';
+
+      function Recommendations() {
+    +   const { items } = useLookingSimilar();
+
+        return (
+    -     <LookingSimilar
+    -       objectIDs={['5723537']}
+    -       view={() => {
+    -         return <div>{/* … */}</div>;
+    -       }}
+    -     />
+    +     <CustomLookingSimilar objectIDs={['5723537']} />
+        );
+      }
+
+    + function CustomLookingSimilar(props) {
+    +   const { items } = useLookingSimilar(props);
+      
+    +   return <div>{/* … */}</div>;
+    + }
+    ```
+  </Tab>
+</Tabs>
+
+#### Replace `fallbackComponent` with `emptyComponent`
+
+The `emptyComponent` prop replaces the `fallbackComponent` prop.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <LookingSimilar
+-     fallbackComponent={() => <p>No recommendations.</p>}
++     emptyComponent={() => <p>No recommendations.</p>}
+    />
+  );
+}
+```
+
+#### Replace `maxRecommendations` with `limit`
+
+The `limit` prop replaces the `maxRecommendations` prop.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <LookingSimilar
+-     maxRecommendations={3}
++     limit={3}
+    />
+  );
+}
+```
+
+#### Remove `environment`
+
+The `environment` prop is no longer needed.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <LookingSimilar
+-     environment={global}
+    />
+  );
+}
+```
+
+#### Replace `classNames`
+
+The `classNames` keys have changed.
+
+```diff JSX
+function Recommendations() {
+  return (
+    <LookingSimilar
+      classNames={{
+        root: 'MyCustomLookingSimilar',
++       emptyRoot: 'MyCustomLookingSimilar-emptyRoot',
+        title: 'MyCustomLookingSimilar-title',
+        container: 'MyCustomLookingSimilar-container',
+        list: 'MyCustomLookingSimilar-list',
+        item: 'MyCustomLookingSimilar-item',
+      }}
+    />
+  );
+}
+```
+
+## Hooks
+
+| Recommend React | React InstantSearch | Changes |
+| --------------- | ------------------- | ------- |
+| `useFrequentlyBoughtTogether()` | `frequently-bought-together` | [Prop changes](#changes-for-usefrequentlyboughttogether) |
+| `useRelatedProducts()` | `related-products` | [Prop changes](#changes-for-userelatedproducts) |
+| `useTrendingItems()` | `trending-items` | [Prop changes](#changes-for-usetrendingitems) |
+| `useTrendingFacets()` | Removed | [Alternative](#alternative-for-usetrendingfacets) |
+| `useLookingSimilar()` | `looking-similar` | [Prop changes](#changes-for-uselookingsimilar) |
+| `useRecommendations()` | Removed | [Alternative](#alternative-for-userecommendations) |
+
+### Changes for `useFrequentlyBoughtTogether()`
+
+#### Move `recommendClient` and `indexName` to `<InstantSearch>`
+
+The `frequently-bought-together` Hook no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JSX
+ - import { useFrequentlyBoughtTogether } from '@algolia/recommend-react';
+ + import { InstantSearch, useFrequentlyBoughtTogether } from 'react-instantsearch';
+ - import recommend from '@algolia/recommend';
+ + import algoliasearch from 'algoliasearch/lite';
+
+ - const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
+ + const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+  function App() {
+    return (
+ +    <InstantSearch searchClient={searchClient} indexName="YOUR_INDEX_NAME">
+        <CustomFrequentlyBoughtTogether />
+ +    </InstantSearch>
+    );
+ }
+
+ function CustomFrequentlyBoughtTogether() {
+  const { items } = useFrequentlyBoughtTogether({
+-   recommendClient={recommendClient}
+-   indexName="YOUR_INDEX_NAME"
+  });
+ }
+```
+
+#### Replace `recommendations` with `items`
+
+The `frequently-bought-together` Hook returns recommendations under the `items` key instead of `recommendations`.
+
+```diff JSX
+ function CustomFrequentlyBoughtTogether() {
+  const {
+-   recommendations
++   items
+  } = useFrequentlyBoughtTogether();
+ }
+```
+
+### Changes for `useRelatedProducts()`
+
+#### Move `recommendClient` and `indexName` to `<InstantSearch>`
+
+The `related-products` Hook no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JSX
+ - import { useRelatedProducts } from '@algolia/recommend-react';
+ + import { InstantSearch, useRelatedProducts } from 'react-instantsearch';
+ - import recommend from '@algolia/recommend';
+ + import algoliasearch from 'algoliasearch/lite';
+
+ - const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
+ + const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+  function App() {
+    return (
+ +    <InstantSearch searchClient={searchClient} indexName="YOUR_INDEX_NAME">
+        <CustomRelatedProducts />
+ +    </InstantSearch>
+    );
+ }
+
+ function CustomRelatedProducts() {
+  const { items } = useRelatedProducts({
+-   recommendClient={recommendClient}
+-   indexName="YOUR_INDEX_NAME"
+  });
+ }
+```
+
+#### Replace `recommendations` with `items`
+
+The `related-products` Hook returns recommendations under the `items` key instead of `recommendations`.
+
+```diff JSX
+ function CustomRelatedProducts() {
+  const {
+-   recommendations
++   items
+  } = useRelatedProducts();
+ }
+```
+
+### Changes for `useTrendingItems()`
+
+#### Move `recommendClient` and `indexName` to `<InstantSearch>`
+
+The `trending-items` Hook no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JSX
+ - import { useTrendingItems } from '@algolia/recommend-react';
+ + import { InstantSearch, useTrendingItems } from 'react-instantsearch';
+ - import recommend from '@algolia/recommend';
+ + import algoliasearch from 'algoliasearch/lite';
+
+ - const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
+ + const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+  function App() {
+    return (
+ +    <InstantSearch searchClient={searchClient} indexName="YOUR_INDEX_NAME">
+        <CustomTrendingItems />
+ +    </InstantSearch>
+    );
+ }
+
+ function CustomTrendingItems() {
+  const { items } = useTrendingItems({
+-   recommendClient={recommendClient}
+-   indexName="YOUR_INDEX_NAME"
+  });
+ }
+```
+
+#### Replace `recommendations` with `items`
+
+The `trending-items` Hook returns recommendations under the `items` key instead of `recommendations`.
+
+```diff JSX
+ function CustomTrendingItems() {
+  const {
+-   recommendations
++   items
+  } = useTrendingItems();
+ }
+```
+
+### Alternative for `useTrendingFacets()`
+
+The `useTrendingFacets()` Hook isn't available in React InstantSearch.
+If you need it, use the [`useTrendingFacets()` Hook](/doc/deprecated/recommend/api-reference/recommend-react/useTrendingFacets/) from the deprecated Recommend React library.
+
+### Alternative for `useRecommendations()`
+
+The `useRecommendations()` Hook isn't available in React InstantSearch.
+Instead, use the [dedicated Hooks](#hooks) for each Recommend model.
+
+### Changes for `useLookingSimilar()`
+
+#### Move `recommendClient` and `indexName` to `<InstantSearch>`
+
+The `looking-similar` Hook no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JSX
+ - import { useLookingSimilar } from '@algolia/recommend-react';
+ + import { InstantSearch, useLookingSimilar } from 'react-instantsearch';
+ - import recommend from '@algolia/recommend';
+ + import algoliasearch from 'algoliasearch/lite';
+
+ - const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
+ + const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+  function App() {
+    return (
+ +    <InstantSearch searchClient={searchClient} indexName="YOUR_INDEX_NAME">
+        <CustomLookingSimilar />
+ +    </InstantSearch>
+    );
+ }
+
+ function CustomLookingSimilar() {
+  const { items } = useLookingSimilar({
+-   recommendClient={recommendClient}
+-   indexName="YOUR_INDEX_NAME"
+  });
+ }
+```
+
+#### Replace `recommendations` with `items`
+
+The `looking-similar` Hook returns recommendations under the `items` key instead of `recommendations`.
+
+```diff JSX
+ function CustomLookingSimilar() {
+  const {
+-   recommendations
++   items
+  } = useLookingSimilar();
+ }
+```
+
+### Remove `<Recommend>` context provider
+
+The `<Recommend>` context provider is no longer necessary to batch requests.
+Remove it from your implementation.
+
+```diff JSX
+- import { Recommend } from '@algolia/recommend-react';
+
+  function App() {
+    return (
+-     <Recommend recommendClient={recommendClient}>
+        {/* … */}
+-     </Recommend>
+    );
+  }
+```
+
+### `HorizontalSlider`
+
+The `HorizontalSlider` component is now available in React InstantSearch as the `Carousel` component.
+
+For `Carousel` props, check the API reference:
+
+- `<FrequentlyBoughtTogether>`
+- `<RelatedProducts>`
+- `<TrendingItems>`
+- `<LookingSimilar>`
+
+```jsx App.jsx
+import algoliasearch from 'algoliasearch/lite';
+import { InstantSearch, FrequentlyBoughtTogether, Carousel } from 'react-instantsearch';
+
+const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+function App() {
+    return (
+    <InstantSearch
+        searchClient={searchClient}
+        indexName="YOUR_INDEX_NAME"
+    >
+        <FrequentlyBoughtTogether
+        objectIDs={['5723537']}
+        layoutComponent={Carousel}
+        />
+    </InstantSearch>
+    );
+}

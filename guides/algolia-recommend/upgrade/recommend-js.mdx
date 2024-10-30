@@ -1,0 +1,852 @@
+---
+title: Upgrade from Recommend JS to InstantSearch.js
+sidebarTitle: Recommend JS
+description: |-
+  The Recommend widgets are part of InstantSearch.js.
+  Learn how you can upgrade from Recommend JS.
+---
+
+The widgets for displaying recommendations are part of InstantSearch.js,
+starting with version 4.69.0.
+The Algolia JavaScript API client supports the Recommend API starting with version 4.23.2.
+With this, you can integrate recommendations seamlessly into your InstantSearch app,
+without having to install additional packages.
+
+## Packages
+
+Add the `instantsearch.js` and `algoliasearch` packages to your project,
+and remove the `@algolia/recommend` and `@algolia/recommend-js` packages:
+
+```sh Shell
+yarn add algoliasearch instantsearch.js
+yarn remove @algolia/recommend-js @algolia/recommend
+# or
+npm install algoliasearch instantsearch.js
+npm uninstall @algolia/recommend-js @algolia/recommend
+```
+
+## Imports
+
+Import the Recommend widgets from InstantSearch.js:
+
+```diff JavaScript
+- import { frequentlyBoughtTogether } from '@algolia/recommend-js';
++ import { frequentlyBoughtTogether } from 'instantsearch.js/es/widgets';
+```
+
+<Warning>
+    The `trendingFacets` function is no longer available.
+    To replace it, see [widgets](#widgets).
+</Warning>
+
+## Usage
+
+Add the Recommend widgets to the `instantsearch` component.
+Pass the API client and index name to the `instantsearch` widget:
+
+```diff JavaScript
+- import { frequentlyBoughtTogether } from '@algolia/recommend-js';
++ import instantsearch from 'instantsearch.js';
++ import { frequentlyBoughtTogether } from 'instantsearch.js/es/widgets';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
++ const search = instantsearch({
++  searchClient,
++  indexName: 'YOUR_INDEX_NAME',
++ }).addWidgets([
+    frequentlyBoughtTogether({
+      container: '#frequentlyBoughtTogether',
+-     recommendClient,
+-     indexName: 'YOUR_INDEX_NAME',
+      objectIDs: ['5723537'],
+    });
++ ]);
++ search.start();
+```
+
+## Widgets
+
+| Recommend JS | InstantSearch.js | Changes |
+| ------------ | ---------------- | ------- |
+| `frequentlyBoughtTogether` | `frequently-bought-together` | [Prop changes](#changes-for-frequentlyboughttogether) |
+| `relatedProducts` | `related-products` | [Prop changes](#changes-for-relatedproducts) |
+| `trendingItems` | `trending-items`| [Prop changes](#changes-for-trendingitems) |
+| `trendingFacets` | Removed | [Alternative](#alternative-for-trendingfacets) |
+| `lookingSimilar` | `looking-similar` | [Prop changes](#changes-for-lookingsimilar) |
+
+
+### Changes for `frequentlyBoughtTogether`
+
+#### Move `recommendClient` and `indexName` to `instantsearch`
+
+The `frequently-bought-together` widget no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchClient` and the `ìndexName` to `instantsearch`.
+
+```diff JavaScript
+- import { frequentlyBoughtTogether } from '@algolia/recommend-js';
++ import instantsearch from 'instantsearch.js';
++ import { frequentlyBoughtTogether } from 'instantsearch.js/es/widgets';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
++ const search = instantsearch({
++  searchClient,
++  indexName: 'YOUR_INDEX_NAME',
++ }).addWidgets([
+    frequentlyBoughtTogether({
+      container: '#frequentlyBoughtTogether',
+-     recommendClient,
+-     indexName: 'YOUR_INDEX_NAME',
+      objectIDs: ['5723537'],
+    });
++ ]);
++ search.start();
+```
+
+#### Replace `view` with the `layout` template or the `connectFrequentlyBoughtTogether` connector
+
+The `frequently-bought-together` widget no longer provides a `view` prop.
+To fully customize the UI, use either the `layout` template or the `frequently-bought-together` connector instead.
+
+##### Layout template
+
+```diff JavaScript
+- import { frequentlyBoughtTogether } from '@algolia/recommend-js';
++ import { frequentlyBoughtTogether } from 'instantsearch.js/es/widgets';
+
+  frequentlyBoughtTogether({
+    container: '#frequentlyBoughtTogether',
+-   view: (props) => { /* ... */ },
++   templates: {
++     layout({ items }, { html }) {
++       // …
++     },
++   }
+  });
+```
+
+##### Connector
+
+```diff JavaScript
+- import { frequentlyBoughtTogether } from '@algolia/recommend-js';
++ import {
++   connectFrequentlyBoughtTogether,
++ } from 'instantsearch.js/es/connectors';
+
++ const customFrequentlyBoughtTogether = connectFrequentlyBoughtTogether(({ items, widgetParams }) => {
++   const container = document.querySelector(widgetParams.container);
++   container.innerHTML = `/* ... */`;
++ });
+
+- frequentlyBoughtTogether({
++ customFrequentlyBoughtTogether({
+    container: '#frequentlyBoughtTogether',
+-   view: (props) => { /* ... */ },
+  }),
+```
+
+#### Replace component props with `templates`
+
+The `frequently-bought-together` widget uses templates to customize specific parts of its UI.
+
+| Recommend JS         | InstantSearch.js     |
+| ---------------------| ---------------------|
+| `headerComponent`    | `header`             |
+| `itemComponent`      | `item`               |
+| `fallbackComponent`  | `empty`              |
+
+<Tabs>
+  <Tab title="headerComponent">
+    ```diff JavaScript
+    frequentlyBoughtTogether({
+    - headerComponent({ classNames, recommendations, html }) {
+    -   return html`<h2 class=${classNames.title}>
+    -     Recommendations (${recommendations.length})
+    -   </h2>`;
+    - },
+    + templates: {
+    +   header({ cssClasses, items }, { html }) {
+    +     return html`<h2 class=${cssClasses.title}>
+    +       Recommendations (${items.length})
+    +     </h2>`;
+    +   }
+    + },
+    });
+    ```
+  </Tab>
+  <Tab title="itemComponent">
+    ```diff JavaScript
+    frequentlyBoughtTogether({
+    - itemComponent({ item, html }) {
+    -   return html`<p>${item.name}</p>`;
+    - },
+    + templates: {
+    +   item(recommendation, { html }) {
+    +     return html`<p>${recommendation.name}</p>`;
+    +   }
+    + },
+    });
+    ```
+  </Tab>
+  <Tab title="fallbackComponent">
+    ```diff JavaScript
+    frequentlyBoughtTogether({
+    - fallbackComponent({ html }) {
+    + templates: {
+    +   empty(_, { html }) {
+          return html`<p>No recommendations.</p>`;
+    +   }
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### Replace `translations` with `templates`
+
+The `frequently-bought-together` widget uses templates to provide translations to the header.
+
+```diff JavaScript
+frequentlyBoughtTogether({
+- translations: {
+-   title: 'Recommendations',
+- },
++ templates: {
++   header: ({ cssClasses }, { html }) {
++     return html`<h2 class=${cssClasses.title}>Recommendations</h2>`;
++   },
++ },
+});
+```
+
+#### Replace `maxRecommendations` with `limit`
+
+The `limit` prop replaces the `maxRecommendations` prop.
+
+```diff JavaScript
+frequentlyBoughtTogether({
+- maxRecommendations: 3,
++ limit: 3,
+});
+```
+
+#### Remove `environment`
+
+The `environment` prop is no longer needed.
+
+```diff JavaScript
+frequentlyBoughtTogether({
+- environment: global,
+});
+```
+
+#### Replace `classNames` with `cssClasses`
+
+The `cssClasses` prop replaces the `classNames` prop.
+
+```diff JavaScript
+frequentlyBoughtTogether({
+- classNames: {
++ cssClasses: {
+    root: 'MyCustomFrequentlyBoughtTogether',
++   emptyRoot: 'MyCustomFrequentlyBoughtTogether-emptyRoot',
+    title: 'MyCustomFrequentlyBoughtTogether-title',
+    container: 'MyCustomFrequentlyBoughtTogether-container',
+    list: 'MyCustomFrequentlyBoughtTogether-list',
+    item: 'MyCustomFrequentlyBoughtTogether-item',
+  },
+});
+```
+
+### Changes for `relatedProducts`
+
+#### Move `recommendClient` and `indexName` to `instantsearch`
+
+The `related-products` widget no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JavaScript
+- import { relatedProducts } from '@algolia/recommend-js';
++ import instantsearch from 'instantsearch.js';
++ import { relatedProducts } from 'instantsearch.js/es/widgets';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
++ const search = instantsearch({
++  searchClient,
++  indexName: 'YOUR_INDEX_NAME',
++ }).addWidgets([
+    relatedProducts({
+      container: '#relatedProducts',
+-     recommendClient,
+-     indexName: 'YOUR_INDEX_NAME',
+      objectIDs: ['5723537'],
+    });
++ ]);
++ search.start();
+```
+
+#### Replace `view` with the `layout` template or the `connectRelatedProducts` connector
+
+The `related-products` widget no longer provides a `view` prop.
+To fully customize the UI, use either the `layout` template or the `related-products` connector instead.
+
+##### Layout template
+
+```diff JavaScript
+- import { relatedProducts } from '@algolia/recommend-js';
++ import { relatedProducts } from 'instantsearch.js/es/widgets';
+
+  relatedProducts({
+    container: '#relatedProducts',
+-   view: (props) => { /* ... */ },
++   templates: {
++     layout({ items }, { html }) {
++       // …
++     },
++   }
+  });
+```
+
+##### Connector
+
+```diff JavaScript
+- import { relatedProducts } from '@algolia/recommend-js';
++ import {
++   connectRelatedProducts,
++ } from 'instantsearch.js/es/connectors';
+
++ const customRelatedProducts = connectRelatedProducts(({ items, widgetParams }) => {
++   const container = document.querySelector(widgetParams.container);
++   container.innerHTML = `/* ... */`;
++ });
+
+- relatedProducts({
++ customRelatedProducts({
+    container: '#relatedProducts',
+-   view: (props) => { /* ... */ },
+  }),
+```
+
+#### Replace component props with `templates`
+
+The `related-products` widget uses templates to customize specific parts of its UI.
+
+| Recommend JS         | InstantSearch.js     |
+| ---------------------| ---------------------|
+| `headerComponent`    | `header`             |
+| `itemComponent`      | `item`               |
+| `fallbackComponent`  | `empty`              |
+
+<Tabs>
+  <Tab title="headerComponent">
+    ```diff JavaScript
+    relatedProducts({
+    - headerComponent({ classNames, recommendations, html }) {
+    -   return html`<h2 class=${classNames.title}>
+    -     Recommendations (${recommendations.length})
+    -   </h2>`;
+    - },
+    + templates: {
+    +   header({ cssClasses, items }, { html }) {
+    +     return html`<h2 class=${cssClasses.title}>
+    +       Recommendations (${items.length})
+    +     </h2>`;
+    +   }
+    + },
+    });
+    ```
+  </Tab>
+  <Tab title="itemComponent">
+    ```diff JavaScript
+    relatedProducts({
+    - itemComponent({ item, html }) {
+    -   return html`<p>${item.name}</p>`;
+    - },
+    + templates: {
+    +   item(recommendation, { html }) {
+    +     return html`<p>${recommendation.name}</p>`;
+    +   }
+    + },
+    });
+    ```
+  </Tab>
+  <Tab title="fallbackComponent">
+    ```diff JavaScript
+    relatedProducts({
+    - fallbackComponent({ html }) {
+    + templates: {
+    +   empty(_, { html }) {
+          return html`<p>No recommendations.</p>`;
+    +   }
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### Replace `translations` with `templates`
+
+The `related-products` widget uses templates to provide translations to the header.
+
+```diff JavaScript
+relatedProducts({
+- translations: {
+-   title: 'Recommendations',
+- },
++ templates: {
++   header: ({ cssClasses }, { html }) {
++     return html`<h2 class=${cssClasses.title}>Recommendations</h2>`;
++   },
++ },
+});
+```
+
+#### Replace `maxRecommendations` with `limit`
+
+The `limit` prop replaces the `maxRecommendations` prop.
+
+```diff JavaScript
+relatedProducts({
+- maxRecommendations: 3,
++ limit: 3,
+});
+```
+
+#### Remove `environment`
+
+The `environment` prop is no longer needed.
+
+```diff JavaScript
+relatedProducts({
+- environment: global,
+});
+```
+
+#### Replace `classNames` with `cssClasses`
+
+The `cssClasses` prop replaces the `classNames` prop.
+
+```diff JavaScript
+relatedProducts({
+- classNames: {
++ cssClasses: {
+    root: 'MyCustomRelatedProducts',
++   emptyRoot: 'MyCustomRelatedProducts-emptyRoot',
+    title: 'MyCustomRelatedProducts-title',
+    container: 'MyCustomRelatedProducts-container',
+    list: 'MyCustomRelatedProducts-list',
+    item: 'MyCustomRelatedProducts-item',
+  },
+});
+```
+
+### Changes for `trendingItems`
+
+#### Move `recommendClient` and `indexName` to `instantsearch`
+
+The `trending-items` widget no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchClient` and the `ìndexName` to `instantsearch`.
+
+```diff JavaScript
+- import { trendingItems } from '@algolia/recommend-js';
++ import instantsearch from 'instantsearch.js';
++ import { trendingItems } from 'instantsearch.js/es/widgets';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
++ const search = instantsearch({
++  searchClient,
++  indexName: 'YOUR_INDEX_NAME',
++ }).addWidgets([
+    trendingItems({
+      container: '#trendingItems',
+-     recommendClient,
+-     indexName: 'YOUR_INDEX_NAME',
+    });
++ ]);
++ search.start();
+```
+
+#### Replace `view` with the `layout` template or the `connectTrendingItems` connector
+
+The `trending-items` widget no longer provides a `view` prop.
+To fully customize the UI, use either the `layout` template or the `trending-items` connector instead.
+
+##### Layout template
+
+```diff JavaScript
+- import { trendingItems } from '@algolia/recommend-js';
++ import { trendingItems } from 'instantsearch.js/es/widgets';
+
+  trendingItems({
+    container: '#trendingItems',
+-   view: (props) => { /* ... */ },
++   templates: {
++     layout({ items }, { html }) {
++       // …
++     },
++   }
+  });
+```
+
+##### Connector
+
+```diff JavaScript
+- import { trendingItems } from '@algolia/recommend-js';
++ import {
++   connectTrendingItems,
++ } from 'instantsearch.js/es/connectors';
+
++ const customTrendingItems = connectTrendingItems(({ items, widgetParams }) => {
++   const container = document.querySelector(widgetParams.container);
++   container.innerHTML = `/* ... */`;
++ });
+
+- trendingItems({
++ customTrendingItems({
+    container: '#trendingItems',
+-   view: (props) => { /* ... */ },
+  }),
+```
+
+#### Replace component props with `templates`
+
+The `trending-items` widget uses templates to customize specific parts of its UI.
+
+| Recommend JS         | InstantSearch.js     |
+| ---------------------| ---------------------|
+| `headerComponent`    | `header`             |
+| `itemComponent`      | `item`               |
+| `fallbackComponent`  | `empty`              |
+
+<Tabs>
+  <Tab title="headerComponent">
+     ```diff JavaScript
+    trendingItems({
+    - headerComponent({ classNames, recommendations, html }) {
+    -   return html`<h2 class=${classNames.title}>
+    -     Recommendations (${recommendations.length})
+    -   </h2>`;
+    - },
+    + templates: {
+    +   header({ cssClasses, items }, { html }) {
+    +     return html`<h2 class=${cssClasses.title}>
+    +       Recommendations (${items.length})
+    +     </h2>`;
+    +   }
+    + },
+    });
+    ```
+  </Tab>
+  <Tab title="itemComponent">
+    ```diff JavaScript
+    trendingItems({
+    - itemComponent({ item, html }) {
+    -   return html`<p>${item.name}</p>`;
+    - },
+    + templates: {
+    +   item(recommendation, { html }) {
+    +     return html`<p>${recommendation.name}</p>`;
+    +   }
+    + },
+    });
+    ```
+  </Tab>
+  <Tab title="fallbackComponent">
+     ```diff JavaScript
+    trendingItems({
+    - fallbackComponent({ html }) {
+    + templates: {
+    +   empty(_, { html }) {
+          return html`<p>No recommendations.</p>`;
+    +   }
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### Replace `translations` with `templates`
+
+The `trending-items` widget uses templates to provide translations to the header.
+
+```diff JavaScript
+trendingItems({
+- translations: {
+-   title: 'Recommendations',
+- },
++ templates: {
++   header: ({ cssClasses }, { html }) {
++     return html`<h2 class=${cssClasses.title}>Recommendations</h2>`;
++   },
++ },
+});
+```
+
+#### Replace `maxRecommendations` with `limit`
+
+The `limit` prop replaces the `maxRecommendations` prop.
+
+```diff JavaScript
+trendingItems({
+- maxRecommendations: 3,
++ limit: 3,
+});
+```
+
+#### Remove `environment`
+
+The `environment` prop is no longer needed.
+
+```diff JavaScript
+trendingItems({
+- environment: global,
+});
+```
+
+#### Replace `classNames` with `cssClasses`
+
+The `cssClasses` prop replaces the `classNames` prop.
+
+```diff JavaScript
+trendingItems({
+- classNames: {
++ cssClasses: {
+    root: 'MyCustomTrendingItems',
++   emptyRoot: 'MyCustomTrendingItems-emptyRoot',
+    title: 'MyCustomTrendingItems-title',
+    container: 'MyCustomTrendingItems-container',
+    list: 'MyCustomTrendingItems-list',
+    item: 'MyCustomTrendingItems-item',
+  },
+});
+```
+
+### Alternative for `trendingFacets`
+
+InstantSearch.js doesn't include a widget for `trendingFacets`.
+If you need it, use the [`trendingFacets` function](/doc/deprecated/recommend/api-reference/recommend-js/trendingFacets/)
+from the deprecated Recommend JS library.
+
+### Changes for `lookingSimilar`
+
+#### Move `recommendClient` and `indexName` to `instantsearch`
+
+The `looking-similar` widget no longer needs `recommendClient` and `indexName` props.
+Instead, pass a `searchChlient` and the `ìndexName` to `instantsearch`.
+
+```diff JavaScript
+- import { lookingSimilar } from '@algolia/recommend-js';
++ import instantsearch from 'instantsearch.js';
++ import { lookingSimilar } from 'instantsearch.js/es/widgets';
+- import recommend from '@algolia/recommend';
++ import algoliasearch from 'algoliasearch/lite';
+
+- const recommendClient = recommend('YourApplicationID', 'YourSearchOnlyAPIKey');
++ const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
++ const search = instantsearch({
++  searchClient,
++  indexName: 'YOUR_INDEX_NAME',
++ }).addWidgets([
+    lookingSimilar({
+      container: '#lookingSimilar',
+-     recommendClient,
+-     indexName: 'YOUR_INDEX_NAME',
+      objectIDs: ['5723537'],
+    });
++ ]);
++ search.start();
+```
+
+#### Replace `view` with the `layout` template or the `connectLookingSimilar` connector
+
+The `looking-similar` widget no longer provides a `view` prop.
+To fully customize the UI, use either the `layout` template or the `looking-similar` connector instead.
+
+##### Layout template
+
+```diff JavaScript
+- import { lookingSimilar } from '@algolia/recommend-js';
++ import { lookingSimilar } from 'instantsearch.js/es/widgets';
+
+  lookingSimilar({
+    container: '#lookingSimilar',
+-   view: (props) => { /* ... */ },
++   templates: {
++     layout({ items }, { html }) {
++       // …
++     },
++   }
+  });
+```
+
+##### Connector
+
+```diff JavaScript
+- import { lookingSimilar } from '@algolia/recommend-js';
++ import {
++   connectLookingSimilar,
++ } from 'instantsearch.js/es/connectors';
+
++ const customLookingSimilar = connectLookingSimilar(({ items, widgetParams }) => {
++   const container = document.querySelector(widgetParams.container);
++   container.innerHTML = `/* ... */`;
++ });
+
+- lookingSimilar({
++ customLookingSimilar({
+    container: '#lookingSimilar',
+-   view: (props) => { /* ... */ },
+  }),
+```
+
+#### Replace component props with `templates`
+
+The `looking-similar` widget uses templates to customize specific parts of its UI.
+
+| Recommend JS         | InstantSearch.js     |
+| ---------------------| ---------------------|
+| `headerComponent`    | `header`             |
+| `itemComponent`      | `item`               |
+| `fallbackComponent`  | `empty`              |
+
+<Tabs>
+  <Tab title="headerComponent">
+     ```diff JavaScript
+    lookingSimilar({
+    - headerComponent({ classNames, recommendations, html }) {
+    -   return html`<h2 class=${classNames.title}>
+    -     Recommendations (${recommendations.length})
+    -   </h2>`;
+    - },
+    + templates: {
+    +   header({ cssClasses, items }, { html }) {
+    +     return html`<h2 class=${cssClasses.title}>
+    +       Recommendations (${items.length})
+    +     </h2>`;
+    +   }
+    + },
+    });
+    ```
+  </Tab>
+  <Tab title="itemComponent">
+    ```diff JavaScript
+    lookingSimilar({
+    - itemComponent({ item, html }) {
+    -   return html`<p>${item.name}</p>`;
+    - },
+    + templates: {
+    +   item(recommendation, { html }) {
+    +     return html`<p>${recommendation.name}</p>`;
+    +   }
+    + },
+    });
+    ```
+  </Tab>
+  <Tab title="fallbackComponent">
+      ```diff JavaScript
+    lookingSimilar({
+    - fallbackComponent({ html }) {
+    + templates: {
+    +   empty(_, { html }) {
+          return html`<p>No recommendations.</p>`;
+    +   }
+      },
+    });
+    ```
+  </Tab>
+</Tabs>
+
+#### Replace `translations` with `templates`
+
+The `looking-similar` widget uses templates to provide translations to the header.
+
+```diff JavaScript
+lookingSimilar({
+- translations: {
+-   title: 'Recommendations',
+- },
++ templates: {
++   header: ({ cssClasses }, { html }) {
++     return html`<h2 class=${cssClasses.title}>Recommendations</h2>`;
++   },
++ },
+});
+```
+
+#### Replace `maxRecommendations` with `limit`
+
+The `limit` prop replaces the `maxRecommendations` prop.
+
+```diff JavaScript
+lookingSimilar({
+- maxRecommendations: 3,
++ limit: 3,
+});
+```
+
+#### Remove `environment`
+
+The `environment` prop is no longer needed.
+
+```diff JavaScript
+lookingSimilar({
+- environment: global,
+});
+```
+
+##### Replace `classNames` with `cssClasses`
+
+The `classNames` keys have changed and are defined through the `cssClasses` prop.
+
+```diff JavaScript
+lookingSimilar({
+- classNames: {
++ cssClasses: {
+    root: 'MyCustomLookingSimilar',
++   emptyRoot: 'MyCustomLookingSimilar-emptyRoot',
+    title: 'MyCustomLookingSimilar-title',
+    container: 'MyCustomLookingSimilar-container',
+    list: 'MyCustomLookingSimilar-list',
+    item: 'MyCustomLookingSimilar-item',
+  },
+});
+```
+
+### `horizontalSlider`
+
+The `horizontalSlider` view is now available in InstantSearch.js as a `carousel` template.
+
+For carousel options, check the API reference:
+
+- `frequentlyBoughtTogether`
+- `relatedProducts`
+- `trendingItems
+- `lookingSimilar`
+
+```js JavaScript
+import { frequentlyBoughtTogether } from 'instantsearch.js/es/widgets';
+import { carousel } from 'instantsearch.js/es/templates';
+
+frequentlyBoughtTogether({
+    // ...
+    templates: {
+    layout: carousel(),
+    },
+});
+```
