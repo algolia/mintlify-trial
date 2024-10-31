@@ -39,17 +39,23 @@ The model has the following limitations:
 
 Start by selecting an application with AI Recommendations enabled.
 
-1. Go to the [Algolia dashboard](https://dashboard.algolia.com/recommend) and select your Algolia application.
-1. On the left sidebar, select ![Recommend icon](/images/recommend-product-icon.svg) **Recommend**.
-1. In the **Looking similar** section, click **Start using**.
+import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
+
+<RecommendDashboard />
+
+<Steps>
+  <Step title="Select the model" stepNumber="3">
+    In the **Looking similar** section, click **Start using**.
 
     ![Start using the Looking Similar model](/images/recommend/select-ls-model.png)
-
-1. Select an index with image URLs you want to use as the data source.
+  </Step>
+  <Step title="Select source">
+    Select an index with image URLs you want to use as the data source.
 
     ![Select index to use as data source for training the model](/images/recommend/select-index-ls.png)
-
-1. Select up to three image attributes. The recommended items will be sorted by the **best score**.
+  </Step>
+  <Step title="Select image attributes">
+    Select up to three image attributes. The recommended items will be sorted by the **best score**.
 
     ![Select the image attributes to use for training the Looking Similar model](/images/recommend/select-img-attr-ls.png)
 
@@ -58,10 +64,13 @@ Start by selecting an application with AI Recommendations enabled.
         from attributes with several values, such as `rentalHomeImages`, or from several attributes,
         such as `productImage`, `userProvidedProductImage`.
     </Note>
-
-1. Start training the model by clicking **Start training**.
+  </Step>
+  <Step title="Start training">
+    To begin model training, click **Start training**.
 
     ![Start training Looking Similar model](/images/recommend/start-training-ls.png)
+  </Step>
+</Steps>
 
 ## Check the training results
 

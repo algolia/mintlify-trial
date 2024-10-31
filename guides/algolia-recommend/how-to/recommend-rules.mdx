@@ -40,9 +40,13 @@ Examples for rules include:
 
 ## Add rules to recommendations
 
-1. Go to the [Algolia dashboard](https://dashboard.algolia.com/recommend) and select your Algolia application.
-1. On the left sidebar, select ![Recommend icon](/images/recommend-product-icon.svg) **Recommend**.
-1. On the [**Rules**](https://dashboard.algolia.com/recommend/rules) page,
+import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
+
+<RecommendDashboard />
+
+<Steps>
+  <Step title="Select a index and model for the rules" stepNumber="3">
+    On the [**Rules**](https://dashboard.algolia.com/recommend/rules) page,
    select the index and model to which you want to apply rules.
 
    ![Select the trained Recommend model to which you want to apply recommendations](/images/recommend/rules-overview.png)
@@ -50,18 +54,21 @@ Examples for rules include:
     <Note>
         You can apply rules to trained Frequently Bought Together and Related Product models.
     </Note>
-
-1. Click **+ New rule** and select the conditions when the rule should apply.
+  </Step>
+  <Step title="Select rule conditions">
+    Click **+ New rule** and select the conditions when the rule should apply.
 
    - **Any item is a source item.** The consequences of this rule apply to all recommendations.
    - **Specific item is viewed.** The consequences of this rule apply only when recommendations for a specific item are retrieved.
    - **Subset of source items.** The consequences of this rule apply to items that match a filter.
-
-1. Optional: add a context for this rule.
-   Contexts are additional constraints for rules.
-   For more information, see [Context-only rules](/guides/managing-results/rules/rules-overview/#context-only-rules).
-
-1. Under **Consequence(-s)**, click **Add consequence** and select what to do when the conditions are met:
+  </Step>
+  <Step title="Optional: add a rule context">
+    Add a context for this rule.
+    Contexts are additional constraints for rules.
+    For more information, see [Context-only rules](/guides/managing-results/rules/rules-overview/#context-only-rules).
+  </Step>
+  <Step title="Add consequences">
+    Under **Consequence(-s)**, click **Add consequence** and select what to do when the conditions are met:
 
     - **Pin items**. Put one or more selected items at a specific position in the list of recommendations (`1` is first)
     - **Hide items**. Exclude one or more selected items from the list of recommendations.
@@ -72,8 +79,11 @@ Examples for rules include:
     To only show items with the same attribute value as the viewed item, set the value to `sameAsViewedItem`.
 
     ![The filter items consequence with the sameAsViewedItem option selected](/images/recommend/rules-same-as-viewed.png)
-
-1. Optional: add a description for the rule and select a timeframe, when the rule should be active.
+  </Step>
+  <Step title="Optional: describe rule">
+    Add a description for the rule and select a timeframe when the rule should be active.
+  </Step>
+</Steps>
 
 ## Rules precedence algorithm
 

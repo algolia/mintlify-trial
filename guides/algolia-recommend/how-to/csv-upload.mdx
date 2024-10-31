@@ -46,16 +46,25 @@ For more information, see [Send events properties](https://www.algolia.com/doc/r
 
 To import historical events from a CSV file, follow these steps:
 
-1. Go to the [Algolia dashboard](https://dashboard.algolia.com/recommend) and select your Algolia application.
-1. On the left sidebar, select ![Recommend icon](/images/recommend-product-icon.svg) **Recommend**.
-1. Select a model you want to train and click **Start using**.
-1. In the **Select data source** section, select an Algolia index as a source for your recommendations.
-1. In the **Collect events** section, click **Upload .csv** to upload your CSV file with the historical events.
+import Dashboard from '/snippets/recommend/dashboard.mdx';
+
+<Dashboard />
+<Steps>
+  <Step title="Select model" stepNumber="3">
+    Select a model you want to train and click **Start using**.
+  </Step>
+  <Step title="Select source">
+    In the **Select data source** section, select an Algolia index as a source for your recommendations.
+  </Step>
+  <Step title="Select source">
+    In the **Collect events** section, click **Upload .csv** to upload your CSV file with the historical events.
 
     ![Import a CSV file with historical events for training your Recommend model](/images/recommend/csv-upload.png)
+  </Step>
+</Steps>
 
-Once you collected enough [click and conversion events](/guides/send-events/get-started/),
-Algolia Recommend only uses those events for training the model and discards the events from the CSV file.
+Once you've collected enough [click and conversion events](/guides/send-events/get-started/),
+Algolia Recommend will only use those events for training the model and discards the events from the CSV file.
 
 You can also **re-upload a CSV file**.
 The training only takes the newer file into account and discards the old events.

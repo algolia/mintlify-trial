@@ -40,36 +40,61 @@ After that, verify that the recommendations have been deduplicated.
 
 First, choose which attribute defines records as variants:
 
-1. Go to the [Algolia dashboard](https://dashboard.algolia.com/recommend) and select your Algolia application.
-1. On the left sidebar, select ![Recommend icon](/images/recommend-product-icon.svg) **Recommend**.
-1. On the [**Configuration**](<%= dashboard_link('explorer/configuration/deduplication-and-grouping') %>) tab, go to the **Deduplication and Grouping** page.
-1. In the **Attribute for Distinct** box, select or enter the attribute name you want to use to define variants.
+import Dashboard from '/snippets/dashboard.mdx';
+
+<Dashboard />
+
+<Steps>
+  <Step title="Select deduplication" stepNumber="4">
+    On the **Configuration* tab, go to the [Deduplication and Grouping](https://dashboard.algolia.com/explorer/configuration/deduplication-and-grouping) page.
+  </Step>
+  <Step title="Define variants">
+    In the **Attribute for Distinct** box, select or enter the attribute name you want to use to define variants.
 
     ![Set `attributeForDistinct` in your index settings](/images/recommend/deduplication-attribute-for-distinct.png)
 
-<Note>
-    Only use the `distinct` option if you also want to [deduplicate search results](/guides/managing-results/refine-results/grouping/#introducing-algolias-distinct-feature).
-</Note>
+    <Note>
+        Only use the `distinct` option if you also want to [deduplicate search results](/guides/managing-results/refine-results/grouping/#introducing-algolias-distinct-feature).
+    </Note>
+  </Step>
+</Steps>
 
 ### Enable Recommend deduplication on your model
 
-1. Go to the [Algolia dashboard](https://dashboard.algolia.com/recommend) and select your Algolia application.
-1. On the left sidebar, select ![Recommend icon](/images/recommend-product-icon.svg) **Recommend**.
-1. Create a new Recommend model or edit an existing one for the index you used when setting the `attributeForDistinct`.
-1. In the section **Distinct and deduplication of recommendations**, select the **Deduplicate recommendations** option. The attribute you selected for defining variants is shown.
-1. Continue to configure your Recommend model and click **Save**.
+import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
+
+<RecommendDashboard />
+
+<Steps>
+  <Step title="Select a model" stepNumber="3">
+    Create a new Recommend model or edit an existing one for the index you used when setting the `attributeForDistinct`.
+  </Step>
+  <Step title="Select deduplication">
+    In the section **Distinct and deduplication of recommendations**, select the **Deduplicate recommendations** option.
+    The attribute you selected for defining variants is shown.
+  </Step>
+  <Step title="Continue configuration">
+    Continue to configure your Recommend model and click **Save**.
 
     ![Enable deduplication in your model training configuration](/images/recommend/deduplication-toggle.png)
+  </Step>
+</Steps>
 
 ### Verify the recommendations
 
 To check that the deduplication is working for your recommendations, revisit the model configuration once the training process has finished:
 
-1. Go to the **Preview** section.
-1. Use the **Search for a record** box to search for an item that _should_ have variants.
+<Steps>
+  <Step title="Preview">
+    Go to the **Preview** section.
+  </Step>
+  <Step title="Check for duplicates">
+    Use the **Search for a record** box to search for an item that _should_ have variants.
 
-This displays the list of recommendations for the selected item.
-They shouldn't contain any variants.
+    This displays the list of recommendations for the selected item.
+    They shouldn't contain any variants.
+  </Step>
+</Steps>
 
 ## Examples
 

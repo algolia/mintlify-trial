@@ -58,42 +58,56 @@ If you collect enough events but still get an error that prevents you from start
 
 If you have enough events, you can start training the Recommend models.
 
-1. Go to the [Algolia dashboard](https://dashboard.algolia.com/recommend) and select your Algolia application.
-1. On the left sidebar, select ![Recommend icon](/images/recommend-product-icon.svg) **Recommend**.
-1. On the **Recommend** page, select the type of recommendations you want to generate and click **Start using**.
+import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
 
-    ![Select your Recommend model in the Algolia dashboard](/images/recommend/select-model.png)
+<RecommendDashboard />
 
-1. In the **Select data source** section, select an index you want to use as a source for recommendations.
-   By default, events associated with your data source index are used to train the model.
+<Steps>
+    <Step title="Select a model" stepNumber="3">
+        On the **Recommend** page, select the type of recommendations you want to generate and click **Start using**.
 
-    ![Select an index for your recommendations](/images/recommend/data-source.png)
+        ![Select your Recommend model in the Algolia dashboard](/images/recommend/select-model.png)
+  </Step>
+  <Step title="Select source">
+        In the **Select data source** section, select an index you want to use as a source for recommendations.
+        By default, events associated with your data source index are used to train the model.
 
-1. Optional: add more sources for user events.
-   Select additional indices or replicas from your app,
-   or [upload a CSV file](/guides/algolia-recommend/how-to/csv-upload/).
+        ![Select an index for your recommendations](/images/recommend/data-source.png)
+    </Step>
+    <Step title="Optional: add user sources">
+        Add more sources for user events.
+        Select additional indices or replicas from your app,
+        or [upload a CSV file](/guides/algolia-recommend/how-to/csv-upload/).
 
-   ![Select more indices for user events](/images/recommend/event-source.png)
+        ![Select more indices for user events](/images/recommend/event-source.png)
+    </Step>
+    <Step title="Optional for Related Items">
+        Define key attributes for **content-based filtering**.
 
-1. Optional for Related Items: define key attributes for **content-based filtering**.
+        ![Define key attributes for content-based filtering to improve the Related Items model](/images/recommend/content-based-filtering.png)
 
-    ![Define key attributes for content-based filtering to improve the Related Items model](/images/recommend/content-based-filtering.png)
+        Content-based filtering works best with attributes that contain textual information, such as the title or description.
 
-    Content-based filtering works best with attributes that contain textual information, such as the title or description.
+        For more information, see [content-based filtering](/guides/algolia-recommend/overview/#content-based-filtering-for-related-items).
+    </Step>
+    <Step title="Optional for Trends">
+        Select which type of trend you want to use for recommendations.
 
-    For more information, see [content-based filtering](/guides/algolia-recommend/overview/#content-based-filtering-for-related-items).
+        ![Select if you want to generate recommendations for trending items or trending facet values](/images/recommend/select-trending.png)
 
-1. Optional for Trends: select which type of trend you want to use for recommendations.
+        - **Trending items.** Generate recommendations from popular items in your product catalog. After selecting **Trending items**, you can select **Also enable trending items per facet values** to get trending items per facet value.
+        - **Trending facet values.** Generate recommendations for popular facet values.
+    </Step>
+    <Step title="Start training">
+        Click **Start training**.
+        Training a model can take up to two hours.
+    </Step>
+    <Step title="Summary">
+        When the training finishes, you'll see a summary:
 
-    ![Select if you want to generate recommendations for trending items or trending facet values](/images/recommend/select-trending.png)
-
-    - **Trending items.** Generate recommendations from popular items in your product catalog. After selecting **Trending items**, you can select **Also enable trending items per facet values** to get trending items per facet value.
-    - **Trending facet values.** Generate recommendations for popular facet values.
-
-1. Click **Start training**. Training a model can take up to two hours.
-1. When the training finishes, you can see a summary:
-
-    ![Summary for the training of the Recommend model](/images/recommend/model-training.png)
+        ![Summary for the training of the Recommend model](/images/recommend/model-training.png)
+    </Step>
+</Steps>
 
 You can use more than one model to generate recommendations, and select the best recommendations for your use case.
 
@@ -109,90 +123,9 @@ The closer the score is to 100, the more relevant the recommendations are.
 
 To show recommendations in your app, you have the following options:
 
-- *Use React InstantSearch**.
+- **Use React InstantSearch**.
 - **Use InstantSearch.js**
-- **Native app or backend implementation.** Use the Recommend API client] or the Recommend REST API.
-
-### Show recommendations in your user interface
-
-To show recommendations in your user interface, follow these steps:
-
-#### With InstantSearch.js
-
-1. Install and set up InstantSearch.js
-1. Add a container element for your recommendations to your HTML.
-1. Add the widget for the Recommend model. You can also declare _how_ each recommendation renders by providing an `item` template.
-
-The following example adds recommendations from the Related Items model to an HTML element with the ID `relatedProducts`:
-
-```js JavaScript
-import algoliasearch from 'algoliasearch/lite';
-import instantsearch from 'instantsearch.js';
-import { relatedProducts } from 'instantsearch.js/es/widgets';
-
-const searchClient = algoliasearch(
-    'YourApplicationID',
-    'YourSearchOnlyAPIKey'
-);
-
-const search = instantsearch({
-    indexName: 'instant_search',
-    searchClient,
-});
-
-search.addWidgets(
-    relatedProducts({
-    container: '#relatedProducts',
-    objectIDs: ['YOUR_PRODUCT_OBJECT_ID'],
-    templates: {
-        item(recommendation, { html }) {
-        return html`
-            <h2>${recommendation.name}</h2>
-            <p>${recommendation.description}</p>
-        `;
-        },
-    },
-    });
-);
-
-search.start();
-```
-
-#### With React InstantSearch
-
-1. Install and set up React InstantSearch
-1. Add the widget for the Recommend model. You can also declare _how_ each recommendation renders by providing an `itemComponent` component.
-
-```jsx JSX
-import React from 'react';
-import algoliasearch from 'algoliasearch/lite';
-import { InstantSearch, RelatedProducts } from 'react-instantsearch';
-
-const searchClient = algoliasearch(
-    'YourApplicationID',
-    'YourSearchOnlyAPIKey'
-);
-
-function App() {
-    return (
-    <InstantSearch searchClient={searchClient} indexName="instant_search">
-        <RelatedProducts
-        objectIDs={['YOUR_PRODUCT_OBJECT_ID']}
-        itemComponent={Item}
-        />
-    </InstantSearch>
-    );
-}
-
-function Item({ item }) {
-    return (
-    <>
-        <h2>{item.name}</h2>
-        <p>{item.description}</p>
-    </>
-    );
-}
-```
+- **Native app or backend implementation.** Use the Recommend API client or the Recommend REST API.
 
 For more information, see the InstantSearch API documentation:
 
@@ -204,6 +137,103 @@ For more information, see the InstantSearch API documentation:
     React InstantSearch
   </Card>
 </CardGroup>
+
+### Show recommendations in your user interface
+
+To show recommendations in your user interface, follow these steps:
+
+#### With InstantSearch.js
+
+<Steps>
+  <Step title="Install the library">
+    Install and set up InstantSearch.js
+  </Step>
+  <Step title="Add container">
+    Add a container element for your recommendations to your HTML.
+  </Step>
+  <Step title="Add Recommend widget">
+    Add the widget for the Recommend model.
+    You can also declare _how_ each recommendation renders by providing an `item` template.
+
+    The following example adds recommendations from the Related Items model to an HTML element with the ID `relatedProducts`:
+
+    ```js JavaScript
+    import algoliasearch from 'algoliasearch/lite';
+    import instantsearch from 'instantsearch.js';
+    import { relatedProducts } from 'instantsearch.js/es/widgets';
+
+    const searchClient = algoliasearch(
+        'YourApplicationID',
+        'YourSearchOnlyAPIKey'
+    );
+
+    const search = instantsearch({
+        indexName: 'instant_search',
+        searchClient,
+    });
+
+    search.addWidgets(
+        relatedProducts({
+        container: '#relatedProducts',
+        objectIDs: ['YOUR_PRODUCT_OBJECT_ID'],
+        templates: {
+            item(recommendation, { html }) {
+            return html`
+                <h2>${recommendation.name}</h2>
+                <p>${recommendation.description}</p>
+            `;
+            },
+        },
+        });
+    );
+
+    search.start();
+    ```
+  </Step>
+</Steps>
+
+#### With React InstantSearch
+
+<Steps>
+  <Step title="Install the library">
+    Install and set up React InstantSearch
+  </Step>
+
+  <Step title="Add Recommend widget">
+    Add the widget for the Recommend model. You can also declare _how_ each recommendation renders by providing an `itemComponent` component.
+
+    ```jsx JSX
+    import React from 'react';
+    import algoliasearch from 'algoliasearch/lite';
+    import { InstantSearch, RelatedProducts } from 'react-instantsearch';
+
+    const searchClient = algoliasearch(
+        'YourApplicationID',
+        'YourSearchOnlyAPIKey'
+    );
+
+    function App() {
+        return (
+        <InstantSearch searchClient={searchClient} indexName="instant_search">
+            <RelatedProducts
+            objectIDs={['YOUR_PRODUCT_OBJECT_ID']}
+            itemComponent={Item}
+            />
+        </InstantSearch>
+        );
+    }
+
+    function Item({ item }) {
+        return (
+        <>
+            <h2>{item.name}</h2>
+            <p>{item.description}</p>
+        </>
+        );
+    }
+    ```
+  </Step>
+</Steps>
 
 ### Refine your recommendations
 
