@@ -64,7 +64,7 @@
         {
           "group": "Quick start",
           "pages": [
-            "guides/getting-started/quick-start/quick-start",
+            "guides/getting-started/quick-start",
             "guides/getting-started/quick-start/get-started-with-the-dashboard",
             "guides/getting-started/quick-start/track-usage-and-performance-in-the-dashboard"
           ]
