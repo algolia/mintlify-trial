@@ -26,30 +26,38 @@ Integrating Algolia with Segment has three steps:
 
 To add the Algolia destination to Segment, follow these steps:
 
-1. Sign in to your Segment web app and select the workspace you want to work in.
-1. Select the source you want to set up and click **Add Destination**.
+<Steps>
+  <Step title="Sign into Segment app">
+    Sign in to your Segment web app and select the workspace you want to work in.
+  </Step>
+  <Step title="Select source">
+    Select the source you want to set up and click **Add Destination**.
 
     ![Add a destination to a source](/images/segment/1-sources.png)
-
-1. Search for the Algolia destination and select it to add it.
+  </Step>
+  <Step title="Select destination">
+    Search for the Algolia destination and select it to add it.
 
     ![Add the Algolia destination](/images/segment/2-destinations.png)
 
-1. [Sign in](https://www.algolia.com/users/sign_in) to your Algolia account and select the application you want to configure.
-1. Copy your application ID and search API key [from the dashboard](https://dashboard.algolia.com/account/api-keys/) and paste it into Segment.
+    <CardGroup cols={2}>
+        <Card title="Segment docs" icon="globe-pointer" href="https://segment.com/docs/connections/destinations/add-destination/" horizontal="true">
+            Sending Segment data to destinations
+        </Card>
+        <Card title="Segment docs" icon="globe-pointer" href="https://segment.com/docs/connections/destinations/catalog/actions-algolia-insights/" horizontal="true">
+            Algolia Insights destination
+        </Card>
+    </CardGroup>
+  </Step>
+  <Step title="Sign into Algolia">
+    [Sign in](https://www.algolia.com/users/sign_in) to your Algolia account and select the application you want to configure.
+  </Step>
+  <Step title="Add your credentials">
+    Copy your application ID and search API key [from the dashboard](https://dashboard.algolia.com/account/api-keys/) and paste it into Segment.
 
     ![Add your Algolia credentials](/images/segment/3-configuration.png)
-
-For more information about adding destinations, comsult the Segment documentation.
-
-<CardGroup cols={2}>
-  <Card title="Segment docs" icon="globe-pointer" href="https://segment.com/docs/connections/destinations/add-destination/" horizontal="true">
-    Sending Segment data to destinations
-  </Card>
-  <Card title="Segment docs" icon="globe-pointer" href="https://segment.com/docs/connections/destinations/catalog/actions-algolia-insights/" horizontal="true">
-    Algolia Insights destination
-  </Card>
-</CardGroup>
+  </Step>
+</Steps>
 
 ## Enable `clickAnalytics`
 

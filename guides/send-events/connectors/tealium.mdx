@@ -11,47 +11,66 @@ If you require help with this connector, refer to the [Tealium documentation](ht
 
 ## Add the Algolia connector in Tealium
 
-1. Sign in to [Tealium's Customer Data Hub](https://sso.tealiumiq.com/) and select the account and profile you want to work in.
-
-1. On the sidebar, go to **Server-Side > EventStream > Event Connectors** and click **Add Connector**.
+<Steps>
+  <Step title="Sign into Tealium">
+    Sign in to [Tealium's Customer Data Hub](https://sso.tealiumiq.com/) and select the account and profile you want to work in.
+  </Step>
+  <Step title="Add connector">
+    On the sidebar, go to **Server-Side > EventStream > Event Connectors** and click **Add Connector**.
 
     ![Add a connector to the EventStream](/images/tealium/1-connectors.png)
-
-1. In the **Connector Marketplace**, search for the Algolia Insights connector, select it, and click **Continue**.
+  </Step>
+  <Step title="Select Algolia">
+    In the **Connector Marketplace**, search for the Algolia Insights connector, select it, and click **Continue**.
 
     ![Add the Algolia Insights connector](/images/tealium/2-marketplace.png)
+  </Step>
+  <Step title="Select source">
+    In the **Data Sources** menu, select **All Data Sources** if you want to forward events from all your websites or apps to Algolia, or select individual sources to only forward events from selected sources.
 
-1. In the **Data Sources** menu, select **All Data Sources** if you want to forward events from all your websites or apps to Algolia, or select individual sources to only forward events from selected sources.
+    In the **Event Feed** menu, select the type of event you want to forward, such as, `product_view`, `cart_add`, or `purchase`.
 
-   In the **Event Feed** menu, select the type of event you want to forward, such as, `product_view`, `cart_add`, or `purchase`.
+    Click **Continue**.
 
-   Click **Continue**.
-
-   ![Select the Data Source and Event Feed](/images/tealium/3-source.png)
-
-1. Click **Add Connector**
+    ![Select the Data Source and Event Feed](/images/tealium/3-source.png)
+  </Step>
+  <Step title="Add connector">
+    Click **Add Connector**
 
     ![Add Connector](/images/tealium/4-configuration.png)
-
-1. [Sign in](https://www.algolia.com/users/sign_in) to your Algolia account and select the application you want to configure.
-1. Go to the [API Keys](https://dashboard.algolia.com/account/api-keys/) page and copy your application ID and search API key.
-1. In the **Add Connector** dialog, enter a name for this connector and optional notes that help you identify this connector. In the **Authentication** section, enter your Algolia application ID and search API key. Click **Done**. Back on the **Add Action** dialog, click **Continue**.
+  </Step>
+  <Step title="Sign into Algolia">
+    [Sign in](https://www.algolia.com/users/sign_in) to your Algolia account and select the application you want to configure.
+  </Step>
+  <Step title="Copy credentials">
+    Go to the [API Keys](https://dashboard.algolia.com/account/api-keys/) page and copy your application ID and search API key.
+  </Step>
+  <Step title="Add credentials">
+    In the **Add Connector** dialog, enter a name for this connector and optional notes that help you identify this connector
+     In the **Authentication** section, enter your Algolia application ID and search API key.
+     Click **Done**. 
+     In the **Add Action** box, click **Continue**.
 
     ![Add your Algolia credentials](/images/tealium/5-configuration.png)
+  </Step>
+  <Step title="Select action type">
+    Enter a name for the action, and select an action type.
 
-1. Enter a name for the action, and select an action type.
+    In most cases, you want to send events as they happen, so select **Send Events (Real-Time)**.
 
-   In most cases, you want to send events as they happen, so select **Send Events (Real-Time)**.
+    Select the **Event Type**: **Click** to track clicks on search results, **Conversion** for add-to-cart and purchase events.
 
-   Select the **Event Type**: **Click** to track clicks on search results, **Conversion** for add-to-cart and purchase events.
-
-   ![Select the event type](/images/tealium/7-event-type.png)
-
-1. [Map the Tealium event parameters](#mapping-event-parameters) to their equivalent in Algolia.
+    ![Select the event type](/images/tealium/7-event-type.png)
+  </Step>
+  <Step title="Enter Tealium parameters">
+    [Map the Tealium event parameters](#mapping-event-parameters) to their equivalent in Algolia.
 
     ![Map event parameters](/images/tealium/8-event-params.png)
-
-1. Repeat this process for each additional event you want to forward.
+  </Step>
+  <Step title="Repeat">
+    Repeat this process for each additional event you want to forward.
+  </Step>
+</Steps>
 
 For more information about adding connectors, see the [Tealium documentation](https://docs.tealium.com/server-side/connectors/add/).
 

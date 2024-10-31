@@ -32,84 +32,122 @@ the connector requires a Google service account and a key.
 
 ### Create a Google service account
 
-1. Follow Google's guide: [Create service accounts](https://cloud.google.com/iam/docs/service-accounts-create).
+<Steps>
+  <Step title="Create service account">
+    Follow Google's guide: [Create service accounts](https://cloud.google.com/iam/docs/service-accounts-create).
 
     1. Enter a name and ID for the service account.
     1. Add the **BigQuery Job User** Identity and access management (IAM) role to this service account.
        For more information, see [BigQuery IAM roles and permissions](https://cloud.google.com/bigquery/docs/access-control).
-
-1. In the [BigQuery console](https://console.cloud.google.com/bigquery),
-   select the dataset with the BigQuery Export, open the **Actions** menu and select **Share > Manage Permissions.**
-
-1. Click **Add Principal**. In the **New principals** text box, enter the name of the service account.
-
-1. In the **Select a role** menu, select the **BigQuery > BigQuery Data Viewer** role.
+  </Step>
+  <Step title="Select dataset">
+    In the [BigQuery console](https://console.cloud.google.com/bigquery),
+    select the dataset with the BigQuery Export, open the **Actions** menu and select **Share > Manage Permissions.**
+  </Step>
+  <Step title="Add principal">
+    Click **Add Principal**.
+    In the **New principals** text box, enter the name of the service account.
+  </Step>
+  <Step title="Select role">
+    In the **Select a role** menu, select the **BigQuery > BigQuery Data Viewer** role.
+  </Step>
+</Steps>
 
 ### Create a key attached to the service account
 
-1. In the Google Cloud console, go to [Service accounts](https://console.cloud.google.com/iam-admin/serviceaccounts).
-
-1. Select your service account. Under **Actions**,  select **Manage keys**.
-
-1. Select **Add key > Create new key**.
-
-1. In the **Key type** menu, select **JSON**.
-
-1. Click **Create**.
+<Steps>
+  <Step title="Select service account">
+    In the Google Cloud console, go to [Service accounts](https://console.cloud.google.com/iam-admin/serviceaccounts).
+  </Step>
+  <Step title="Manage keys">
+    Select your service account.
+    Under **Actions**, select **Manage keys**.
+  </Step>
+  <Step title="Create new key">
+    Select **Add key > Create new key**.
+  </Step>
+  <Step title="Select key type">
+    In the **Key type** menu, select **JSON**.
+  </Step>
+  <Step title="Create key">
+    Click **Create**.
+  </Step>
+</Steps>
 
 ## Create GA4 BigQuery Export connection in Algolia
 
-1. Go to the [Algolia dashboard](https://dashboard.algolia.com/explorer/browse) and select your Algolia application.
-1. On the left sidebar, select <Icon icon="magnifying-glass" color="5468ff" iconType="regular" /> **Search**.
-1. Select your Algolia index:
+import Dashboard from '/snippets/dashboard.mdx';
 
-    ![Select your Algolia application and index](/images/select-index.png)
-    
-1. Go to the Algolia dashboard and select your Algolia application.
-1. On the left sidebar, select <Icon icon="database" iconType="regular" /> **Data sources**.
-1. On the [**Connectors**](https://dashboard.algolia.com/connectors/) page, select the [**Google Analytics 4 BigQuery Export**](https://dashboard.algolia.com/connectors/google-analytics-4-bq-export/create) and click **Connect**.
+<Dashboard />
+
+<Steps>
+  <Step title="Select data sources">
+    On the left sidebar, select <Icon icon="database" iconType="regular" /> **Data sources**.
+  </Step>
+  <Step title="Select connector">
+    On the [**Connectors**](https://dashboard.algolia.com/connectors/) page, select the [**Google Analytics 4 BigQuery Export**](https://dashboard.algolia.com/connectors/google-analytics-4-bq-export/create) and click **Connect**.
+  </Step>
+</Steps>
 
 ### Configure your BigQuery source
 
 The connector's source tells Algolia how to read from the BigQuery tables that Google Analytics syncs to.
 
-1. In the **Google Service Account** box,
+<Steps>
+  <Step title="Create authentication">
+    In the **Google Service Account** box,
    select **Create a new Google Service Account authentication**.
-
-1. In the **Create a new Google Service Account authentication** menu,
+  </Step>
+  <Step title="Select roles">
+    In the **Create a new Google Service Account authentication** menu,
    upload a key file for a Google service account with these roles:
    **BigQuery Data Viewer** and **BigQuery Job User**.
 
    Enter a name for this account and click **Create authentication**.
+  </Step>
+  <Step title="Enter credentials">
+    In the **Enter your BigQuery table details** section,
+    enter your GCP project ID and BigQuery dataset ID.
+  </Step>
+  <Step title="Select a table type">
+    Select:
 
-1. In the **Enter your BigQuery table details** section,
-   enter your GCP project ID and BigQuery dataset ID.
+    - **Streaming** if you configured your GA4 BigQuery Export for streaming exports (recommended).
+    - **Daily**, if you configured your GA4 BigQuery Export to export daily or if you use both streaming and daily exports.
 
-1. Select a table type:
-
-   - **Streaming** if you configured your GA4 BigQuery Export for streaming exports (recommended).
-
-   - **Daily**, if you configured your GA4 BigQuery Export to export daily,
-     or if you use both streaming and daily exports.
-
-   <Note>
-   If both daily and streaming exports are active,
-   the streaming tables expire at the end of each day,
-   potentially before they're imported.
-   </Note>
-
-1. Enter a name for this data source.
-1. Click **Save and continue**.
+    <Note>
+        If both daily and streaming exports are active,
+        the streaming tables expire at the end of each day,
+        potentially before they're imported.
+    </Note>
+  </Step>
+  <Step title="Enter data source name">
+    Enter a name for this data source.
+  </Step>
+  <Step title="Save changes">
+    Click **Save and continue**.
+  </Step>
+</Steps>
 
 ### Configure your destination
 
 The connector's destination tells Algolia where to send source data.
 For Google Analytics events data the destination is the Insights API.
 
-1. Click **Create a new destination**.
-1. Enter an index name for Algolia events imported by this connection.
-1. To create Algolia credentials for the connector, click **Create one for me**.
-1. Click **Save and continue**.
+<Steps>
+  <Step title="Create destination">
+    Click **Create a new destination**.
+  </Step>
+  <Step title="Select an index">
+    Enter an index name for Algolia events imported by this connection.
+  </Step>
+  <Step title="Create credentials">
+    To create Algolia credentials for the connector, click **Create one for me**.
+  </Step>
+  <Step title="Save changes">
+    Click **Save and continue**.
+  </Step>
+</Steps>
 
 ### Configure event mapping
 
