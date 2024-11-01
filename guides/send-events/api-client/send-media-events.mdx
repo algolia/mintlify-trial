@@ -1,0 +1,73 @@
+---
+title: 'Send media events with an API client'
+sidebarTitle: 'Send media events'
+description: Collect user interactions as events on your media website.
+---
+
+import APIIntro from '/snippets/insights/api-intro.mdx';
+
+<APIIntro />
+
+import MediaDiagram from '/snippets/insights/media-diagram.mdx';
+
+<MediaDiagram />
+
+import SearchResults from '/snippets/insights/search-results.mdx';
+
+<SearchResults />
+
+#### Browse/category page
+
+| User action         | Method name                    |
+| ------------------- | ------------------------------ |
+| User clicks content | `clickedObjectIDsAfterSearch`  |
+| User views content  | `viewedObjectIDs`              |
+
+#### Content details page
+
+| User action        | Method name       |
+| ------------------ | ----------------- |
+| User views content | `viewedObjectIDs` |
+
+import TrackQueryid from '/snippets/insights/track-queryid.mdx';
+
+<TrackQueryid />
+
+import TrackClickEvents from '/snippets/insights/track-click-events.mdx';
+
+<TrackClickEvents />
+
+## Track conversion events
+
+import TrackConversionEvents from '/snippets/insights/track-conversion-events.mdx';
+
+<TrackConversionEvents />
+
+import TrackAdditioalClickEvents from '/snippets/insights/track-additional-click-events.mdx';
+
+<TrackAdditioalClickEvents />
+
+## (Optional) Handle known users for Personalization
+
+For effective personalization, you need to identify users across sessions.
+It's best to use an identifier from your authentication system after users signed in.
+
+import PersonalizationUserToken from '/snippets/insights/personalization-user-token.mdx';
+
+<PersonalizationUserToken />
+
+## (Optional) Send view events for Personalization
+
+import ViewEvents from '/snippets/insights/view-events.mdx';
+
+<ViewEvents />
+
+```js JavaScript
+window.aa("viewedObjectIDs", {
+    index: "YourIndexName",
+    eventName: "Article Viewed",
+    objectIDs: ["objectID-1"],
+});
+```
+
+

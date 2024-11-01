@@ -1,0 +1,164 @@
+---
+title: 'Get started with click and conversion events'
+sidebarTitle: 'Get started'
+description: Unlock Algolia's most powerful features by collecting user events with the Insights API.
+---
+
+Events are actions that users take on your app or website.
+They unlock powerful features, such as recommendations,
+personalization,
+smarter search results,
+and analytics that help you optimize your user experience.
+With the [Insights API](/api-reference/insights-api/),
+you can capture all important events related to your search and discovery experience.
+
+<Card title="Explore related videos in the Algolia Academy" icon="photo-film" href="https://academy.algolia.com/guides/0fdc09e6-c442-11ee-a607-02569e3ee821/tasks/dc34c2da-c203-11ee-b3fa-06b0b8897589" horizontal="true" color="#c7519c">
+  Send events
+</Card>
+
+Events enable these features:
+
+import Features from '/snippets/insights/features.mdx';
+
+<Features />
+
+<CardGroup cols={2}>
+  <Card title="Blog" icon="blog" href="https://www.algolia.com/blog/engineering/why-you-should-capture-click-and-conversion-events-from-day-one/" horizontal="true">
+    Why you should collect events from day one
+  </Card>
+  <Card title="Blog" icon="blog" href="https://www.algolia.com/blog/product/5-reasons-to-add-clicks-to-site-search-analytics-and-code-to-do-it/" horizontal="true">
+    Five reasons to add events
+  </Card>
+</CardGroup>
+
+## What are events?
+
+Events represent user interactions with your app or website.
+They have extra details, like the name, type, and time of the interaction,
+and [user identity](/guides/send-events/concepts/user-token/).
+
+For more information, see the [Insights API reference](/api-reference/insights-api/).
+
+## Which events should you send?
+
+To capture different user behavior,
+send different [event types](/guides/send-events/concepts/event-types/).
+
+For a starting point, see [Plan your implementation](/guides/send-events/guides/plan/).
+
+## Start your implementation
+
+The best way to send events to Algolia depends on where you're sending them from.
+Algolia provides tools to help you make sure your events have all the necessary details.
+
+### Client-side versus server-side events
+
+It's best to send events straight from your users' devices.
+To do this, see [Send events from your frontend](#send-click-and-conversion-events-from-your-frontend) on this page.
+
+If you're not collecting enough events compared to the number of visitors to your website or app,
+it might be because your users use [**ad blockers**](https://wikipedia.org/wiki/Ad_blocking).
+In this case, consider server-side tracking.
+
+With server-side tracking, your users send events sent to your servers.
+Then your servers forward the events to the Insights API.
+To set up server-side tracking, see [Send events from your backend](#send-click-and-conversion-events-from-your-backend) on this page.
+
+### Upload events from external analytics
+
+You can speed up data collection by uploading events **from the last four days**.
+To upload historical events, use the [Send events](/api-reference/insights-api/events/send-events) method.
+
+For **Algolia Recommend**, you can upload a CSV file with events from the last 90 days.
+
+If an event needs a `queryID`,
+its timestamp must be within an hour of the related search or browse request.
+The `queryID` can't be from a search event older than four days.
+For more information, see [Event types](/guides/send-events/concepts/event-types/).
+
+### Send click and conversion events from your ecommerce platform
+
+If you're using any of these ecommerce platforms,
+you can use the Algolia integrations to send events:
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/integrations/shopify/getting-started/quick-start" horizontal="true">
+    Shopify
+  </Card>
+  <Card title="Guide" icon="book" href="/integrations/magento-2/getting-started/quick-start" horizontal="true">
+    Adobe Commerce and Magento Open Source
+  </Card>
+  <Card title="Guide" icon="book" href="/integrations/salesforce-commerce-cloud-b2c/getting-started/introduction" horizontal="true">
+    Salesforce B2C Commerce
+  </Card>
+</CardGroup>
+
+If you're using a **headless ecommerce** platform,
+see [Send click and conversion events from your frontend](#send-click-and-conversion-events-from-your-frontend).
+
+### Send click and conversion events from your frontend
+
+If you're using Algolia's UI libraries,
+you can use their Insights integrations to send events:
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/events/js/" horizontal="true">
+    InstantSearch.js
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/events/react/" horizontal="true">
+    React InstantSearch
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/events/vue/" horizontal="true">
+    Vue InstantSearch
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/events/android/" horizontal="true">
+    InstantSearch Android
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/events/ios/" horizontal="true">
+    InstantSearch iOS
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/events/flutter/" horizontal="true">
+    Flutter Helper
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/ui-libraries/autocomplete/guides/sending-algolia-insights-events/" horizontal="true">
+    Autocomplete
+  </Card>
+</CardGroup>
+
+To send events from pages that aren't search pages,
+such as a shopping cart, use the [`search-insights`](/api-reference/insights-api/) library for web apps,
+and the Kotlin and Swift API clients for native Android and iOS apps.
+
+If you're not using Algolia's UI libraries,
+use the `search-insights` library to send click and conversion events.
+
+### Collect click and conversion events with customer data platforms or tag managers
+
+These dara platforms can send events to the Algolia Insights API:
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/sending-events/connectors/segment/" horizontal="true">
+    Segment
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/sending-events/connectors/google-analytics-big-query-export/" horizontal="true">
+    Google Analytics BigQuery Export
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/sending-events/connectors/google-tag-manager/" horizontal="true">
+    Google Tag Manager
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/sending-events/connectors/tealium/" horizontal="true">
+    Tealium
+  </Card>
+  <Card title="mParticle docs" icon="globe-pointer" href="https://docs.mparticle.com/integrations/algolia/event/" horizontal="true">
+    mParticle
+  </Card>
+  <Card title="Rudderstack docs" icon="globe-pointer" href="https://www.rudderstack.com/docs/destinations/streaming-destinations/algolia-insights/" horizontal="true">
+    Rudderstack
+  </Card>
+</CardGroup>
+
+### Send click and conversion events from your backend
+
+The [Algolia API clients](/libraries) provide methods for sending events to the Insights API.
+You can also use the API clients to send events in batches
+or upload events from external analytics.
