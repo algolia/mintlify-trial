@@ -19,6 +19,10 @@
     {
       "name": "Support",
       "url": "https://support.algolia.com/hc/en-us"
+    },
+    {
+      "name": "Community",
+      "url": "https://www.algolia.com"
     }
   ],
   "topbarCtaButton": {
@@ -29,13 +33,6 @@
     "name": "Home",
     "icon": "book-open"
   },
-  "anchors": [
-    {
-      "name": "Community",
-      "icon": "discord",
-      "url": "https://www.algolia.com"
-    }
-  ],
   "primaryTab": {
     "name": "Guides"
   },
@@ -55,15 +52,8 @@
   ],
   "navigation": [
     {
-      "group": "Get started",
-      "pages": [
-        "launchpad/get-started",
-        "launchpad/import-data",
-        "launchpad/design-results",
-        "launchpad/searchable-attributes",
-        "launchpad/relevancy",
-        "launchpad/implement-search"
-      ]
+      "group": "Home",
+      "pages": ["home"]
     },
     {
       "group": "Send and manage data",
