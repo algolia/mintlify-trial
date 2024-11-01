@@ -1,0 +1,345 @@
+---
+title: 'Segment'
+sidebarTitle: 'Segment'
+description: Send events to the Algolia Insights API with Segment.
+---
+
+If you're using Twilio Segment to track user interactions on your website or app,
+you can set up Algolia as a destination to forward [click and conversion events](/guides/send-events/get-started/).
+
+<CardGroup cols={2}>
+  <Card title="Live demo" icon="laptop" href="https://codesandbox.io/s/github/algolia/doc-code-samples/tree/master/instantsearch.js/segment-connector" horizontal="true">
+    CodeSandbox
+  </Card>
+  <Card title="Source code" icon="github" href="https://github.com/algolia/doc-code-samples/tree/master/instantsearch.js/segment-connector" horizontal="true">
+    GitHub
+  </Card>
+</CardGroup>
+
+Integrating Algolia with Segment has three steps:
+
+1. Enable the Algolia destination in Segment.
+1. Enable `clickAnalytics` with your searches.
+1. Augment your Segment events with Algolia-related data.
+
+## Enable the Algolia destination in Segment
+
+To add the Algolia destination to Segment, follow these steps:
+
+<Steps>
+  <Step title="Sign into Segment app">
+    Sign in to your Segment web app and select the workspace you want to work in.
+  </Step>
+  <Step title="Select source">
+    Select the source you want to set up and click **Add Destination**.
+
+    ![Add a destination to a source](/images/segment/1-sources.png)
+  </Step>
+  <Step title="Select destination">
+    Search for the Algolia destination and select it to add it.
+
+    ![Add the Algolia destination](/images/segment/2-destinations.png)
+
+    <CardGroup cols={2}>
+        <Card title="Segment docs" icon="globe-pointer" href="https://segment.com/docs/connections/destinations/add-destination/" horizontal="true">
+            Sending Segment data to destinations
+        </Card>
+        <Card title="Segment docs" icon="globe-pointer" href="https://segment.com/docs/connections/destinations/catalog/actions-algolia-insights/" horizontal="true">
+            Algolia Insights destination
+        </Card>
+    </CardGroup>
+  </Step>
+  <Step title="Sign into Algolia">
+    [Sign in](https://www.algolia.com/users/sign_in) to your Algolia account and select the application you want to configure.
+  </Step>
+  <Step title="Add your credentials">
+    Copy your application ID and search API key [from the dashboard](https://dashboard.algolia.com/account/api-keys/) and paste it into Segment.
+
+    ![Add your Algolia credentials](/images/segment/3-configuration.png)
+  </Step>
+</Steps>
+
+## Enable `clickAnalytics`
+
+To relate click and conversion events to searches,
+Algolia needs a [query ID](/guides/send-events/concepts/event-types/#what-is-the-query-id).
+To get the `queryID` parameter for a search,
+set the `clickAnalytics` parameter to `true`:
+
+import ClickAnalytics from '/snippets/insights/click-analytics.mdx';
+
+<ClickAnalytics />
+
+## Identify users
+
+If you use Segment's `analytics.identify()` function to identify users,
+use the same identifier for Algolia by passing it as the `userToken` parameter with your search.
+For example, if you want to use Personalization:
+
+<CodeGroup>
+
+```js Vanulla JavaScript
+index.search('YourSearchQuery', {
+    userToken: 'user-1',
+    enablePersonalization: true
+}).then(({ hits }) => {
+    console.log(hits);
+})
+```
+
+```js InstantSearch.js
+instantsearch.widgets.configure({
+    enablePersonalization: true,
+    userToken: 'user-1'
+});
+```
+
+```jsx React InstantSearch
+<Configure
+    enablePersonalization={true}
+    userToken={'user-1'}
+/>
+```
+
+```vue Vue InstantSearch
+<ais-configure
+    :enable-personalization.camel="true"
+    user-token.camel="user-1"
+/>
+```
+</CodeGroup>
+
+## Augment your Segment events with Algolia-related data
+
+Algolia requires these properties that aren't part of the regular Segment specifications:
+
+| Property       | Type                                                                                                                                     | Required? |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `index`        | `string`                                                                                                                                 | Yes       |
+| `eventType`    | value: `'view'`, `'click'`, or `'conversion'`                                                                                            | Yes       |
+| `eventSubtype` | value: `'addToCart'` or `'purchase'` (only applicable to `'conversion'` events)                                                          | No        |
+| `queryID`      | `string`                                                                                                                                 | No        |
+| `objectIDs`    | `string[]` **or** `objectID`: `string`                                                                                                   | No        |
+| `positions`    | `number[]` **or** `position`: `number`                                                                                                   | No        |
+| `filters`      | `Array<{ type: string; value: string; }>` **or** `string[]` (`${type}:${value}`—for example, `brand:apple`)                              | No        |
+| `objectData`   | See the [Insights API reference](/doc/rest-api/insights/) for the `objectData` parameter (only applicable to `'addToCart'` and `'purchase'` events)| No        |
+
+For more information, see the [Insights API reference](/doc/rest-api/insights/).
+
+You can get these properties with the following code:
+
+<CodeGroup>
+
+```js Vanilla JavaScript
+index.search('query', {
+    userToken: 'user-1',
+}).then(({ hits, queryID, hitsPerPage, page }) => {
+    hits.map((hit, index) => {
+    const position = index + 1 + page * hitsPerPage;
+    const objectID = hit.objectID;
+    });
+});
+```
+
+```js InstantSearch.js
+// Required: InstantSearch.js >= 4.8.3
+
+search.use(
+    instantsearch.middlewares.createInsightsMiddleware({
+    insightsClient: null,
+    onEvent(event) {
+        const { widgetType, eventType, payload, hits } = event;
+
+        if (widgetType === "ais.hits" && eventType === "view") {
+        analytics.track("Product List Viewed", {
+            index: payload.index,
+            eventType: 'view',
+            queryID: payload.queryID,
+            objectIDs: payload.objectIDs,
+            positions: payload.positions,
+
+            // the rest
+        });
+        } else if (/* ... */) {
+        // ...
+        }
+    },
+    })
+);
+
+// index
+// eventType
+// queryID
+// objectIDs
+// positions
+// filters
+
+```
+
+```jsx React InstantSearch
+function debounce(fn, delay) {
+    let timerId;
+    return function(...args) {
+    if (timerId) {
+        clearTimeout(timerId);
+    }
+    timerId = setTimeout(() => {
+        fn(...args);
+        timerId = null;
+    }, delay);
+    };
+}
+
+const debouncedHitsRender = debounce(({ hits }) => {
+    if (hits.length > 0) {
+    analytics.track("Product List Viewed", {
+        index: '<index-name>',
+        eventType: 'view',
+        queryID: hits[0].__queryID,
+        objectIDs: hits.map(hit => hit.objectID),
+        positions: hits.map(hit => hit.__position),
+
+        // the rest
+    });
+    }
+}, 500);
+
+const SendViewEvent = connectHits((...args) => {
+    debouncedHitsRender(...args);
+    return null;
+});
+
+// ...
+
+const Hit = ({ hit }) => (
+    <article>
+    <h1>{hit.name}</h1>
+
+    <button
+        onClick={() =>
+        analytics.track("Product Clicked", {
+            index: '<index-name>',
+            eventType: 'click',
+            queryID: hit.__queryID
+            objectID: hit.objectID,
+            position: hit.__position,
+
+            // the rest
+        })
+        }
+    >
+        Add to favorite
+    </button>
+    </article>
+);
+
+// ...
+
+<Configure clickAnalytics />
+<SendViewEvent />
+<Hits hitComponent={Hit} />
+```
+
+```vue Vue InstantSearch
+<!-- Required: Vue InstantSearch >= 3.7.0 -->
+
+<template>
+    <ais-instant-search
+    :index-name="<index-name>"
+    :search-client="searchClient"
+    :middlewares="middlewares"
+    >
+    <!-- widgets -->
+    </ais-instant-search>
+</template>
+
+<script>
+import {
+    createInsightsMiddleware,
+} from 'instantsearch.js/es/middlewares';
+
+const insightsMiddleware = createInsightsMiddleware({
+    insightsClient: aa,
+    onEvent(event) {
+    const { widgetType, eventType, payload, hits } = event;
+
+    if (widgetType === "ais.hits" && eventType === "view") {
+        analytics.track("Product List Viewed", {
+        index: payload.index,
+        eventType: 'view',
+        queryID: payload.queryID,
+        objectIDs: payload.objectIDs,
+        positions: payload.positions,
+
+        // the rest
+        });
+    } else if (/* ... */) {
+        // ...
+    }
+    }
+});
+
+export default {
+    data() {
+    return {
+        // ...
+        middlewares: [insightsMiddleware]
+    }
+    },
+}
+</script>
+```
+</CodeGroup>
+
+The following code is an example of a click event tracked with Segment that includes all the necessary Algolia-related properties:
+
+```diff*js JavaScript
+analytics.track('Product Clicked', {
+  product_id: '507f1f77bcf86cd799439011',
+  sku: 'G-32',
+  category: 'Games',
+  name: 'Monopoly: 3rd Edition',
+  brand: 'Hasbro',
+  variant: '200 pieces',
+  price: 18.99,
+  quantity: 1,
+  coupon: 'MAYDEALS',
+  position: 3,
+  url: 'https://www.example.com/product/path',
+  image_url: 'https://www.example.com/product/path.jpg',
+  // Algolia-related properties
++ index: 'my-algolia-index',
++ eventType: 'click',
++ queryID: 'fd0bbaadc287937s7671d00f1d053b88',
++ objectID: '131280270'
+});
+```
+
+Refer to Segment's [Algolia Insights destination](https://segment.com/docs/connections/destinations/catalog/actions-algolia-insights/#track) documentation for details on which Segment events are supported by default.
+
+## Debug events with Segment
+
+If you have administrator permissions for your Segment source,
+you can send test events.
+To do this, select your source and click **Validate**.
+Select **Algolia Insights** as the destination.
+
+![Check events in the Segment app](/images/segment/debugging-1.png)
+
+Now, you can send a test event using the **Event builder** or **JSON** editor.
+
+![Send a test event to the Algolia Insights destination](/images/segment/debugging-2.png)
+
+A green box with the status "200 OK" means that Segment successfully sent a test event to the Algolia Insights destination.
+To check, if the event delivery was successful, go to the [**Event Delivery**](https://segment.com/docs/connections/event-delivery/) tab.
+
+For example, sending an event with a wrong `queryID` shows a _Delivery Issue_.
+
+<video width="100%" height="auto" controls>
+  <source src="/images/segment/event-delivery.mp4" type="video/mp4" />
+  Your browser does not support the video tag.
+</video>
+
+To check if Algolia receives your events correctly,
+go to the [**Events Debugger**](https://dashboard.algolia.com/events/debugger) in the Algolia dashboard.
+For more information, see [Validate your events](/guides/send-events/guides/validate/).
