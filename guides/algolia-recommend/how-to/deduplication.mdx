@@ -1,0 +1,130 @@
+---
+title: Deduplicate recommendations
+description: |-
+  Learn how to remove variants from your recommendations by using Recommend deduplication.
+---
+
+With Recommend deduplication, you can refine your recommendations by removing item variants from your AI model training.
+The feature offers several advantages:
+
+- **Improves recommendation accuracy and speed** by removing item variants before the training process.
+- **Improves recommendation quality** by using events from all item variants.
+- **Separates deduplication from search** so it doesn't affect the search experience.
+
+## Recommend deduplication versus search deduplication
+
+Algolia offers two types of deduplication:
+
+- **Search deduplication** [removes duplicate items from search results](/guides/managing-results/refine-results/grouping/). This can help improve the relevance of the results and make them more user-friendly.
+- **Recommend deduplication** remove duplicate items from Algolia AI recommendations. This can help improve the diversity of the recommendations and make them more personalized.
+
+With Recommend deduplication, your AI models are **trained with all variants**, and the recommendations then **filtered by the API** before sending you the results to remove variants.
+
+## How Recommend deduplication works
+
+Recommend deduplication adds two processes to your AI model training:
+
+- **Pre-training process**: generates a training dataset with only one variant per item. It also merges all events from variants of the same item.
+- **Post-training process**: add all the variants dropped during the pre-training process back into the final set of recommendations.
+
+<Note>
+    Item variants share the same recommendations.
+</Note>
+
+## Set up the deduplication for a model
+
+To deduplicate your recommendations, you must first declare an attribute for distinguishing variants, then turn on deduplication when configuring a Recommend model.
+After that, verify that the recommendations have been deduplicated.
+
+### Configure an attribute for distinguishing variants
+
+First, choose which attribute defines records as variants:
+
+import Dashboard from '/snippets/dashboard.mdx';
+
+<Dashboard />
+
+<Steps>
+  <Step title="Select deduplication" stepNumber="4">
+    On the **Configuration* tab, go to the [Deduplication and Grouping](https://dashboard.algolia.com/explorer/configuration/deduplication-and-grouping) page.
+  </Step>
+  <Step title="Define variants">
+    In the **Attribute for Distinct** box, select or enter the attribute name you want to use to define variants.
+
+    ![Set `attributeForDistinct` in your index settings](/images/recommend/deduplication-attribute-for-distinct.png)
+
+    <Note>
+        Only use the `distinct` option if you also want to [deduplicate search results](/guides/managing-results/refine-results/grouping/#introducing-algolias-distinct-feature).
+    </Note>
+  </Step>
+</Steps>
+
+### Enable Recommend deduplication on your model
+
+import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
+
+<RecommendDashboard />
+
+<Steps>
+  <Step title="Select a model" stepNumber="3">
+    Create a new Recommend model or edit an existing one for the index you used when setting the `attributeForDistinct`.
+  </Step>
+  <Step title="Select deduplication">
+    In the section **Distinct and deduplication of recommendations**, select the **Deduplicate recommendations** option.
+    The attribute you selected for defining variants is shown.
+  </Step>
+  <Step title="Continue configuration">
+    Continue to configure your Recommend model and click **Save**.
+
+    ![Enable deduplication in your model training configuration](/images/recommend/deduplication-toggle.png)
+  </Step>
+</Steps>
+
+### Verify the recommendations
+
+To check that the deduplication is working for your recommendations, revisit the model configuration once the training process has finished:
+
+<Steps>
+  <Step title="Preview">
+    Go to the **Preview** section.
+  </Step>
+  <Step title="Check for duplicates">
+    Use the **Search for a record** box to search for an item that _should_ have variants.
+
+    This displays the list of recommendations for the selected item.
+    They shouldn't contain any variants.
+  </Step>
+</Steps>
+
+## Examples
+
+The following examples illustrate how Recommend deduplication works.
+The index has records for T-shirts in different colors and sizes:
+
+- One **red** T-shirt in one size _(XS)_
+- Two **green** T-shirts in two sizes _(S, M)_
+- Three **blue** T-shirts in three sizes _(L, XL, XXL)_
+
+This example uses the [**Related Items** model](/guides/algolia-recommend/overview/#recommend-models) to recommend the top three similar items with and without deduplication (with the `color` attribute configured as `attributeForDistinct`).
+
+### Without deduplication
+
+Without deduplication, recommendations include variants, such as **blue** _(XXL)_ or **green** _(M)_, except for the **red** T-shirt which doesn't have any.
+
+| Base item       | Recommendation 1 | Recommendation 2 | Recommendation 3 |
+| --------------- | ---------------- | ---------------- | ---------------- |
+| **red** _(XS)_  | **green** _(S)_  | **blue** _(L)_   | **blue** _(XL)_  |
+| **green** _(S)_ | **green** _(M)_  | **red** _(XS)_   | **blue** _(L)_   |
+| **blue** _(L)_  | **blue** _(XL)_  | **blue** _(XXL)_ | **green** _(M)_  |
+
+### With deduplication
+
+With deduplication, the recommendations don't include any variants.
+However, since this example dataset only includes three records, it can only generate two recommendations.
+If you introduce a new item, such as an **orange** T-shirt, it will be added as a third recommendation.
+
+| Base item       | Recommendation 1 | Recommendation 2 | Recommendation 3 |
+| --------------- | ---------------- | ---------------- | ---------------- |
+| **red** _(XS)_  | **green** _(S)_  | **blue** _(L)_   | Doesn't apply    |
+| **green** _(S)_ | **red** _(XS)_   | **blue** _(L)_   | Doesn't apply    |
+| **blue** _(L)_  | **red** _(XS)_   | **green** _(M)_  | Doesn't apply    |

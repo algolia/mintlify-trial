@@ -1,0 +1,123 @@
+---
+title: How Algolia works
+description: |-
+  Learn about the building blocks of Algolia's search engine, what Algolia offers, and the full ecosystem it provides.
+---
+
+Algolia is a hosted search engine capable of delivering real-time results from the first keystroke.
+Algolia's powerful API lets you seamlessly implement search within your websites, mobile, and voice applications.
+The Algolia search engine powers billions of queries for thousands of companies every month, delivering relevant results in under 100 ms anywhere in the world.
+
+The first step is to send your data to Algolia, in a proper format.
+Once on Algolia's servers, you can start testing search with your data. You can do this without code, using the dashboard, or with code, using one of the official API clients.
+At this stage, **you've got the basic structure of an Algolia search solution**.
+
+There's much more to creating a full search implementation, and the documentation walks you through every possibility.
+
+## The Algolia engine
+
+### Speed
+
+The Algolia search engine was built to ensure speed at every point in the processing workflow.
+For example, **search requests always have priority over indexing operations**, to guarantee an optimal experience for your users.
+
+### Relevance
+
+The main goal of the Algolia engine is to find all records that match a query, then to order them with [the most relevant ones first](/guides/managing-results/relevance-overview/relevance-overview/).
+The overarching principle is that Algolia uses a tie-breaking algorithm with a variety of criteria to weigh and compare matching items against each other.
+**This ensures that the best matches appear at the top.**
+
+Here are some examples of the ways the engine compares records.
+
+- Is there a typo? If yes, how many?
+- Does the query match on the first letter? Does it match the whole word? Or only partially?
+- Does the word match a synonym?
+- Does the query match the title of a record or its description?
+- Is this item more popular than another item?
+
+When you add up the answers to these questions, some records have a stronger or weaker relevance.
+This is what determines the order of the results.
+
+### Transparency
+
+The thoughts and criteria that Algolia uses to find and rank records are available for your scrutiny.
+Furthermore, you can configure most of it, making all engine defaults adaptable to your unique needs (without secrets or complicated statistical formulas).
+
+## An end-to-end search solution
+
+You can't build high-end search without excellent user experience.
+This is why Algolia provides you with everything you need to build an as-you-type search experience with instant results.
+Users greatly benefit from seeing well formatted search results with images and highlighted text instantly on their screen, rather than having to submit their search and wait for results.
+This is "search at the speed of thought".
+Visual immediacy is vital to the decision-making process.
+
+While speed is key to user experience, many other aspects go into making Algolia a full-featured, comprehensive search solution: custom ranking, configuration, and adaptability, tailored UI components for the frontend, personalization, analytics, and A/B testing.
+**Algolia provides everything you need to build excellent search**.
+
+## Implementing Algolia
+
+You can break down how to implement Algolia into a few steps:
+
+- Designing your user experience
+- Indexing your data into Algolia
+- Building a search user interface
+- Configuring relevance and ranking settings
+
+Before starting, it helps to create a plan to go live and make sure your team is ready to go.
+Once you do go live, you can improve your implementation using Algolia Analytics and A/B testing.
+
+## Building a search UI
+
+To help you build the best solution as quickly and with as little friction as possible, Algolia offers a family of UI/UX libraries called InstantSearch. **InstantSearch offers a full set of UI components that you can use on any web, mobile, or voice app.**
+In minutes, you get a fully functional search UI.
+You can use the InstantSearch widgets out-of-the-box, or fully customize them to match your needs.
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/js/" horizontal="true">
+    InstantSearch.js
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/react/" horizontal="true">
+    React InstantSearch
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/vue/" horizontal="true">
+    Vue InstantSearch
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/android/" horizontal="true">
+    InstantSearch Android
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/ios/" horizontal="true">
+    InstantSearch iOS
+  </Card>
+</CardGroup>
+
+## Insights and analytics
+
+Building excellent search is also about refining it based on how users interact with it. Algolia's analytics provide constant and reliable feedback.
+**This is crucial to know whether your search solution is achieving your goals.
+**Algolia provides such feedback by capturing user activity and giving you the ability to track click and conversion events, perform A/B testing, and personalize relevance.
+
+## Infrastructure
+
+Algolia hosts each subscriber on a three-server architecture called a cluster.
+
+If one or two servers go down, there's always a third one ready and available.
+Having all three servers go down at the same time is extremely rare, especially given that they're not in the same data center.
+**Service availability is one of Algolia's highest priorities.**
+
+Algolia stores your data on a global network of servers.
+This puts the information close to your users, minimizing travel time for search requests.
+These servers also keep all searchable data readily available in memory, allowing for instant responses to search requests.
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/getting-started/ecosystem/" horizontal="true">
+    Algolia's ecosystem
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/getting-started/features/" horizontal="true">
+    Algolia features
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/scaling/servers-clusters/" horizontal="true">
+    Servers and clusters
+  </Card>
+</CardGroup>

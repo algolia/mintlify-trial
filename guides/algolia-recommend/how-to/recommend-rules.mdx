@@ -1,0 +1,95 @@
+---
+title: Recommend rules
+description: |-
+  Learn how Recommend rules let you refine and curate your recommendations.
+---
+
+Recommend rules are _if_-_then_ statements that let you refine and curate your recommendations without editing code.
+When a **condition** (_if_) is met, the rule's **consequences** (_then_) are applied to the recommendations.
+
+The number of rules you can apply to a recommendation scenario depends on your [Algolia plan](https://www.algolia.com/pricing/).
+
+<Card title="Explore related videos in the Algolia Academy" icon="photo-film" href="https://academy.algolia.com/training/d3df2ebe-0712-11ef-8994-0617d5264223/overview" horizontal="true" color="#c7519c">
+  Recommend rules (full course)
+</Card>
+
+## Examples
+
+Examples for rules include:
+
+- Show related items from the same category as the viewed product.
+  Create a rule "Boost items" as consequence,
+  where you select the category attribute and the `sameAsViewedItem` value.
+  This doesn't exclude recommendations with different categories,
+  which can be helpful if you have categories with only few recommendations.
+
+- Exclude recommendations for out-of-stock products.
+  For example, if your index has an `inventory` attribute as count,
+  you can create a rule with "Filter items" as consequence,
+  where you select `inventory > 0` as filter condition.
+  This excludes all recommendations with 0 or undefined inventory.
+
+- Curate recommendations by pinning them.
+  For example, if you want to make best sellers or newly launched items show up first as recommendations,
+  create a rule with the "Pin items" consequence and select specific items and their position in the list of recommendations.
+
+- For all products from a specific category, boost items of a specific type.
+  For example, in the category "hair" (`category:hair`), recommend all shampoos (`product_type:shampoo`) first.
+  Create a rule with the "Subset of source items" condition and select "`category` is `hair`".
+  Add a "Boost items" consequence with "`product_type` is `shampoo`".
+
+## Add rules to recommendations
+
+import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
+
+<RecommendDashboard />
+
+<Steps>
+  <Step title="Select a index and model for the rules" stepNumber="3">
+    On the [**Rules**](https://dashboard.algolia.com/recommend/rules) page,
+   select the index and model to which you want to apply rules.
+
+   ![Select the trained Recommend model to which you want to apply recommendations](/images/recommend/rules-overview.png)
+
+    <Note>
+        You can apply rules to trained Frequently Bought Together and Related Product models.
+    </Note>
+  </Step>
+  <Step title="Select rule conditions">
+    Click **+ New rule** and select the conditions when the rule should apply.
+
+   - **Any item is a source item.** The consequences of this rule apply to all recommendations.
+   - **Specific item is viewed.** The consequences of this rule apply only when recommendations for a specific item are retrieved.
+   - **Subset of source items.** The consequences of this rule apply to items that match a filter.
+  </Step>
+  <Step title="Optional: add a rule context">
+    Add a context for this rule.
+    Contexts are additional constraints for rules.
+    For more information, see [Context-only rules](/guides/managing-results/rules/rules-overview/#context-only-rules).
+  </Step>
+  <Step title="Add consequences">
+    Under **Consequence(-s)**, click **Add consequence** and select what to do when the conditions are met:
+
+    - **Pin items**. Put one or more selected items at a specific position in the list of recommendations (`1` is first)
+    - **Hide items**. Exclude one or more selected items from the list of recommendations.
+    - **Boost items**. Enter filter criteria and show matching items before non-matching items in the list of recommendations.
+    - **Bury items**. Enter filter criteria and show matching items after non-matching items in the list of recommendations.
+    - **Filter items**. Enter filter criteria and only include matching items in the list of recommendations.
+
+    To only show items with the same attribute value as the viewed item, set the value to `sameAsViewedItem`.
+
+    ![The filter items consequence with the sameAsViewedItem option selected](/images/recommend/rules-same-as-viewed.png)
+  </Step>
+  <Step title="Optional: describe rule">
+    Add a description for the rule and select a timeframe when the rule should be active.
+  </Step>
+</Steps>
+
+## Rules precedence algorithm
+
+Algolia uses the following tie-breaking algorithm to determine which rules should apply first:
+
+1. Rules for which you've specified a context.
+1. Rules with **Filter items**, **Boost items**, or **Bury items** consequences.
+1. Rules with a specified validity time frame.
+1. If there are still tied rules, the one with the lowest object ID (alphabetically ordered) wins.

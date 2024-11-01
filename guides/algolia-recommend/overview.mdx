@@ -1,0 +1,133 @@
+---
+title: Algolia Recommend
+description: |-
+  Learn how you can use Algolia Recommend to display recommendations on your site or app.
+---
+
+Algolia Recommend lets you display recommendations on your website.
+Recommendations encourage users to expand their search and browse more broadly.
+Users can jump to similar or complementary items if they don't find a precise match.
+
+## How Recommend works
+
+Recommendations rely on supervised machine learning models that are trained on your product data and user interactions.
+
+Recommend uses two different algorithm types: **collaborative filtering** and **content-based filtering**.
+
+- **Collaborative filtering** analyzes user events from the last 30-90 days.
+Recommend creates a table of `userToken` and `objectID` which show how many times each user interacted with each record (object).
+Recommend then uses a [collaborative filtering](https://wikipedia.org/wiki/Collaborative_filtering) algorithm to find other records that are _similar_ or _frequently bought together_:
+  - **Similar** if the same set of users interacts with them.
+  - **Frequently bought together** if the same set of users bought them.
+- [**Content-based filtering**](#content-based-filtering-for-related-items) analyzes key attributes of items, such as their titles or descriptions, to find similarities.
+
+## Recommend models
+
+Algolia Recommend builds _models_ from your index and user events,
+based on [supervised machine learning](https://wikipedia.org/wiki/Supervised_learning) algorithms.
+Given an `objectID`(_source item_ or _viewed item_), the trained model recommends other related `objectID`s (_recommendations_).
+
+### Frequently Bought Together
+
+The two variants of the Frequently Bought Together model, Relaxed and Strict, both recommend items that go well together:
+
+- **Relaxed.** Items that _might_ go well together.
+- **Strict.** Items that _have been_ purchased together in the past.
+
+#### Relaxed
+
+The Relaxed variant recommends items that are **likely to be bought together**.
+To find such items, it looks at [conversion events](/guides/send-events/concepts/event-types/),
+such as a purchase.
+If the same user buys two or more items on the same day, they are considered as being _bought together_.
+The model uses this information, including historical purchases, to suggest items likely to go well together.
+
+#### Strict
+
+The Strict variant uses the historical purchases to recommend only items that **were bought together** in the past.
+To find such items, it looks at [conversion events]/guides/send-events/concepts/event-types/),
+such as a purchase.
+If the same user buys two or more items on the same day, they are considered as being _bought together_.
+
+### Related Items
+
+The Related Items model recommends items that are related to each other based on:
+
+- User interactions ([click and conversion events](/guides/send-events/get-started/)) (collaborative filtering)
+- Attributes (content-based filtering). With content-based filtering, you can show related content instead of related products.
+
+#### Content-based filtering for Related Items
+
+Content-based filtering creates even more relevant recommendations than relying on collaborative filtering alone and allows you to **show recommendations when you don't have enough click and conversion events.**
+With content-based filtering, you can maximize your catalog exposure so that users get relevant recommendations even on items that aren't popular.
+
+**If you use content-based _and_ collaborative filtering models, you'll get a merged set of recommendations from both models.**
+
+### Trending Items and Trending Facet Values
+
+The **Trending Items** model looks for items in your product catalog that have recently become popular (based on **conversion events**).
+This could be _global_ for the entire catalog or within a specific facet (category), like winter sweaters.
+The **Trending Facet Values** model looks for facet values that recently increased in popularity.
+For example, you can recommend trending facet values within the "categories" facet.
+
+You can use **both models together**. For example,
+by showing trending categories on your home page in a carousel layout
+and in each carousel card, showing the trending items for each category.
+
+### Looking Similar
+
+The Looking Similar model recommends items that are related to each other based on the images provided in your index.
+This model [can be set up in a few minutes](/guides/algolia-recommend/how-to/lookingSimilar/) as it **doesn't require any events**.
+
+## Events requirements for the models
+
+To create relevant recommendations, each model needs a minimum number of events or items with attributes.
+If the data collected from the last 30 days isn't enough, the Frequently Bought Together and Related Items models extend the collection period to 90 days.
+Similarly, the Trending Items and Trending Facet Values models initially gather data from the preceding 15 days and expand to the last 30 days if needed.
+
+Each model also has a maximum number of events it can use for training. If there are too many events or items with attributes, the model will ignore them.
+
+Each model generates up to 30 recommendations.
+
+import CommonEvents from '/snippets/recommend/common-events.mdx';
+
+<CommonEvents />
+
+### Event customisation for Frequently Bought Together
+
+By default, the Frequently Bought Together model uses every available and future conversion event for training.
+However, it can sometimes be helpful to customize the events used to train the model.
+For instance, to prevent the model from using false positives in its training.
+Users might interact with items in different ways. For example, they may add several headphones to their cart but buy just one pair.
+Customizing which events to use can lead to better relevance but can be more challenging in terms of event volume.
+
+For better relevance, you should only select **purchase** events,so that the model just looks at items that have actually been bought together, instead of "added to cart" or other conversion events you may have.
+
+This process ensures that, instead of using all current and future conversion events for training, the model _only_ uses the events you select.
+You can always revert to using all events by restoring the default settings.
+
+## Training frequency
+
+Once you've set up a model for the first time, it will undergo training.
+After this initial training, models are re-trained **once every day** (you can't change how often the model is trained).
+This ensures your recommendations stay up-to-date as your catalog changes over time.
+
+The training process can start at any moment during the day.
+Determining how long it will take is impossible because it depends on your catalog size and the resources available.
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/algolia-recommend/how-to/set-up/" horizontal="true">
+    How to set up Recommend
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/algolia-recommend/how-to/rules/" horizontal="true">
+    Recommend Rules
+  </Card>
+</CardGroup>
+
+### Blog posts
+
+import Blog from '/snippets/recommend/blog.mdx';
+
+<Blog />
