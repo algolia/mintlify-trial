@@ -1,0 +1,172 @@
+---
+title: Algolia glossary
+description: |-
+  Terms used at Algolia and their definitions.
+---
+This page lists terms used at Algolia and their definitions.
+
+## A
+
+### Affinity
+
+A [Facet-Value pair](#facet-value-pair) that reflects [End-User](#user)'s preferences.
+
+### Algolia AI
+
+A [Facet-Value pair](#facet-value-pair) that reflects [End-User](#user)'s preferences.
+
+Certain Algolia Services with an ability to train or adapt via use,
+such as NeuralSearch,
+Dynamic Re-Ranking,
+Dynamic Synonym Suggestions,
+Query Categorization,
+AI Personalisation and Recommend features:
+Frequently Bought Together, Alternative Items, Looking Similar, Content Based Alternative Items, and otherwise identified by Algolia.
+
+### API Client
+
+A program that provides an abstraction over the raw Algolia [API](#application-programming-interface-api), hiding implementation details to make development for [Subscribers](#subscriber) easier in the language of their choice.
+
+[Learn more](/guides/getting-started/ecosystem/#api-clients)
+
+### API key
+
+A string with alphanumeric characters used to control access to Algolia's [API](#application-programming-interface-api), determining what is allowed to do, such as searching an [Index](#index), or adding new [Records](#record).
+
+[Learn more](https://www.algolia.com/doc/guides/security/api-keys/)
+
+### Application
+
+A siloed set of [indices](#index).
+Data cannot be shared between applications.
+
+### Application ID
+
+A string with alphanumeric characters as a unique identifier for Algolia [applications](#application).
+
+### Application Programming Interface (API)
+
+A software intermediary that allows pieces of software to interact with each other.
+The Algolia API describes how the [Subscribers'](#subscriber) systems can interact with Algolia Services.
+
+[Learn more](/api-reference/overview/)
+
+## C
+
+### Click-through rate (CTR)
+
+The percentage of tracked searches with at least one click [Event](#event).
+A tracked search is a search with the `clickAnalytics` parameter set to `true`.
+
+[Learn more](https://www.algolia.com/doc/guides/search-analytics/concepts/metrics/#click-through-rate)
+
+### Conversion rate
+
+The percentage of tracked searches with at least one conversion [Event](#event).
+A tracked search is a search with the `clickAnalytics` parameter set to `true`.
+
+[Learn more](https://www.algolia.com/doc/guides/search-analytics/concepts/metrics/#conversion-rate)
+
+## D
+
+### Dashboard
+
+The [Subscriber's](#subscriber) administrator interface to Algolia Services.
+The Dashboard is hosted by Algolia.
+
+## E
+
+### Event
+
+An action performed by a [User](#user) on [Subscriber's](#subscriber) app or website.
+
+[Learn more](/guides/send-events/get-started/)
+
+## F
+
+### Facet
+
+A specific characteristic for describing [index](#index) items, such as color or brand.
+
+[Learn more](/guides/managing-results/refine-results/faceting/)
+
+### Facet-Value pair
+
+A pair made of a [Facet](#facet) name and a value.
+For example, if “priority” and “quality” are two Facets, “priority:high” and “quality:high” are two Facet-Value pairs.
+
+### Filter
+
+A [Facet-Value pair](#facet-value-pair) used to select results with a specific facet value for a given facet name.
+
+[Learn more](/guides/managing-results/refine-results/filtering/)
+
+## I
+
+### Index
+
+A container for a set of [Records](#record) that can be searched together.
+
+[Learn more](/guides/sending-and-managing-data/send-and-update-your-data/)
+
+### Insights API
+
+Algolia's API designed to ingest [Events](#event) from [Subscriber's](#subscriber) apps and websites.
+
+[Learn more](/api-reference/insights-api/)
+
+### InstantSearch
+
+A collection of open source software libraries that let [Subscribers](#subscriber) build Algolia search interfaces for their frontend application.
+The InstantSearch libraries are built on top of [API Clients](#api-client).
+
+[Learn more](https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/js/)
+
+## L
+
+### Library
+
+A collection of reusable software, designed to help developers solve common problems.
+A library is often targeted to be used with a specific software platform or operating system.
+
+##P
+
+### Profile
+
+Designates a set of information about a single [End-User](#user),
+including their [Affinities](#affinity) based on enriched [Events](#event) and audience segment to which the End-User belongs.
+
+## R
+
+### Record
+
+[Subscriber](#subscriber) items stored in an Algolia [Index](#index) for retrieval.
+
+[Learn more](/guides/sending-and-managing-data/prepare-your-data/)
+
+## S 
+
+### Search Request
+
+A group of one or more [search queries](#search-query) sent in a single HTTP request.
+
+### Search query
+
+A sequence of characters typed into a search bar, or specific filters or facets applied to a search.
+
+### Subscriber
+
+A customer of Algolia Services, such as Search or Recommend.
+
+## U
+
+### User
+
+Customers or end-users of Algolia [Subscribers](#subscriber) who interact with Algolia Services, such as Search and Recommend.
+
+### User token
+
+A unique string of alphanumeric characters that uniquely identifies a [User](#user) throughout [applications]#application().
+A user token must contain only alphanumeric, =, -, /, or _ characters and be between 1 and 128 characters in length.
+
+[Learn more](/guides/send-events/concepts/user-token/)

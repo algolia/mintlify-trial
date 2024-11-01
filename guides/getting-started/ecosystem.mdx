@@ -1,0 +1,176 @@
+---
+title: Algolia's ecosystem
+description: |-
+  An overview of Algolia's ecosystem. API clients, UI libraries, integrations, the dashboard, and more.
+---
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/hvjf3QRAA8c"
+  title="Discover Algolia #2 - Ecosystem"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowfullscreen
+></iframe>
+
+You can choose from a set of libraries and tools to help connect your data and configure Algolia for your site or app.
+Algolia supports several programming languages and provides integrations for popular frameworks and ecommerce platforms.
+
+<Note>
+    Discover code samples and community-built integrations in the [Algolia Code Exchange](https://www.algolia.com/developers/code-exchange/).
+</Note>
+
+## Algolia dashboard
+
+In the [dashboard](https://dashboard.algolia.com/dashboard/) you can configure most aspects of Algolia's products and features.
+
+## Algolia CLI
+
+The [Algolia CLI](https://www.algolia.com/doc/tools/cli/get-started/overview/) lets you interact with Algolia's APIs from your terminal, without code.
+
+## API clients
+
+Algolia's API clients provide convenient methods for interacting with Algolia's APIs,
+and add features such as a retry strategy, or batching uploads.
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/csharp/v7/" horizontal="true">
+    C#
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/dart/v1/" horizontal="true">
+    Dart
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/go/v4/" horizontal="true">
+    Go
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/java/v4/" horizontal="true">
+    Java
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/javascript/v5/" horizontal="true">
+    JavaScript
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/kotlin/v3/" horizontal="true">
+    Kotlin
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/php/v4/" horizontal="true">
+    PHP
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/python/v4/" horizontal="true">
+    Python
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/ruby/v3/" horizontal="true">
+    Ruby
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/scala/v2/" horizontal="true">
+    Scala
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/libraries/swift/v9/" horizontal="true">
+    Swift
+  </Card>
+</CardGroup>
+
+## REST API
+
+While you can carry out any indexing, search, and configuration-related task with the [REST API](/api-reference/overview/),
+you should use an API client or another integration.
+
+<Warning>
+    You should only use the REST API to develop new API clients.
+    Using the REST API directly isn't covered by Algolia's [SLA](https://www.algolia.com/policies/sla/) terms.
+</Warning>
+
+## Frontend libraries
+
+Algolia offers UI libraries with ready-to-use and customizable components.
+
+### InstantSearch
+
+InstantSearch lets you build user interfaces for search and discovery from ready-made components (widgets).
+InstantSearch also gives you the tools to build your own widgets.
+InstantSearch is available in these different _flavors_:
+
+import InstantSearch from '/snippets/instantsearch.mdx';
+
+<InstantSearch />
+
+### Autocomplete
+
+The [Autocomplete UI library](https://www.algolia.com/doc/ui-libraries/autocomplete/introduction/what-is-autocomplete/) lets you build accessible, search-as-you-type user interfaces that you can integrate anywhere on your site or app.
+
+### UI design kit
+
+If you want to design your next search and discovery experience,
+you can use Algolia's [UI Design Kit (Figma)](https://www.algolia.com/doc/guides/building-search-ui/resources/ui-kit/js/).
+
+## Framework integrations
+
+Built on top of the API clients,
+Algolia's framework integrations help synchronize your data between your database and Algolia.
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/framework-integration/django/setup/" horizontal="true">
+    Django
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/framework-integration/laravel/getting-started/introduction-to-scout-extended/" horizontal="true">
+    Laravel
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/framework-integration/rails/getting-started/setup/" horizontal="true">
+    Rails
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/framework-integration/symfony/getting-started/algolia-searchbundle/" horizontal="true">
+    Symfony
+  </Card>
+</CardGroup>
+
+## Ecommerce integrations
+
+Algolia integrates with ecommerce platforms to help you index your product catalog and integrate Algolia
+into your storefront UI.
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/integration/magento-2/getting-started/quick-start/" horizontal="true">
+    Adobe Commerce and Magento Open Source
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/integration/bigcommerce/get-started/installation/" horizontal="true">
+    BigCommerce
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/integration/commercetools/get-started/installation/" horizontal="true">
+    commercetools
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/integration/salesforce-commerce-cloud-b2c/getting-started/introduction/" horizontal="true">
+    Salesforce B2C Commerce
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/integration/shopify/getting-started/quick-start/" horizontal="true">
+    Shopify
+  </Card>
+</CardGroup>
+
+## Extensions and tools
+
+These tools can help you integrate Algolia into your site.
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/tools/crawler/getting-started/overview/" horizontal="true">
+    Crawler
+  </Card>
+  <Card title="DocSearch" icon="globe-pointer" href="https://docsearch.algolia.com/" horizontal="true">
+    DocSearch
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/tools/crawler/netlify-plugin/quick-start/" horizontal="true">
+    Netlify
+  </Card>
+  <Card title="Guide" icon="book" href="hhttps://www.algolia.com/doc/integration/zendesk/get-started/" horizontal="true">
+    Zendesk
+  </Card>
+</CardGroup>
+
+### DocSearch
+
+DocSearch is the easiest way to add search to a technical documentation site.
+It's [free for such sites](https://docsearch.algolia.com/docs/who-can-apply/).
+
+Find examples of DocSearch for popular site builders, such as Docusaurus or VuePress,
+in the [Code Exchange](https://www.algolia.com/developers/code-exchange/?refinementList%5Bproduct_features%5D%5B0%5D=Algolia%20Crawler).
+
+To get started, [apply online](https://docsearch.algolia.com/apply/).

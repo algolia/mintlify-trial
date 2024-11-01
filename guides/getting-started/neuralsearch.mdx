@@ -1,0 +1,137 @@
+---
+title: NeuralSearch
+description: |-
+   NeuralSearch combines the precision of keyword matching with the deep understanding of natural language and contextual relevance provided by AI-based vector search.
+---
+
+NeuralSearch combines the precision of keyword search with the deep understanding of natural language and contextual relevance provided by AI-based [vector search](https://www.algolia.com/blog/ai/what-is-vector-search/).
+On every keystroke, NeuralSearch performs a hybrid keyword and vector search,
+merges the results, and ranks them based on relevance so that searchers get fast and accurate results that align with their search intent.
+
+<CardGroup cols={2}>
+    <Card title="Algolia Academy" icon="photo-film" href="https://academy.algolia.com/guides/b4689b6a-6f69-11ee-b413-023abcbc0155/tasks/6eb06fb8-f66e-11ed-9e23-021a54024a59" horizontal="true" color="#c7519c">
+        NeuralSearch: quick activation
+    </Card>
+    <Card title="Algolia Academy" icon="photo-film" href="https://academy.algolia.com/guides/6189a948-0717-11ef-a74e-02fcc09ef7a1/tasks/7ed4528e-0247-11ef-870b-02e7ae2b609b" horizontal="true" color="#c7519c">
+        NeuralSearch explainability
+    </Card>
+</CardGroup>
+
+## Before you begin
+
+NeuralSearch has the following requirements:
+
+- You must be on the [Elevate](https://www.algolia.com/pricing/) pricing plan
+- You need to have [uploaded your data to Algolia](/guides/sending-and-managing-data/send-and-update-your-data/send-and-update-your-data/)
+- You're [sending click and conversion events](/guides/send-events/get-started/) from your app or site to Algolia. NeuralSearch depends on user interactions to train the underlying language model for its vector search.
+
+## Set up NeuralSearch
+
+You can activate NeuralSearch on an index in your Algolia dashboard:
+
+import Dashboard from '/snippets/dashboard.mdx';
+
+<Dashboard />
+
+<Steps>
+    <Step title="Configure NeuralSearch" stepNumber="4">
+        Go to **Configure > NeuralSearch** and click **Configure NeuralSearch**.
+    </Step>
+    <Step title="Select source">
+        Select your **event source**.
+        By default, NeuralSearch uses events from the index you selected to train the language model.
+        If your index has replicas, you can add them as additional event sources.
+        Click **Add event sources** to add these event source indices.
+    </Step>
+    <Step title="Select NeuralSearch options">
+        If you collected enough events in the last 30 days, you can select one of these options:
+
+        - Select **Activate NeuralSearch** to start the training and activate NeuralSearch for the current index.
+        - Select **See NeuralSearch in action** to create a replica index where you can test NeuralSearch.
+
+        Both options are inactive until you collect enough events.
+
+        <Note>
+            Building the NeuralSearch index takes time, depending on your index size.
+        </Note>
+    </Step>
+</Steps>
+
+## Search with NeuralSearch
+
+Searching with NeuralSearch works the same as before,
+except with an increased understanding of the query.
+Now, instead of matching only keywords in the text,
+the search engine also returns results that match _concepts_:
+
+|                              | Keyword search                   | NeuralSearch                                               |
+| ---------------------------- | -------------------------------- | ---------------------------------------------------------- |
+| Matches                      | Keywords                         | Concepts and keywords                                      |
+| Results                      | Exact or similar keyword matches | Relevant results, even if the query doesn't match keywords |
+| Understanding of user intent | Limited                          | Can anticipate intent based on the search                  |
+
+## Set the search mode in the API
+
+After activating NeuralSearch in the dashboard,
+you can use the `mode` API parameter to turn NeuralSearch off:
+
+<CodeGroup>
+    ```php PHP
+    $index->setSettings(['mode' => 'keywordSearch']);
+    ```
+
+    ```js JavaScript
+    index.setSettings({ mode: 'keywordSearch' });
+    ```
+
+    ```python Python
+    index.set_settings({ mode: "keywordSearch" })
+    ```
+
+    ```ruby Ruby
+    index.set_settings({ mode: 'keywordSearch' })
+    ```
+</CodeGroup>
+
+To re-activate NeuralSearch for the current index:
+
+<CodeGroup>
+    ```php PHP
+    $index->setSettings(['mode' => 'neuralSearch']);
+    ```
+
+    ```js JavaScript
+    index.setSettings({ mode: 'neuralSearch' });
+    ```
+
+    ```python Python
+    index.set_settings({ mode: "neuralSearch" })
+    ```
+
+    ```ruby Ruby
+    index.set_settings({ mode: 'neuralSearch' })
+    ```
+</CodeGroup>
+
+## How NeuralSearch ranks results
+
+NeuralSearch results have a neural score composed of a _keyword score_, a _semantic score_, or both.
+
+### Keyword score
+
+The keyword score represents how well a record matches the query from a keyword search against other keyword-retrieved results.
+At the base of this score is Algolia's tie-breaking algorithm.
+A record has a keyword score if a keyword search finds it.
+
+### Semantic score
+
+The semantic score represents how well a record matches the query from a vector search against other vector-retrieved results.
+The basis of this score is [neural hash similarity](https://www.algolia.com/blog/ai/what-is-hashing-and-how-does-it-improve-website-and-app-search/).
+A record has a semantic score if a vector search finds it.
+
+### Neural score
+
+The neural score combines the keyword score and the semantic score.
+It measures how relevant the record is compared to the other records in the result set.
+The neural score answers the question:
+_“Against this query, compared to these other results, how relevant is this result?”_

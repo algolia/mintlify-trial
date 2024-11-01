@@ -1,0 +1,64 @@
+---
+title: Algolia's features
+description: |-
+  Learn how you can elevate your search and discovery experience with Algolia's out-of-the-box features.
+---
+
+Algolia has many built-in features that you can configure and integrate into your search implementation.
+All are available out-of-the-box and don't require any additional development.
+
+Here's a quick review of features that are particularly helpful for getting started with building search.
+
+## Global language support
+
+[Algolia works with many languages](https://www.algolia.com/doc/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages/), including Chinese, Japanese, Korean, Hebrew, and Arabic, without any additional work.
+This means that both left-to-right (LTR) and right-to-left (RTL) scripts are supported.
+
+## Typo-tolerance
+
+Users misspell words, especially those using mobile devices.
+To prevent letting these common mistakes ruin your user's search experience,
+[Algolia provides robust typo-tolerance](https://www.algolia.com/doc/guides/managing-results/optimize-search-results/typo-tolerance/) and easy ways to customize just how tolerant a search experience should be.
+
+## Highlighting and snippeting
+
+Each search response contains one or more [highlighted](https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/highlighting-snippeting/js/#highlighting) results, so you can show which section and words matched user queries.
+Highlighting works even if users misspell a query.
+You can also use [snippets](https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/highlighting-snippeting/js/#snippeting) for lengthier pieces of content.
+
+## Faceting
+
+The Algolia response contains matching facets based on the query and any previously selected facets.
+With this information, you can build an intuitive, faceted experience that allows users to understand
+the available refinements and helps avoid "no results" screens.
+
+## Synonyms
+
+[Synonyms](https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/) tell Algolia which words and expressions that should be considered equal—for example, "coat" and "parka", or "annoyed" and "angry".
+You can specify various types of synonyms based on the needs of your data.
+
+## Advanced language processing
+
+Algolia provides [language-based options](https://www.algolia.com/doc/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/language-specific-configurations/) for tweaking the configuration of plurals, stop words, optional words, prefixing, and more.
+
+## Geo-awareness
+
+Search results from location-based queries ([geographical search](https://www.algolia.com/doc/guides/managing-results/refine-results/geolocation/)) can contain distance information.
+This lets you [display nearby search results](https://www.algolia.com/doc/guides/managing-results/refine-results/geolocation/how-to/filter-results-around-a-location/) sorted by distance or constrain your search to a particular region or radius.
+
+## Multiple sorting strategies
+
+Algolia lets you set up various [sorting strategies](/guides/managing-results/refine-results/sorting/sorting/) to help your users select their preferred ranking.
+For example, you may allow users to sort by the most recent results or lowest price.
+
+## Grouping and deduplication
+
+The [distinct feature](/guides/managing-results/refine-results/grouping/grouping/) allows for either deduplication or grouping based on a specific "key" attribute.
+This lets you remove duplicate records or group sets of records (which is particularly useful for handling parent-child relationships).
+
+## Personalization
+
+Algolia's [Personalization feature](https://www.algolia.com/doc/guides/personalization/classic-personalization/what-is-personalization/) creates relevance tuned specifically for each user.
+For example, teenagers searching for "Grand Theft Auto" might be looking for game strategies:
+mothers searching the same want to know if the game is appropriate for their kids.
+Personalization lets you "boost" results that might be subjectively more in line with a particular user's tastes.
