@@ -55,6 +55,25 @@
     ],
     "navigation": [
         {
+            "group": "Get started",
+            "pages": [
+                "guides/getting-started/what-is-algolia",
+                "guides/getting-started/neuralsearch",
+                "guides/getting-started/how-algolia-works",
+                "guides/getting-started/ecosystem",
+                "guides/getting-started/features",
+                {
+                    "group": "Quick start",
+                    "pages": [
+                        "guides/getting-started/quick-start",
+                        "guides/getting-started/quick-start/get-started-with-the-dashboard",
+                        "guides/getting-started/quick-start/track-usage-and-performance-in-the-dashboard"
+                    ]
+                },
+                "guides/getting-started/glossary"
+            ]
+        },
+        {
             "group": "Send events",
             "pages": [
                 "guides/send-events/get-started",
@@ -546,7 +565,7 @@
                     ]
                 }
             ]
-          },
+        },
         {
             "group": "Libraries",
             "pages": [
@@ -935,4 +954,4 @@
         "x": "https://x.com/algolia",
         "discord": "https://alg.li/discord"
     }
-  }
+}
