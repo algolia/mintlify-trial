@@ -1,0 +1,143 @@
+---
+title: 'Plan your implementation'
+sidebarTitle: 'Plan your implementation'
+description: Collect the correct user events for your application.
+---
+
+When you build your search and browse interface, **you should implement sending events at the same time.**
+This lets you [validate your user events](/guides/send-events/guides/validate/) before going live and collect enough events to make an impact sooner.
+
+When planning which events to send, consider all interaction points your users have with your site:
+
+- Category pages
+- Search results pages
+- Autocomplete menu
+- Emails, newsletters, push notifications, and other pages
+
+## Must-have events for ecommerce
+
+Every ecommerce search and browse implementation should send click events
+when users click products after performing a search.
+They should also include conversion events when users add products to the shopping cart.
+
+### Must-have events for product listing pages
+
+<AccordionGroup>
+
+  <Accordion title="PLP: Product Clicked">
+    - **Description.** A user clicked on a search result.
+    
+        Send a click event to capture the search query, which item was clicked, and the position in the search results
+    - **API method.** `clickedObjectIDsAfterSearch`
+    - **Properties.** `eventName`, `indexName`, `objectIDs`, `positions`, `userToken` 
+  </Accordion>
+
+  <Accordion title="PLP: Product Added to Cart">
+    - **Description.** A user clicked on a search result.
+    
+        Send a click event to capture the search query, which item was clicked, and the position in the search results
+    - **API method.** `convertedObjectIDsAfterSearch`
+    - **Properties.** `eventName`, `indexName`, `objectIDs`, `userToken` 
+  </Accordion>
+
+</AccordionGroup>
+
+### Must-have events for product detail pages
+
+<AccordionGroup>
+
+  <Accordion title="PDP: Product Added to Cart after Search">
+    - **Description.** A user added an item to the cart on the product detail page after performing a search.
+    - **API method.** `convertedObjectIDsAfterSearch`
+    - **Properties.** `eventName`, `indexName`, `objectIDs`, `queryID`, `userToken`
+  </Accordion>
+
+  <Accordion title="PDP: Product Added to Cart">
+    - **Description.** A user added an item to the cart
+    - **API method.** `convertedObjectIDs`
+    - **Properties.** `eventName`, `indexName`, `objectIDs`, `userToken`
+  </Accordion>
+
+</AccordionGroup>
+
+### Must-have events for autocomplete
+
+If you include products in the autocomplete menu of your search interface, you should send events for user interactions with the menu.
+
+<AccordionGroup>
+
+  <Accordion title="Autocomplete: Product Clicked">
+    - **Description.** A user clicked on a search result in the autocomplete menu.
+    - **API method.** `clickedObjectIDsAfterSearch`
+    - **Properties.** `eventName`, `indexName`, `objectIDs`, `positions`, `userToken`
+  </Accordion>
+
+  <Accordion title="Autocomplete: Product Added to Cart">
+    - **Description.** A user added an item to the cart from the autocomplete menu
+    - **API method.** `convertedObjectIDsfterSearch`
+    - **Properties.** `eventName`, `indexName`, `objectIDs`, `userToken`
+  </Accordion>
+
+</AccordionGroup>
+
+## Additional events for Personalization
+
+Add these events if you want to enhance your Personalization strategy.
+
+<AccordionGroup>
+
+  <Accordion title="PLP: Filter Clicked">
+    - **Description.** AA user selected a facet value
+    - **API method.** `clickedFilters`
+    - **Properties.** `eventName`, `indexName`, `filters`, `userToken`
+  </Accordion>
+
+  <Accordion title="PLP: Filter Viewed">
+    - **Description.** A user viewed a landing page
+    - **API method.** `viewedFilters`
+    - **Properties.** `eventName`, `indexName`, `filters`, `userToken`
+  </Accordion>
+
+  <Accordion title="Product Viewed">
+    - **Description.** A user viewed a product page from an email, newsletter, push notification, or any other page
+    - **API method.** `viewedObjectIDs`
+    - **Properties.** `eventName`, `indexName`, `objectIDs`, `userToken`
+  </Accordion>
+
+</AccordionGroup>
+
+## Example events for media
+
+When planning events to send for a media use case, consider the following example events.
+
+### View events
+
+- `Article Viewed`: a user viewed an article page.
+
+### Click events
+
+- `Article Clicked`: a user clicked on an article.
+- `Ad Clicked`: a user clicked on an ad.
+
+### Conversion events
+
+- `Article Read`: a user reached the bottom of an article page.
+- `Article Bookmarked`: a user bookmarked an article.
+- `Article Liked`: a user liked an article.
+- `Article Recommended`: a user recommended an article.
+- `Video Watched`: a user watched a video.
+- `Playlist Followed`: a user followed a playlist.
+- `Author Followed`: a user followed an author.
+- `Brand Followed`: a user followed a brand.
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/algolia-recommend/overview/#events-requirements-for-the-models" horizontal="true">
+    Events for Algolia Recommend
+  </Card>
+  <Card title="Merchandising Playbook" icon="clapperboard" href="https://www.algolia.com/ecommerce-merchandising-playbook/events-planning/" horizontal="true">
+    Events planning
+  </Card>
+</CardGroup>
+

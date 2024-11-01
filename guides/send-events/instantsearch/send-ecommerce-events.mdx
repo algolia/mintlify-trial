@@ -1,0 +1,670 @@
+---
+title: 'Send ecommerce events with InstantSearch'
+sidebarTitle: 'Send ecommerce events'
+description: Collect user interactions as events in your ecommerce store.
+---
+
+import InstantSearchIntro from '/snippets/insights/instantsearch-intro.mdx';
+
+<InstantSearchIntro />
+
+import EcommerceDiagram from '/snippets/insights/ecommerce-diagram.mdx';
+
+<EcommerceDiagram />
+
+#### Search and search results pages
+
+| User action                        | Method name                       | Automatically collected? |
+| ---------------------------------- | --------------------------------- | ------------------------ |
+| User clicks search result          | `clickedObjectIDsAfterSearch`     | **Yes**                  |
+| User adds product to shopping cart | `addedToCartObjectIDsAfterSearch` | **No**                   |
+| User clicks categories/filters     | `clickedFilters`                  | **Yes**                  |
+| User views search results          | `viewedObjectIDs`                 | **Yes**                  |
+
+#### Product listing and category pages
+
+| User action                        | Method name                       | Automatically collected? |
+| ---------------------------------- | --------------------------------- | ------------------------ |
+| User clicks product                | `clickedObjectIDsAfterSearch`     | **Yes**                  |
+| User adds product to shopping cart | `addedToCartObjectIDsAfterSearch` | **No**                   |
+| User views category page           | `viewedObjectIDs`                 | **Yes**                  |
+
+#### Product details page
+
+| User action               | Method name                       | Automatically collected? |
+| ------------------------- | --------------------------------- | ------------------------ |
+| User adds product to cart | `addedToCartObjectIDsAfterSearch` | **No**                   |
+| User views product        | `viewedObjectIDs`                 | **No**                   |
+
+#### Checkout page
+
+| User action       | Event                           | Automatically collected? |
+| ----------------- | ------------------------------- | ------------------------ |
+| User buys product | `purchasedObjectIDsAfterSearch` | **No**                   |
+
+## Keep track of query IDs
+
+Conversion events are often triggered on pages that aren't covered by InstantSearch,
+such as your product details pages, or the checkout page.
+
+import TrackQueryid from '/snippets/insights/instantsearch-track-queryid.mdx';
+
+<TrackQueryid />
+
+## Track add-to-cart events
+
+### Using InstantSearch widgets
+
+When your users add an item to their cart, send a special `conversion` event with the `addToCart` subtype.
+
+<CodeGroup>
+
+```js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+        <p>${hit.description}</p>
+        <button
+            onClick=${() =>
+            sendEvent("conversion", hit, "Added To Cart", {
+                // Special subtype
+                eventSubtype: "addToCart",
+                // An array of objects representing each item added to the cart
+                objectData: [
+                {
+                    // The discount value for this item, if applicable
+                    discount: hit.discount || 0,
+                    // The price value for this item (minus the discount)
+                    price: hit.price,
+                    // How many of this item were added
+                    quantity: 2,
+                },
+                ],
+                // The total value of all items
+                value: hit.price * 2,
+                // The currency code
+                currency: "USD",
+            })}
+        >
+            Add to cart
+        </button>
+        `;
+    },
+    },
+});
+```
+
+```jsx React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={() =>
+            sendEvent("conversion", hit, "Added To Cart", {
+            // Special subtype
+            eventSubtype: "addToCart",
+            // An array of objects representing each item added to the cart
+            objectData: [
+                {
+                // The discount value for this item, if applicable
+                discount: hit.discount || 0,
+                // The price value for this item (minus the discount)
+                price: hit.price,
+                // How many of this item were added
+                quantity: 2,
+                },
+            ],
+            // The total value of all items
+            value: hit.price * 2,
+            // The currency code
+            currency: "USD",
+            })
+        }
+        >
+        Add to cart
+        </button>
+    </>
+    );
+}
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+    <h2>
+        <ais-highlight attribute="name" :hit="item" />
+    </h2>
+    <p>{{ item.description }}</p>
+    <button
+        @click="sendEvent('conversion', hit, 'Added To Cart', {
+        // Special subtype
+        eventSubtype: 'addToCart',
+        // An array of objects representing each item added to the cart
+        objectData: [
+            {
+            // The discount value for this item, if applicable
+            discount: item.discount || 0,
+            // The price value for this item (minus the discount)
+            price: item.price,
+            // How many of this item were added
+            quantity: 2,
+            // The per-item `queryID` for the query preceding this event
+            queryID: item.__queryID,
+            },
+        ],
+        // The total value of all items
+        value: item.price * 2,
+        // The currency code
+        currency: 'USD',
+        })"
+    >
+        Add to cart
+    </button>
+    </template>
+</ais-hits>
+```
+
+</CodeGroup>
+
+import Prices from '/snippets/insights/event-prices.mdx';
+
+<Prices />
+
+### On pages without InstantSearch widgets
+
+Add the following code to all components and pages where users can add products to their shopping cart.
+
+For add-to-cart events associated with a search:
+
+```js JavaScript
+window.aa("addedToCartObjectIDsAfterSearch", {
+  eventName: "Product Added To Cart",
+  index: "YourIndexName",
+  queryID: "queryID-1",
+  objectIDs: ["objectID-1"],
+  objectData: [
+    {
+      price: 19.99,
+      discount: 3.99,
+      quantity: 3,
+    },
+  ],
+  currency: "USD",
+});
+```
+
+The `windows.aa` object is the API client for the Insights API and is globally available
+if you enabled automatic events collection.
+The `queryID` parameter is used by Algolia to relate the event to a prior search or browse event.
+
+For add-to-cart events not related to a search query, for example, after a user clicks on a
+'Recommended for you' or 'Buy again' carousel on the home page:
+
+```js JavaScript
+window.aa("addedToCartObjectIDs", {
+  eventName: "Recommended Product Added To Cart",
+  index: "YourIndexName",
+  objectIDs: ["objectID-1"],
+  objectData: [
+    {
+      price: 68.5,
+      quantity: 2,
+    },
+  ],
+  currency: "USD",
+});
+```
+
+## Track purchase events
+
+### Using InstantSearch widgets
+
+When your users purchase an item, send a special `conversion` event with the `purchase` subtype.
+
+<CodeGroup>
+```js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+        <p>${hit.description}</p>
+        <button
+            onClick=${() =>
+            sendEvent("conversion", hit, "Purchased", {
+                // Special subtype
+                eventSubtype: "purchase",
+                // An array of objects representing each purchased item
+                objectData: [
+                {
+                    // The discount value for this item, if applicable
+                    discount: hit.discount || 0,
+                    // The price value for this item (minus the discount)
+                    price: hit.price,
+                    // How many of this item were added
+                    quantity: 2,
+                    // The per-item `queryID` for the query preceding this event
+                    queryID: hit.__queryID,
+                },
+                ],
+                // The total value of all items
+                value: hit.price * 2,
+                // The currency code
+                currency: "USD",
+            })}
+        >
+            Purchase
+        </button>
+        `;
+    },
+    },
+});
+```
+
+```jsx React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={() =>
+            sendEvent("conversion", hit, "Purchased", {
+            // Special subtype
+            eventSubtype: "purchase",
+            // An array of objects representing each purchased item
+            objectData: [
+                {
+                // The discount value for this item, if applicable
+                discount: hit.discount || 0,
+                // The price value for this item (minus the discount)
+                price: hit.price,
+                // How many of this item were added
+                quantity: 2,
+                // The per-item `queryID` for the query preceding this event
+                queryID: hit.__queryID,
+                },
+            ],
+            // The total value of all items
+            value: hit.price * 2,
+            // The currency code
+            currency: "USD",
+            })
+        }
+        >
+        Purchase
+        </button>
+    </>
+    );
+}
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+    <h2>
+        <ais-highlight attribute="name" :hit="item" />
+    </h2>
+    <p>{{ item.description }}</p>
+    <button
+        @click="sendEvent('conversion', hit, 'Purchased', {
+        // Special subtype
+        eventSubtype: 'purchase',
+        // An array of objects representing each purchased item
+        objectData: [
+            {
+            // The discount value for this item, if applicable
+            discount: item.discount || 0,
+            // The price value for this item (minus the discount)
+            price: item.price,
+            // How many of this item were added
+            quantity: 2,
+            },
+        ],
+        // The total value of all items
+        value: item.price * 2,
+        // The currency code
+        currency: 'USD',
+        })"
+    >
+        Purchase
+    </button>
+    </template>
+</ais-hits>
+```
+
+</CodeGroup>
+
+<Prices />
+
+### On pages without InstantSearch widgets
+
+Add the following code to your checkout flow:
+
+```js JavaScript
+window.aa("purchasedObjectIDsAfterSearch", {
+  userToken: "anonymous-123456", // required for Node.js
+  authenticatedUserToken: "user-123456",
+  eventName: "your_event_name",
+  index: "your_index_name",
+  objectIDs: ["objectID-1", "objectID-2"],
+  objectData: [
+    {
+      queryID: "queryID-1",
+      price: 19.99,
+      discount: 3.99,
+      quantity: 3,
+    },
+    {
+      queryID: "queryID-2",
+      price: 59.99,
+      quantity: 2,
+    },
+  ],
+  currency: "USD",
+});
+```
+
+## Track other conversion events
+
+You can track other conversions in addition to add-to-cart and purchase events.
+
+import TrackConversionEvents from '/snippets/insights/instantsearch-track-conversion-events.mdx';
+
+<TrackConversionEvents />
+
+### On pages without InstantSearch widgets
+
+This is an example of a conversion that may occur on a page without InstantSearch:
+
+```js JavaScript
+// A user added a product to their wishlist from the homepage
+window.aa("convertedObjectIDs", {
+  eventName: "Product Added To Wishlist",
+  index: "YourIndexName",
+  objectIDs: ["objectID-1"],
+});
+```
+
+## Track click events
+
+### Override default click events
+
+The `hits` and `infiniteHits` widgets expose a `sendEvent` function.
+Use it to send `click` events when users interact with your search results.
+
+<CodeGroup>
+
+```js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <div onClick="${() => sendEvent("click", hit, "Product Clicked")}">
+            <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+            <p>${hit.description}</p>
+        </div>
+        `;
+    },
+    },
+});
+```
+
+```jsx React InstantSearch
+import { InstantSearch, Hits, Highlight } from "react-instantsearch";
+
+function Hit({ hit, sendEvent }) {
+    return (
+    <div onClick={() => sendEvent("click", hit, "Product Clicked")}>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+    </div>
+    );
+}
+
+function App(props) {
+    return (
+    <InstantSearch {...props}>
+        <Hits hitComponent={Hit} />
+    </InstantSearch>
+    );
+}
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+    <div @click="sendEvent('click', item, 'Product Clicked')">
+        <h2>
+        <ais-highlight attribute="name" :hit="item" />
+        </h2>
+        <p>{{ item.description }}</p>
+    </div>
+    </template>
+</ais-hits>
+```
+
+</CodeGroup>
+
+You can set more events on specific parts of your template.
+In the following example, when clicking on the **Add to favorites** button, two events are sent to the Insights API:
+
+- A `click` event with the `eventName` "Product Added to Favorites"
+- A `click` event with the `eventName` "Product Clicked" (through event propagation)
+
+<CodeGroup>
+
+```js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <div onClick="${() => sendEvent("click", hit, "Product Clicked")}">
+            <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+            <p>${hit.description}</p>
+            <button
+            onClick="${() =>
+                sendEvent("click", hit, "Product Added to Favorites")
+            }"
+            >
+            Add to favorites
+            </button>
+        </div>
+        `;
+    },
+    },
+});
+```
+
+```jsx React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <div onClick={() => sendEvent("click", hit, "Product Clicked")}>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={() => sendEvent("click", hit, "Product Added to Favorites")}
+        >
+        Add to favorites
+        </button>
+    </div>
+    );
+}
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+    <div @click="sendEvent('click', item, 'Product Clicked')">
+        <h2>
+        <ais-highlight attribute="name" :hit="item" />
+        </h2>
+        <p>{{ item.description }}</p>
+        <button @click="sendEvent('click', item, 'Product Added to Favorites')">
+        Add to favorites
+        </button>
+    </div>
+    </template>
+</ais-hits>
+```
+</CodeGroup>
+
+To only send the most specific event per clicked element, you can use [`Event.stopPropagation`](https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation) in your event handler.
+
+<CodeGroup>
+
+```diff InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <div onClick="${() => sendEvent("click", hit, "Product Clicked")}">
+            <!-- ... -->
+            <button
+            onClick="${(event) => {
++             event.stopPropagation();
+
+                sendEvent("click", hit, "Product Added to Favorites");
+            }}"
+            >
+            Add to favorites
+            </button>
+        </div>
+        `;
+    },
+    },
+});
+```
+
+```diff React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <div onClick={() => sendEvent("click", hit, "Product Clicked")}>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={(event) => {
++         event.stopPropagation();
+
+            sendEvent("click", hit, "Product Added to Favorites");
+        }}
+        >
+        Add to favorites
+        </button>
+    </div>
+    );
+}
+```
+
+```diff Vue InstantSearch
+    <ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+        <div @click="sendEvent('click', item, 'Product Clicked')">
+        <!-- … -->
+        <button @click="(event) => {
++         event.stopPropagation();
+
+            sendEvent('click', item, 'Product Added to Favorites');
+        }">
+            Add to favorites
+        </button>
+        </div>
+    </template>
+    </ais-hits>
+```
+</CodeGroup>
+
+When InstantSearch captures a custom `click` event that you defined, it doesn't send the default `click` event.
+In the following example, when clicking the **Add to favorites** button, only the "Product Added to Favorites" event is sent.
+
+<CodeGroup>
+```js InstantSearch.js
+hits({
+    templates: {
+    item(hit, { html, components, sendEvent }) {
+        return html`
+        <h2>${components.Highlight({ attribute: "name", hit })}</h2>
+        <p>${hit.description}</p>
+        <button
+            onClick="${() =>
+            sendEvent("click", hit, "Product Added to Favorites")
+            }"
+        >
+            Add to favorites
+        </button>
+        `;
+    },
+    },
+});
+```
+
+```jsx React InstantSearch
+function Hit({ hit, sendEvent }) {
+    return (
+    <>
+        <h2>
+        <Highlight hit={hit} attribute="name" />
+        </h2>
+        <p>{hit.description}</p>
+        <button
+        onClick={() => sendEvent("click", hit, "Product Added to Favorites")}
+        >
+        Add to favorites
+        </button>
+    </>
+    );
+}
+```
+
+```vue Vue InstantSearch
+<ais-hits>
+    <template v-slot:item="{ item, sendEvent }">
+    <h2>
+        <ais-highlight attribute="name" :hit="item" />
+    </h2>
+    <p>{{ item.description }}</p>
+    <button @click="sendEvent('click', item, 'Product Added to Favorites')">
+        Add to favorites
+    </button>
+    </template>
+</ais-hits>
+```
+</CodeGroup>
+
+### Track additional click events
+
+For Algolia Recommend and Personalization, capture additional click events
+when users select individual products:
+
+- On your home page
+- From product recommendations
+
+To send click events with the Insights client, add the following code
+whenever a user clicks on a product---for example,
+on your homepage.
+
+```js JavaScript
+window.aa("clickedObjectIDs", {
+  index: "YourIndexName",
+  eventName: "Product Clicked",
+  objectIDs: ["objectID-1"],
+});
+```
+
+import InstantSearchOutro from '/snippets/insights/instantsearch-outro.mdx';
+
+<InstantSearchOutro />

@@ -1,0 +1,288 @@
+---
+title: 'Google Analytics BigQuery export'
+sidebarTitle: 'GA4 BigQuery export'
+description: Import analytics events from Google Analytics
+---
+
+<Card title="Beta" icon="vial" href="/content/components/card-group" horizontal="true">
+  The Google Analytics 4 BigQuery Export connector is a **beta feature** according to [Algolia's Terms of Service ("Beta Services")](https://www.algolia.com/policies/terms/)
+</Card>
+
+If you're already using Google Analytics 4 (GA4) on your website,
+you can capture [click and conversion events](/guides/send-events/get-started/)
+for Algolia's analytics and AI features with the BigQuery Export connector.
+
+Google Analytics lets you export events to BigQuery from where Algolia's connector can import them.
+
+## Set up Google Analytics BigQuery Export
+
+Follow Google's [Set up BigQuery Export](https://support.google.com/analytics/answer/9823238) guide to link your GA4 property to BigQuery.
+
+When configuring the export, choose the **streaming** option instead of **daily**.
+This lets Algolia import events throughout the day instead of after a delay.
+
+With the BigQuery export, Google syncs your GA4 data with BigQuery.
+If your GA4 property is new, you need to collect some data first before you can see anything in BigQuery.
+
+## Create a Google Cloud service account and key
+
+Algolia's GA4 BigQuery Export connector needs permission to read from your BigQuery tables so that it can extract the data and import it. 
+To read your BigQuery tables,
+the connector requires a Google service account and a key.
+
+### Create a Google service account
+
+<Steps>
+  <Step title="Create service account">
+    Follow Google's guide: [Create service accounts](https://cloud.google.com/iam/docs/service-accounts-create).
+
+    1. Enter a name and ID for the service account.
+    1. Add the **BigQuery Job User** Identity and access management (IAM) role to this service account.
+       For more information, see [BigQuery IAM roles and permissions](https://cloud.google.com/bigquery/docs/access-control).
+  </Step>
+  <Step title="Select dataset">
+    In the [BigQuery console](https://console.cloud.google.com/bigquery),
+    select the dataset with the BigQuery Export, open the **Actions** menu and select **Share > Manage Permissions.**
+  </Step>
+  <Step title="Add principal">
+    Click **Add Principal**.
+    In the **New principals** text box, enter the name of the service account.
+  </Step>
+  <Step title="Select role">
+    In the **Select a role** menu, select the **BigQuery > BigQuery Data Viewer** role.
+  </Step>
+</Steps>
+
+### Create a key attached to the service account
+
+<Steps>
+  <Step title="Select service account">
+    In the Google Cloud console, go to [Service accounts](https://console.cloud.google.com/iam-admin/serviceaccounts).
+  </Step>
+  <Step title="Manage keys">
+    Select your service account.
+    Under **Actions**, select **Manage keys**.
+  </Step>
+  <Step title="Create new key">
+    Select **Add key > Create new key**.
+  </Step>
+  <Step title="Select key type">
+    In the **Key type** menu, select **JSON**.
+  </Step>
+  <Step title="Create key">
+    Click **Create**.
+  </Step>
+</Steps>
+
+## Create GA4 BigQuery Export connection in Algolia
+
+import Dashboard from '/snippets/dashboard.mdx';
+
+<Dashboard />
+
+<Steps>
+  <Step title="Select data sources" stepNumber={4}>
+    On the left sidebar, select <Icon icon="database" iconType="regular" /> **Data sources**.
+  </Step>
+  <Step title="Select connector">
+    On the [**Connectors**](https://dashboard.algolia.com/connectors/) page, select the [**Google Analytics 4 BigQuery Export**](https://dashboard.algolia.com/connectors/google-analytics-4-bq-export/create) and click **Connect**.
+  </Step>
+</Steps>
+
+### Configure your BigQuery source
+
+The connector's source tells Algolia how to read from the BigQuery tables that Google Analytics syncs to.
+
+<Steps>
+  <Step title="Create authentication">
+    In the **Google Service Account** box,
+   select **Create a new Google Service Account authentication**.
+  </Step>
+  <Step title="Select roles">
+    In the **Create a new Google Service Account authentication** menu,
+   upload a key file for a Google service account with these roles:
+   **BigQuery Data Viewer** and **BigQuery Job User**.
+
+   Enter a name for this account and click **Create authentication**.
+  </Step>
+  <Step title="Enter credentials">
+    In the **Enter your BigQuery table details** section,
+    enter your GCP project ID and BigQuery dataset ID.
+  </Step>
+  <Step title="Select a table type">
+    Select:
+
+    - **Streaming** if you configured your GA4 BigQuery Export for streaming exports (recommended).
+    - **Daily**, if you configured your GA4 BigQuery Export to export daily or if you use both streaming and daily exports.
+
+    <Note>
+        If both daily and streaming exports are active,
+        the streaming tables expire at the end of each day,
+        potentially before they're imported.
+    </Note>
+  </Step>
+  <Step title="Enter data source name">
+    Enter a name for this data source.
+  </Step>
+  <Step title="Save changes">
+    Click **Save and continue**.
+  </Step>
+</Steps>
+
+### Configure your destination
+
+The connector's destination tells Algolia where to send source data.
+For Google Analytics events data the destination is the Insights API.
+
+<Steps>
+  <Step title="Create destination">
+    Click **Create a new destination**.
+  </Step>
+  <Step title="Select an index">
+    Enter an index name for Algolia events imported by this connection.
+  </Step>
+  <Step title="Create credentials">
+    To create Algolia credentials for the connector, click **Create one for me**.
+  </Step>
+  <Step title="Save changes">
+    Click **Save and continue**.
+  </Step>
+</Steps>
+
+### Configure event mapping
+
+The mapping section tells Algolia how to map GA4 events to Algolia events.
+
+Algolia only needs a subset of the events from GA4,
+depending on the Algolia features you want to use.
+
+The events mapping UI suggests mappings based on events found in your GA4 BigQuery Export that conform to the set of recommended [GA4 ecommerce events](https://developers.google.com/analytics/devguides/collection/ga4/ecommerce).
+For other GA4 events you can define a custom mapping.
+
+Most Algolia AI and analytics features rely on events being associated to a search with a [query ID](/doc/guides/sending-events/concepts/event-types/#what-is-the-query-id).
+For more information about adding query IDs to your GA4 implementation,
+see [Attribute events to searches](#attribute-events-to-searches).
+
+Algolia only syncs events with a mapping.
+Only create mappings for events that you don't already send to Algolia from other ingestion methods,
+or they might be recorded twice.
+For example, if you already send _clicked items after searches_ events from the InstantSerach UI library,
+don't map these in the connector.
+
+import EventMapping from '/snippets/insights/ga4-event-mapping.mdx';
+
+<EventMapping />
+
+#### Map conversion events
+
+For ecommerce, map these conversion events:
+
+| GA4 | Algolia |
+| --- | ------- |
+| [`add_to_cart`](https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#add_to_cart) | `addToCart` |
+| [`purchase`](https://developers.google.com/analytics/devguides/collection/ga4/reference/events?client_type=gtag#purchase) | `purchase` |
+
+Other conversion events are optional.
+For example, if you track additional conversion events, such as _add to wish list_,
+you can map them to the generic Algolia `conversion` event.
+
+#### Send GA4 user tokens in search requests
+
+Google Analytics' persistent, anonymous user token is part of the imported GA4 events.
+For analytics and Personalization, you need to send the same user token with your search requests.
+
+To retrieve the GA user token, see [Google Analytics user token](/guides/send-events/concepts/user-token/#google-analytics).
+Add it as `userToken` parameter to your search requests.
+
+```js JavaScript
+const algoliasearch = require('algoliasearch');
+const client = algoliasearch('YourApplicationID', 'YourWriteAPIKey');
+const index = client.initIndex('test_index');
+const userToken = getGoogleAnalyticsUserIdFromBrowserCookie('_ga');
+
+// Use the GA4 user token when performing searches.
+index.search('test', {
+    userToken: userToken,
+});
+
+const loggedInUser = '...';
+
+index.search('test', {
+    userToken: loggedInUser || userToken,
+});
+```
+
+### Create your task
+
+To start syncing GA4 events with Algolia, click **Create task**.
+With a task type **streaming**, events will be regularly read from your BigQuery tables.
+This isn't the same as Google Analytics' [**streaming**](#set-up-google-analytics-bigquery-export),
+which refers to exporting events from GA4 to BigQuery.
+
+<Note>
+The Google Analytics BigQuery connector doesn't backfill events.
+Once you create your connection, only new events written to BigQuery get synced.
+GA4 events written to BigQuery before the connection aren't synced.
+</Note>
+
+## Check your GA4 BigQuery Export connector in Algolia
+
+After creating your connection,
+use Algolia's **Connector Debugger** and **Events Debugger** to see the progress of the sync.
+
+### Connector debugger
+
+On the **Connectors** page, open the [**Connector Debugger**](https://dashboard.algolia.com/connectors/debugger) tab to ensure that your events get imported from Google Analytics.
+
+If your events aren't imported, the following section includes some troubleshooting steps.
+
+#### Check for mapping errors
+
+If you don't use the recommended GA4 fields,
+you may need to edit your mapping.
+
+For example, if your GA4 events don't use _items_, and you don't adjust your mapping accordingly,
+you might receive an error similar to:
+
+```txt*
+Algolia API error [422] {"status":422,"message":"Event should specify either some ObjectIDs or some Filters"}
+```
+
+### Events debugger
+
+The events debugger lets you check if the Insights API correctly receives the events from the connector.
+
+On the left sidebar, select <Icon icon="database" iconType="regular" /> **Data sources** and 
+open the [**Debugger**](https://dashboard.algolia.com/events/debugger/) tab.
+
+For more information, see [Validate your events](/guides/send-events/guides/validate/).
+
+## Attribute events to searches
+
+Each Algolia search has a unique identifier: the query ID.
+It is used to attribute click and conversion events to searches.
+By default, GA4 doesn't track the query ID.
+To link GA4 events to their originating search, [keep track of the current query ID](/guides/send-events/guides/queryid/) and recording it as a custom event attribute in GA4, for example `algolia_query_id`.
+
+```js JavaScript
+// This will be turned into a click event associated with a search.
+gtag('event', 'select_item', {
+    // We use algolia_query_id to not conflict with GA's query_id.
+    algolia_query_id: 'tracked query id',
+    items: [{
+      item_id: 'object1',
+      item_name: 'red shoes',
+    }],
+});
+
+// For purchases, different items can be associated with different searches.
+gtag('event', 'purchase', {
+    items: [{
+        item_id: 'object1',
+        algolia_query_id: 'object1 query',
+    }, {
+        item_id: 'object2',
+        algolia_query_id: 'object2 query',
+    }]
+});
+```

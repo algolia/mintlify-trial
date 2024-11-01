@@ -1,0 +1,99 @@
+import Intro from '/snippets/insights/intro.mdx';
+
+<Intro />
+
+## Before you begin
+
+To follow this guide, you need to build both search results and category pages with one of these UI libraries:
+
+- InstantSearch.js version 4.59 or later
+- React InstantSearch version 7.2.1 or later
+- Vue InstantSearch version 4.12.0 or later
+
+For other methods of collecting events, see [Get started with events](/guides/send-events/get-started).
+
+### Manage the Insights library
+
+InstantSearch loads the [`search-insights`](/api-reference/insights-api/) library for you from [jsDelivr](https://www.jsdelivr.com/).
+You don't need to install it or set it up yourself.
+
+If you're using a [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) to protect your site and you want to let InstantSearch load [`search-insights`](/doc/api-client/methods/insights/) for you, make sure to add `https://cdn.jsdelivr.net` in your list of trusted sources for JavaScript.
+
+```txt
+script-src https://cdn.jsdelivr.net/
+```
+
+If you prefer hosting your own version of `search-insights`, you can add it to your project:
+
+1. Install the Insights client
+1. Initialize the Insights client (optional)
+
+InstantSearch doesn't load `search-insights` when it detects it on the page.
+
+## Enable events collection
+
+You can enable the automatic collection of events from your InstantSearch apps
+in the Algolia dashboard (without coding),
+or when setting up your InstantSearch app (with coding).
+
+Enabling automatic events collection takes care of the following:
+
+- Add the [`search-insights`](/api-reference/insights-api/) library to your project and make it globally available as `window.aa`
+- Set an anonymous [`userToken`](/guides/send-events/concepts/user-token/) for sending events to the Insights API _and_ for search requests
+- Include the [`queryID`](/guides/send-events/concepts/event-types/#what-is-the-query-id) parameter in the search response
+- Send default click and view events for your InstantSearch widgets
+
+Go to the [Events hub](https://dashboard.algolia.com/events/) in the Algolia dashboard to check
+the default events arriving from your website or app.
+For more information, see [Validate your events](/guides/send-events/guides/validate).
+
+### No code
+
+1. Go to the [Algolia dashboard](https://dashboard.algolia.com/events/settings) and select your Algolia application.
+2. On the left sidebar, select **Data sources** > **Events** > **Settings**.
+3. Click **Enable automatic events collection**.
+
+### Code
+
+Enable the `insights` option:
+
+<CodeGroup>
+
+```diff InstantSearch.js
+    const search = instantsearch({
+    searchClient,
+    indexName: "YourIndexName",
++   insights: true,
+    });
+    // Add your InstantSearch widgets here
+    search.start();
+```
+
+```diff React InstantSearch
+    <InstantSearch
+    searchClient={searchClient}
+    indexName="YourIndexName"
++   insights={true}
+    >
+    {/* Add your InstantSearch widgets here */}
+    </InstantSearch>
+```
+
+```diff Vue InstantSearch
+    <template>
+    <ais-instant-search
+        :index-name="YourIndexName"
+        :search-client="searchClient"
++     :insights="true"
+    >
+        <!-- Add your InstantSearch widgets here -->
+    </ais-instant-search>
+    </template>
+```
+
+</CodeGroup>
+
+import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+You may want to send events that aren't automatically captured by InstantSearch widgets.
+<EventsToTrack />
