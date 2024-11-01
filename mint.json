@@ -19,6 +19,10 @@
         {
             "name": "Support",
             "url": "https://support.algolia.com/hc/en-us"
+        },
+        {
+            "name": "Community",
+            "url": "https://www.algolia.com"
         }
     ],
     "topbarCtaButton": {
@@ -29,13 +33,6 @@
         "name": "Home",
         "icon": "book-open"
     },
-    "anchors": [
-        {
-            "name": "Community",
-            "icon": "discord",
-            "url": "https://www.algolia.com"
-        }
-    ],
     "primaryTab": {
         "name": "Guides"
     },
@@ -54,6 +51,10 @@
         }
     ],
     "navigation": [
+        {
+            "group": "Home",
+            "pages": ["home"]
+        },
         {
             "group": "Get started",
             "pages": [
@@ -955,3 +956,4 @@
         "discord": "https://alg.li/discord"
     }
 }
+
