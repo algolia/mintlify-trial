@@ -1,0 +1,311 @@
+---
+title: 'User token'
+sidebarTitle: 'User token'
+description: Learn how to identify users with pseudonymous user tokens for all click and conversion events.
+---
+
+User tokens are strings that uniquely identify users throughout your app.
+They link [click and conversion events](/guides/send-events/concepts/event-types/) with user profiles.
+Algolia uses user tokens to boost the effectiveness of search analytics and build user profiles for Personalization and Recommendations.
+
+**You should never include personally identifiable information in user tokens.**
+
+For more information, see the [Insights API reference](/api-reference/insights-api/),.
+
+## How does the Search Insights JavaScript library handle user tokens?
+
+The [Search Insights](https://github.com/algolia/search-insights.js#readme) library (version 2 and later) generates anonymous user tokens on every page load.
+By default, user tokens **don't persist**.
+This helps with data protection regulations, but means you can't distinguish new from returning users, since a new user token is generated on every page visit.
+
+![See how the user token changes when a user refreshes the page](/images/events/user-token-diagram.svg)
+
+This limits the effectiveness of Analytics and Personalization, since the generated tokens have a short lifespan.
+To increase the lifespan of user tokens, you should persist them across sessions.
+
+<Note>Version 1 of the [Search Insights](https://github.com/algolia/search-insights.js/blob/v1/README.md) library generates anonymous user tokens and stores them in a cookie by default.</Note>
+
+## Persistent user token
+
+For more accurate analytics and better personalization experiences, you should persist user tokens across sessions.
+
+### Authenticated user token
+
+If you're using an authentication system for your users,
+use the `setAuthenticatedUserToken` method to set the authenticated user token as the `authenticatedUserToken` parameter for the Insights client.
+
+```js JavaScript
+const authenticatedUserToken = getAuthenticatedUserTokenAfterLogIn();
+aa('setAuthenticatedUserToken', authenticatedUserToken);
+```
+
+Your authentication system usually provides an API for getting the user token,
+which is represented by the `getAuthenticatedUserTokenAfterLogin()` function.
+
+It is important to set the `authenticatedUserToken` parameter for authenticated users rather than `userToken`, which is intended to be used for anonymous tokens.
+If a user initially visits a site without signing in, they're assigned an anonymous ID. If they later sign in and receive an authenticated user ID, setting the `userToken`
+to the authenticated user ID would overwrite the anonymous ID, meaning their previous activity as an anonymous user won't be associated with the authenticated user.
+By sending the anonymous and authenticated user tokens in separate parameters, you can ensure continuity of user activity and prevent data loss during the transition from
+anonymous to authenticated status.
+
+If you're not using user authentication, use a cookie to persist the anonymous user token in the `userToken` parameter.
+
+### Algolia cookie
+
+To store the `userToken` in a first-party cookie with the name `_ALGOLIA` on the user's device,
+set the `useCookie` parameter in the `init` method to `true`.
+
+This lets you identify users across sessions with the persistent, anonymous user token.
+
+```js JavaScript
+aa('init', {
+  appId: 'YourApplicationID',
+  apiKey: 'YourSearchOnlyAPIKey',
+  useCookie: true, // Since v2, this is false by default
+});
+```
+
+Before setting `useCookie` to `true`, you should get user consent.
+For example, you can dynamically update the `useCookie` parameter when the user accepts non-essential cookies.
+Use the 'partial` parameter to only update the `useCookie` option without changing the others.
+
+```js JavaScript
+// User accepts cookies
+aa('init', {
+  partial: true,
+  useCookie: true,
+});
+
+// User rejects cookies
+aa('init', {
+  partial: true,
+  useCookie: false,
+});
+```
+
+If you must abide by legal requirements like GDPR that prohibit usage of non-essential cookies without consent, leave `useCookie` as `false` and only update its value dynamically once the user grants or withdraws consent.
+
+For example, your code could look like this:
+
+```js JavaScript
+document.getElementById('cookie-accept').addEventListener('click', () => {
+  window.aa('init', {
+    useCookie: true,
+    partial: true,
+  });
+});
+
+[
+  document.getElementById('cookie-reject'),
+  document.getElementById('cookie-withdraw'),
+].forEach((button) => {
+  button.addEventListener('click', (event) => {
+    window.aa('init', {
+      useCookie: false,
+      partial: true,
+    });
+  });
+});
+```
+
+<Note>If you're using a cookie consent service like OneTrust or TrustArc, refer to their documentation to properly react to cookie consent updates.</Note>
+
+#### Adjust the cookie expiration time
+
+By default, the `_ALGOLIA` cookie expires after 6 months.
+To adjust the lifespan of the cookie, set the `cookieDuration` parameter.
+
+```js JavaScript
+const DAY = 1000 * 60 * 60 * 24;
+
+aa('init', {
+  appId: 'YourApplicationID',
+  apiKey: 'YourSearchOnlyAPIKey',
+  useCookie: true,
+  cookieDuration: 90 * DAY, // 90 days, in milliseconds (default: 15552000000)
+});
+```
+
+### Third-party cookies
+
+Third-party cookies are stored on the user's device and belong to domains other than the website the user is visiting.
+They enable advertisers, analytics platforms, and other third-party services to collect data about a user's browsing behavior across multiple websites.
+
+To maintain the reliability of the collected data, providers of third-party cookies, such as Google Analytics or Segment often use a stable user token that remains consistent across multiple websites.
+You can use one of these third-party cookies as a user token in the Search Insights library.
+
+#### Google Analytics
+
+[Google Analytics stores its persistent, anonymous user token in a cookie](https://support.google.com/analytics/answer/11397207?hl=en) called `_ga`.
+If you're already using Google Analytics on your website, you can use that user token as the Search Insights library's `userToken` parameter.
+
+The value of the `_ga` cookie follows the pattern `GA1.1.1900000000.1684510679` and has three components:
+
+- `GA1.1.`. Indicates the version of the Google Analytics tracking library used to generate the cookie.
+- `1900000000`. A unique identifier for distinguishing individual users.
+- `1684510679`. The timestamp when the cookie was created, in Unix epoch time.
+
+To extract the unique user ID from the cookie, you can use the following function:
+
+```js JavaScript
+/**
+ * Extracts the user ID from the Google Analytics device ID.
+ * @example `GA1.1.xxxxxxxxxx.xxxxxxxxxx => xxxxxxxxxx-xxxxxxxxxx`
+ * @link https://support.google.com/analytics/answer/11397207
+ */
+function extractGoogleAnalyticsUserIdFromCookie(gaCookie) {
+  if (gaCookie) {
+    // Remove the Google Analytics tracker from the device ID.
+    const userIdParts = gaCookie.split('.').slice(-2);
+    if (userIdParts.length === 2) {
+      return userIdParts.join('-');
+    }
+  }
+  return undefined;
+}
+
+function getBrowserCookie(cookieName) {
+  // In React Native environments, `document.cookie` doesn't exist.
+  if (typeof document !== 'object' || typeof document.cookie !== 'string') {
+    return undefined;
+  }
+  const name = cookieName + '=';
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const ca = decodedCookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) === 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Returns the Google Analytics User ID from a browser cookie name.
+ * @example `getGoogleAnalyticsUserIdFromBrowserCookie('_ga')`
+ */
+function getGoogleAnalyticsUserIdFromBrowserCookie(cookieName) {
+  const browserCookie = getBrowserCookie(cookieName);
+
+  if (!browserCookie) {
+    return undefined;
+  }
+
+  return extractGoogleAnalyticsUserIdFromCookie(browserCookie);
+}
+```
+
+Then, you can use the user ID from the Google Analytics cookie as the `userToken` for Search Insights with `setUserToken`.
+
+```js JavaScript
+const userToken = getGoogleAnalyticsUserIdFromBrowserCookie('_ga');
+
+aa('setUserToken', userToken);
+```
+
+#### Segment
+
+Segment stores its persistent, anonymous user token in a cookie called `ajs_anonymous_id`.
+If you're already using Segment on your website, you can use that user token as the Search Insights library's `userToken` parameter.
+
+Using Segment's [Analytics.js 2.0 library](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/),
+you can get the user token from the function `analytics.user().anonymousId()`.
+
+<CardGroup cols={2}>
+  <Card title="Segment docs" icon="globe-pointer" href="https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/cookie-validity-update/" horizontal="true">
+    Client-side persistence in Analytics.js
+  </Card>
+  <Card title="Segment docs" icon="globe-pointer" href="https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/identity/" horizontal="true">
+    Managing identity in Analytics.js
+  </Card>
+</CardGroup>
+
+## Get the user token from Search Insights
+
+With the Search Insights library, you can retrieve the anonymous user token by calling `getUserToken`.
+
+```js JavaScript
+// Starting from v1.3.0 of the search-insights.js library
+aa('getUserToken', {}, (err, userToken) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log(userToken);
+});
+```
+
+Similarly, you can retrieve an authenticated user token by calling `getAuthenticatedUserToken`
+
+```js JavaScript
+// Starting from v2.9.0 of the search-insights.js library
+aa('getAuthenticatedUserToken', {}, (err, authenticatedUserToken) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log(authenticatedUserToken);
+});
+```
+
+## Send user token with click and conversion events
+
+The [Search Insights](https://www.npmjs.com/package/search-insights/v/latest) library sets a default anonymous `userToken`. You can also manually set the `userToken` or `authenticatedUserToken` parameter in two ways: either globally or for each event.
+
+To set `userToken` or `authenticatedUserToken` globally, you can pass them on `init` or use the `setUserToken` or
+`setAuthenticatedUserToken` method. This way, you don't need to provide your user token every time you send an event.
+
+```js JavaScript
+// Set a global anonymous user token before a user is identified
+aa('setUserToken', 'anonymous-1');
+
+// Send a click event associated with "anonymous-1"
+aa('clickedObjectIDs', {
+  index: 'movies',
+  eventName: 'Added to favorite',
+  objectIDs: ['movieID1'],
+});
+
+// Set a global authenticated user token, for example, after a user logs in
+aa('setAuthenticatedUserToken', 'user-1');
+
+// Send a click event associated with both "anonymous-1" and and "user-1"
+aa('clickedObjectIDs', {
+  index: 'movies',
+  eventName: 'Added to favorite',
+  objectIDs: ['movieID1'],
+});
+```
+
+To send user tokens with each event, add the `userToken` and `authenticatedUserToken`
+parameters to the event object.
+
+```js JavaScript
+// Send a click event associated with "anonymous-2"
+aa('clickedObjectIDs', {
+  userToken: 'anonymous-2',
+  index: 'movies',
+  eventName: 'Added to favorite',
+  objectIDs: ['movieID1'],
+});
+
+// Send a click event associated with both "anonymous-2" and "user-2"
+aa('clickedObjectIDs', {
+  userToken: 'anonymous-2',
+  authenticatedUserToken: 'user-2',
+  index: 'movies',
+  eventName: 'Added to favorite',
+  objectIDs: ['movieID1'],
+});
+```
+
+## Exclude users who want to opt out of Analytics, Recommend, and Personalization
+
+To allow users to opt out of Analytics, Recommend, and Personalization features:
+
+- Don't instantiate the Insights API client for users that have opted out.
+- Set the parameters `analytics` and `enablePersonalization` to `false` to turn off these features.

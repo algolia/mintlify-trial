@@ -1,0 +1,57 @@
+import Intro from '/snippets/insights/intro.mdx';
+
+<Intro />
+
+import EnableEventsCollection from '/snippets/insights/enable-events-collection.mdx';
+
+<EnableEventsCollection />
+
+## Initialize search-insights.js
+
+Install the [`search-insights`](/api-reference/insights-api/) library.
+
+<CodeGroup>
+
+```html HTML
+<script>
+    var ALGOLIA_INSIGHTS_SRC =
+    "https://cdn.jsdelivr.net/npm/search-insights@2.16.3/dist/search-insights.min.js";
+    !function(e,a,t,n,s,i,c)
+    {
+    ((e.AlgoliaAnalyticsObject = s),
+    (e[s] =
+        e[s] ||
+        function () {
+        (e[s].queue = e[s].queue || []).push(arguments);
+        }),
+    (e[s].version = (n.match(/@([^\/]+)\/?/) || [])[1]),
+    (i = a.createElement(t)),
+    (c = a.getElementsByTagName(t)[0]),
+    (i.async = 1),
+    (i.src = n),
+    c.parentNode.insertBefore(i, c))
+    }
+    (window,document,"script",ALGOLIA_INSIGHTS_SRC,"aa");
+</script>
+```
+
+```shell NPM
+npm install search-insights
+```
+
+</CodeGroup>
+
+After installing the `search-insights` library, initialize the client in your website.
+
+```js JavaScript
+import aa from 'search-insights';
+
+aa("init", {
+appId: "YourApplicationID",
+apiKey: "YourSearchOnlyAPIKey",
+});
+```
+
+import EventsToTrack from '/snippets/insights/events-to-track.mdx';
+
+<EventsToTrack />

@@ -1,0 +1,19 @@
+## Track additional click events
+
+For Algolia Recommend and Personalization, capture additional click events
+when users select individual items:
+
+- On your home page
+- From recommendations
+
+To send click events with the Insights client, add the following code
+whenever a user clicks on an article---for example,
+on your homepage.
+
+```js JavaScript
+window.aa("clickedObjectIDs", {
+index: "YourIndexName",
+eventName: "Article Clicked",
+objectIDs: ["objectID-1"],
+});
+```
