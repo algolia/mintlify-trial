@@ -4,7 +4,7 @@ description: |-
   Learn how you can upload historical user events to Algolia Recommend to get started quicker.
 ---
 
-<Card title="Beta" icon="vial" href="/content/components/card-group">
+<Card title="Beta" icon="vial" href="/content/components/card-group" horizontal="true">
   CSV upload is a **beta feature** according to the [Algolia Terms of Service ("Beta Services")](https://www.algolia.com/policies/terms/).
 </Card>
 
@@ -32,13 +32,13 @@ The CSV file with historical events must have the following format:
 
 Each event must have the following properties:
 
-|Property|Description|
-|-|-|
-| `userToken` |A unique identifier for the user session |
-| `timestamp` |The date of the event in a standard format: [ISO8601 or RFC3339](https://wikipedia.org/wiki/ISO_8601#RFCs) (with or without the time) |
-| `objectID` |A unique identifier for the item the event is tied to |
-| `eventType` |Either "click" or "conversion" |
-| `eventName` |A name for the event, which can be the same as `eventType` |
+| Property    | Description|
+| :---------- | :--------- |
+| `userToken` | A unique identifier for the user session |
+| `timestamp` | The date of the event in a standard format: [ISO8601 or RFC3339](https://wikipedia.org/wiki/ISO_8601#RFCs) (with or without the time) |
+| `objectID`  | A unique identifier for the item the event is tied to |
+| `eventType` | Either "click" or "conversion" |
+| `eventName` | A name for the event, which can be the same as `eventType` |
 
 For more information, see [Send events properties](https://www.algolia.com/doc/rest-api/insights/#tag/events/operation/pushEvents).
 
