@@ -56,6 +56,17 @@
             "pages": ["home"]
         },
         {
+            "group": "Launchpad",
+            "pages": [
+              "launchpad/get-started",
+              "launchpad/import-data",
+              "launchpad/design-results",
+              "launchpad/searchable-attributes",
+              "launchpad/relevancy",
+              "launchpad/implement-search"
+            ]
+        },
+        {
             "group": "Get started",
             "pages": [
                 "guides/getting-started/what-is-algolia",
