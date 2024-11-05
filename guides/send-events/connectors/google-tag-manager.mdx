@@ -322,27 +322,36 @@ export default {
 ```
 </CodeGroup>
 
-<Note>You can use the Insights option with InstantSearch.js, Vue InstantSearch, or React InstantSearch.</Note>
+<Note>
+  You can use the Insights option with InstantSearch.js, Vue InstantSearch, or React InstantSearch.
+</Note>
 
 ## Add the Algolia Search Insights template
 
 Before sending events to the Insights API, add the [**Algolia Search Insights**](https://tagmanager.google.com/gallery/#/owners/algolia/templates/search-insights-gtm) template to your workspace.
 
-1. Sign in to your GTM workspace and go to **Tag Templates > Search Gallery**.
+<Steps>
+  <Step title="Sign into GTM">
+    Sign in to your GTM workspace and go to **Tag Templates > Search Gallery**.
 
     ![Search for the Algolia Search Insights template in your Workspace](/images/gtm/add-tag-template-step1.png)
-
-1. Search for the Algolia Search Insights template (by Algolia).
+  </Step>
+  <Step title="Select the Algolia template">
+    Search for the Algolia Search Insights template (by Algolia).
 
     ![Select the Algolia Search Insights template in your Workspace](/images/gtm/add-tag-template-step2.png)
-
-1. Click **Add to workspace** and confirm by clicking **Add**.
+  </Step>
+  <Step title="Add template to GTM workspace">
+    Click **Add to workspace** and confirm by clicking **Add**.
 
     ![Add the Algolia Search Insights template in your Workspace](/images/gtm/add-tag-template-step3.png)
-
-1. On the **Tag Templates** page, you should now see the **Algolia Search Insights** template:
+  </Step>
+  <Step title="Verify addition">
+    On the **Tag Templates** page, you should now see the **Algolia Search Insights** template:
 
     ![Algolia Search Insights template added in your Workspace](/images/gtm/add-tag-template-step4.png)
+  </Step>
+</Steps>
 
 ## Add variables
 
@@ -353,73 +362,95 @@ Before sending events to the Insights API, add the [**Algolia Search Insights**]
 First, add the built-in variable **Click Element**.
 This variable is associated with the data from your click events.
 
-1. In the **Variables** section of your GTM workspace, click **Configure**.
+<Steps>
+  <Step title="Configure variables">
+    In the **Variables** section of your GTM workspace, click **Configure**.
 
     ![Configure variable click element in GTM](/images/gtm/add-click-element-step1.png)
-
-1. In the **Configure Built-In Variables** dialog, select **Click Element**.
+  </Step>
+  <Step title="Select the click element">
+    In the **Configure Built-In Variables** dialog, select **Click Element**.
 
     ![Configure Built-In Variables](/images/gtm/add-click-element-step2.png)
+  </Step>
+</Steps>
 
 ### Algolia Insights user token
 
-1. In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+<Steps>
+  <Step title="User-defined variables">
+    In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
 
     ![Add Data Layer variable in GTM](/images/gtm/add-data-layer-variable-step1.png)
-
-1. Select **Data Layer Variable**.
+  </Step>
+  <Step title="Select data layer">
+    Select **Data Layer Variable**.
 
     ![Select Data Layer Variable](/images/gtm/add-data-layer-variable-step2.png)
-
-1. Enter `Algolia Insights User Token` as the variable name and `algoliaUserToken` as the data layer variable name.
+  </Step>
+  <Step title="Add Algolia Insights user token">
+    Enter `Algolia Insights User Token` as the variable name and `algoliaUserToken` as the data layer variable name.
 
     ![Add User Token Data Layer variable in GTM](/images/gtm/add-user-token-variable.png)
-
+  </Step>
+</Steps>
+ 
 ### Algolia Get Data Attributes
 
-1. In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
-1. Select **Custom JavaScript**.
+<Steps>
+  <Step title="User-defined variables">
+    In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+  </Step>
+  <Step title="Select custom JavaScript">
+    Select **Custom JavaScript**.
 
     ![Add Custom JavaScript variable in GTM](/images/gtm/add-custom-javascript.png)
+  </Step>
+  <Step title="Add JavaScript code">
+    Enter `Algolia Get Data Attributes` as variable name and add the following JavaScript code:
 
-1. Enter `Algolia Get Data Attributes` as variable name and add the following JavaScript code:
+    ```js JavaScript
+    function() {
+      function findClosest(target, selector) {
+        while (!target.matches(selector) && !target.matches('body')) {
+          target = target.parentElement;
+        }
+        return target.matches(selector) ? target : undefined;
+      }
 
-   ```js JavaScript
-   function() {
-     function findClosest(target, selector) {
-       while (!target.matches(selector) && !target.matches('body')) {
-         target = target.parentElement;
-       }
-       return target.matches(selector) ? target : undefined;
-     }
+      return function (attributeName, containerQuerySelector) {
+        var clickedElement = {{Click Element}};
 
-     return function (attributeName, containerQuerySelector) {
-       var clickedElement = {{Click Element}};
+        // Search for the selector's children
+        var elements = clickedElement
+          ? [findClosest(clickedElement, '[' + attributeName +']')]
+          : Array.from(document.querySelectorAll((containerQuerySelector || '') + ' [' + attributeName + ']')).filter(Boolean);
 
-       // Search for the selector's children
-       var elements = clickedElement
-         ? [findClosest(clickedElement, '[' + attributeName +']')]
-         : Array.from(document.querySelectorAll((containerQuerySelector || '') + ' [' + attributeName + ']')).filter(Boolean);
+        // See if it matches the container itself.
+        // For example, `#app[data-insights-index]`
+        if (elements.length === 0 && containerQuerySelector) {
+          elements = Array.from(document.querySelectorAll(containerQuerySelector + '[' + attributeName + ']')).filter(Boolean);
+        }
 
-       // See if it matches the container itself.
-       // For example, `#app[data-insights-index]`
-       if (elements.length === 0 && containerQuerySelector) {
-         elements = Array.from(document.querySelectorAll(containerQuerySelector + '[' + attributeName + ']')).filter(Boolean);
-       }
+        var attributes = elements.map(function (element) {
+          return element.getAttribute(attributeName);
+        });
 
-       var attributes = elements.map(function (element) {
-         return element.getAttribute(attributeName);
-       });
-
-       return attributes;
-     }
-   }
+        return attributes;
+      }
+    }
    ```
+  </Step>
+</Steps>
 
 ### Algolia Insights index
 
-1. [Add a new user-defined variable](#algolia-get-data-attributes).
-1. Enter `Algolia Insights Index` as variable name and add the following JavaScript code:
+<Steps>
+  <Step title="User-defined variables">
+    In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+  </Step>
+  <Step title="Add variable and JavaScript code">
+    Enter `Algolia Insights Index` as variable name and add the following JavaScript code:
 
    ```js JavaScript
    function() {
@@ -427,100 +458,132 @@ This variable is associated with the data from your click events.
    }
    ```
 
-When searching multiple indices, you must specify which index to track.
-Add an optional query selector with the `data-insights-index` attribute.
+    When searching multiple indices, you must specify which index to track.
+    Add an optional query selector with the `data-insights-index` attribute.
 
-For example, if you have the following HTML:
+    For example, if you have the following HTML:
 
-```html HTML
-<div id="index-1" data-insights-index="YourIndexName">
-  <div id="hits">
-    <!-- ... -->
-  </div>
-</div>
+    ```html HTML
+    <div id="index-1" data-insights-index="YourIndexName">
+      <div id="hits">
+        <!-- ... -->
+      </div>
+    </div>
 
-<div id="index-2">
-  <div id="hits">
-    <!-- ... -->
-  </div>
-</div>
-```
+    <div id="index-2">
+      <div id="hits">
+        <!-- ... -->
+      </div>
+    </div>
+    ```
 
-Select the `div` element with the id `index-1` for tracking events:
+    Select the `div` element with the id `index-1` for tracking events:
 
-```js JavaScript
-function() {
-  return {{Algolia Get Data Attributes}}('data-insights-index', '#index-1')[0];
-}
-```
+    ```js JavaScript
+    function() {
+      return {{Algolia Get Data Attributes}}('data-insights-index', '#index-1')[0];
+    }
+  ```
+  </Step>
+</Steps>
 
 ### Algolia Insights ObjectIDs
 
-1. [Add a new user-defined variable](#algolia-get-data-attributes).
-1. Enter `Algolia Insights ObjectIDs` as variable name and add the following JavaScript code:
+<Steps>
+  <Step title="User-defined variables">
+    In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+  </Step>
+  <Step title="Add variable and JavaScript">
+    Enter `Algolia Insights ObjectIDs` as variable name and add the following JavaScript code:
 
-   ```js JavaScript
-   function() {
-     return {{Algolia Get Data Attributes}}('data-insights-object-id');
-   }
-   ```
+    ```js JavaScript
+    function() {
+      return {{Algolia Get Data Attributes}}('data-insights-object-id');
+    }
+    ```
 
-When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+    When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+  </Step>
+</Steps>
 
 ### Algolia Insights positions
 
-1. [Add a new user-defined variable](#algolia-get-data-attributes).
-1. Enter `Algolia Insights Positions` as variable name and add the following JavaScript code:
+<Steps>
+  <Step title="User-defined variables">
+    In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+  </Step>
+  <Step title="Add variable and JavaScript">
+    Enter `Algolia Insights Positions` as variable name and add the following JavaScript code:
 
-   ```js JavaScript
-   function() {
-     return {{Algolia Get Data Attributes}}('data-insights-position');
-   }
-   ```
+    ```js JavaScript
+    function() {
+      return {{Algolia Get Data Attributes}}('data-insights-position');
+    }
+    ```
 
-When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+    When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+  </Step>
+</Steps>
 
 ### Algolia Insights QueryID
 
-1. [Add a new user-defined variable](#algolia-get-data-attributes).
-1. Enter `Algolia Insights QueryID` as the variable name and add the following JavaScript code:
+<Steps>
+  <Step title="User-defined variables">
+    In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+  </Step>
+  <Step title="Add variable and JavaScript">
+    Enter `Algolia Insights QueryID` as the variable name and add the following JavaScript code:
 
-   ```js JavaScript
-   function() {
-     return {{Algolia Get Data Attributes}}('data-insights-query-id')[0];
-   }
-   ```
+    ```js JavaScript
+    function() {
+      return {{Algolia Get Data Attributes}}('data-insights-query-id')[0];
+    }
+    ```
 
-When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+    When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+  </Step>
+</Steps>
 
 ### Algolia Insights viewed filters
 
-1. [Add a new user-defined variable](#algolia-get-data-attributes).
-1. Enter `Algolia Insights Viewed Filters` as the variable name and add the following JavaScript code:
+<Steps>
+  <Step title="User-defined variables">
+    In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+  </Step>
+  <Step title="Add variable and JavaScript">
+    Enter `Algolia Insights Viewed Filters` as the variable name and add the following JavaScript code:
 
-   ```js JavaScript
-   function() {
-     var attributeName = 'data-insights-filter';
-     var elements = Array.from(document.querySelectorAll('[' + attributeName + ']'));
-     var attributes = elements.map(function (element) {
-       return element.getAttribute(attributeName);
-     });
-     return attributes;
-   }
-   ```
+    ```js JavaScript
+    function() {
+      var attributeName = 'data-insights-filter';
+      var elements = Array.from(document.querySelectorAll('[' + attributeName + ']'));
+      var attributes = elements.map(function (element) {
+        return element.getAttribute(attributeName);
+      });
+      return attributes;
+    }
+    ```
+  </Step>
+</Steps>
 
 ### Algolia Insights clicked filters
 
-1. [Add a new user-defined variable](#algolia-get-data-attributes).
-1. Enter `Algolia Insights Clicked Filters` as variable name and add the following JavaScript code:
+<Steps>
+  <Step title="User-defined variables">
+    In the **Variables** section of your GTM workspace, go to the **User-Defined Variables** section and click **New**.
+  </Step>
+  <Step title="Add variable and JavaScript">
+    Enter `Algolia Insights Clicked Filters` as variable name and add the following JavaScript code:
 
-   ```js JavaScript
-   function() {
-     return {{Algolia Get Data Attributes}}('data-insights-filter')
-   }
-   ```
+    ```js JavaScript
+    function() {
+      return {{Algolia Get Data Attributes}}('data-insights-filter')
+    }
+    ```
 
-When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+    When searching multiple indices, you must [specify which index to track](#algolia-insights-index).
+  </Step>
+</Steps>
 
 ## Add custom triggers
 
@@ -616,11 +679,19 @@ When using GTM with Algolia, each tag corresponds to an API method for sending a
 
 You **must** set up an initialization tag to connect with the Algolia Insights API.
 
-1. In your GTM workspace, go to the **Tags** section and select **Algolia Search Insights**.
-1. In the **Init Options** section, enter your Algolia application ID and API key with**search** permissions.
-1. In the **Triggering** section, select **Initialization—All Pages** to trigger this tag on all pages.
+<Steps>
+  <Step title="Algolia Search Insights tag">
+    In your GTM workspace, go to the **Tags** section and select **Algolia Search Insights**.
+  </Step>
+  <Step title="Enter credentials">
+    In the **Init Options** section, enter your Algolia application ID and API key with **search** permissions.
+  </Step>
+  <Step title="Add trigger">
+    In the **Triggering** section, select **Initialization—All Pages** to trigger this tag on all pages.
 
     ![Initialization tag in GTM](/images/gtm/add-tags-init.png)
+  </Step>
+</Steps>
 
 ### Set up view tags for objects
 
@@ -711,8 +782,8 @@ For example, if your object IDs list is `["product-1", "product-2"]`, then your 
 ````
 
 <Note>
-Support for add-to-cart and purchase events was added on **December 4, 2023**.
-For template update instructions, refer to the [GTM documentation](https://support.google.com/tagmanager/answer/9454109).
+  Support for add-to-cart and purchase events was added on **December 4, 2023**.
+  For template update instructions, refer to the [GTM documentation](https://support.google.com/tagmanager/answer/9454109).
 </Note>
 
 ## Submit your changes and debug your events
