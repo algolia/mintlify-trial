@@ -6,13 +6,9 @@ description: |-
 
 How you format and structure your attributes and records in your [index](/guides/sending-and-managing-data/prepare-your-data/in-depth/prepare-data-in-depth/) will affect your search results.
 
-{/* prettier-ignore-start */}
-
-<Info>
-  - [Data formats for relevant search](https://academy.algolia.com/guides/5d902fea-c439-11ee-96f2-06d3877cd55d/tasks/861fc984-b0b1-11ee-a537-0215f0d95509)
-</Info>
-
-{/* prettier-ignore-end */}
+<Card title="Explore related videos in the Algolia Academy" icon="photo-film" href="https://academy.algolia.com/guides/5d902fea-c439-11ee-96f2-06d3877cd55d/tasks/861fc984-b0b1-11ee-a537-0215f0d95509" horizontal="true" color="#c7519c">
+  Data formats for relevant search
+</Card>
 
 ## Algolia records
 
@@ -20,7 +16,7 @@ An Algolia **record** is a collection of _attributes_ where each attribute has a
 
 Here is an example record with four [different kinds of attributes](/guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record/) (string, integer, array, and boolean):
 
-```json json
+```json JSON
 {
   "title": "Blackberry and blueberry pie",
   "description": "A delicious pie recipe that combines blueberries and blackberries.",
@@ -46,11 +42,15 @@ Your records should only include information that helps with searching, showing 
 
 All attributes are searchable by default, but, to make searching more relevant, you should [set only some attributes as searchable](/guides/managing-results/must-do/searchable-attributes/).
 
-Textual, descriptive attributes, such as summaries, brands, or colors, can be helpful as searchable attributes. For instance, in a recipe app, to help users search for "blueberry pie", you need an attribute containing those words, such as a `title` attribute.
+Textual, descriptive attributes, such as summaries, brands, or colors, can be helpful as searchable attributes.
+For instance, in a recipe app, to help users search for "blueberry pie", you need an attribute containing those words, such as a `title` attribute.
 
 ## Structuring records
 
-When adding data to your records, be selective. For example, if you're working with a product line, you don't need to send every piece of information about your products: only what serves the purposes of search. Include all the necessary information to find products, rank them, and display them on your website or app.
+When adding data to your records, be selective.
+For example, if you're working with a product line, you don't need to send every piece of information about your products:
+only what serves the purposes of search.
+Include all the necessary information to find products, rank them, and display them on your website or app.
 
 Building records involves:
 
@@ -62,7 +62,8 @@ Building records involves:
 
 When making an Algolia index, make your records as simple as possible.
 
-Each record should have enough information for users to find it quickly. When users search for something, Algolia returns records as results that match their search.
+Each record should have enough information for users to find it quickly.
+When users search for something, Algolia returns records as results that match their search.
 **Each record should contain all the information users need to find it and display its content.**
 
 {/* prettier-ignore-start */}
@@ -73,16 +74,20 @@ Each record should have enough information for users to find it quickly. When us
 
 {/* prettier-ignore-end */}
 
-{/* prettier-ignore-start */}
-
-<Info>
-  - [Reducing record size](/guides/sending-and-managing-data/prepare-your-data/how-to/reducing-object-size/)
-  - [Handling data relationships](/guides/sending-and-managing-data/prepare-your-data/how-to/handling-data-relationships/)
-  - [Indexing long pages](/guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents/)
-  - [Structure ecommerce product records](/guides/sending-and-managing-data/prepare-your-data/how-to/ecommerce-records/)
-</Info>
-
-{/* prettier-ignore-end */}
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/sending-and-managing-data/prepare-your-data/how-to/reducing-object-size/" horizontal="true">
+    Reducing record size
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/sending-and-managing-data/prepare-your-data/how-to/handling-data-relationships/" horizontal="true">
+    Handling data relationships
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents/" horizontal="true">
+    Indexing long pages
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/sending-and-managing-data/prepare-your-data/how-to/ecommerce-records/" horizontal="true">
+    Structure ecommerce product records
+  </Card>
+</CardGroup>
 
 ### Rework your data
 
@@ -96,7 +101,7 @@ Think about what needs to happen if you want to create a movie UI for users to:
 
 Assuming your data comes from a relational database, with the information you need in different tables, you need to query the data from these tables. After fetching it, a record for one movie may look like the following:
 
-```json json
+```json JSON
 [
   {
     "title": "Spirited Away",
@@ -140,11 +145,14 @@ Assuming your data comes from a relational database, with the information you ne
 ]
 ```
 
-The example contains several kinds of content, some useful for a search experience, some that aren't, and others that require reformatting. For example, you don't need to keep `runtime` or `aspect_ratio`. While they're helpful in other contexts, they have little value when searching, filtering, ranking, or displaying search results.
+The example contains several kinds of content, some useful for a search experience, some that aren't, and others that require reformatting.
+For example, you don't need to keep `runtime` or `aspect_ratio`. While they're helpful in other contexts, they have little value when searching, filtering, ranking, or displaying search results.
 
-While the names of the voice actors in the `cast` attribute are helpful, you don't need their birth date and place. Therefore, you can safely remove them and just keep the names. **This process [removes noise and saves room in records](/guides/sending-and-managing-data/prepare-your-data/how-to/reducing-object-size/) for more valuable data.**
+While the names of the voice actors in the `cast` attribute are helpful, you don't need their birth date and place.
+Therefore, you can safely remove them and just keep the names.
+**This process [removes noise and saves room in records](/guides/sending-and-managing-data/prepare-your-data/how-to/reducing-object-size/) for more valuable data.**
 
-```json json
+```json JSON
 {
   "cast": ["Rumi Hiiragi", "Miyu Irino", "Mari Natsuki"]
 }
@@ -152,15 +160,23 @@ While the names of the voice actors in the `cast` attribute are helpful, you don
 
 ### Attributes for searching
 
-Attributes for searching are the ones that contain the terms that your users look for. If you want to search for a movie by title, plot, genre, or cast, you need attributes that contain these terms. In the preceding example, such attributes are `title`, `synopsis`, `director`, `cast`, and `genres`.
+Attributes for searching are the ones that contain the terms that your users look for.
+If you want to search for a movie by title, plot, genre, or cast, you need attributes that contain these terms.
+In the preceding example, such attributes are `title`, `synopsis`, `director`, `cast`, and `genres`.
 
-Algolia lets you define in which specific attributes to search, using the [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/) parameter. By default, the engine searches within the entire record, but you want to adjust this: this is better for performance and lets you remove noise. Don't search attributes that aren't textually relevant or might generate _false positives_, like `images`, `release_year`, `review_scores`, or `country`. For example, when searching for "japan", English-speaking users most likely want to find movies that either have the term in the title or take place in Japan rather than Japanese movies.
+Algolia lets you define in which specific attributes to search, using the [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/) parameter.
+By default, Algolia searches within the entire record, but you want to adjust this: this is better for performance and lets you remove noise.
+Don't search attributes that aren't textually relevant or might generate _false positives_, like `images`, `release_year`, `review_scores`, or `country`.
+For example, when searching for "japan", English-speaking users most likely want to find movies that either have the term in the title or take place in Japan rather than Japanese movies.
 
 You can therefore set `title`, `synopsis`, `director`, `cast`, and `genres` as [`searchableAttributes`](/api-reference/api-parameters/searchableAttributes/) and **leave out the rest for displaying, filtering, and custom ranking**.
 
-You can add extra data to improve the discoverability of your record. For example, some users may look for a movie by its original title or translation in their language. Unless the translations are in the record, searching for these terms would return no results, so it's a good idea to retrieve them and add them to your objects. You can fetch them from your database if you have them or a third-party source such as an API or a website.
+You can add extra data to improve the discoverability of your record.
+For example, some users may look for a movie by its original title or translation in their language.
+Unless the translations are in the record, searching for these terms would return no results, so it's a good idea to retrieve them and add them to your objects.
+You can fetch them from your database if you have them or a third-party source such as an API or a website.
 
-```json json
+```json JSON
 {
   "display_title": "Spirited Away",
   "original_title": "千と千尋の神隠し",
@@ -174,14 +190,16 @@ You can add extra data to improve the discoverability of your record. For exampl
 
 ### Attributes for displaying
 
-**Display attributes** are those attributes that can be useful to show in the search results. They can include:
+Display attributes** are those attributes that can be useful to show in the search results.
+They can include:
 
 - Titles
 - Descriptions
 - Attributes used for filtering and custom ranking, such as the number of likes or categories
 - Images. To display images in your results, you need an image URL attribute in your records. This way, Algolia can return them in search results for you to display on the frontend.
 
-Some display attributes, such as `title` and `description`, can also be searchable. Others, such as `image` or `likes`, shouldn't be set as searchable.
+Some display attributes, such as `title` and `description`, can also be searchable.
+Others, such as `image` or `likes`, shouldn't be set as searchable.
 
 {/* prettier-ignore-start */}
 
@@ -207,21 +225,26 @@ The following are examples of attributes that you can filter:
 - Numeric attributes (price, rounded rating)
 - Normalized text (colors, types, or enumerated types).
 
-For example, you could use `director`, `cast`, `country`, `content_rating`, and `genres` and display them as refinement lists in your search experience, _and_ `release_year` to display a range slider. Declare them with the [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/) parameter.
+For example, you could use `director`, `cast`, `country`, `content_rating`, and `genres` and display them as refinement lists in your search experience, _and_ `release_year` to display a range slider.
+Declare them with the [`attributesForFaceting`](/api-reference/api-parameters/attributesForFaceting/) parameter.
 
-Filterable attributes can be anything, but you should _normalize_ your data to ensure consistency. For example, if you have attribute `genres` with the term "Animation" in one record and "Animated picture" in another, these would result in two different facet values.
+Filterable attributes can be anything, but you should _normalize_ your data to ensure consistency.
+For example, if you have attribute `genres` with the term "Animation" in one record and "Animated picture" in another, these would result in two different facet values.
 
-{/* prettier-ignore-start */}
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/managing-results/refine-results/filtering/" horizontal="true">
+    Filtering
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/managing-results/refine-results/faceting/" horizontal="true">
+    Faceting
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/" horizontal="true">
+    How to declare attributes for faceting with the API
+  </Card>
+</CardGroup>
 
-<Info>
-  - [Filtering](/guides/managing-results/refine-results/filtering/)
-  - [Faceting](/guides/managing-results/refine-results/faceting/)
-  - [How to declare attributes for faceting with the API](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting/)
-</Info>
-
-{/* prettier-ignore-end */}
-
-A good rule of thumb is to **add attributes based on how users want to fine-tune their search**. If you have a movie reviews website, users likely want to refine on review score or popularity.
+A good rule of thumb is to **add attributes based on how users want to fine-tune their search**.
+If you have a movie reviews website, users likely want to refine on review score or popularity.
 
 ### Custom ranking attributes
 
@@ -230,9 +253,13 @@ It's a good idea to start thinking about such metrics when fetching your data an
 
 For example, if a user looks for "james bond", all James Bond movies would match equally.
 
-Without anything else to break the tie, Algolia falls back on the `objectID` in alphanumeric order, which isn't helpful. A better way to break ties is to compare _meaningful_ information. For movies, you could use the `review_scores` attribute. However, in the preceding example, you have several scores, you may want to compute them into a global one and use them in custom ranking. The computed attribute would look like this:
+Without anything else to break the tie, Algolia falls back on the `objectID` in alphanumeric order, which isn't helpful.
+A better way to break ties is to compare _meaningful_ information.
+For movies, you could use the `review_scores` attribute.
+However, in the preceding example, you have several scores, you may want to compute them into a global one and use them in custom ranking.
+The computed attribute would look like this:
 
-```json json
+```json JSON
 {
   "computed_score": 201.6
 }
@@ -246,26 +273,29 @@ Without anything else to break the tie, Algolia falls back on the `objectID` in 
 
 {/* prettier-ignore-end */}
 
-{/* prettier-ignore-start */}
-
-<Info>
-  - [Custom ranking](/guides/managing-results/must-do/custom-ranking/)
-  - [Create custom ranking attributes](/guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking/)
-  - [Controlling precision of custom ranking metrics](/guides/managing-results/must-do/custom-ranking/how-to/controlling-custom-ranking-metrics-precision/)
-  - [`customRanking`](/api-reference/api-parameters/customRanking/)
-</Info>
-
-{/* prettier-ignore-end */}
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/managing-results/must-do/custom-ranking/" horizontal="true">
+    Custom ranking
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking/" horizontal="true">
+    Create custom ranking attributes
+  </Card>
+  <Card title="API" icon="gear" href="/api-reference/api-parameters/customRanking/" horizontal="true">
+    `customRanking`
+  </Card>
+</CardGroup>
 
 ## Advanced data formatting
 
-Algolia provides a vast collection of settings to help with relevance, and many of these work in combination with how you format your content. For example, whether to use one or several attributes for a single piece of information, including long or short descriptions (or both), repeat the same words in the title and description, and how to use custom ranking attributes.
+Algolia provides a vast collection of settings to help with relevance, and many of these work in combination with how you format your content.
+For example, whether to use one or several attributes for a single piece of information, including long or short descriptions (or both), repeat the same words in the title and description, and how to use custom ranking attributes.
 
-{/* prettier-ignore-start */}
 
-<Info>
-  - [Controlling precision of custom ranking metrics](/guides/managing-results/must-do/custom-ranking/how-to/controlling-custom-ranking-metrics-precision/)
-  - [Searching in hyphenated attributes](/guides/managing-results/optimize-search-results/typo-tolerance/how-to/how-to-search-in-hyphenated-attributes/)
-</Info>
-
-{/* prettier-ignore-end */}
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/managing-results/must-do/custom-ranking/how-to/controlling-custom-ranking-metrics-precision/" horizontal="true">
+    Controlling precision of custom ranking metrics
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/managing-results/optimize-search-results/typo-tolerance/how-to/how-to-search-in-hyphenated-attributes/" horizontal="true">
+    Searching in hyphenated attributes
+  </Card>
+</CardGroup>
