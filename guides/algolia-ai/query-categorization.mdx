@@ -1,0 +1,409 @@
+---
+title: Query Categorization
+description: |-
+  Predict the categories to which a search query belongs with AI.
+---
+
+Algolia's Query Categorization uses an AI model to predict the appropriate category for a search query.
+It predicts the most likely category for a query based on past search and click and conversion data.
+For example, the query "banana" might be categorized under "Food > Fruits."
+
+Query Categorization also groups similar queries into categories.
+For example, both "blue jeans" and "denim" could be classified in the "Clothing > Pants" category, and "denim" could also be in the "Clothing" category.
+
+<Card title="Algolia Academy" icon="photo-film" href="https://academy.algolia.com/training/0190db9d-866d-7440-a797-4c3092245fc9/overview" horizontal="true" color="#c7519c">
+    Query Categorization (full course)
+</Card>
+
+## Features
+
+**Query Categorization** gives you access to these features:
+
+- **Dashboard control** lets you set up and check AI model predictions from the Algolia dashboard.
+- **Automatic filtering and boosting** improves the relevance of results without writing code.
+- **Category predictions:** use the Search API to generate real-time category predictions for user queries to customize their search and discovery experience.
+
+## Set up Query Categorization
+
+To get started with Query Categorization:
+
+1. **[Send click and conversion data](#send-click-and-conversion-events)** to Algolia: this helps the AI model learn user behavior.
+1. **[Create a facet hierarchy](#create-a-facet-hierarchy)** to define the categories and subcategories your records belong to so that the AI model knows how to classify them.
+
+After setup, the [AI model](#the-ai-model) will analyze popular queries, categorize them, and predict categories for new queries.
+
+### Send click and conversion events
+
+To train the AI model, you must [send click or conversion events](/guides/send-events/get-started/) to Algolia.
+The model uses this data to predict the categories for new queries.
+For a query to be eligible for Query Categorization model training, it must:
+
+- Be longer than three characters
+- Have returned at least 10 records
+- Have received events for at least three different records.
+
+The model is re-trained every 24 hours, using data from the last 90 days.
+
+### Create a facet hierarchy
+
+To enable Query Categorization, use the [dashboard](https://dashboard.algolia.com/query-categorization/) to define the facets (categories and subcategories) the AI model will use.
+These facets should accurately represent your data hierarchy, up to five levels deep.
+
+Once you've entered your facets, click **Save** to start the model-building process.
+Depending on the number of categories and traffic, this can take several minutes to half an hour.
+
+#### Example facet hierarchy of nested categories
+
+Assuming a record structure like this:
+
+```json JSON
+{
+  "name": "banana",
+  "description": "...",
+  "price": 3.45,
+  "hierarchicalCategories":
+  {
+    "lvl0": "Food",
+    "lvl1": "Fruits"
+  }
+}
+```
+
+Set `hierarchicalCategories.lvl0` as the first level used by the model and `hierarchicalCategories.lvl1` as the second level.
+
+#### Example facet hierarchy of flat categories
+
+Assuming a record structure like this:
+
+```json JSON
+{
+  "name": "banana",
+  "description": "...",
+  "price": 3.45,
+  "group": "Food",
+  "section": "Fruits"
+}
+```
+
+Set `group` as the first level used by the model and `section` as the second level.
+
+If your records belong to several categories simultaneously,
+and you use arrays to represent each level of depth,
+the model expects shared prefixes.
+For example, `Food` as the first level facet value and `Food > Fruits` as the second level.
+
+#### Unsupported hierarchical facet formats
+
+The model _doesn't_ support records structured with only one attribute for all depth levels.
+For example:
+
+```json JSON
+{
+  "name": "banana",
+  "description": "...",
+  "price": 3.45,
+  "categories": ["Food", "Food > Fruits"]
+}
+```
+
+### Manage categories
+
+After model training, view the generated categories tree from the **Categories Tree View** tab in the [dashboard](https://dashboard.algolia.com/query-categorization/).
+This lets you review and adjust the structure as needed.
+For example, you can exclude non-categories like "Black Friday" or "On sale" to increase the model's accuracy.
+
+### Manage events source
+
+You can use different data sources for your events, such as data from a production index to improve predictions for a test index (which wouldn't have had any user interactions).
+
+To use a different data source:
+
+<Steps>
+  <Step title="Select categories">
+    Go to the **Categories Setting** tab in the [dashboard](https://dashboard.algolia.com/query-categorization/)
+  </Step>
+  <Step title="Select source">
+    In **Events source index**, select the new data source (it must be a [replica](/guides/managing-results/refine-results/sorting/in-depth/replicas/) or a copy of the existing source index).
+  </Step>
+  <Step title="Save changes">
+    Click **Save** to regenerate the category tree and make predictions using events from the new data source.
+  </Step>
+</Steps>
+
+## The AI model
+
+After the facet hierarchy has been saved, the AI model:
+
+1. Builds a "categories tree" based on your data.
+1. Identifies top categories for popular queries.
+1. Predicts categories for new queries.
+
+### Model output
+
+The AI model assigns a confidence level and a type to each prediction:
+
+- **Confidence level:** `very low`, `low`, `high`, `very high`, or `certain`.
+- **Type:**
+  - `narrow`: the query matches a specific category.
+  - `broad`: the query matches a category with subcategories.
+  - `ambiguous`: the query matches several unrelated categories.
+  - `none`: the model can't determine a category.
+
+## Use predictions at query time
+
+Use Query Categorization predictions to enhance search results in your frontend at query time to:
+
+- **Expand results:** if there are limited results, expand them to include more items from the same category.
+- **Refine broad search terms:** if a query is classified as `broad`, suggest different categories to help users narrow their search.
+- **Customize search**: offer a tailored search experience by providing a specific layout for some categories
+
+<Note>
+    Query Categorization populates your search results with the predicted categories for the search query.
+    [Algolia normalizes](/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/#how-the-engine-normalizes-data) the _query used for prediction_, _not_ the raw query.
+</Note>
+
+### Turn on Query Categorization at query time
+
+To retrieve Query Categorization results at query time, activate the option from the dashboard or in query parameters.
+
+<Tabs>
+  <Tab title="Dashboard">
+    In the [dashboard](https://dashboard.algolia.com/query-categorization/), enable the **Categories with Search API** toggle in the **Categories Settings** tab.
+  </Tab>
+  <Tab title="Query parameters">
+    In query parameters, add a JSON object or a [URL encoded string](https://developer.mozilla.org/en-US/docs/Glossary/Percent-encoding).
+    For example,
+    `extensions%3D%7B%22queryCategorization%22%3A%7B%22enableCategoriesRetrieval%22%3Atrue%7D%7D`
+
+    Find Query Categorization parameters in the `extensions` field:
+
+    ```json JSON
+    {
+        /* Other standard query parameters... */
+        "extensions": {
+        "queryCategorization": {
+            "enableCategoriesRetrieval": true
+            /* Other options to control automatic filtering and boosting are available */
+        }
+        }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+#### Search response format
+
+The search response shows predictions in the attribute `extensions.queryCategorization`.
+
+```json JSON
+{
+  /* Regular search answer (like hits) */
+  "extensions": {
+    "queryCategorization": {
+        "normalizedQuery": "banana",
+        "count": 2,
+        "type": "narrow",
+        "categories": [
+            {
+                "bin": "very high",
+                "hierarchyPath": [
+                    {
+                        "facetName": "category.lvl0",
+                        "facetValue": "Food",
+                        "depth": 0
+                    },
+                    {
+                        "facetName": "category.lvl1",
+                        "facetValue": "Fruits",
+                        "depth": 1
+                    }
+                ]
+            }
+        ]
+        }
+    }
+}
+```
+
+Sometimes, `extensions.queryCategorization` is empty if the Query Categorization model can't categorize a query.
+
+## How to override predictions
+
+You can override the AI model's predictions from the [dashboard's](https://dashboard.algolia.com/query-categorization/) **Predictions Explorer** tab.
+
+- To change the override or replace the predicted categories, click the edit (pencil) icon
+- To revert an override to the predicted categories, click the zap (lightning) icon.
+- To remove a prediction, click the trash icon.
+
+![Query card override options](/images/ai/query-card.png)
+
+Algolia displays changes in the predictions list.
+To confirm them, click **Save changes** at the bottom of the page.
+
+<Note>
+    Changing the index classification in the Categories Settings tab deletes any override affected by this change
+    For example, removing the second facet level from the index classification deletes overrides like `Food` > `Fruits`, reverting the query to automatic predictions.
+</Note>
+
+## Automatic filtering and boosting
+
+Automatic filtering and boosting applies filters for user queries based on Query Categorization predictions.
+
+- **Automatic filtering** [filters out](/guides/managing-results/refine-results/filtering/in-depth/filters-and-facetfilters/) items that _don't_ match the predicted category.
+- **Automatic boosting** uses an [optional filter](/guides/managing-results/rules/merchandising-and-promoting/in-depth/optional-filters/) to boost items that match the predicted category to the top of search results.
+
+Based on [confidence levels](#model-output), the Query Categorization model determines whether to apply predictions as filters, boosts, or not apply them at all.
+
+### Use automatic filtering and boosting
+
+To use this feature, click **Enable Automatic Filtering & Boosting** in the **Automatic filtering & boosting Settings** tab in the  [dashboard](https://dashboard.algolia.com/query-categorization/).
+By default, only automatic boosting is activated.
+To enable automatic filtering, see [Configure automatic filtering and boosting](#configure-automatic-filtering-and-boosting).
+
+
+You can exclude queries and categories that shouldn't be automatically filtered or boosted. Anything specified here overrides your index's configuration.
+
+Once activated, boosts are automatically injected into your search parameters at query time without requiring frontend changes.
+
+### Configure automatic filtering and boosting
+
+Adjust the impact of automatic filtering and boosting by modifying two parameters in the **Automatic filtering & boosting Settings** tab:
+
+- The minimum expected confidence level for filtering
+- The minimum expected confidence level for boosting
+
+These parameters let you configure when to apply filters or boosts based on the predictions' [confidence levels](#model-output).
+
+The feature:
+
+- Boosts predictions with a confidence level equal to or above the confidence level for boosting but below that for filtering.
+- Filters on the predictions with a confidence level equal to or above the confidence level for filtering.
+
+For instance, if the boosting confidence level is `high` and the filtering confidence level is `certain`, Algolia boosts `high` and `very high` predictions and filters on `certain` predictions.
+
+<Note>
+  The confidence level for boosting must always be lower than the level for filtering.
+</Note>
+
+Turn off filtering or boosting with their disable options.
+
+### Override automatic filtering and boosting at query time
+
+You can override the default configuration for automatic filtering and boosting with query parameters:
+
+```jsonc JSON
+{
+  // Other query parameters ...
+  "extensions": {
+    "queryCategorization": {
+      "enableAutoFiltering": true
+    }
+  }
+}
+```
+
+<Note>
+  To let users remove filters applied by automatic filtering and boosting, you must explicitly turn off automatic filters and boosts on the search query targeting your index (when users clear the automatic filter).
+  Create an InstantSearch widget to handle this behavior.
+</Note>
+
+### Detect the impact of automatic filtering and boosting at query time
+
+When automatic filtering and boosting is active for a query, the `extensions.queryCategorization.autofiltering` section has the following content:
+
+```jsonc JSON
+{
+  // ... Regular search response (including hits) ...
+  "extensions": {
+    "queryCategorization": {
+      "normalizedQuery": "banana",
+      "count": 14870,
+      "type": "narrow",
+      "categories": [
+        {
+          "bin": "certain",
+          "hierarchyPath": [
+            {
+              "facetName": "categories.lvl0",
+              "facetValue": "Food",
+              "depth": 0
+            },
+            {
+              "facetName": "categories.lvl1",
+              "facetValue": "Food > Fruits",
+              "depth": 1
+            }
+          ]
+        }
+      ],
+      "autofiltering": {
+        "enabled": true,
+        "maxDepth": 5,
+        "facetFilters": [
+          [
+            "categories.lvl0:Food"
+          ],
+          [
+            "categories.lvl1:Food > Fruits"
+          ],
+        ],
+        "optionalFilters": []
+      }
+    }
+  }
+}
+```
+
+<Note>
+  You can activate automatic filtering and boosting without it having an impact.
+  Other fields will be absent from your [search response](#search-response-format).
+</Note>
+
+### Preview automatic filtering and boosting
+
+You can preview automatic filtering and boosting for any index from the **Automatic filtering & boosting Preview** tab of the [**Query categorization** section in the dashboard](https://dashboard.algolia.com/query-categorization/).
+
+If you have category predictions for the selected index, you can preview results for any query with predicted categories to show how automatic filtering and boosting affects results (without activating automatic filtering and boosting on your production traffic).
+
+![Previewing automatic filtering and boosting on your indices with the automatic filtering and boosting preview](/images/ai/afb-simulator.png)
+
+<Note>
+  The automatic filtering and boosting preview shows how promotion [rules](/guides/managing-results/rules/rules-overview/) and [Dynamic Re-Ranking](/guides/algolia-ai/re-ranking/) affect results.
+  You can turn these features off in the preview with the **Rules** and **Dynamic Re-Ranking** toggles.
+</Note>
+
+### A/B test automatic filtering and boosting
+
+You can use A/B testing to test automatic filtering and boosting on an index and accurately measure the effect on your search.
+
+To do this, click the **Launch an A/B test** button from the **Automatic filtering & boosting Settings** tab of the [**Query categorization** section in the dashboard](https://dashboard.algolia.com/query-categorization/).
+
+## Analytics grouped by categories
+
+After setting up the Query Categorization model, you can view queries grouped by their predicted categories in the dashboard's **Grouped Searches** tab (under Observe > Analytics).
+This view doesn't include browsing queries: "empty" queries generated when a user clicks a filter or other UI element.
+
+Compare categories or click them to inspect their queries.
+Algolia automatically flags queries with low click-through or conversion rates as "underperforming" within each category.
+
+For example, Algolia flags `blue jeans` and `denim` as belonging to the same category (`pants`).
+Grouped analytics displays the performance of the category `pants` (aggregating data for `blue jeans`, `denim`, and other queries belonging to the `pants` category).
+You can then compare the performance of the two.
+For example, the `pants` category's click-through rate is 10%, but the click-through rate for `blue jeans` is only 4% (identified as _underperforming_).
+You can improve the performance of the query by, for example, adding a synonym or a Rule.
+
+<Note>
+  With grouped analytics, you can combine your search analytics to uncover new insights and optimize your search and discovery experience.
+  It simplifies search analysis and helps manage the [long tail](https://wikipedia.org/wiki/Long_tail) of search queries.
+</Note>
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Blog" icon="blog" href="https://www.algolia.com/blog/product/query-understanding-101/" horizontal="true">
+    Query understanding
+  </Card>
+  <Card title="Blog" icon="blog" href="https://www.algolia.com/blog/engineering/12-ways-to-improve-your-search-index/" horizontal="true">
+    12 ways to improve your search (including Query Categorization)
+  </Card>
+</CardGroup>

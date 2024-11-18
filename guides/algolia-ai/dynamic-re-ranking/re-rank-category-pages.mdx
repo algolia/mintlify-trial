@@ -1,0 +1,126 @@
+---
+title: Add Dynamic Re-Ranking to category pages
+description: |-
+  Learn how to use Dynamic Re-Ranking to re-rank and promote popular products on category pages.
+---
+
+You can use [Algolia's Dynamic Re-Ranking](/guides/algolia-ai/re-ranking/) feature to find trends in your users' behavior.
+Based on users' interaction throughout search and browse, Dynamic Re-Ranking improves the relevance of your category pages by boosting results that are trending or rising in popularity.
+
+![Screenshot of Dynamic Re-Ranking](/images/ai/solutions-browse-reranking-dashboard-screen.jpg)
+
+Once you set up the **category pages** and successfully **send click and conversion** events (requires coding) to Algolia, Algolia starts using this data to detect trends in your user behavior.
+No coding is required to enable **Dynamic Re-Ranking on category pages**.
+
+Learn more about [Dynamic Re-Ranking's effect on relevance](//guides/algolia-ai/re-ranking/#effect-on-relevance).
+
+## Implementation steps
+
+1. Build the [category pages](https://www.algolia.com/doc/guides/solutions/ecommerce/browse/tutorials/category-pages/)
+1. Send click and conversion events to Algolia
+1. Enable Dynamic Re-Ranking on category pages
+1. A/B test Dynamic Re-Ranking on category pages
+
+### Send click and conversion events to Algolia
+
+You must complete this step before enabling Dynamic Re-Ranking.
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/events/js/" horizontal="true">
+    Send click and conversion events with InstantSearch
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/send-events/get-started/" horizontal="true">
+    Get started with click and conversion events
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/algolia-ai/re-ranking/#security-best-practices" horizontal="true">
+    Security best practices for sending click and conversion events
+  </Card>
+</CardGroup>
+
+Dynamic Re-Ranking refreshes each query's ranking every 24 hours.
+It always takes the last 30 days into account, meaning it's based on a sliding window of the most recent analytics data.
+
+### Enable Dynamic Re-Ranking on category pages
+
+Configure the following options from the [Dynamic Re-Ranking page in the dashboard](https://dashboard.algolia.com/reranking/).
+
+- Opt in an index for Dynamic Re-Ranking.
+- Select the correct events source index (optional).
+- Pick your category page identifier by choosing a **Browsing Facet**.
+- Adjust weight to recent events (optional)
+- Simulate Dynamic Re-Ranking.
+- Activate Dynamic Re-Ranking.
+
+<Note>
+    You can see re-ranked results only after Algolia has received enough search traffic and click and conversion events.
+    For a record to be promoted for a given query, it must gather **at least 20 clicks or two conversions during the 30 days time window.**
+</Note>
+
+#### Opt in an index for Dynamic Re-Ranking
+
+Go to the [Dynamic Re-Ranking page](https://dashboard.algolia.com/reranking/) in the Algolia dashboard and select the index you want to use for Dynamic Re-Ranking.
+
+#### Optional: select the correct events source index
+
+Under **Dynamic Re-ranking**, click **Events source index** and update the source index where you send your click and conversion events in production.
+If you need to use a different source for your events, you can select the correct events source index.
+
+A main use case for selecting an alternative source index is when you have a staging index that replaces the production index every day for atomic reindexing.
+In this case, you should enable re-ranking on both the staging and target production indices as source events, given that the production index already receives events.
+
+![Screenshot of Dynamic Re-Ranking update index source](/images/ai/solutions-browse-reranking-update-source-index.jpg)
+
+#### Pick your category page identifier by choosing a "browsing facet"
+
+Under Dynamic Re-Ranking, click **Browsing facet** and update the browsing filter to the category page identifier you indexed in the dataset.
+A **category page identifier** is a unique identifier that references a particular category page.
+Possible identifiers include `collections`, `categories`, `categoryId`, and `categoryPageId`.
+Check with your team to make sure the browsing filter is referencing the correct filter used in the query to generate the category page in the frontend UI.
+
+![Screenshot of Dynamic-Re-Ranking browse facet](/images/ai/solutions-browse-reranking-choose-browse-facet.jpg)
+
+#### Optional: adjust weight to recent events
+
+By default, the [event freshness](/guides/algolia-ai/re-ranking/#give-more-weight-to-recent-events-event-freshness) setting is enabled to handle seasonality and shorter trends.
+Although can turn off this setting, you should usually leave it on.
+
+#### Simulate Dynamic Re-Ranking
+
+Once Algolia receives enough search traffic and click and conversion events, you can assess the effect of re-ranking on your search results and browse page in the simulator.
+You should use the simulator before activating the feature in production.
+
+![Screenshot of the Dynamic Re-Ranking simulator](/images/ai/solutions-browse-reranking-choose-browse-facet.jpg)
+
+#### Activate Dynamic Re-Ranking
+
+Before activating Dynamic Re-Ranking, you can turn off re-ranking for specific records.
+To prevent promoting popular items that are out of stock or no longer listed, select a filter value, for example `instock=true`.
+
+Click **Activate**:
+
+![Screenshot of Dynamic Re-Ranking activate button](/images/ai/solutions-browse-reranking-activate-button.jpg)
+
+Turn off re-ranking for specific records:
+
+![Screenshot of Dynamic Re-Ranking activate screen](/images/ai/solutions-browse-reranking-activate-screen.jpg)
+
+### A/B test Dynamic Re-Ranking on category pages
+
+To measure performance of the re-ranking approach, it's important to launch the A/B test directly from the re-ranking section of the UI and not from the A/B test tab in the dashboard.
+This ensures all the settings are configured correctly and that you are measuring the performance only on the pages with enough traffic and where Re-Ranking rules apply.
+
+![Screenshot of Dynamic Re-Ranking screen for A/B test](/images/ai/solutions-browse-reranking-abtest.jpg)
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="FAQ" icon="question" href="https://support.algolia.com/hc/en-us/articles/4406981935761#hide-items" horizontal="true">
+    A/B test Dynamic Re-Ranking
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/ab-testing/what-is-ab-testing/" horizontal="true">
+    What is A/B testing?
+  </Card>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/ab-testing/what-is-ab-testing/in-depth/how-ab-test-scores-are-calculated/" horizontal="true">
+    How A/B test scores are calculated
+  </Card>
+</CardGroup>

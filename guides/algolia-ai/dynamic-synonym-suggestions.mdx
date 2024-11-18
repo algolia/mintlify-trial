@@ -1,0 +1,95 @@
+---
+title: Dynamic Synonym Suggestions
+description: |-
+  Use AI to automate finding the best synonyms for your search.
+---
+
+Synonyms are words that share a similar meaning.
+Adding synonyms to your search helps your users find relevant results
+even if they use different words to express the same concept.
+For example, by adding a synonym for _trousers_ and _pants_,
+a search for either term returns identical results.
+
+<Card title="Algolia Academy" icon="photo-film" href="https://academy.algolia.com/guides/9638b7f8-0715-11ef-9b8d-02cd6c51e67b/tasks/07711b24-01ba-11ef-9c51-06f9f9ae8e45" horizontal="true" color="#c7519c">
+    Dynamic Synonym Suggestions
+</Card>
+
+## Get started
+
+<Note>
+    Dynamic Synonym Suggestions are available on [Build and Premium plans](https://www.algolia.com/pricing/).
+</Note>
+
+To activate Dynamic Synonym Suggestions for one of your indices:
+
+import Dashboard from '/snippets/dashboard.mdx';
+
+<Dashboard />
+
+<Steps>
+  <Step title="Activate AI synonyms" stepNumber={4}>
+    Open the [**AI Synonyms**](https://dashboard.algolia.com/account/ai-synonyms/) page and select **Activate for this index**.
+  </Step>
+</Steps>
+
+## Send user token with your searches
+
+To find suggestions, Algolia determines how often users rewrite a search term.
+To make that more accurate, send user tokens with your search requests.
+For more information, see [Distinguish users for analytics](https://www.algolia.com/doc/guides/search-analytics/guides/usertoken/).
+
+## Review synonyms
+
+The **Suggested Synonyms** tab shows new suggestions.
+To show all suggestions, turn off the **Show only new synonyms** option.
+
+Each suggestion shows more information, such as a confidence score.
+If you're [sending click and conversion events](/guides/send-events/get-started/),
+you can compare click-through and conversion rates for both alternatives.
+
+## Accept or decline suggestions
+
+To accept a suggestion, click **Add to configuration** (`✓`).
+If you don't want to add this suggestion to all replicas of this index, turn off the **Forward to replicas** option at the top.
+You can edit accepted suggestions in the **Accepted suggestions** tab.
+
+To decline a suggestion, click **Decline this suggestion** (`x`).
+You can edit and accept declined suggestions in the **Declined suggestions** tab.
+
+<Note>
+    After accepting a suggestion, only edit it in the dashboard, not with the API.
+</Note>
+
+## Change synonym types
+
+By default, the AI suggests adding regular two-way synonyms.
+To change to another [synonym type](/guides/managing-results/optimize-search-results/adding-synonyms/),
+hover over the suggestion and click the **Edit** button.
+Then, click **Select Type** (`⇔`) and select a synonym type.
+
+![Screenshot of the edit suggestions menu with options for changing synonym types](/images/ai/types.png)
+
+## Edit suggestions
+
+To edit a suggestion, hover over it and click the **Edit** button.
+Then, you can edit both synonyms, or add more.
+
+<img width="450" src="/images/ai/edit.png" alt="Screenshot of the edit suggestions menu showing the synonym to edit" />
+
+## Alternative suggestions
+
+Sometimes, there are multiple suggestions for the same search query.
+To see the alternative suggestions, click **More suggestions**.
+
+<img width="450" src="/images/ai/alternative-terms.png" alt="A list with other suggestions for this synonym" />
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/managing-results/optimize-search-results/adding-synonyms/" horizontal="true">
+    Synonyms
+  </Card>
+  <Card title="Merchandising Playbook" icon="clapperboard" href="https://www.algolia.com/ecommerce-merchandising-playbook/ai-synonyms/" horizontal="true">
+    AI synonyms
+  </Card>
+</CardGroup>

@@ -1,0 +1,207 @@
+---
+title: Dynamic Re-Ranking
+description: |-
+  Dynamic Re-Ranking automatically adjusts your ranking based on user trends.
+---
+
+The relevance of your search results often changes with time, and it can change fast.
+Take a drugstore as an example.
+Users who searched for "mask" before February 2020 (the outbreak of the COVID-19 pandemic) most probably were looking to buy facial masks to take care of their skin.
+During the pandemic, users were more likely to look for surgical masks.
+
+<Card title="Algolia Academy" icon="photo-film" href="https://academy.algolia.com/guides/cdf49ae4-7785-11ec-8af9-02dd896aace5/tasks/7025f1ac-5c91-11eb-bb84-06c0361096e5" horizontal="true" color="#c7519c">
+    Dynamic Re-Ranking
+</Card>
+
+## What is Dynamic Re-Ranking?
+
+Dynamic Re-Ranking is an Algolia feature that uses AI to find trends in your users' behavior.
+Based on the query and the position of the result they click or convert, it can improve your relevance by boosting results that are rising in popularity.
+Indirectly, Dynamic Re-Ranking will also demote less relevant results by boosting other results above them.
+
+Dynamic Re-ranking can learn from user behavior patterns.
+For example, if users frequently choose surgical masks when searching for "mask", it will increase the ranking of surgical masks in future results.
+This leads to a more relevant search experience and can result in a higher conversion rate without you having to create rules or use optional filters to tweak relevance.
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/managing-results/rules/rules-overview/" horizontal="true">
+    Algolia Rules overview
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-promote-with-optional-filters/" horizontal="true">
+    Promoting records with optional filters
+  </Card>
+  <Card title="Merchandising Playbook" icon="clapperboard" href="https://www.algolia.com/ecommerce-merchandising-playbook/ai-re-ranking/" horizontal="true">
+    AI re-ranking
+  </Card>
+  <Card title="API" icon="gear" href="https://www.algolia.com/doc/api-reference/api-parameters/optionalFilters/" horizontal="true">
+    `optionalFilters`
+  </Card>
+</CardGroup>
+
+## Effect on relevance
+
+While Dynamic Re-Ranking can be a powerful tool for tweaking your relevance, you don't want it to interfere with the relevance you've already set up.
+For this reason, Dynamic Re-Ranking kicks in _after_ the engine has computed your results' [textual relevance](/doc/guides/managing-results/must-do/custom-ranking/#the-ranking-criteria) and has applied your [custom ranking](/doc/guides/managing-results/must-do/custom-ranking/#custom-ranking).
+
+If you use [Rules](/guides/managing-results/rules/rules-overview/) to [pin](https://support.algolia.com/hc/en-us/articles/4406981935761#pin-items) or [hide](https://support.algolia.com/hc/en-us/articles/4406981935761#hide-items) specific records, Algolia applies them _after_ re-ranking so that they keep working as expected.
+Algolia applies all other rules before re-ranking.
+This means re-ranking can override rules that [boost](https://support.algolia.com/hc/en-us/articles/4406981935761#boost-categories) and [bury categories](https://support.algolia.com/hc/en-us/articles/4406981935761#bury-categories).
+Re-ranking may also override an eventual [Geo filtering](/doc/guides/managing-results/refine-results/geolocation/#geographical-filtering-and-sorting).
+
+Re-ranking doesn't take effect if you enable Personalization and Algolia has enough data to personalize the search.
+However, re-ranking kicks back in if there's not enough data to personalize a search for first-time users.
+**Algolia doesn't apply both Personalization and Dynamic Re-Ranking concurrently.**
+
+Algolia applies the relevance strategies in this order:
+
+1. [Textual ranking criteria](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/)
+1. Business relevance ([custom ranking](/guides/managing-results/must-do/custom-ranking/))
+1. Personalization (if you've enabled it and Algolia has enough information to personalize results for a particular user)
+1. Boosting and burying categories with [rules](/guides/managing-results/rules/rules-overview/)
+1. Dynamic Re-Ranking
+1. Pinning and hiding specific items with rules.
+
+<CardGroup cols={2}>
+  <Card title="FAQ" icon="question" href="https://support.algolia.com/hc/en-us/articles/4406981935761#boost-categories" horizontal="true">
+    Boost categories
+  </Card>
+  <Card title="FAQ" icon="question" href="https://support.algolia.com/hc/en-us/articles/4406981935761#bury-categories" horizontal="true">
+    Bury categories
+  </Card>
+  <Card title="FAQ" icon="question" href="https://support.algolia.com/hc/en-us/articles/4406981935761#pin-items" horizontal="true">
+    Pin items
+  </Card>
+  <Card title="FAQ" icon="question" href="https://support.algolia.com/hc/en-us/articles/4406981935761#hide-items" horizontal="true">
+    Hide items
+  </Card>
+</CardGroup>
+
+<Note>
+    By default, Algolia doesn't apply re-ranking on empty searches but you can [enable re-ranking for empty searches filtered on a particular facet value](#enable-re-ranking-on-browsing-pages-browsing-facet).
+</Note>
+
+### Simulate Dynamic Re-Ranking
+
+You can simulate re-ranking for any index from the [**Dynamic Re-Ranking** page in the dashboard](https://dashboard.algolia.com/reranking/).
+Once you've [sent some click and conversion events](#click-and-conversion-events), you can try out any query and see how Dynamic Re-Ranking affects the results (without activating re-ranking on your live index).
+
+![Simulating Dynamic Re-Ranking on your indices with the Re-Ranking Simulator](/images/ai/reranking-simulator.png)
+
+In the simulator, each record has an _attractiveness_ score per query.
+This score is the number of events _this_ record received last month compared to other records, and it explains why re-ranking boosts one record over another.
+
+<Note>
+    **If you use rules to [pin top items for popular queries](/guides/managing-results/rules/merchandising-and-promoting/how-to/promote-hits/), Dynamic Re-Ranking has a limited effect.**
+    Turn off the rules in the simulator with the **Rules** toggle to assess the benefits of Dynamic Re-Ranking.
+    Consider removing these rules if you're satisfied with the records that Dynamic Re-Ranking promotes.
+</Note>
+
+## Dynamic Re-Ranking preparation
+
+<Note>
+    Dynamic Re-Ranking is available on the Build and Premium [pricing plans](https://www.algolia.com/pricing/).
+</Note>
+
+### Event requirements for Dynamic Re-Ranking
+
+- For a record to be promoted for a given search, this record must have received [**20 click events or 2 conversion events**](#click-and-conversion-events) after this specific search in the past 30 days
+- Events must contain a `queryID` property that corresponds to a valid search
+- An event `timestamp` must be within one hour of the search request's timestamp and no older than four days at the time of sending
+- Events must include an `objectID` property that corresponds to a record currently in the specified index
+- Only one click or conversion event is considered per `userToken` per search query per record (`objectID`).
+
+### Click and conversion events
+
+To use Dynamic Re-Ranking, you must send [click and conversion events](/guides/send-events/get-started/).
+Dynamic Re-Ranking uses this data to detect trends and re-rank results based on these trends.
+
+Dynamic Re-Ranking refreshes each query's ranking every 24 hours.
+Re-Ranking takes the last 30 days into account, meaning it's based on a sliding window of the most recent analytics data.
+For a record to be promoted for a given query, Re-Ranking requires it to have at least 20 clicks or two conversions during the 30-day time window.
+Re-Ranking promotes up to 20 items with the highest scores matching those criteria per query.
+
+#### Security best practices
+
+To prevent malicious users from manipulating the ranking of your records, **Dynamic Re-Ranking uses a distinct `userToken` per event policy**.
+That means when a `userToken` sends duplicate events for the same [user-query-record combination](/guides/send-events/concepts/event-types/#events-requirements-for-dynamic-re-ranking), only one counts for re-ranking
+For example, if the same user (same `userToken`) clicks on the same record 100 times after the same query, it counts as one click.
+If the same user clicks on the same record after different queries, they count as separate events.
+
+<Warning>
+    To prevent users from crafting several `userToken`s, use secured API keys.
+    With secured API keys, you can include the `userToken` as an embedded parameter when you generate the key on your backend.
+    This lets you give each user a unique key, but they can't change its `userToken`.
+</Warning>
+
+## Dynamic Re-Ranking settings
+
+Configure the following settings from the [**Dynamic Re-Ranking** page in the dashboard](https://dashboard.algolia.com/reranking/).
+
+### Enable re-ranking on browsing pages (Browsing Facet)
+
+By default, Algolia doesn't dynamically re-rank empty queries.
+Setting a **Browsing Facet** re-ranks empty queries that include `facetFilters` for that attribute.
+
+For example, if you use Algolia to populate your website's category pages by performing an empty query with a `categoryPageID` facet, you can set `categoryPageID` as a **Browsing facet**.
+Re-ranking reorders records in each `categoryPageID` based on their popularity.
+
+If you set the root of a nested faceting attribute as a **Browsing Facet**, Re-ranking reorders all its sub-attributes
+For example, if you have an attribute named `hierarchicalCategories` with several nested levels (like `hierarchicalCategories.level0` and `hierarchicalCategories.level1`), using only `hierarchicalCategories` as a **Browsing facet** re-ranks empty queries filtered on `hierarchicalCategories.level0` and `hierarchicalCategories.level1` as well.
+
+### Turn off re-ranking for specific records (Re-Ranking Filter(s))
+
+If you set a re-ranking filter, Dynamic Re-Ranking only promotes items matching the configured filter.
+
+For example, if you select `instock = true`, Dynamic Re-Ranking only promotes items that are in stock.
+
+### Group Similar Queries
+
+By default, each query is re-ranked independently.
+**Group Similar Queries** helps to re-rank less frequent query variations.
+
+Queries are grouped if they share the exact words (in any order).
+
+You should set a language for grouping by choosing the appropriate option from the **Group Similar Queries** drop-down menu.
+Setting a language allows Dynamic Re-Ranking to ignore plurals, conjugations, and stop words during the grouping phase.
+
+### Re-rank more results per query (Re-ranked Hits)
+
+You can increase the number of records pushed to the top of search results from the default of 20 to 100.
+
+<Note>
+    Dynamic Re-Ranking may promote fewer results than this value if Dynamic Re-Ranking doesn't gather significant traffic on enough records.
+</Note>
+
+### Give more weight to recent events (Event Freshness)
+
+To give more weight to recent events in the ranking computation, enable the **Event Freshness** option.
+If you don't, an event that happened four weeks ago affects re-ranking the same way as an event that happened yesterday.
+**Enabling event freshness better handles seasonality and shorter search trends.**
+
+Once you toggle **Event Freshness** on, Algolia recomputes re-ranking so that newer events have more weight than older ones.
+You don't have to make any other changes.
+
+#### Use a different events source index (Events source index)
+
+By default, Dynamic Re-Ranking uses the [events](#click-and-conversion-events) sent to the re-ranked index.
+Use another index as the source for the events by changing the **Events source index** option. 
+The indices must be replicas or a copies of each other.
+
+## Enable Dynamic Re-Ranking for production
+
+<Note>
+    Before you enable Dynamic Re-Ranking for an index, always [A/B test your re-ranking](#ab-test-dynamic-re-ranking) first.
+</Note>
+
+You can enable Re-Ranking on the [**Dynamic Re-Ranking** page in the dashboard](https://dashboard.algolia.com/reranking/).
+Select the index you want to activate Re-Ranking for and press the **Activate Re-Ranking** button.
+
+### A/B test Dynamic Re-Ranking
+
+Always use A/B testing to evaluate re-ranking on an index. This way, you can accurately measure re-ranking's effect on your search.
+You can create an A/B test for re-ranking directly from the [**Dynamic Re-Ranking** page in the dashboard](https://dashboard.algolia.com/reranking/) by clicking the **Launch an A/B test** button at the top right of the page.
+Clicking this button shows a form that lets you create an A/B test with the desired traffic split and duration.
+You can also set a filter so that Dynamic Re-Ranking only re-ranks records that match the filter.
+This way, you can prevent, for example, Dynamic Re-Ranking from promoting items that aren't in stock.
+
+
