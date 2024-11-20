@@ -63,25 +63,25 @@ import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
 <RecommendDashboard />
 
 <Steps>
-    <Step title="Select a model" stepNumber="3">
+    <Step title="Select a model" stepNumber={3}>
         On the **Recommend** page, select the type of recommendations you want to generate and click **Start using**.
 
         ![Select your Recommend model in the Algolia dashboard](/images/recommend/select-model.png)
   </Step>
-  <Step title="Select source">
+  <Step title="Select source" stepNumber={4}>
         In the **Select data source** section, select an index you want to use as a source for recommendations.
         By default, events associated with your data source index are used to train the model.
 
         ![Select an index for your recommendations](/images/recommend/data-source.png)
     </Step>
-    <Step title="Optional: add user sources">
+    <Step title="Optional: add user sources" stepNumber={5}>
         Add more sources for user events.
         Select additional indices or replicas from your app,
         or [upload a CSV file](/guides/algolia-recommend/how-to/csv-upload/).
 
         ![Select more indices for user events](/images/recommend/event-source.png)
     </Step>
-    <Step title="Optional for Related Items">
+    <Step title="Optional for Related Items" stepNumber={6}>
         Define key attributes for **content-based filtering**.
 
         ![Define key attributes for content-based filtering to improve the Related Items model](/images/recommend/content-based-filtering.png)
@@ -90,7 +90,7 @@ import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
 
         For more information, see [content-based filtering](/guides/algolia-recommend/overview/#content-based-filtering-for-related-items).
     </Step>
-    <Step title="Optional for Trends">
+    <Step title="Optional for Trends" stepNumber={7}>
         Select which type of trend you want to use for recommendations.
 
         ![Select if you want to generate recommendations for trending items or trending facet values](/images/recommend/select-trending.png)
@@ -98,11 +98,11 @@ import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
         - **Trending items.** Generate recommendations from popular items in your product catalog. After selecting **Trending items**, you can select **Also enable trending items per facet values** to get trending items per facet value.
         - **Trending facet values.** Generate recommendations for popular facet values.
     </Step>
-    <Step title="Start training">
+    <Step title="Start training" stepNumber={8}>
         Click **Start training**.
         Training a model can take up to two hours.
     </Step>
-    <Step title="Summary">
+    <Step title="Summary" stepNumber={9}>
         When the training finishes, you'll see a summary:
 
         ![Summary for the training of the Recommend model](/images/recommend/model-training.png)

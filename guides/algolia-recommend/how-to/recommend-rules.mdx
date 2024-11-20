@@ -45,7 +45,7 @@ import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
 <RecommendDashboard />
 
 <Steps>
-  <Step title="Select a index and model for the rules" stepNumber="3">
+  <Step title="Select a index and model for the rules" stepNumber={3}>
     On the [**Rules**](https://dashboard.algolia.com/recommend/rules) page,
    select the index and model to which you want to apply rules.
 
@@ -55,19 +55,19 @@ import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
         You can apply rules to trained Frequently Bought Together and Related Product models.
     </Note>
   </Step>
-  <Step title="Select rule conditions">
+  <Step title="Select rule conditions" stepNumber={4}>
     Click **+ New rule** and select the conditions when the rule should apply.
 
    - **Any item is a source item.** The consequences of this rule apply to all recommendations.
    - **Specific item is viewed.** The consequences of this rule apply only when recommendations for a specific item are retrieved.
    - **Subset of source items.** The consequences of this rule apply to items that match a filter.
   </Step>
-  <Step title="Optional: add a rule context">
+  <Step title="Optional: add a rule context" stepNumber={5}>
     Add a context for this rule.
     Contexts are additional constraints for rules.
     For more information, see [Context-only rules](/guides/managing-results/rules/rules-overview/#context-only-rules).
   </Step>
-  <Step title="Add consequences">
+  <Step title="Add consequences" stepNumber={6}>
     Under **Consequence(-s)**, click **Add consequence** and select what to do when the conditions are met:
 
     - **Pin items**. Put one or more selected items at a specific position in the list of recommendations (`1` is first)
@@ -80,7 +80,7 @@ import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
 
     ![The filter items consequence with the sameAsViewedItem option selected](/images/recommend/rules-same-as-viewed.png)
   </Step>
-  <Step title="Optional: describe rule">
+  <Step title="Optional: describe rule" stepNumber={7}>
     Add a description for the rule and select a timeframe when the rule should be active.
   </Step>
 </Steps>

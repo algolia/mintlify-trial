@@ -45,10 +45,10 @@ import Dashboard from '/snippets/dashboard.mdx';
 <Dashboard />
 
 <Steps>
-  <Step title="Select deduplication" stepNumber="4">
+  <Step title="Select deduplication" stepNumber={4}>
     On the **Configuration* tab, go to the [Deduplication and Grouping](https://dashboard.algolia.com/explorer/configuration/deduplication-and-grouping) page.
   </Step>
-  <Step title="Define variants">
+  <Step title="Define variants" stepNumber={5}>
     In the **Attribute for Distinct** box, select or enter the attribute name you want to use to define variants.
 
     ![Set `attributeForDistinct` in your index settings](/images/recommend/deduplication-attribute-for-distinct.png)
@@ -66,14 +66,14 @@ import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
 <RecommendDashboard />
 
 <Steps>
-  <Step title="Select a model" stepNumber="3">
+  <Step title="Select a model" stepNumber={3}>
     Create a new Recommend model or edit an existing one for the index you used when setting the `attributeForDistinct`.
   </Step>
-  <Step title="Select deduplication">
+  <Step title="Select deduplication" stepNumber={4}>
     In the section **Distinct and deduplication of recommendations**, select the **Deduplicate recommendations** option.
     The attribute you selected for defining variants is shown.
   </Step>
-  <Step title="Continue configuration">
+  <Step title="Continue configuration" stepNumber={5}>
     Continue to configure your Recommend model and click **Save**.
 
     ![Enable deduplication in your model training configuration](/images/recommend/deduplication-toggle.png)
