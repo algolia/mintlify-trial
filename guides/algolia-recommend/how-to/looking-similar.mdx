@@ -44,17 +44,17 @@ import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
 <RecommendDashboard />
 
 <Steps>
-  <Step title="Select the model" stepNumber="3">
+  <Step title="Select the model" stepNumber={3}>
     In the **Looking similar** section, click **Start using**.
 
     ![Start using the Looking Similar model](/images/recommend/select-ls-model.png)
   </Step>
-  <Step title="Select source">
+  <Step title="Select source" stepNumber={4}>
     Select an index with image URLs you want to use as the data source.
 
     ![Select index to use as data source for training the model](/images/recommend/select-index-ls.png)
   </Step>
-  <Step title="Select image attributes">
+  <Step title="Select image attributes" stepNumber={5}>
     Select up to three image attributes. The recommended items will be sorted by the **best score**.
 
     ![Select the image attributes to use for training the Looking Similar model](/images/recommend/select-img-attr-ls.png)
@@ -65,7 +65,7 @@ import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
         such as `productImage`, `userProvidedProductImage`.
     </Note>
   </Step>
-  <Step title="Start training">
+  <Step title="Start training" stepNumber={6}>
     To begin model training, click **Start training**.
 
     ![Start training Looking Similar model](/images/recommend/start-training-ls.png)

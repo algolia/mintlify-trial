@@ -10,9 +10,9 @@ Based on users' interaction throughout search and browse, Dynamic Re-Ranking imp
 ![Screenshot of Dynamic Re-Ranking](/images/ai/solutions-browse-reranking-dashboard-screen.jpg)
 
 Once you set up the **category pages** and successfully **send click and conversion** events (requires coding) to Algolia, Algolia starts using this data to detect trends in your user behavior.
-No coding is required to enable **Dynamic Re-Ranking on category pages**.
+No coding is required to enable [Dynamic Re-Ranking on category pages](/guides/algolia-ai/dynamic-re-ranking/re-rank-category-pages/).
 
-Learn more about [Dynamic Re-Ranking's effect on relevance](//guides/algolia-ai/re-ranking/#effect-on-relevance).
+Learn more about [Dynamic Re-Ranking's effect on relevance](/guides/algolia-ai/dynamic-re-ranking/#effect-on-relevance).
 
 ## Implementation steps
 
@@ -32,7 +32,7 @@ You must complete this step before enabling Dynamic Re-Ranking.
   <Card title="Guide" icon="book" href="/guides/send-events/get-started/" horizontal="true">
     Get started with click and conversion events
   </Card>
-  <Card title="Guide" icon="book" href="/guides/algolia-ai/re-ranking/#security-best-practices" horizontal="true">
+  <Card title="Guide" icon="book" href="/guides/algolia-ai/dynamic-re-ranking/#security-best-practices" horizontal="true">
     Security best practices for sending click and conversion events
   </Card>
 </CardGroup>
@@ -81,7 +81,7 @@ Check with your team to make sure the browsing filter is referencing the correct
 
 #### Optional: adjust weight to recent events
 
-By default, the [event freshness](/guides/algolia-ai/re-ranking/#give-more-weight-to-recent-events-event-freshness) setting is enabled to handle seasonality and shorter trends.
+By default, the [event freshness](/guides/algolia-ai/dynamic-re-ranking/#give-more-weight-to-recent-events-event-freshness) setting is enabled to handle seasonality and shorter trends.
 Although can turn off this setting, you should usually leave it on.
 
 #### Simulate Dynamic Re-Ranking
@@ -107,7 +107,7 @@ Turn off re-ranking for specific records:
 ### A/B test Dynamic Re-Ranking on category pages
 
 To measure performance of the re-ranking approach, it's important to launch the A/B test directly from the re-ranking section of the UI and not from the A/B test tab in the dashboard.
-This ensures all the settings are configured correctly and that you are measuring the performance only on the pages with enough traffic and where Re-Ranking rules apply.
+This ensures all the settings are configured correctly and that you are measuring the performance only on the pages with enough traffic and where re-ranking rules apply.
 
 ![Screenshot of Dynamic Re-Ranking screen for A/B test](/images/ai/solutions-browse-reranking-abtest.jpg)
 

@@ -50,13 +50,13 @@ import Dashboard from '/snippets/recommend/dashboard.mdx';
 
 <Dashboard />
 <Steps>
-  <Step title="Select model" stepNumber="3">
+  <Step title="Select model" stepNumber={3}>
     Select a model you want to train and click **Start using**.
   </Step>
-  <Step title="Select source">
+  <Step title="Select source" stepNumber={4}>
     In the **Select data source** section, select an Algolia index as a source for your recommendations.
   </Step>
-  <Step title="Select source">
+  <Step title="Select source" stepNumber={5}>
     In the **Collect events** section, click **Upload .csv** to upload your CSV file with the historical events.
 
     ![Import a CSV file with historical events for training your Recommend model](/images/recommend/csv-upload.png)

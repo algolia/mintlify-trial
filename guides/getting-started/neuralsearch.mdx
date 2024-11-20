@@ -34,7 +34,7 @@ import Dashboard from '/snippets/dashboard.mdx';
 <Dashboard />
 
 <Steps>
-    <Step title="Configure NeuralSearch" stepNumber="4">
+    <Step title="Configure NeuralSearch" stepNumber={4}>
         Go to **Configure > NeuralSearch** and click **Configure NeuralSearch**.
     </Step>
     <Step title="Select source">
@@ -43,7 +43,7 @@ import Dashboard from '/snippets/dashboard.mdx';
         If your index has replicas, you can add them as additional event sources.
         Click **Add event sources** to add these event source indices.
     </Step>
-    <Step title="Select NeuralSearch options">
+    <Step title="Select NeuralSearch options" stepNumber={5}>
         If you collected enough events in the last 30 days, you can select one of these options:
 
         - Select **Activate NeuralSearch** to start the training and activate NeuralSearch for the current index.
