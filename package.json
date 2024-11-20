@@ -1,0 +1,11 @@
+{
+  "name": "algolia-mintlify-trial",
+  "version": "0.0.1",
+  "description": "Trial for the Algolia docs on Mintlify",
+  "scripts": {
+    "dev": "mintlify dev"
+  },
+  "devDependencies": {
+    "@mintlify/cli": "4.0.279"
+  }
+}
