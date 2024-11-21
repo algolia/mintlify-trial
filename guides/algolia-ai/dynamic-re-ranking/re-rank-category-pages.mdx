@@ -17,9 +17,12 @@ Learn more about [Dynamic Re-Ranking's effect on relevance](/guides/algolia-ai/d
 ## Implementation steps
 
 1. Build the [category pages](https://www.algolia.com/doc/guides/solutions/ecommerce/browse/tutorials/category-pages/)
-1. Send click and conversion events to Algolia
-1. Enable Dynamic Re-Ranking on category pages
-1. A/B test Dynamic Re-Ranking on category pages
+
+2. Send click and conversion events to Algolia
+
+3. Enable Dynamic Re-Ranking on category pages
+
+4. A/B test Dynamic Re-Ranking on category pages
 
 ### Send click and conversion events to Algolia
 
@@ -29,9 +32,11 @@ You must complete this step before enabling Dynamic Re-Ranking.
   <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/events/js/" horizontal="true">
     Send click and conversion events with InstantSearch
   </Card>
+
   <Card title="Guide" icon="book" href="/guides/send-events/get-started/" horizontal="true">
     Get started with click and conversion events
   </Card>
+
   <Card title="Guide" icon="book" href="/guides/algolia-ai/dynamic-re-ranking/#security-best-practices" horizontal="true">
     Security best practices for sending click and conversion events
   </Card>
@@ -44,16 +49,21 @@ It always takes the last 30 days into account, meaning it's based on a sliding w
 
 Configure the following options from the [Dynamic Re-Ranking page in the dashboard](https://dashboard.algolia.com/reranking/).
 
-- Opt in an index for Dynamic Re-Ranking.
-- Select the correct events source index (optional).
-- Pick your category page identifier by choosing a **Browsing Facet**.
-- Adjust weight to recent events (optional)
-- Simulate Dynamic Re-Ranking.
-- Activate Dynamic Re-Ranking.
+* Opt in an index for Dynamic Re-Ranking.
+
+* Select the correct events source index (optional).
+
+* Pick your category page identifier by choosing a **Browsing Facet**.
+
+* Adjust weight to recent events (optional)
+
+* Simulate Dynamic Re-Ranking.
+
+* Activate Dynamic Re-Ranking.
 
 <Note>
-    You can see re-ranked results only after Algolia has received enough search traffic and click and conversion events.
-    For a record to be promoted for a given query, it must gather **at least 20 clicks or two conversions during the 30 days time window.**
+  You can see re-ranked results only after Algolia has received enough search traffic and click and conversion events.
+  For a record to be promoted for a given query, it must gather **at least 20 clicks or two conversions during the 30 days time window.**
 </Note>
 
 #### Opt in an index for Dynamic Re-Ranking
@@ -89,7 +99,7 @@ Although can turn off this setting, you should usually leave it on.
 Once Algolia receives enough search traffic and click and conversion events, you can assess the effect of re-ranking on your search results and browse page in the simulator.
 You should use the simulator before activating the feature in production.
 
-![Screenshot of the Dynamic Re-Ranking simulator](/images/ai/solutions-browse-reranking-choose-browse-facet.jpg)
+![Screenshot of the Dynamic Re-Ranking simulator](/images/ai/images/guides/solutions/solutions-browse-dashboard-reranking-simulator.jpg)
 
 #### Activate Dynamic Re-Ranking
 
@@ -117,9 +127,11 @@ This ensures all the settings are configured correctly and that you are measurin
   <Card title="FAQ" icon="question" href="https://support.algolia.com/hc/en-us/articles/4406981935761#hide-items" horizontal="true">
     A/B test Dynamic Re-Ranking
   </Card>
+
   <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/ab-testing/what-is-ab-testing/" horizontal="true">
     What is A/B testing?
   </Card>
+
   <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/ab-testing/what-is-ab-testing/in-depth/how-ab-test-scores-are-calculated/" horizontal="true">
     How A/B test scores are calculated
   </Card>
