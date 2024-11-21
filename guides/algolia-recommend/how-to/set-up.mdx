@@ -8,8 +8,10 @@ description: |-
 Recommending items to your users involves these steps:
 
 1. Prepare your data
-1. Select and train the Recommend models
-1. Show recommendations in your user interface
+
+2. Select and train the Recommend models
+
+3. Show recommendations in your user interface
 
 ## Prepare your data
 
@@ -21,15 +23,19 @@ and **events** indicate which recommendations are most relevant.
   <Card title="Guide" icon="book" href="/guides/sending-and-managing-data/send-and-update-your-data/" horizontal="true">
     Index your data
   </Card>
+
   <Card title="Guide" icon="book" href="/guides/send-events/get-started/" horizontal="true">
     Send click and conversion events
   </Card>
+
   <Card title="Guide" icon="book" href="/integrations/magento-2/how-it-works/recommend/" horizontal="true">
     Algolia Recommend for Adobe Commerce and Magento Open Source
   </Card>
+
   <Card title="Guide" icon="book" href="/integrations/bigcommerce/search-settings/recommend/" horizontal="true">
     Algolia Recommend for BigCommerce
   </Card>
+
   <Card title="Guide" icon="book" href="/integrations/salesforce-commerce-cloud-b2c/guides/algolia-recommend/" horizontal="true">
     Algolia Recommend for Salesforce B2C Commerce
   </Card>
@@ -39,18 +45,18 @@ and **events** indicate which recommendations are most relevant.
 
 To collect enough events for Algolia Recommend, check that you send these different events to Algolia:
 
-- Events related to Algolia—for example, on search results, and category pages
-- Events unrelated to Algolia—for example, product-detail pages, checkout pages
+* Events related to Algolia—for example, on search results, and category pages
+
+* Events unrelated to Algolia—for example, product-detail pages, checkout pages
 
 To speed up the collection of events, you can [upload past events with a CSV file](/guides/algolia-recommend/how-to/csv-upload/).
 
 If you collect enough events but still get an error that prevents you from starting the training:
 
-- Check the [Events debugger](https://dashboard.algolia.com/events/debugger) in the Algolia dashboard for error messages.
-- Check that you set up the [`userToken`](/guides/send-events/concepts/user-token/) correctly.
-  Make sure you're not using the same `userToken` for all users.
+* Check the [Events debugger](https://dashboard.algolia.com/events/debugger) in the Algolia dashboard for error messages.
 
-  For authenticated users, use the user ID as their `userToken` for Algolia.
+* Check that you set up the [`userToken`](/guides/send-events/concepts/user-token/) correctly.
+  Make sure you're not using the same `userToken` for all users.For authenticated users, use the user ID as their `userToken` for Algolia.
   For non-authenticated users, set the `userToken` to a session-based ID.
   You can generate a random ID for each session and discard it once the session ends.
 
@@ -58,55 +64,66 @@ If you collect enough events but still get an error that prevents you from start
 
 If you have enough events, you can start training the Recommend models.
 
-import RecommendDashboard from '/snippets/recommend/dashboard.mdx';
-
-<RecommendDashboard />
-
 <Steps>
-    <Step title="Select a model" stepNumber={3}>
-        On the **Recommend** page, select the type of recommendations you want to generate and click **Start using**.
-
-        ![Select your Recommend model in the Algolia dashboard](/images/recommend/select-model.png)
+  <Step>
+    Go to the Algolia dashboard and select your Algolia application.
   </Step>
+
+  <Step>
+    On the left sidebar, select <svg class="inline" width="20" height="20" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation" aria-label="Algolia Recommend"><title>Algolia Recommend</title><path d="m50 65-4 12H34l-4-12h20Z" fill="#36395A"></path><path d="M68 32c0 15.464-12.536 28-28 28S12 47.464 12 32 24.536 4 40 4s28 12.536 28 28Z" fill="#FF2A6A"></path><path d="M43 34V17L26 34h17Z" fill="#fff"></path><path d="M37 30v17l17-17H37Z" fill="#fff"></path></svg> **Recommend**.
+  </Step>
+
+  <Step title="Select a model" stepNumber={3}>
+    On the **Recommend** page, select the type of recommendations you want to generate and click **Start using**.
+
+    ![Select your Recommend model in the Algolia dashboard](/images/recommend/select-model.png)
+  </Step>
+
   <Step title="Select source" stepNumber={4}>
-        In the **Select data source** section, select an index you want to use as a source for recommendations.
-        By default, events associated with your data source index are used to train the model.
+    In the **Select data source** section, select an index you want to use as a source for recommendations.
+    By default, events associated with your data source index are used to train the model.
 
-        ![Select an index for your recommendations](/images/recommend/data-source.png)
-    </Step>
-    <Step title="Optional: add user sources" stepNumber={5}>
-        Add more sources for user events.
-        Select additional indices or replicas from your app,
-        or [upload a CSV file](/guides/algolia-recommend/how-to/csv-upload/).
+    ![Select an index for your recommendations](/images/recommend/data-source.png)
+  </Step>
 
-        ![Select more indices for user events](/images/recommend/event-source.png)
-    </Step>
-    <Step title="Optional for Related Items" stepNumber={6}>
-        Define key attributes for **content-based filtering**.
+  <Step title="Optional: add user sources" stepNumber={5}>
+    Add more sources for user events.
+    Select additional indices or replicas from your app,
+    or [upload a CSV file](/guides/algolia-recommend/how-to/csv-upload/).
 
-        ![Define key attributes for content-based filtering to improve the Related Items model](/images/recommend/content-based-filtering.png)
+    ![Select more indices for user events](/images/recommend/event-source.png)
+  </Step>
 
-        Content-based filtering works best with attributes that contain textual information, such as the title or description.
+  <Step title="Optional for Related Items" stepNumber={6}>
+    Define key attributes for **content-based filtering**.
 
-        For more information, see [content-based filtering](/guides/algolia-recommend/overview/#content-based-filtering-for-related-items).
-    </Step>
-    <Step title="Optional for Trends" stepNumber={7}>
-        Select which type of trend you want to use for recommendations.
+    ![Define key attributes for content-based filtering to improve the Related Items model](/images/recommend/content-based-filtering.png)
 
-        ![Select if you want to generate recommendations for trending items or trending facet values](/images/recommend/select-trending.png)
+    Content-based filtering works best with attributes that contain textual information, such as the title or description.
 
-        - **Trending items.** Generate recommendations from popular items in your product catalog. After selecting **Trending items**, you can select **Also enable trending items per facet values** to get trending items per facet value.
-        - **Trending facet values.** Generate recommendations for popular facet values.
-    </Step>
-    <Step title="Start training" stepNumber={8}>
-        Click **Start training**.
-        Training a model can take up to two hours.
-    </Step>
-    <Step title="Summary" stepNumber={9}>
-        When the training finishes, you'll see a summary:
+    For more information, see [content-based filtering](/guides/algolia-recommend/overview/#content-based-filtering-for-related-items).
+  </Step>
 
-        ![Summary for the training of the Recommend model](/images/recommend/model-training.png)
-    </Step>
+  <Step title="Optional for Trends" stepNumber={7}>
+    Select which type of trend you want to use for recommendations.
+
+    ![Select if you want to generate recommendations for trending items or trending facet values](/images/recommend/select-trending.png)
+
+    * **Trending items.** Generate recommendations from popular items in your product catalog. After selecting **Trending items**, you can select **Also enable trending items per facet values** to get trending items per facet value.
+
+    * **Trending facet values.** Generate recommendations for popular facet values.
+  </Step>
+
+  <Step title="Start training" stepNumber={8}>
+    Click **Start training**.
+    Training a model can take up to two hours.
+  </Step>
+
+  <Step title="Summary" stepNumber={9}>
+    When the training finishes, you'll see a summary:
+
+    ![Summary for the training of the Recommend model](/images/recommend/model-training.png)
+  </Step>
 </Steps>
 
 You can use more than one model to generate recommendations, and select the best recommendations for your use case.
@@ -123,9 +140,11 @@ The closer the score is to 100, the more relevant the recommendations are.
 
 To show recommendations in your app, you have the following options:
 
-- **Use React InstantSearch**.
-- **Use InstantSearch.js**
-- **Native app or backend implementation.** Use the Recommend API client or the Recommend REST API.
+* **Use React InstantSearch**.
+
+* **Use InstantSearch.js**
+
+* **Native app or backend implementation.** Use the Recommend API client or the Recommend REST API.
 
 For more information, see the InstantSearch API documentation:
 
@@ -133,6 +152,7 @@ For more information, see the InstantSearch API documentation:
   <Card title="Guide" icon="book" href="https://www.algolia.com/doc/api-reference/widgets/js/" horizontal="true">
     InstantSearch.js
   </Card>
+
   <Card title="Guide" icon="book" href="https://www.algolia.com/doc/api-reference/widgets/react/" horizontal="true">
     React InstantSearch
   </Card>
@@ -148,12 +168,14 @@ To show recommendations in your user interface, follow these steps:
   <Step title="Install the library">
     Install and set up InstantSearch.js
   </Step>
+
   <Step title="Add container">
     Add a container element for your recommendations to your HTML.
   </Step>
+
   <Step title="Add Recommend widget">
     Add the widget for the Recommend model.
-    You can also declare _how_ each recommendation renders by providing an `item` template.
+    You can also declare *how* each recommendation renders by providing an `item` template.
 
     The following example adds recommendations from the Related Items model to an HTML element with the ID `relatedProducts`:
 
@@ -200,7 +222,7 @@ To show recommendations in your user interface, follow these steps:
   </Step>
 
   <Step title="Add Recommend widget">
-    Add the widget for the Recommend model. You can also declare _how_ each recommendation renders by providing an `itemComponent` component.
+    Add the widget for the Recommend model. You can also declare *how* each recommendation renders by providing an `itemComponent` component.
 
     ```jsx JSX
     import React from 'react';
@@ -243,29 +265,29 @@ to only recommend in-stock products or to ensure all recommendations are from th
 To refine your recommendations, pass `facetFilters` to the component by using `queryParameters`.
 
 <CodeGroup>
-```js JavaScript
-relatedProducts({
-    // ...
-    queryParameters: {
-    facetFilters: [
-        `category:${selectedProduct.category}`,
-        `inStock:true`,
-    ],
-    },
-});
-```
+  ```js JavaScript
+  relatedProducts({
+      // ...
+      queryParameters: {
+      facetFilters: [
+          `category:${selectedProduct.category}`,
+          `inStock:true`,
+      ],
+      },
+  });
+  ```
 
-```jsx React
-<RelatedProducts
-    // ...
-    queryParameters={{
-    facetFilters: [
-        `category:${selectedProduct.category}`,
-        `inStock:true`,
-    ],
-    }}
-/>
-```
+  ```jsx React
+  <RelatedProducts
+      // ...
+      queryParameters={{
+      facetFilters: [
+          `category:${selectedProduct.category}`,
+          `inStock:true`,
+      ],
+      }}
+  />
+  ```
 </CodeGroup>
 
 To refine the recommendations by numeric values—for example, a price range, use `numericFilters`.
@@ -276,25 +298,26 @@ You can also apply [Rules](/guides/algolia-recommend/how-to/rules/) to your reco
 
 By default, Algolia Recommend shows up to:
 
-- 3 recommendations for Frequently Bought Together
-- 30 recommendations for other models
+* 3 recommendations for Frequently Bought Together
+
+* 30 recommendations for other models
 
 You can adjust this number by using the `limit` attribute:
 
 <CodeGroup>
-```js JavaScript
-relatedProducts({
-    // ...
-    limit: 5,
-});
-```
+  ```js JavaScript
+  relatedProducts({
+      // ...
+      limit: 5,
+  });
+  ```
 
-```jsx React
-<RelatedProducts
-    // ...
-    limit={5}
-/>
-```
+  ```jsx React
+  <RelatedProducts
+      // ...
+      limit={5}
+  />
+  ```
 </CodeGroup>
 
 ### Show fallback recommendations for Related Items or Related Content
@@ -305,29 +328,29 @@ For Related Items and Related Content models, you can show fallback recommendati
 To show fallback recommendations, pass the `facetFilters` parameter to `fallbackParameters`:
 
 <CodeGroup>
-```js JavaScript
-relatedProducts({
-    // ...
-    fallbackParameters: {
-    facetFilters: [
-        `category:${selectedProduct.category}`,
-        `inStock:true`,
-    ],
-    },
-});
-```
+  ```js JavaScript
+  relatedProducts({
+      // ...
+      fallbackParameters: {
+      facetFilters: [
+          `category:${selectedProduct.category}`,
+          `inStock:true`,
+      ],
+      },
+  });
+  ```
 
-```jsx React
-<RelatedProducts
-    // ...
-    fallbackParameters={{
-    facetFilters: [
-        `category:${selectedProduct.category}`,
-        `inStock:true`,
-    ],
-    }}
-/>
-```
+  ```jsx React
+  <RelatedProducts
+      // ...
+      fallbackParameters={{
+      facetFilters: [
+          `category:${selectedProduct.category}`,
+          `inStock:true`,
+      ],
+      }}
+  />
+  ```
 </CodeGroup>
 
 To pass numeric filters, use the `numericFilters` parameter.
@@ -337,12 +360,10 @@ consider using [content-based filtering](/guides/algolia-recommend/overview/#con
 when training the model.
 
 <Note>
-    The Frequently Bought Together model only makes sense for items that are actually bought together.
-    That's why there are no fallback recommendations.
+  The Frequently Bought Together model only makes sense for items that are actually bought together.
+  That's why there are no fallback recommendations.
 </Note>
 
 ## Further reading
-
-import Blog from '/snippets/recommend/blog.mdx';
 
 <Blog />
