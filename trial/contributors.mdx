@@ -1,0 +1,33 @@
+<Info>Start your trial using Mintlify by adding your name to this page. Just follow the steps below to become an official contributor!</Info>
+
+## Adding your name to the list 
+Add you name to the contributor list using the following steps:
+
+1. Use the [internal guide](https://algolia.atlassian.net/wiki/spaces/DOC/pages/5526814783/A+new+home+for+the+Algolia+docs+on+Mintlify#To-edit-using-git-and-GitHub) to prepare to make local documentation edits.
+2. Use `git` to create a new local branch that includes your name:
+```sh
+git switch –create "YOURNAME-contributor"
+```
+3. Open the `mintlify-trial` directory in your IDE (like VS Code) <br />
+   or open the file `mintlify-trial/trial/contributors.mdx` in a text editor
+4. Add your name to the list of contributors and save your changes.
+5. Validate your changes locally with the command `npm run dev` executed from the `mintlify-trial` directory.
+6. Commit your changes locally:
+```sh
+git add .
+git commit -m "Added YOURNAME to the list of contributors"
+```
+7. Push your branch up to the `mintlify-trial` repo 
+```sh
+git push -u origin "YOURNAME-contributor"
+```
+8. Use the URL provided by git to create a pull request. For example:
+https://github.com/algolia/mintlify-trial/pull/new/YOURNAME-contributor
+9. The PR will validate your files and build a preview where you can see your changes.
+10. Add `chuckmeyer`, `kai687`, or `gazconroy`as a reviewer for your new PR!
+
+## Contributors 
+
+- Chuck Meyer
+-
+

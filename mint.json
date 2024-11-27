@@ -53,7 +53,10 @@
     "navigation": [
         {
             "group": "Home",
-            "pages": ["home"]
+            "pages": [
+                "home",
+                "trial/contributors"
+            ]
         },
         {
             "group": "Launchpad",
