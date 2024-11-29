@@ -1,0 +1,40 @@
+---
+title: Get started with the Crawler
+description: |-
+  Index your content with the Algolia Crawler.
+---
+
+The [Algolia Crawler](https://www.algolia.com/products/features/crawler/) extracts content from your site and makes it searchable.
+Given a set of start URLs, the Crawler:
+
+1. Visits these pages and extracts data that's relevant for search.
+1. Discovers other pages through links (and extracts _their_ data).
+1. Sends your data to your [Algolia indices](/guides/sending-and-managing-data/prepare-your-data/in-depth/prepare-data-in-depth/#algolia-index). You can run the Crawler on a schedule to keep your Algolia indices up-to-date.
+
+<Card title="Explore related videos in the Algolia Academy" icon="photo-film" href="https://academy.algolia.com/training/019307fd-ebf0-711a-931e-1a21b340498a/overview" horizontal="true" color="#c7519c">
+  Algolia Crawler (full course)
+</Card>
+
+<Note>
+    You can use the Algolia Crawler with any [pricing plan](https://www.algolia.com/pricing/).
+</Note>
+
+## Why you should use the Crawler
+
+The Crawler simplifies uploading your data to Algolia and keeping your indices up-to-date.
+Compared to using [the API clients or other methods](/guides/getting-started/ecosystem/) to index your data, using the Crawler has these benefits:
+
+- You don't have to write and maintain code for extracting content, transforming it to indices, and scheduling periodic updates.
+- It helps you extract data from unstructured content (such as HTML and PDF files).
+- It can index your web pages when it's difficult to access the _sources_, for example, due to restricted access, or if you want to index different resources managed by different teams using different tools.
+
+## Get started
+
+The [Algolia Crawler](https://www.algolia.com/products/crawler/) is available as an add-on to your [plan](https://www.algolia.com/pricing/).
+
+To add, verify, and crawl your site, see [Create a new crawler](https://www.algolia.com/doc/tools/crawler/getting-started/create-crawler/).
+
+<Note>
+If you want to use the Crawler to index a technical documentation site, consider [DocSearch](https://docsearch.algolia.com/), which also comes with a search UI.
+If you use Netlify to host your website, use the [Netlify Crawler plugin](https://www.algolia.com/doc/tools/crawler/netlify-plugin/quick-start/)
+</Note>

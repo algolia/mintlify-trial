@@ -48,6 +48,10 @@
         {
             "name": "API reference",
             "url": "api-reference"
+        },
+        {
+            "name": "Tools",
+            "url": "tools"
         }
     ],
     "navigation": [
@@ -600,6 +604,63 @@
             "group": "Integrations",
             "pages": [
                 "integrations/overview"
+            ]
+        },
+        {
+            "group": "Tools",
+            "pages": [
+                "tools/overview"
+            ]
+        },
+        {
+            "group": "Crawler",
+            "pages": [
+                "tools/crawler/getting-started",
+                {
+                    "group": "REST API",
+                    "pages": [
+                        {
+                            "group": "Actions",
+                            "pages": [
+                                "tools/crawler/api/actions/crawl",
+                                "tools/crawler/api/actions/pause",
+                                "tools/crawler/api/actions/start",
+                                "tools/crawler/api/actions/test"
+                            ]
+                        },
+                        {
+                            "group": "Configuration",
+                            "pages": [
+                                "tools/crawler/api/configuration/list",
+                                "tools/crawler/api/configuration/retrieve",
+                                "tools/crawler/api/configuration/update"
+                            ]
+                        },
+                        {
+                            "group": "Crawler",
+                            "pages": [
+                                "tools/crawler/api/crawler/create",
+                                "tools/crawler/api/crawler/list",
+                                "tools/crawler/api/crawler/retrieve",
+                                "tools/crawler/api/crawler/stats",
+                                "tools/crawler/api/crawler/update"
+                            ]
+                        },
+                        {
+                            "group": "Domains",
+                            "pages": [
+                                "tools/crawler/api/domains/list"
+                            ]
+                        },
+                        {
+                            "group": "Tasks",
+                            "pages": [
+                                "tools/crawler/api/tasks/cancel",
+                                "tools/crawler/api/tasks/retrieve"
+                            ]
+                        }
+                    ]
+                }
             ]
         },
         {
