@@ -916,6 +916,27 @@
                     ]
                 },
                 {
+                    "group": "Recommend API",
+                    "pages": [
+                        {
+                            "group": "Recommendations",
+                            "pages": [
+                                "api-reference/recommend-api/recommendations/retrieve-recommendations"
+                            ]
+                        },
+                        {
+                            "group": "Recommend rules",
+                            "pages": [
+                                "api-reference/recommend-api/rules/check-task-status",
+                                "api-reference/recommend-api/rules/create-or-update-a-batch-of-recommend-rules",
+                                "api-reference/recommend-api/rules/delete-a-rule",
+                                "api-reference/recommend-api/rules/retrieve-a-rule",
+                                "api-reference/recommend-api/rules/search-for-rules"
+                            ]
+                        }
+                    ]
+                },
+                {
                     "group": "Search API",
                     "pages": [
                         {
