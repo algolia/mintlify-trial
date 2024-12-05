@@ -1,0 +1,175 @@
+---
+title: Enabling Personalization
+description: Learn how to enable Personalization with InstantSearch, an API client, or the dashboard.
+---
+
+import Beta from '/snippets/personalization/beta-migrate.mdx';
+
+<Beta />
+
+To give your users with a personalized experience, you need to include the `enablePersonalization` and `userToken` parameters in your search requests.
+How you do this depends on your Algolia implementation.
+
+You can also set `enablePersonalization` in your index settings instead of sending it as a search parameter.
+This way, every search on your index uses Personalization, unless you override this at query time by setting `enablePersonalization` to `false`.
+If you do this, you still need to include `userToken` in your search requests.
+If you don't, Algolia doesn't know which user affinity profile to apply to personalize the results.
+
+`userToken` should match the one you're using to [send click and conversion events](/guides/send-events/get-started) for a particular user.
+
+Use the [Personalization simulator](/guides/personalization/classic-personalization/configuring-personalization/#simulating-personalization).
+The simulator lets you compare personalized and non-personalized results and provides information to explain how Personalization affected the results.
+
+## Enabling Personalization with InstantSearch
+
+Enable Personalization by using the `configure' widget to set `enablePersonalization` to `true` and include `userToken`. 
+
+<CodeGroup>
+
+```javascript javascript
+instantsearch.widgets.configure({
+    enablePersonalization: true,
+    userToken: 'user-1234',
+});
+```
+
+```vue Vue
+<template>
+    <ais-instant-search
+    index-name="instant_search"
+    :search-client="searchClient"
+    >
+    <ais-configure :clickAnalytics="true" userToken="user-1234" />
+    </ais-instant-search>
+</template>
+
+<script>
+    import { liteClient as algoliasearch } from 'algoliasearch/lite';
+
+    export default {
+    data() {
+        return {
+        searchClient: algoliasearch(
+            'YourApplicationID',
+            'YourWriteAPIKey'
+        ),
+        };
+    },
+    };
+</script>
+```
+
+```jsx React
+import { liteClient as algoliasearch } from 'algoliasearch/lite';
+import { InstantSearch } from 'react-instantsearch-dom';
+
+const searchClient = algoliasearch(
+    'YourApplicationID',
+    'YourWriteAPIKey'
+);
+
+const App = () => (
+    <InstantSearch
+    indexName="instant_search"
+    searchClient={searchClient}
+    >
+    <Configure enablePersonalization={true} userToken="user-1234" />
+    </InstantSearch>
+);
+```
+
+```ios Swift
+searcher.request.query.enablePersonalization = true
+searcher.request.query.userToken = 'user-1234'
+```
+
+```kotlin Kotlin
+searcher.query.query.enablePersonalization = true
+searcher.query.userToken = 'user-1234'
+```
+    
+</CodeGroup>
+
+## Enabling Personalization using API clients
+
+If you're using an API clients to make search requests, include `enablePersonalization` and `userToken` as parameters in the `search` method.
+
+<CodeGroup>
+
+```csharp C#
+Query query = new Query("query");
+query.EnablePersonalization = true;
+query.UserToken = "123456";
+```
+
+```php PHP
+$index->search('query', [
+'enablePersonalization' => true,
+'userToken' => '123456'
+]);
+```
+
+```js JavaScript
+index.search('query', {
+enablePersonalization: true,
+userToken: '123456'
+}).then(({ hits }) => {
+console.log(hits);
+});
+```
+
+```python Python
+index.search('query', {'enablePersonalization': True, 'userToken': '123456'});
+```
+
+```ruby Ruby
+index.search('query', { enablePersonalization: true, userToken: '123456' })
+```
+
+```java Java
+Query query = new Query("query")
+.setUserToken("123456")
+.setEnablePersonalization(true);
+```
+
+```go Go
+res, err := index.Search(
+"query",
+opt.EnablePersonalization(true),
+opt.UserToken("123456"),
+)
+```
+
+```swift Swift
+let query = Query("query")
+.set(\.enablePersonalization, to: true)
+.set(\.userToken, to: "123456")
+
+index.search(query: query) { result in
+if case .success(let response) = result {
+    print("Response: \(response)")
+}
+}
+```
+
+```scala Scala
+client.execute {
+search into "myIndex" query Query(
+    query = Some("query"),
+    enablePersonalization = Some(true),
+    userToken = Some("123456")
+)
+}
+```
+
+</CodeGroup>
+
+## Enabling Personalization using the dashboard
+
+You can automatically set `enablePersonalization` to `true` for any search requests made on an index you want to personalize results for.
+
+To enable Personalization for an index, go to the dashboard's [**Indices** section](https://dashboard.algolia.com/explorer/), then **Configuration > Relevance Essentials > Personalization**, and set `enablePersonalization` to `true`.
+
+If you want to turn Personalization off at query time, you can set `enablePersonalization` to `false` for those search requests.
+
+**Even if you enable Personalization on the dashboard, you still need to provide the `userToken` using either InstantSearch or an API client.**

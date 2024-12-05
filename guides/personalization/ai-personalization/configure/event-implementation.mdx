@@ -1,0 +1,87 @@
+---
+title: Prepare your event implementation for AI Personalization
+sidebarTitle: Prepare your event implementation
+description: Learn how to prepare your event implementation for AI Personalization.
+---
+
+import Beta from '/snippets/personalization/beta.mdx';
+
+<Beta />
+
+Once you've [prepared your index structure](/guides/personalization/ai-personalization/configure/index-structure), you should focus on your event implementation.
+To enable a personalized search experience, AI Personalization must learn about your users.
+This means tracking their interactions with your website or app through events.
+
+## Send events to Algolia
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/send-events/get-started" horizontal="true">
+    Get started with click and conversion events
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/send-events/connectors/google-analytics-big-query-export" horizontal="true">
+    Google Analytics BigQuery export
+  </Card>
+</CardGroup>
+
+## Attach user tokens to events
+
+To ensure that AI Personalization can understand each user's journey and continuously improve their personalization experience, you must attach a [user token](/guides/send-events/concepts/user-token) to each event.
+For user profiles to be found and retrieved at search time, you should [persist anonymous user tokens](/guides/send-events/concepts/user-token/#persistent-user-token) and authenticated user tokens across sessions.
+
+User profiles are identified by the `userToken` property sent with Insights events.
+
+### Attach user tokens with InstantSearch
+
+If you're using Algolia's UI libraries, you can attach user tokens with InstantSearch.
+
+### Attach user tokens with an API client
+
+Use the Search Insights library's `setUserToken` method to send the user token with _every_ event or for each event.
+
+#### Send with every event
+
+```js JavaScript
+// Set a global user token
+aa('setUserToken', 'user-1');
+
+// Send a click event associated with "user-1"
+aa('clickedObjectIDs', {
+  index: 'movies',
+  eventName: 'Added to favorite',
+  objectIDs: ['movieID1'],
+});
+```
+
+#### Send with each event
+
+```js JavaScript
+// Send a click event associated with "user-2"
+aa('clickedObjectIDs', {
+  userToken: 'user-2',
+  index: 'movies',
+  eventName: 'Added to favorite',
+  objectIDs: ['movieID1'],
+});
+```
+
+## Events properties
+
+Events must be linked to an existing index. Events with `objectIDs` that are not found in an index are discarded in the user profiles computation.
+
+Events without a `queryID` can be used in personalization.
+However, these events won't be reported in Algolia search analytics.
+
+Sending events in batches is allowed.
+The timestamps of batched events must be set to the time of their collection.
+
+## Send conversion events with subtypes
+
+When your users perform conversion events, you need to send a special `conversion` event with the relevant subtype (`addToCart` or `purchase`).
+
+- When a user adds an item to their cart, send a conversion event with the `addToCart` subtype and associated `objectData`.
+- When a user purchases an item, send a conversion event with the `purchase` subtype and associated `objectData`.
+
+## Check events implementation
+
+1. Visit your website and interact as a user: generate some events.
+1. Check the [**Events debugger**](https://dashboard.algolia.com/events/hub) in Algolia's dashboard to verify that your events are being sent.
