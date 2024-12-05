@@ -1,0 +1,113 @@
+---
+title: Fetching a user profile
+description: Learn how to  fetch a user profile and provide its properties to the rest of your app.
+---
+
+import Beta from '/snippets/personalization/beta.mdx';
+
+<Beta />
+
+
+## Before you begin
+
+This guide assumes that you have [configured AI Personalization](/guides/personalization/ai-personalization/configure/#setup-personalization) and
+are familiar with [user profiles](/guides/personalization/ai-personalization/user-profiles).
+
+
+## Fetch a user profile
+
+The first step in fetching a user profile is to retrieve your user's ID from where it's stored (for example, your database).
+
+If a user ID is unavailable (possibly because the user is a first-time visitor) or doesn't correspond to an existing user profile, you can implement a fallback to avoid adding extra logic to your app.
+
+The following example fetches the user profile, and provides a fallback if there's a problem completing the request:
+
+```js JavaScript
+const ALGOLIA_REGION = "eu";
+
+async function fetchUserProfile(userID) {
+  const fallbackUserProfile = {
+    userID,
+    type: "basic",
+    affinities: [],
+    lastUpdatedAt: new Date().toISOString(),
+  };
+
+  try {
+    const response = await fetch(
+      `https://ai-personalization.${ALGOLIA_REGION}.algolia.com/2/users/${encodeURIComponent(userID)}`,
+      {
+        headers: {
+          "X-Algolia-Application-Id": "YourApplicationID",
+          "X-Algolia-API-Key": "YourWriteAPIKey",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      return fallbackUserProfile;
+    }
+
+    const userProfile = await response.json();
+
+    return userProfile;
+  } catch (error) {
+    return fallbackUserProfile;
+  }
+}
+```
+
+The next step is to ensure the user profile is available to the rest of your app.
+
+## Provide the user profile
+
+In React, you can provide the user profile to your app as follows:
+
+```jsx JSX
+import { createContext, useContext } from "react";
+
+const PersonalizationProfileContext = createContext(null);
+PersonalizationProfileContext.displayName = "PersonalizationProfileContext";
+
+function usePersonalizationProfile() {
+  const context = useContext(PersonalizationProfileContext);
+
+  if (!context) {
+    throw new Error(
+      "usePersonalizationProfile() must be used within a <PersonalizationProfileProvider>."
+    );
+  }
+
+  return context;
+}
+
+function PersonalizationProfileProvider({ userProfile, children }) {
+  return (
+    <PersonalizationProfileContext.Provider value={userProfile}>
+      {children}
+    </PersonalizationProfileContext.Provider>
+  );
+}
+
+function App({ userProfile }) {
+  return (
+    <PersonalizationProfileProvider userProfile={userProfile}>
+      <Page />
+    </PersonalizationProfileProvider>
+  );
+}
+```
+
+## Access the user profile
+
+Once you've passed the user profile to the `<PersonalizationProfileProvider>` provider, you can access your user profile properties with the `usePersonalizationProfile` React Hook.
+This Hook can be used in any component within `<PersonalizationProfileProvider>`.
+
+```jsx JSX
+function Page() {
+  const { userID, affinities } = usePersonalizationProfile();
+
+  return <>{/* Your JSX */}</>;
+}
+```

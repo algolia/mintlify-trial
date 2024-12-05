@@ -1,0 +1,134 @@
+---
+title: Prepare your search implementation for AI Personalization
+sidebarTitle: Prepare your search implementation
+description: Learn how to prepare your search implementation for AI Personalization.
+---
+
+import Beta from '/snippets/personalization/beta.mdx';
+
+<Beta />
+
+Once you've [prepared your event implementation](/guides/personalization/ai-personalization/configure/event-implementation/), focus on your search implementation.
+
+## Attach user tokens to queries
+
+To ensure that AI Personalization can understand each user's journey and continuously improve their personalization experience, attach a user token to each query.
+The user tokens attached to the queries must match the user tokens sent with events.
+
+### Attach user tokens with InstantSearch
+
+To include the `userToken` in your search queries using InstantSearch, use the `configure` widget to set the `userToken` search parameter.
+
+<CodeGroup>
+
+```js InstantSearch.js
+instantsearch.widgets.configure({
+    userToken: 'user-1234',
+});
+```
+
+```vue Vue InstantSearch
+<ais-configure userToken="user-1234" />
+```
+
+```jsx React InstantSearch
+<Configure userToken="user-1234" />
+```
+
+```ios InstantSearch iOS
+searcher.request.query.userToken = 'user-1234'
+```
+
+```kotlin InstantSearch Android
+searcher.query.userToken = 'user-1234'
+```
+
+```dart Algolia for Flutter
+final hitsSearcher = HitsSearcher.create(
+    applicationID: 'YourApplicationID',
+    apiKey: 'YourSearchOnlyApiKey',
+    state: const SearchState(userToken: 'user-1234'),
+);
+```
+</CodeGroup>
+
+### Attach user tokens with an API client
+
+To include the `userToken` in your search queries with an API client, use the `search` method to send the `userToken` search parameter.
+
+<CodeGroup>
+```csharp C#
+Query query = new Query("query");
+query.UserToken = "user-1234";
+```
+
+```php PHP
+$index->search('query', [
+    'userToken' => 'user-1234'
+]);
+```
+
+```js JavaScript
+index.search('query', {
+    userToken: 'user-1234'
+}).then(({ hits }) => {
+    console.log(hits);
+});
+```
+
+```python Python
+index.search('query', {'userToken': 'user-1234'});
+```
+
+```ruby Ruby
+index.search('query', { userToken: 'user-1234' })
+```
+
+```java Java
+Query query = new Query("query")
+.setUserToken("user-1234");
+```
+
+```go Go
+res, err := index.Search(
+    "query",
+    opt.UserToken("user-1234"),
+)
+```
+
+```swift Swift
+let query = Query("query")
+    .set(\.userToken, to: "user-1234")
+
+index.search(query: query) { result in
+    if case .success(let response) = result {
+    print("Response: \(response)")
+    }
+}
+```
+
+```scala Scala
+client.execute {
+    search into "myIndex" query Query(
+    query = Some("query"),
+    userToken = Some("user-1234")
+    )
+}
+```
+</CodeGroup>
+
+## Persist user tokens
+
+For user profiles to be found and retrieved at search time, you should [persist anonymous user tokens](/guides/send-events/concepts/user-token/#persistent-user-token) and authenticated user tokens across sessions.
+
+## Avoid enabling personalization at query time
+
+Rather than using the `enablePersonalization` search parameter at query time, set it in the index settings when moving to production.
+This lets you [A/B test the impact of personalization](/guides/personalization/ai-personalization/monitor/ab-test) without having to modify code.
+
+## Next steps
+
+Now that you've [prepared your index structure](/guides/personalization/ai-personalization/configure/index-structure), [event implementation](/guides/personalization/ai-personalization/configure/event-implementation) and search implementation,
+AI Personalization can build a holistic view of each user's journey and personalize search results accordingly.
+
+You're ready to [configure AI Personalization indices](/guides/personalization/ai-personalization/configure/indices) without additional code changes.

@@ -1,0 +1,254 @@
+---
+title: Troubleshoot AI Personalization
+description: Learn how to troubleshoot AI Personalization for your app.
+---
+
+import Beta from '/snippets/personalization/beta.mdx';
+
+<Beta />
+
+AI Personalization can help deliver personalized results to your users, but neglecting to address issues can lead to diminished user satisfaction and adverse business outcomes.
+
+This guide addresses specific issues you may encounter when using AI Personalization, their symptoms, and actionable steps to resolving them.
+It ensures that AI Personalization delivers accurate and relevant experiences to your users
+
+## Troubleshoot events
+
+### Non-persistent user tokens
+
+User tokens identify users consistently across different sessions, but if these tokens aren't persistent, they may get reset or changed often.
+This results in each session or event belonging to a new user rather than the same one.
+
+#### Symptoms
+
+- A [low returning user rate warning](/guides/personalization/ai-personalization/monitor/error-codes/#low_returning_users_error) appears in the AI Personalization dashboard.
+- The dashboard might show user profiles, but they often appear inconsistent.
+
+#### Recommendation
+
+To track user activity, use [persistent user tokens that remain consistent across sessions and events](/guides/personalization/ai-personalization/configure/event-implementation/#attach-user-tokens-to-events),
+this ensures accurate user profiles are built over time.
+
+### Incorrect objectIDs
+
+All events must send object IDs that match object IDs in your index's records.
+If they don't match, AI Personalization can't accurately link user behavior to the relevant data, leading to problems with how events and indices are associated.
+
+#### Symptoms
+
+- The [User Timeline](https://dashboard.algolia.com/ai-personalization/timeline/) displays events connected to "deleted records" which suggests there are mismatched object IDs.
+- Errors such as [mismatched object IDs](/guides/personalization/ai-personalization/monitor/error-codes/#mismatched_object_ids_error) and
+[no object IDs](/guides/personalization/ai-personalization/monitor/error-codes/#no_object_ids_error) occur when saving the configuration.
+
+#### Recommendation
+
+Ensure all events contain valid object IDs that match the records in your index.
+This match is essential for creating accurate and complete user profiles.
+
+### Batch event processing
+
+While processing events in batches isn't an issue, using the same or adjusted timestamps can cause problems.
+It can distort the calculation of session duration and result in inaccurate user profiles.
+
+#### Symptoms
+
+- The quality of user profiles generated is poor.
+
+<Note>
+    No obvious errors or warnings appear in the dashboard, making this issue harder to detect.
+</Note>
+
+#### Recommendation
+
+Avoid manually changing timestamps to get around API checks.
+Make sure each event in a session has a unique timestamp that shows the actual time of the user action.
+
+### Incorrect event mapping
+
+Sometimes, user events aren't properly assigned to the correct [event collection](/guides/personalization/ai-personalization/configure/events/#event-collections).
+Because of this inaccurate mapping, AI Personalization can't properly interpret user behavior, which affects how well it can generate accurate user profiles.
+
+#### Symptoms
+
+- The quality of user profiles generated is poor because AI Personalization can't accurately understand user behavior.
+- Conversion rates or other key metrics might seem inaccurate because important events might be underrepresented or overemphasized.
+
+#### Recommendation
+
+Review the [event mapping](https://dashboard.algolia.com/ai-personalization/configuration/events) to make sure user events are categorized according to the recommended event collections.
+This ensures that each stage of user interaction is accurately captured and analyzed.
+
+### Obsolete events
+
+If you changed your events implementation to include specific subtypes like `addToCart` and `purchase`, but the configuration has outdated events, this can cause issues.
+AI Personalization expects these outdated events, leading to configuration errors.
+
+#### Symptoms
+
+- An [invalid events mapping warning](/guides/personalization/ai-personalization/monitor/error-codes/#low_returning_users_error) shows up when the configuration is saved indicating that AI Personalization is searching for outdated events.
+
+#### Recommendation
+
+Update the [event mapping](https://dashboard.algolia.com/ai-personalization/configuration/events) by replacing the outdated events with the new ones that include subtypes.
+Then, save the configuration to apply the changes.
+
+### Incomplete event collection
+
+If only events related to search activities are collected, while other interactions, like clicks on the home page, are ignored, this can cause issues.
+Event collection is incomplete, leading to user profiles based on partial data and poor quality.
+
+#### Symptoms
+
+- User profiles are poor quality because they're created only from search-related activities without considering other interactions.
+
+#### Recommendation
+
+Make sure to capture and map all user interactions, not just those related to search.
+Gathering complete event data ensures more accurate and effective personalization.
+
+## Troubleshoot indices
+
+### Excessive affinities
+
+When user profiles have many affinity values, such as multiple product categories or brands linked to one user, it can cause problems.
+This excess information may reduce the accuracy of personalization, making it less effective.
+
+#### Symptoms
+
+- Search results are less relevant because AI Personalization struggles to rank the most important affinities.
+- Highly relevant affinities may be overshadowed by the overwhelming number of less relevant affinities.
+- Decline in A/B test performance, with personalized results failing to show significant improvement compared to non-personalized results.
+
+#### Recommendation
+
+Limit the number of affinity values in user profiles to include only the most relevant data.
+This ensures more focused and accurate search results.
+
+### Using SKU attributes as affinities
+
+SKU attributes are specific details for individual products.
+When these attributes are used as affinities, it causes issues because [affinities should be categorical](/guides/personalization/ai-personalization/configure/index-structure/#use-categorical-attributes), like product categories or brands.
+Since SKU attributes are unique, [AI Personalization ignores them](//guides/personalization/ai-personalization/configure/index-structure/#how-ai-personalization-validates-attributes),
+rendering them ineffective as [attributes for affinities](/guides/personalization/ai-personalization/configure/indices/#select-the-attributes-for-affinities).
+
+#### Symptoms
+
+- The SKU-based affinities aren't included in the user profiles generated.
+
+#### Recommendation
+
+Use categorical attributes for affinities instead of specific SKUs.
+
+### Attributes with filter-only modifier
+
+When attributes with the `filterOnly` modifier are used as affinities, it causes an issue.
+AI Personalization relies on faceting to handle affinities, but attributes with this modifier don't support faceting.
+This means AI Personalization can't process these attributes accurately.
+
+#### Symptoms
+
+- Attributes with the `filterOnly` modifier aren't available for selection as attributes for affinities when personalizing an index.
+
+#### Recommendation
+
+Use the [dashboard](https://dashboard.algolia.com/explorer/configuration/facets) to confirm if an attribute is `filterOnly` and avoid adding it as an attribute for affinities.
+
+## Troubleshoot search results
+
+### Missing user tokens
+
+AI Personalization requires a `userToken` to provide personalized results.
+Without it, your search experience can't be tailored to individual users.
+
+#### Symptoms
+
+- Search results aren't personalized, even though user profiles are visible in the dashboard.
+- The AI Personalization dashboard shows errors or warnings indicating that user tokens are missing.
+
+#### Recommendation
+
+Ensure that the user token is included in all search queries.
+Ensure that the `enablePersonalization` flag has been activated with the [index settings in the dashboard](https://dashboard.algolia.com/explorer/configuration/personalization).
+
+### Mismatched or non-persistent user tokens
+
+If your user tokens don't persist across sessions or don't match the tokens used when sending events.
+This can lead to issues with the personalization of search results.
+
+#### Symptoms
+
+- Personalization is applied inconsistently, causing some searches to display personalized results while others don't.
+- A/B test results may be unreliable, as the control and variant groups may not show the expected differences, signifying an A/A test scenario.
+- The AI Personalization dashboard shows warnings such as [low queries profile applied](/guides/personalization/ai-personalization/monitor/error-codes/#low_queries_profile_applied_warning),
+[low queries profile found](/guides/personalization/ai-personalization/monitor/error-codes/#low_queries_profile_found_warning),
+[low users profile applied](/guides/personalization/ai-personalization/monitor/error-codes/#low_users_profile_applied_warning),
+and [low users profile found](/guides/personalization/ai-personalization/monitor/error-codes/#low_users_profile_found_warning).
+
+#### Recommendation
+
+Ensure that [user tokens from search queries match sent events](/guides/personalization/ai-personalization/configure/event-implementation/#attach-user-tokens-to-events) and
+[user tokens are persisted](/guides/send-events/concepts/user-token/#persistent-user-token) (including anonymous user tokens).
+
+
+### Ranking criteria issue
+
+When the [ranking criteria](/guides/managing-results/must-do/custom-ranking/#the-ranking-criteria) applied to search results are too narrow, it leaves little room for personalization to affect the outcome.
+This can happen if the ranking criteria limits results to a specific set, such as a single product or category.
+
+#### Symptoms
+
+- User profiles are generated and appear in the dashboard.
+- The AI Personalization dashboard doesn't display any errors or warnings.
+- The [Search Simulator](https://dashboard.algolia.com/ai-personalization/search/) shows little to no change in search result rankings, even when personalization is enabled and different user profiles are chosen.
+
+#### Recommendation
+
+Broaden the ranking criteria to allow personalization to influence the search results more effectively.
+This ensures that personalized affinities can alter the ranking of search results.
+
+## Troubleshoot A/B tests
+
+### Premature A/B tests
+
+
+If A/B tests are stopped prematurely, typically after a couple of days, it can lead to unreliable results.
+
+#### Symptoms
+
+- A/B test results show false positives or negatives, with marginal differences in metrics (such as for conversion rates and revenue)
+- The test fails to reach statistical significance, making it difficult to draw meaningful conclusions.
+
+#### Recommendation
+
+Run A/B tests for at least 2-3 weeks or until statistical significance is reached.
+This ensures that the results are robust and reflective of actual user behavior.
+
+### Running an A/A test
+
+Both the control and variant groups in your A/B test are receiving the same treatment, typically due to non-persistent tokens or wrongly configured personalization settings.
+This leads to both groups being identical, rendering the test ineffective.
+
+#### Symptoms
+
+- The A/B test fails to reach significance, as there is no difference between the control and variant groups.
+- Reported metrics may show minimal or no variation, indicating that personalization wasn't properly applied.
+
+#### Recommendation
+
+Verify that personalization is enabled and [user tokens are persisted](/guides/send-events/concepts/user-token/#persistent-user-token) for both the variant and control groups.
+This ensures the variant group receives the intended personalization settings.
+
+### Mixing queries with and without personalization
+
+When some search queries in the A/B test variant have personalization enabled while others don't, it creates inconsistency.
+This skews the results, making it difficult to measure the true impact of personalization.
+
+#### Symptoms
+
+- The A/B test results are inconsistent, with some queries showing personalization effects while others don't.
+- The number of queries analyzed may be much lower than the typical traffic, indicating that queries aren't properly configured for personalization.
+
+#### Recommendation
+
+Ensure that personalization is enabled for all queries in both the control and variant groups.
+Use [persistent user tokens](/guides/send-events/concepts/user-token/#persistent-user-token) across all queries to maintain consistency in the test.

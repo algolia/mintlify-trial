@@ -1,0 +1,21 @@
+---
+title: Going to production
+description: Learn how to put your Personalization implementation into production.
+---
+
+import Beta from '/snippets/personalization/beta-migrate.mdx';
+
+<Beta />
+
+After [collecting events](/guides/personalization/classic-personalization/personalizing-results/#capturing-user-behavior-by-sending-events) and
+[configuring your strategy](/guides/personalization/classic-personalization/configuring-personalization), you can begin to personalize search results for your users.
+
+Since Personalization can have an enormous impact on your relevance and search experience, before deployment you should:
+
+1. [Simulate Personalization](//guides/personalization/classic-personalization/configuring-personalization/#simulating-personalization)
+1. [A/B test](/guides/personalization/classic-personalization/going-to-production/ab-testing-personalization) it with some users to confirm that it outperforms a non-personalized experience.
+
+After A/B testing, when you're ready to deploy Personalization:
+
+1. Include `enablePersonalization` and `userToken` parameters for all searches you want to personalize. For details, see [Enabling Personalization](/guides/personalization/classic-personalization/going-to-production/enabling-personalization).
+1. Check your implementation against the [Personalization checklist](/guides/personalization/classic-personalization/going-to-production/implementation-checklist) to ensure you've covered everything.

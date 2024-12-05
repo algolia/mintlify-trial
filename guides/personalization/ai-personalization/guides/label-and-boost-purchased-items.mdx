@@ -1,0 +1,185 @@
+---
+title: Label and boost purchased items in search results
+description: Learn how to label and boost previously purchased items in search results.
+---
+
+import Beta from '/snippets/personalization/beta.mdx';
+
+<Beta />
+
+Enhancing search results with labels for previously purchased items creates a more personalized and relevant user experience.
+This guide demonstrates how to implement a "Purchased" badge and prioritize these items in search results, helping users quickly identify products they've already bought.
+
+Implementing this feature offers several advantages:
+
+- Enables users to quickly identify items for potential repurchase or review
+- Prevents accidental repurchases by reminding users of previous purchases
+- Guides users to related or updated versions of products they've bought before
+- Potentially increases customer loyalty and repeat purchases
+
+## Before you begin
+
+This guide assumes that you're familiar with React InstantSearch and that you have access to user purchase history data.
+
+## Preview
+
+<Frame caption="Storefront displaying labeled purchased items in search results">
+  ![Storefront displaying labeled purchased items in search results](/images/personalization/boost-purchased-items.png)
+</Frame>
+
+## Provide purchase history data
+
+Start with the purchase history as an array of objects, ordered by purchase date in descending order:
+
+```js JavaScript
+const purchaseHistory = [
+  { objectID: '3433069', date: '2024-09-10T08:56:22.062Z' },
+  { objectID: '8918056', date: '2024-08-28T08:23:58.987Z' },
+];
+```
+
+This structure allows for easy lookup of purchase dates by `objectID`, the unique identifier used in your Algolia index for each product.
+
+Pass this data to the search component:
+
+```jsx JSX
+function App() {
+  return <SearchPage purchaseHistory={purchaseHistory} />;
+}
+```
+
+## Display a badge for purchased items
+
+To display a badge for purchased items, modify the search results by adding a custom attribute to each hit. This information allows to label items in your search results.
+
+Create a `<SearchPage>` component that handles the InstantSearch setup:
+
+```jsx JSX
+import algoliasearch from 'algoliasearch/lite';
+import { InstantSearch, Hits } from 'react-instantsearch';
+
+const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+function SearchPage({ purchaseHistory }) {
+  const purchaseDateByObjectID = purchaseHistory.reduce((acc, current) => {
+    if (current.date && !acc[current.objectID]) {
+      acc[current.objectID] = current.date;
+    }
+    return acc;
+  }, {});
+
+  return (
+    <InstantSearch searchClient={searchClient} indexName="instant_search">
+      <Hits
+        transformItems={(items) =>
+          items.map((item) => ({
+            ...item,
+            __lastPurchasedAt: purchaseDateByObjectID[item.objectID] || null,
+          }))
+        }
+        hitComponent={Hit}
+      />
+    </InstantSearch>
+  );
+}
+```
+
+This component:
+
+- Creates a lookup object (`purchaseDateByObjectID`) for quick access to purchase dates.
+- Uses the `transformItems` prop of the `<Hits>` component to add a custom `__lastPurchasedAt` attribute to each hit.
+- Specifies a custom `<Hit>` component to render each search result.
+
+Next, create the custom `<Hit>` component to display the badge:
+
+```jsx JSX
+function Hit({ hit }) {
+  return (
+    <article>
+      <h1>{hit.name}</h1>
+      <HitPurchasedBadge hit={hit} />
+    </article>
+  );
+}
+
+const shortMonthYearFormatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'short',
+});
+
+function HitPurchasedBadge({ hit }) {
+  if (!hit.__lastPurchasedAt) {
+    return null;
+  }
+
+  const purchaseDate = new Date(hit.__lastPurchasedAt);
+  const formattedDate = shortMonthYearFormatter.format(purchaseDate);
+
+  return <span>Purchased {formattedDate}</span>;
+}
+```
+
+The `<HitPurchasedBadge>` component:
+
+- Checks if the item has been purchased (has a `__lastPurchasedAt` value).
+- If purchased, it formats the date and displays the "Purchased" badge.
+- If not purchased, it renders nothing.
+
+
+## Re-rank results based on purchase date (optional)
+
+To prioritize purchased items in the search results, you can implement a custom sorting function.
+This step can enhance the user experience by bringing previously purchased items to the top of the results.
+
+Implement a custom sorting function:
+
+```js JSX
+function sortItemsByPurchaseDate(items, purchaseDateByObjectID) {
+  return [...items].sort((itemA, itemB) => {
+    const isItemAPurchased = Boolean(purchaseDateByObjectID[itemA.objectID]);
+    const isItemBPurchased = Boolean(purchaseDateByObjectID[itemB.objectID]);
+    
+    if (isItemAPurchased === isItemBPurchased) {
+      return 0;
+    }
+    
+    if (isItemAPurchased) {
+      return -1;
+    } else {
+      return 1;
+    }
+  });
+}
+```
+
+Modify the `<SearchPage>` component to use this sorting function:
+
+```jsx JSX
+function SearchPage({ purchaseHistory }) {
+  const purchaseDateByObjectID = purchaseHistory.reduce((acc, current) => {
+    if (current.date && !acc[current.objectID]) {
+      acc[current.objectID] = current.date;
+    }
+    return acc;
+  }, {});
+
+  return (
+    <InstantSearch searchClient={searchClient} indexName="instant_search">
+      <Hits
+        transformItems={(items) =>
+          sortItemsByPurchaseDate(
+            items.map((item) => ({
+              ...item,
+              __lastPurchasedAt: purchaseDateByObjectID[item.objectID] || null,
+            })),
+            purchaseDateByObjectID
+          )
+        }
+        hitComponent={Hit}
+      />
+    </InstantSearch>
+  );
+}
+```
+
+Be cautious not to over-prioritize purchased items, as this might hide relevant new items from the user.

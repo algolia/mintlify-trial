@@ -1,0 +1,92 @@
+---
+title: 'What is Personalization?'
+description: Explore Algolia's personalization platform and learn to create personalized experiences for your users.
+---
+
+import Beta from '/snippets/personalization/beta-migrate.mdx';
+
+<Beta />
+
+Personalization strengthens interactive search, adding a personal layer to your relevance strategy.
+Adding personalized preferences to the search experience makes results more engaging for individual users.
+
+<Note>
+    Personalization is available on the Build and Premium [pricing plans](https://www.algolia.com/pricing/).
+</Note>
+
+## Advantages of personalization
+
+Algolia's out-of-the-box [relevance strategy](/guides/managing-results/relevance-overview/) treats every user the same way, but Personalization considers a user's specific tastes.
+Textual relevance and business metrics are the first steps to great relevance, but Personalization lets you engage your users on their level.
+
+Queries mean different things to different people. For example, a user who searches for "harry" and prefers children's literature likely wants to see "Harry Potter" results appear on the first page.
+Users who follow politics may be more interested in seeing "Harry Truman" in their results.
+Personalization incorporates a user's past behavior when determining the most relevant results.
+
+Better relevance minimizes the user's effort to find what they want.
+It also encourages users to stay on your site or app longer by exposing them to more options they're likely to find appealing.
+Thanks to Google and Amazon, most users expect a digital experience where _their_ preferences are used to tailor _their_ results.
+Algolia's Personalization feature brings this capability to your business.
+
+## How does Personalization fit into Algolia's relevance strategy?
+
+Effective relevance has two main goals:
+
+- Enabling your users to find results that match their expectations.
+- Providing results that align with your business needs.
+
+You can address these twin goals by fine-tuning the first three layers of Algolia's relevance strategy:
+
+1. Textual relevance - intelligent and robust textual matching that includes [typo tolerance](/guides/managing-results/optimize-search-results/typo-tolerance/), [synonyms](/doc/guides/managing-results/optimize-search-results/adding-synonyms/), [natural language processing](/doc/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/), and various other capabilities and settings.
+2. Business relevance - ranking results according to business metrics through [custom ranking](/guides/managing-results/must-do/custom-ranking/).
+3. Merchandising - boosting and burying specific results or categories using [Rules](/guides/managing-results/rules/rules-overview/).
+
+You can also enable [Dynamic Re-ranking](/guides/algolia-ai/dynamic-re-ranking/) to boost trending results and categories based on the collective search data of all your users.
+
+All these contribute, in different ways, to producing relevant results that apply equally to all your users
+Personalization acts in concert with these to individualize search results.
+It doesn't replace Algolia's ranking algorithm—it refines it by changing the order of pre-sorted results to promote more relevant results to the individual user.
+This, in turn, can increase user engagement and drive more conversions.
+
+Personalization kicks in after Algolia computes your results' textual relevance and applies your business relevance.
+If you use [Rules](/doc/guides/managing-results/rules/rules-overview/), Algolia applies them after the Personalization.
+
+If you've enabled _both_ Personalization and Dynamic Re-ranking, Algolia doesn't apply both Personalization and Dynamic Re-ranking concurrently.
+Instead, it applies:
+
+- **Personalization** for users with enough data to personalize the search
+- **Re-ranking** for users without enough data to personalize the search (such as first-time users).
+
+### The order of relevance strategies
+
+In summary, the engine applies the relevance strategies in this order:
+
+1. Textual relevance (through the [textual ranking criteria](/guides/managing-results/relevance-overview/in-depth/ranking-criteria/))
+1. Business relevance (through [custom ranking](/guides/managing-results/must-do/custom-ranking/))
+1. User-based preferences (through either Personalization or [Dynamic Re-ranking](/guides/algolia-ai/dynamic-re-ranking/)
+1. Merchandising (through [Rules](/guides/managing-results/rules/rules-overview/))
+
+The only exception is when you've set your [Personalization impact](/guides/personalization/classic-personalization/personalizing-results/configuring-personalization/#defining-personalization-impact) to `100`.
+In that case, the engine prioritizes Personalization over business relevance.
+Then Algolia applies the relevance strategies in this order:
+
+1. Textual relevance (through the textual ranking criteria)
+1. User-based preferences (through Personalization)
+1. Business relevance (through custom ranking)
+1. User-based preferences (through Dynamic Re-ranking, only if there isn't enough data to personalize results for a particular user)
+1. Merchandising (through Rules).
+
+<Note>
+  Before you enable Personalization, you should simulate your [Personalization strategy](/guides/personalization/classic-personalization/personalizing-results/in-depth/configuring-personalization/) and A/B test the effects of Personalization first.
+</Note>
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/personalization/classic-personalization/how-personalization-works" horizontal="true">
+    How Personalization works?
+  </Card>
+  <Card title="Merchandising Playbook" icon="clapperboard" href="https://www.algolia.com/ecommerce-merchandising-playbook/personalization/" horizontal="true">
+    Personalization
+  </Card>
+</CardGroup>

@@ -1,0 +1,86 @@
+---
+title: Personalization implementation checklist
+sidebarTitle: Implementation checklist
+description: Use the checklist to ensure your Personalization implementation is ready to go live.
+---
+
+import Beta from '/snippets/personalization/beta-migrate.mdx';
+
+<Beta />
+
+## Gathering user data
+
+The first step to an effective Personalization implementation is gathering the right data about your users.
+When your users engage in specific behaviors, you need to send Algolia events describing these behaviors.
+Algolia then uses these events to build individual user affinity profiles.
+Before beginning to send events, it's best to analyze which behaviors your users take and creating a plan for the corresponding events you'll send.
+
+### User behaviors are meaningful for your objectives
+
+- You've made a comprehensive list of behaviors your users take that signal their affinities.
+- You've [classified behaviors as `view`, `click`, or `conversion`](/guides/send-events/concepts/event-types).
+- You've [classified behaviors as search-related or not](/guides/send-events/concepts/event-types).
+- You've [classified behaviors as item-based or category-based](/guides/send-events/guides/plan).
+- You've selected consistent event names.
+
+### Events capture all necessary information
+
+- All your events include a unique `userToken` for the user engaging in the behavior.
+- You are using [`view`, `click`, and `conversion` events](/guides/send-events/concepts/event-types) for the appropriate behavior.
+- All your events include a valid `eventName`.
+- All your events include the index name where you've declared the [applicable facets](/guides/personalization/classic-personalization/configuring-personalization/#weighting-facets-for-personalization) as `attributesForFaceting`.
+- If you're sending events related to a search, you've included the `queryID`.
+- If you're sending item-based events, you've included the relevant `objectID`.
+- If you're sending category or filter-based events, you've included the relevant `filters`.
+- Optional but recommended: you've included the `timestamp` for when the behavior occurred.
+
+For more information, see the [Insights API reference](https://www.algolia.com//doc/rest-api/insights/).
+
+You can use the [Insights log debugger](https://dashboard.algolia.com/events/debugger) in your dashboard to monitor the received events and ensure that none of them are missing fields or returning errors.
+
+## Configuring your Personalization strategy
+
+The Personalization strategy drives how Algolia computes user affinity profiles using the events you sent.
+You can [configure the Personalization strategy directly from your Algolia dashboard](/guides/personalization/classic-personalization/configuring-personalization) or using an API client.
+However, you should use the dashboard since it provides a visual simulator to explain your strategy's effects.
+
+### Personalization strategy
+
+- You've [included and weighted events](/guides/personalization/classic-personalization/configuring-personalization/#weighting-events-for-personalization) in your strategy.
+- You're sending the events that you chose in the strategy. You can see the events received during the last 90 days in the [**Personalization** section](https://dashboard.algolia.com/personalization/strategy) of the dashboard.
+- You've [included and weighted facets](/guides/personalization/classic-personalization/configuring-personalization/#weighting-facets-for-personalization) in your strategy. To select facets for the strategy, you need to first [declare the attributes as facets](/guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting).
+- You're sending events related to the facets you chose in the strategy.
+- You've set a non-zero [Personalization impact](/guides/personalization/classic-personalization/configuring-personalization/#defining-personalization-impact). You can set the Personalization impact at the app level in your Personalization dashboard, or with the `personalizationImpact` search parameter, at query time.
+
+### Strategy simulation
+
+You've [used the simulator](/guides/personalization/classic-personalization/configuring-personalization/#simulating-personalization) in the dashboard's [**Personalization** section](https://dashboard.algolia.com/personalization/strategy) to simulate your strategy for various users and queries. The personalized results are as you would expect.
+
+## Enabling personalization on searches
+
+Personalized searches build on a user's affinity profile to boost search results related to their preferences.
+It's best to use the API clients or InstantSearch to perform searches.
+
+### `enablePersonalization` and `userToken` are set in your search requests
+
+- You've set `enablePersonalization` to `true` either as a search parameter or in the index configuration.
+- You're using consistent user tokens in events and searches. To have personalized results, you must use the same `'userToken` for the events you send for a particular user and the searches that user makes.
+
+<Note>
+    If you haven't sent events for a particular user token in the last 90 days, Algolia doesn't personalize that user's results.
+</Note>
+
+## Next steps
+
+Before enabling Personalization for all your users, it's best to [A/B test your Personalization implementation](/guides/personalization/classic-personalization/going-to-production/ab-testing-personalization) first.
+
+## Further reading
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="/guides/personalization/classic-personalization/personalizing-results" horizontal="true">
+    Personalizig results
+  </Card>
+  <Card title="Guide" icon="book" href="/guides/personalization/classic-personalization/going-to-production/enabling-personalization" horizontal="true">
+    Enabling personalization
+  </Card>
+</CardGroup>

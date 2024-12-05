@@ -1,0 +1,59 @@
+---
+title: Inspect a user profile
+description: Learn how to inspect an AI Personalization user profile.
+---
+
+import Beta from '/snippets/personalization/beta.mdx';
+
+<Beta />
+
+The [**User Inspector**](https://dashboard.algolia.com/ai-personalization/user) in the AI Personalization dashboard shows profiles of users interacting with your Algolia search and discovery experience.
+This tool offers insights into user preferences and helps troubleshoot personalization issues.
+
+<Frame caption="Dashboard interface to inspect a user profile">
+  ![Dashboard interface to inspect a user profile](/images/personalization/user-inspector.png)
+</Frame>
+
+## Select a user
+
+To inspect a user profile:
+
+1. Go to the [**User Inspector**](https://dashboard.algolia.com/ai-personalization/user) in the Algolia AI Personalization dashboard.
+1. Open the user selector to see a list of recent users who have interacted with your app. This list updates dynamically as users engage with your experience.
+1. Select a user profile to view by clicking on their user token in the list.
+1. If you can't find the user you want, enter their user token manually to inspect their profile.
+
+<Frame caption="Dashboard interface to select a user profile">
+  ![Dashboard interface to select a user profile](/images/personalization/user-selector.png)
+</Frame>
+
+## View last profile update
+
+The **User Inspector** shows when the profile was last computed. 
+This date helps you understand how current the user's profile is and when it last included a meaningful interaction.
+
+## Analyze user affinities
+
+The **User Inspector** groups affinities by attribute.
+These attributes match the [attributes for affinities](/guides/personalization/ai-personalization/configure/indices/#select-the-attributes-for-affinities) you set up, such as product categories, brands, or other relevant aspects of your data.
+This organization helps you understand which parts of your catalog appeal most to each user.
+
+User interactions like views, clicks, and conversions create affinities. Unlike explicit preferences a user might state, these affinities come from actual user behavior.
+For more details, see [How user profiles are built](/guides/personalization/ai-personalization/user-profiles/#how-user-profiles-are-built).
+
+AI Personalization uses a scoring system for affinities.
+Each affinity gets a score from 1 to 20.
+A score of 1 shows weak interest, while 20 indicates strong preference for that attribute.
+For example, an affinity score of 18 for "Electronics" suggests high interest in electronic products.
+Algolia uses these scores to rank search results appropriately.
+
+<Frame caption="Dashboard interface to view affinities for an attribute">
+  ![Dashboard interface to view affinities for an attribute](/images/personalization/user-inspector-affinity-table.png)
+</Frame>
+
+If the user has more than five affinities for an attribute, click the **View all** button to see the complete list.
+
+## Manage a user profile
+
+Find the **Danger Zone** section at the bottom of the **User Inspector** page.
+Here you can [delete a user profile](/guides/personalization/ai-personalization/monitor/delete-a-user-profile) if needed.
