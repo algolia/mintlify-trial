@@ -42,8 +42,12 @@
             "url": "integrations"
         },
         {
-            "name": "Libraries",
+            "name": "API clients",
             "url": "libraries"
+        },
+        {
+            "name": "UI libraries",
+            "url": "ui-libraries"
         },
         {
             "name": "API reference",
@@ -563,6 +567,73 @@
             ]
         },
         {
+            "group": "Personalization",
+            "pages": [
+                {
+                    "group": "AI Personalization",
+                    "pages": [
+                        "guides/personalization/ai-personalization/what-is-ai-personalization",
+                        "guides/personalization/ai-personalization/how-does-ai-personalization-work",
+                        "guides/personalization/ai-personalization/user-profiles",
+                        "guides/personalization/ai-personalization/migrate-from-classic-personalization",
+                        {
+                            "group": "Configure",
+                            "pages": [
+                                "guides/personalization/ai-personalization/configure",
+                                "guides/personalization/ai-personalization/configure/index-structure",
+                                "guides/personalization/ai-personalization/configure/event-implementation",
+                                "guides/personalization/ai-personalization/configure/search-implementation",
+                                "guides/personalization/ai-personalization/configure/indices",
+                                "guides/personalization/ai-personalization/configure/events",
+                                "guides/personalization/ai-personalization/configure/personalization-reranking"
+                            ]
+                        },
+                        {
+                            "group": "Monitor",
+                            "pages": [
+                                "guides/personalization/ai-personalization/monitor/ab-test",
+                                "guides/personalization/ai-personalization/monitor/troubleshoot",
+                                "guides/personalization/ai-personalization/monitor/inspect-a-user-profile",
+                                "guides/personalization/ai-personalization/monitor/delete-a-user-profile",
+                                "guides/personalization/ai-personalization/monitor/error-codes"
+                            ]
+                        },
+                        {
+                            "group": "Implement",
+                            "pages": [
+                                "guides/personalization/ai-personalization/guides/segment-users-with-rule-contexts",
+                                "guides/personalization/ai-personalization/guides/applying-contextual-affinities",
+                                "guides/personalization/ai-personalization/guides/fetching-a-user-profile",
+                                "guides/personalization/ai-personalization/guides/personalizing-search-facets",
+                                "guides/personalization/ai-personalization/guides/inline-segmentation",
+                                "guides/personalization/ai-personalization/guides/label-and-boost-purchased-items",
+                                "guides/personalization/ai-personalization/guides/export-audience",
+                                "guides/personalization/ai-personalization/guides/personalize-product-display"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "group": "Classic Personalization",
+                    "pages": [
+                        "guides/personalization/classic-personalization/what-is-personalization",
+                        "guides/personalization/classic-personalization/how-personalization-works",
+                        "guides/personalization/classic-personalization/personalizing-results",
+                        "guides/personalization/classic-personalization/configuring-personalization",
+                        {
+                            "group": "Going to production",
+                            "pages": [
+                                "guides/personalization/classic-personalization/going-to-production",
+                                "guides/personalization/classic-personalization/going-to-production/ab-testing-personalization",
+                                "guides/personalization/classic-personalization/going-to-production/enabling-personalization",
+                                "guides/personalization/classic-personalization/going-to-production/implementation-checklist"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "group": "Algolia Recommend",
             "pages": [
                 "guides/algolia-recommend/overview",
@@ -595,9 +666,17 @@
             ]
         },
         {
-            "group": "Libraries",
+            "group": "API clients",
             "pages": [
                 "libraries/python"
+            ]
+        },
+        {
+            "group": "UI libraries",
+            "pages": [
+                "ui-libraries/instantsearch/widgets/configure/js",
+                "ui-libraries/instantsearch/widgets/configure/react",
+                "ui-libraries/instantsearch/widgets/configure/vue"
             ]
         },
         {
