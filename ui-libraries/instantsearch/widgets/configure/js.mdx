@@ -1,0 +1,181 @@
+---
+title: configure (InstantSearch.js v4)
+sidebarTitle: configure (JavaScript)
+description: A widget for InstantSearch.js to provide search parameters to Algolia.
+---
+
+The `configure` widget lets you provide raw search parameters to the Algolia API without rendering anything.
+
+Any props you pass to this widget are forwarded to Algolia.
+
+## Usage
+
+<code>configure([searchParameters](#options));</code>
+
+```js
+configure({
+  hitsPerPage: 8,
+  distinct: true,
+  clickAnalytics: true,
+  enablePersonalization: true,
+});
+```
+
+<CardGroup cols={4}>
+    <Card title="Live example" icon="eye" href="https://instantsearchjs.netlify.app/stories/js/?path=/story/basics-configure--force-1-hit-per-page" horizontal="true" />
+</CardGroup>
+
+## Options
+
+| Option | Type | Required? | Description |
+| :----- | :--- | --------- | :---------- |
+| `searchParameters` | Object | <center><Icon icon="check" /></center> | A list of [search parameters](/api-reference/search-api-parameters/) to enable. |
+
+## Connector
+
+To create your own UI for the `configure` widget, use the `connectConfigure` comnector.
+
+Import it with a package manager or with a CDN.
+
+<Tabs>
+  <Tab title="Package manager">
+    ```js
+    import { connectConfigure } from 'instantsearch.js/es/connectors';
+    ```
+  </Tab>
+  <Tab title="CDN">
+    ```js
+    const { connectConfigure } = instantsearch.connectors;
+    // Or use instantsearch.connectors.connectConfigure()
+    ```
+  </Tab>
+</Tabs>
+
+After importing:
+
+<Steps>
+  <Step title="Create a render function">
+
+    | Option         | Type     | Description |
+    | :------------- | :------- | :---------- |
+    | `refine`       | Function | This rendering function is called before the first search (`init` lifecycle step) and each time results come back from Algolia (`render` lifecycle step). |
+    | `widgetParams` | Object   | All original widget options forwarded to the render function. |
+    
+    <CodeGroup>
+    ```js refine example
+    const renderConfigure = (renderOptions, isFirstRender) => {
+        const { refine } = renderOptions;
+
+        if (isFirstRender) {
+            const button = document.createElement('button');
+            button.textContent = 'Sets "hitsPerPage" to 4';
+
+            button.addEventListener('click', () => {
+            refine({ hitsPerPage: 4 });
+            });
+
+            document.querySelector('#configure').appendChild(button);
+        }
+    };
+    ```
+    ```js widgetParams example
+    const renderConfigure = (renderOptions, isFirstRender) => {
+    const { widgetParams } = renderOptions;
+
+    widgetParams.container.innerHTML = `
+        <pre>${JSON.stringify(widgetParams.searchParameters, null, 2)}</pre>
+    `;
+    };
+
+    // ...
+
+    search.addWidgets([
+    customConfigure({
+        container: document.querySelector('#configure'),
+        searchParameters: {
+        hitsPerPage: 8,
+        },
+    })
+    ]);
+    ```
+    </CodeGroup>
+    
+  </Step>
+  <Step title="Create the custom widget">
+
+    There are two types of parameters you can give:
+
+    - **Instance parameters**: they are predefined parameters that you can use to configure the behavior of Algolia.
+    - **Your own parameters**: to make the custom widget generic.
+
+    Both are available in `connector.widgetParams`, inside the render function.
+
+    ```js
+    const customConfigure = connectConfigure(
+    renderConfigure
+    );
+    ```
+  </Step>
+  <Step title="Instantiate the custom widget">
+    ```js
+    customConfigure({
+        searchParameters: {
+            hitsPerPage: 8,
+            distinct: true,
+            clickAnalytics: true,
+        },
+    });
+    ```
+  </Step>
+</Steps>
+
+### Example
+
+```js
+// Create the render function
+const renderConfigure = (renderOptions, isFirstRender) => {
+  const { refine, widgetParams } = renderOptions;
+
+  if (isFirstRender) {
+    const button = document.createElement('button');
+    const pre = document.createElement('pre');
+
+    button.addEventListener('click', () => {
+      refine({
+        hitsPerPage: widgetParams.searchParameters.hitsPerPage === 8 ? 4 : 8,
+      });
+    });
+
+    widgetParams.container.appendChild(button);
+    widgetParams.container.appendChild(pre);
+  }
+
+  widgetParams.container.querySelector(
+    'button'
+  ).textContent = `Sets "hitsPerPage" to ${
+    widgetParams.searchParameters.hitsPerPage === 8 ? 4 : 8
+  }`;
+
+  widgetParams.container.querySelector('pre').innerHTML = JSON.stringify(
+    widgetParams.searchParameters,
+    null,
+    2
+  );
+};
+
+// Create the custom widget
+const customConfigure = connectConfigure(
+  renderConfigure,
+  () => {}
+);
+
+// Instantiate the custom widget
+search.addWidgets([
+  customConfigure({
+    container: document.querySelector('#configure'),
+    searchParameters: {
+      hitsPerPage: 8,
+    },
+  })
+]);
+```
