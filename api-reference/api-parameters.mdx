@@ -1,0 +1,30 @@
+---
+title: API parameters
+description: A reference for all Algolia APIs.
+---
+
+Take control of search with Algolia's API parameters.
+Use an [API client](/libraries) to adjust API parameters that affect search results, filtering options, result presentation, and more.
+
+## Parameters
+
+### Search
+
+| Parameter      | Scope          | Description                                                                               |
+| :------------- | :------------- | :---------------------------------------------------------------------------------------- |
+| [`query`](/api-reference/parameters/query)        | Index settings | The text used to search an index                                                          |
+| `similarQuery` | Index settings | Overrides the query parameter and performs a more generic search to find "similar results |
+
+### Attributes
+
+...
+
+## Understanding scope
+
+Each Algolia API parameter has [one of three scopes](/guides/managing-results/relevance-overview/#index-settings-and-query-parameters).
+
+| Scope            | Modify with               | Notes                                                            |
+| :--------------- | :------------------------ | :--------------------------------------------------------------- |
+| Index settings   | `setSettings` method      | Determine the default settings for an index                      |
+| Query parameters | `search` method           | Their effect is temporary, affecting only the current query      |
+| Both             | `setSettings` or `search` | Can be initialized with `setSettings` and overridden by `search` |
