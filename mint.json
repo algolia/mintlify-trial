@@ -1008,6 +1008,13 @@
             "pages": [
                 "api-reference/overview",
                 {
+                    "group": "API parameters",
+                    "pages": [
+                        "api-reference/api-parameters",
+                        "api-reference/parameters/query"
+                    ]
+                },
+                {
                     "group": "Insights API",
                     "pages": [
                         "api-reference/insights-api/events/send-events",

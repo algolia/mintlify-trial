@@ -1,0 +1,181 @@
+---
+title: query
+description: The text used to search an index.
+---
+
+<Tabs>
+  <Tab title="Usage">
+    <CodeGroup>
+    ```kotlin Kotlin
+      index.search(Query("YourQuery"))
+    ```
+
+    ```js JavaScript
+      index.search('YourQuery')
+    ```
+
+    ```php PHP
+      $index->search('YourQuery');
+    ```
+
+    ```python Python
+      results = index.search('YourQuery')
+    ```
+
+    ```ruby Ruby
+      results = index.search('YourQuery')
+    ```
+
+    ```csharp C#
+      index.Search(new Query("YourQuery"));
+    ```
+
+    ```java Java
+      index.search(new Query("YourQuery"));
+    ```
+
+    ```go Go
+      index.Search("YourQuery")
+    ```
+
+    ```swift Swift
+      index.search(query: "YourQuery")
+    ```
+
+    ```scala Scala
+      search into "YourIndex" query Query(
+        query = Some("YourQuery")
+      )
+    ```
+    </CodeGroup>
+
+    | Type   | Scope          | Can be used in these methods |
+    | :----- | :------------- | :--------------------------- |
+    | String | Index settings | [`search`](https://www.algolia.com/doc/api-reference/api-methods/search/), [`browse`](https://www.algolia.com/doc/api-reference/api-methods/browse/), [`searchForFacetValues`](https://www.algolia.com/doc/api-reference/api-methods/search-for-facet-values/), [`generateSecuredApiKey`](https://www.algolia.com/doc/api-reference/api-methods/generate-secured-api-key/), [`addAPIKey`](https://www.algolia.com/doc/api-reference/api-methods/add-api-key/), [`updateAPIKey`](https://www.algolia.com/doc/api-reference/api-methods/update-api-key/) |
+
+  </Tab>
+  <Tab title="Notes">
+    - Empty queries match all records in your index, ordered by `customRanking`.
+    - Queries can be up to 512 bytes.
+    - You can't use boolean operations like AND or OR in queries. But you can combine queries with `filters`, where you can use boolean operations.
+  </Tab>
+</Tabs>
+
+## Examples
+
+### Search for "shirt"
+
+<CodeGroup>
+    ```kotlin Kotlin
+    index.search(Query("shirt"))
+    ```
+
+    ```php PHP
+    $results = $index->search('shirt');
+    ```
+
+    ```js JavaScript
+    index.search('shirt').then(({ hits }) => {
+    console.log(hits);
+    });
+    ```
+
+    ```python Python
+    results = index.search('shirt')
+    ```
+
+    ```ruby Ruby
+    results = index.search('shirt')
+    ```
+
+    ```csharp C#
+    index.search(
+    new Query("shirt")
+    );
+    ```
+
+    ```java Java
+    index.search(
+    new Query("shirt")
+    );
+    ```
+
+    ```go Go
+    res, err := index.Search("shirt")
+    ```
+
+    ```swift Swift
+    index.search(query: "shirt") { result in
+    if case .success(let response) = result {
+        print("Response: \(response)")
+    }
+    }
+    ```
+
+    ```scala Scala
+    client.execute {
+    search into "YourIndex" query Query(
+        query = Some("shirt")
+    )
+    }
+    ```
+</CodeGroup>
+
+## Return all records
+
+<CodeGroup>
+    ```kotlin Kotlin
+    index.search(Query(""))
+    ```
+
+    ```php PHP
+    $results = $index->search('');
+    ```
+
+    ```js JavaScript
+    index.search('').then(({ hits }) => {
+    console.log(hits);
+    });
+    ```
+
+    ```python Python
+    results = index.search('')
+    ```
+
+    ```ruby Ruby
+    results = index.search('')
+    ```
+
+    ```csharp C#
+    index.search(
+    new Query("")
+    );
+    ```
+
+    ```java Java
+    index.search(
+    new Query("")
+    );
+    ```
+
+    ```go Go
+    res, err := index.Search("")
+    ```
+
+    ```swift Swift
+    index.search(query: "") { result in
+    if case .success(let response) = result {
+        print("Response: \(response)")
+    }
+    }
+    ```
+
+    ```scala Scala
+    client.execute {
+    search into "myIndex" query Query(
+        query = Some("")
+    )
+    }
+      ```
+</CodeGroup>
+
