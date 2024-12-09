@@ -8,28 +8,47 @@ The `configure` widget lets you provide raw search parameters to the Algolia API
 
 Any props you pass to this widget are forwarded to Algolia.
 
-## Usage
+<Tabs>
+  <Tab title="Usage">
+    ```js
+    configure(searchParameters);
+    ```
 
-<code>configure([searchParameters](#options));</code>
+    Options:
 
-```js
-configure({
-  hitsPerPage: 8,
-  distinct: true,
-  clickAnalytics: true,
-  enablePersonalization: true,
-});
-```
+    - [`searchParameters`](#searchParameters)
+    
+  </Tab>
+  <Tab title="Example">
+    ```js
+    configure({
+      hitsPerPage: 8,
+      distinct: true,
+      clickAnalytics: true,
+      enablePersonalization: true,
+    });
+    ```
 
-<CardGroup cols={4}>
-    <Card title="Live example" icon="eye" href="https://instantsearchjs.netlify.app/stories/js/?path=/story/basics-configure--force-1-hit-per-page" horizontal="true" />
-</CardGroup>
+    <CardGroup cols={4}>
+        <Card title="Live example" icon="eye" href="https://instantsearchjs.netlify.app/stories/js/?path=/story/basics-configure--force-1-hit-per-page" horizontal="true" />
+    </CardGroup>
+  </Tab>
+  <Tab title="Demo">
+    <CardGroup cols={4}>
+        <Card title="Demo" icon="eye" href="https://instantsearchjs.netlify.app/stories/js/?path=/story/basics-configure--force-1-hit-per-page" horizontal="true" />
+    </CardGroup>
+  </Tab>
+</Tabs>
 
 ## Options
 
-| Option | Type | Required? | Description |
-| :----- | :--- | --------- | :---------- |
-| `searchParameters` | Object | <center><Icon icon="check" /></center> | A list of [search parameters](/api-reference/search-api-parameters/) to enable. |
+| Option                                  | Type   | Required?             |
+| :-------------------------------------- | :----- | --------------------- |
+| [`searchParameters`](#searchParameters) | Object | <Icon icon="check" /> |
+
+### `searchParameters`
+
+A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
 
 ## Connector
 

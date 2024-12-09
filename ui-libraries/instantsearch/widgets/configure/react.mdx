@@ -13,39 +13,54 @@ Any props you pass to this component are forwarded to Algolia.
     Doing so creates an infinite loop.
 </Note>
 
-## Usage
+<Tabs>
+  <Tab title="Usage">
+    ```
+      import { Configure } from 'react-instantsearch';
+    ```
 
-<code>&lt;Configure {[<a href="#options">...searchParameters</a>]} /&gt;</code>
+    Props:
 
-```jsx JSX
-import React from 'react';
-import { liteClient as algoliasearch } from 'algoliasearch/lite';
-import { InstantSearch, Configure } from 'react-instantsearch';
+    - [`searchParameters`](#searchparameters)
+    
+  </Tab>
+  <Tab title="Example">
+    ```jsx JSX
+    import React from 'react';
+    import { liteClient as algoliasearch } from 'algoliasearch/lite';
+    import { InstantSearch, Configure } from 'react-instantsearch';
 
-const searchClient = algoliasearch('undefined', 'undefined');
+    const searchClient = algoliasearch('undefined', 'undefined');
 
-function App() {
-  return (
-    <InstantSearch indexName="instant_search" searchClient={searchClient}>
-      <Configure
-        analytics={false}
-        filters="free_shipping:true"
-        hitsPerPage={40}
-      />
-    </InstantSearch>
-  );
-}
-```
-
-<CardGroup cols={4}>
-    <Card title="Live example" icon="eye" href="https://instantsearchjs.netlify.app/stories/?path=/story/basics-configure--force-1-hit-per-page" horizontal="true" />
-</CardGroup>
+    function App() {
+      return (
+        <InstantSearch indexName="instant_search" searchClient={searchClient}>
+          <Configure
+            analytics={false}
+            filters="free_shipping:true"
+            hitsPerPage={40}
+          />
+        </InstantSearch>
+      );
+    }
+    ```
+  </Tab>
+  <Tab title="Demo">
+    <CardGroup cols={4}>
+        <Card title="Demo" icon="eye" href="https://instantsearchjs.netlify.app/stories/?path=/story/basics-configure--force-1-hit-per-page" horizontal="true" />
+    </CardGroup>
+  </Tab>
+</Tabs>
 
 ## Options
 
-| Option | Type | Required? | Description |
-| :----- | :--- | --------- | :---------- |
-| `...searchParameters` | Object | <center><Icon icon="check" /></center> | A list of [search parameters](/api-reference/search-api-parameters/) to enable. |
+| Prop                                       | Type   | Required?             |
+| :----------------------------------------- | :----- | --------------------- |
+| [`...searchParameters`](#searchparameters) | Object | <Icon icon="check" /> |
+
+### `searchParameters`
+
+A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
 
 ## Hook
 

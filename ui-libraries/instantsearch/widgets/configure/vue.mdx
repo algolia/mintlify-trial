@@ -8,24 +8,40 @@ The `ais-configure` widget lets you provide raw search parameters to the Algolia
 
 Any props you pass to this widget are forwarded to Algolia.
 
-## Usage
+<Tabs>
+  <Tab title="Usage">
+    ```
+      <ais-configure
+        // Optional parameters
+        :searchParameters
+      />
+    ```
 
-<code>&lt;ais-configure<br />&nbsp;&nbsp;&nbsp;&nbsp;// Optional parameters<br />&nbsp;&nbsp;&nbsp;&nbsp;:<a href="#options">searchParameters</a><br />/&gt;</code>
+    Props:
 
-```vue
-<ais-configure
-  :hits-per-page.camel="4"
-  :distinct="true"
-  :analytics="false"
-  :enable-personalization.camel="true"
-/>
-```
+    - [`searchParameters`](#searchparameters)
+    
+  </Tab>
+  <Tab title="Example">
+    ```vue
+    <ais-configure
+      :hits-per-page.camel="4"
+      :distinct="true"
+      :analytics="false"
+      :enable-personalization.camel="true"
+    />
+    ```
+  </Tab>
+  <Tab title="Demo">
+    <CardGroup cols={4}>
+      <Card title="Demo" icon="eye" href="https://instantsearchjs.netlify.app/stories/vue/?selectedKind=ais-configure" horizontal="true" />
+    </CardGroup>
+  </Tab>
+</Tabs>
 
-<CardGroup cols={4}>
-    <Card title="Live example" icon="eye" href="https://instantsearchjs.netlify.app/stories/vue/?selectedKind=ais-configure" horizontal="true" />
-</CardGroup>
+## Import
 
-Import it as a component or with a plugin.
+Import `ais-configure` as a component or with a plugin.
 
 <Tabs>
   <Tab title="Component">
@@ -62,9 +78,16 @@ Import it as a component or with a plugin.
 
 ## Props
 
-| Prop | Type | Required? | Description |
-| :--- | :--- | --------- | :---------- |
-| `searchParameters` | Object | <center><Icon icon="check" /></center> | A list of [search parameters](/api-reference/search-api-parameters/) to enable.The props must use camel case since they're directly forwarded to the Algolia API. In HTML or string templates, you can do this by adding [`.camel`](https://vuejs.org/v2/api/#v-bind) before the value of the prop. |
+| Prop                                    | Type   | Required?             |
+| :-------------------------------------- | :----- | --------------------- |
+| [`searchParameters`](#searchparameters) | Object | <Icon icon="check" /> |
+
+### `searchParameters`
+
+A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
+
+The props must use camel case since they're directly forwarded to the Algolia API.
+In HTML or string templates, you can do this by adding [`.camel`](https://vuejs.org/v2/api/#v-bind) before the value of the prop.
 
 ## Customize the UI
 

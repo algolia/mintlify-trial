@@ -674,9 +674,7 @@
         {
             "group": "UI libraries",
             "pages": [
-                "ui-libraries/instantsearch/widgets/configure/js",
-                "ui-libraries/instantsearch/widgets/configure/react",
-                "ui-libraries/instantsearch/widgets/configure/vue"
+                "ui-libraries/ui-libraries"
             ]
         },
         {
@@ -691,6 +689,28 @@
                 "tools/overview"
             ]
         },
+        {
+            "group": "Libraries",
+            "pages": [
+                "ui-libraries/autocomplete",
+                "ui-libraries/instantsearch",
+                {
+                    "group": "Widgets",
+                    "pages": [
+                        "ui-libraries/instantsearch/widgets",
+                        {
+                            "group": "configure",
+                            "pages": [
+                                "ui-libraries/instantsearch/widgets/configure/js",
+                                "ui-libraries/instantsearch/widgets/configure/react",
+                                "ui-libraries/instantsearch/widgets/configure/vue"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+
         {
             "group": "Crawler",
             "pages": [
