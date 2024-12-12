@@ -29,3 +29,42 @@ During the Launchpad, you will:
     Take the search interface you designed and add it to your project to see in action
   </Step>
 </Steps>
+
+## Accordion with snippet
+
+import Events from '/snippets/insights/events.mdx';
+
+<AccordionGroup>
+  <Accordion title="No snippet: just a code block">
+    You can put other components inside Accordions.
+
+    ```java HelloWorld.java
+    class HelloWorld {
+        public static void main(String[] args) {
+            System.out.println("Hello, World!");
+        }
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="No snippet: just some text" icon="alien-8bit">
+    Check out the [Accordion](/content/components/accordions) docs for all the supported props.
+  </Accordion>
+
+  <Accordion title="Snippet">
+
+    <Events />
+  </Accordion>
+</AccordionGroup>
+
+## Tab with snippet
+
+<Tabs>
+  <Tab title="No snippet: just some text">
+    Ensure you place the snippet import outside the component.
+  </Tab>
+  <Tab title="Snippet">
+    <Events />
+  </Tab>
+</Tabs>
