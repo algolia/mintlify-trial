@@ -1059,9 +1059,7 @@
                             "pages": [
                                 "api-reference/search-api/records/add-or-replace-a-record",
                                 "api-reference/search-api/records/retrieve-a-record",
-                                "api-reference/search-api/records/add-or-replace-a-record-1",
                                 "api-reference/search-api/records/delete-a-record",
-                                "api-reference/search-api/records/delete-records-matching-a-query",
                                 "api-reference/search-api/records/delete-all-records-from-an-index",
                                 "api-reference/search-api/records/add-or-update-attributes",
                                 "api-reference/search-api/records/batch-indexing-operations-on-one-index",
