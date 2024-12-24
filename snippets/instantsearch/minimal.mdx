@@ -1,0 +1,129 @@
+<Accordion title="Minimize imports with InstantSearch.js and Vue InstantSearch">
+    <Tabs>
+    <Tab title="InstantSearch.js">
+        Inport only what you need.
+        For this, use the multiple entry points from the ES module build:
+
+        ```js JavaScript
+        // instantsearch() function without reference to the widgets or connectors
+        import instantsearch from 'instantsearch.js/es';
+
+        // Import connectors individually
+        import { connectSearchBox } from 'instantsearch.js/es/connectors';
+
+        // Import widgets individually
+        import { searchBox } from 'instantsearch.js/es/widgets';
+
+        const search = instantsearch({ ... });
+
+        search.addWidgets([searchBox({ ... })]);
+        search.addWidgets([connectSearchBox(() => { ... })({ ... })])
+        ```
+    </Tab>
+    <Tab title="Vue InstantSearch">
+        Import only what you need, and avoid using the (`Vue.use(VueInstantSearch)`) plugin.
+        Doing so imports all the widgets, even the ones you don't use.
+        Instead, individually import and register each InstantSearch widget within components:
+
+        <CodeGroup>
+            ```js Vue 3
+            <template>
+            <div id="app">
+                <ais-instant-search :search-client="searchClient" index-name="indexName">
+                <ais-search-box></ais-search-box>
+                <ais-hits></ais-hits>
+                </ais-instant-search>
+            </div>
+            </template>
+
+            <script>
+            import { liteClient as algoliasearch } from 'algoliasearch/lite';
+            import {
+            AisInstantSearch,
+            AisSearchBox,
+            AisHits,
+            } from 'vue-instantsearch/vue3/es';
+
+            export default {
+            components: {
+                AisInstantSearch,
+                AisSearchBox,
+                AisHits,
+            },
+            data() {
+                return {
+                searchClient: algoliasearch('YourApplicationID', 'YourWriteAPIKey'),
+                };
+            },
+            };
+            </script>
+            ```
+
+            ```js Vue 2
+            <template>
+            <div id="app">
+                <ais-instant-search :search-client="searchClient" index-name="indexName">
+                <ais-search-box></ais-search-box>
+                <ais-hits></ais-hits>
+                </ais-instant-search>
+            </div>
+            </template>
+
+            <script>
+            import { liteClient as algoliasearch } from 'algoliasearch/lite';
+            import { AisInstantSearch, AisSearchBox, AisHits } from 'vue-instantsearch';
+
+            export default {
+            components: {
+                AisInstantSearch,
+                AisSearchBox,
+                AisHits,
+            },
+            data() {
+                return {
+                searchClient: algoliasearch('YourApplicationID', 'YourWriteAPIKey'),
+                };
+            },
+            };
+            </script>
+            ```
+        </CodeGroup>
+        
+        With this approach, only the manually imported widgets end up in the production build, and tree shaking removes the rest.
+
+        You can also register InstantSearch widgets at the app level:
+
+        <CodeGroup>
+            ```js Vue 3
+            import Vue from 'vue';
+            import { AisInstantSearch, AisSearchBox } from 'vue-instantsearch/vue3/es';
+            import App from './App.vue';
+
+            Vue.component(AisInstantSearch.name, AisInstantSearch);
+            Vue.component(AisSearchBox.name, AisSearchBox);
+
+            new Vue({
+            el: '#app',
+            render: (h) => h(App),
+            });
+            ```
+
+            ```js Vue 3
+            import Vue from 'vue';
+            import { AisInstantSearch, AisSearchBox } from 'vue-instantsearch';
+            import App from './App.vue';
+
+            Vue.component(AisInstantSearch.name, AisInstantSearch);
+            Vue.component(AisSearchBox.name, AisSearchBox);
+
+            new Vue({
+            el: '#app',
+            render: (h) => h(App),
+            });
+            ```
+            
+        </CodeGroup>
+    </Tab>
+    </Tabs>
+
+</Accordion>

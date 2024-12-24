@@ -1,0 +1,616 @@
+---
+title: Improve performance (web apps)
+description: Learn how to optimize your InstantSearch web app.
+---
+
+Algolia is fast by default.
+But network speed and bandwidth can vary.
+This page lists a few best practices you can implement to adapt to your users' network conditions.
+
+import React from '/snippets/instantsearch/react-v7.mdx';
+
+<React />
+
+## Prepare the connection to Algolia
+
+When sending the first network request to a domain, a security handshake must happen, consisting of several round trips between the client and the Algolia server.
+If the handshake first happened when users typed their first keystroke, the speed of that first request would be significantly slower.
+
+Use a [preconnect link](https://developer.mozilla.org/en-US/docs/Web/HTML/Link_types/preconnect) to carry out the handshake immediately after loading the page but before any user interaction.
+To do this, add a link tag with your Algolia domain in the `head` of your page.
+
+```html HTML
+<link crossorigin href="https://YOUR_APPID-dsn.algolia.net" rel="preconnect" />
+
+<!-- For example: -->
+<link crossorigin href="https://B1G2GM9NG0-dsn.algolia.net" rel="preconnect" />
+```
+
+import Indicator from '/snippets/instantsearch/loading-indicator.mdx';
+import DIY from '/snippets/instantsearch/diy-indicator.mdx';
+
+<Tabs>
+  <Tab title="InstantSearch.js">
+    <Indicator />
+
+    To display a loading indicator in the search box, use the `showLoadingIndicator` option.
+
+    Change the duration of the delay with `stalledSearchDelay` (on the `instantSearch` widget).
+
+    For example:
+
+    ```js JavaScript
+    const search = instantsearch({
+    indexName: 'instant_search',
+    stalledSearchDelay: 200, // this is the default value for the delay
+    searchClient,
+    })
+
+    search.addWidgets([
+    instantsearch.widgets.searchBox({
+        container: '#searchBox',
+        placeholder: 'Search for products',
+        showLoadingIndicator: true, // this add the loading indicator
+    }),
+    ])
+    ```
+
+    <Note>
+        All InstantSearch.js examples on this page assume you've included InstantSearch.js in your web page from a CDN.
+        If, instead, you're using it with a package manager, adjust how you import InstantSearch.js and its widgets.
+    </Note>
+
+    <DIY />
+
+    ```js JavaScript
+    const search = instantsearch({
+    indexName: 'instant_search',
+    searchClient,
+    })
+
+    // The container to use
+    const loadingContainer = document.querySelector('#loading')
+
+    search.addWidgets([
+    {
+        render({ searchMetadata = {} }) {
+        const { isSearchStalled } = searchMetadata
+
+        loadingContainer.innerHTML = isSearchStalled ? 'Loading...' : ''
+        },
+    },
+    ])
+    ```
+  </Tab>
+
+  <Tab title="React InstantSearch">
+    ## Customize the loading indicator
+
+    By default, the search box displays a loading indicator when the search is stalled
+     When the network is slow, this visual cue tells users that something _is_ happening
+
+    You can change the loading icon with the
+    `loadingIconComponent` prop.
+
+    ```jsx JSX
+    import React from 'react';
+    import { liteClient as algoliasearch } from 'algoliasearch/lite';
+    import { Hits, InstantSearch, SearchBox } from 'react-instantsearch';
+
+    const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+    function App() {
+    return (
+        <InstantSearch indexName="instant_search" searchClient={searchClient}>
+        <SearchBox loadingIconComponent={() => 'Loading…'} />
+        <Hits />
+        </InstantSearch>
+    );
+    }
+    ```
+  </Tab>
+
+  <Tab title="Vue InstantSearch">
+    <Indicator />
+
+    To display a loading indicator in the `ais-search-box`, use the `show-loading-indicator` option.
+    
+    Change the duration of the delay with `stalled-search-delay` (on the `ais-instant-search` widget).
+
+    For example:
+
+    ```js Vue
+    <template>
+    <ais-instant-search
+        index-name="instant_search"
+        :search-client="searchClient"
+        :stalled-search-delay="200"
+    >
+        <ais-search-box show-loading-indicator />
+    </ais-instant-search>
+    </template>
+    ```
+
+    <DIY />
+
+    <CodeGroup>
+        ```js Vue 3
+        <!-- components/LoadingIndicator.vue -->
+        <template>
+        <div v-if="state && state.searchMetadata.isSearchStalled">
+            <p>Loading…</p>
+        </div>
+        </template>
+
+        <script>
+        import { createWidgetMixin } from 'vue-instantsearch/vue3/es';
+
+        const connectSearchMetaData =
+        (renderFn, unmountFn) =>
+        (widgetParams = {}) => ({
+            init() {
+            renderFn({ searchMetadata: {} }, true);
+            },
+
+            render({ searchMetadata }) {
+            renderFn({ searchMetadata }, false);
+            },
+
+            dispose() {
+            unmountFn();
+            },
+        });
+
+        export default {
+        name: 'AisStateResults',
+        mixins: [createWidgetMixin({ connector: connectSearchMetaData })],
+        };
+        </script>
+        ```
+
+        ```js Vue 2
+        <!-- components/LoadingIndicator.vue -->
+        <template>
+        <div v-if="state && state.searchMetadata.isSearchStalled">
+            <p>Loading…</p>
+        </div>
+        </template>
+
+        <script>
+        import { createWidgetMixin } from 'vue-instantsearch';
+
+        const connectSearchMetaData =
+        (renderFn, unmountFn) =>
+        (widgetParams = {}) => ({
+            init() {
+            renderFn({ searchMetadata: {} }, true);
+            },
+
+            render({ searchMetadata }) {
+            renderFn({ searchMetadata }, false);
+            },
+
+            dispose() {
+            unmountFn();
+            },
+        });
+
+        export default {
+        name: 'AisStateResults',
+        mixins: [createWidgetMixin({ connector: connectSearchMetaData })],
+        };
+        </script>
+        ```
+    </CodeGroup>
+
+    ```js Vue
+    <template>
+    <ais-instant-search
+        index-name="instant_search"
+        :search-client="searchClient"
+        :stalled-search-delay="200"
+    >
+        <ais-search-box />
+        <app-loading-indicator />
+    </ais-instant-search>
+    </template>
+
+    <script>
+    import AppLoadingIndicator from './components/LoadingIndicator'
+
+    export default {
+    components: {
+        AppLoadingIndicator,
+    },
+    }
+    </script>
+    ```
+  </Tab>
+</Tabs>
+
+## Turn off search-as-you-type
+
+Algolia is designed to deliver a search-as-you-type experience.
+Yet, it can also lead to lag in slow network conditions because browsers can only run a limited number of parallel requests to the same domain.
+**Reducing requests can help prevent further lag.**
+
+**Debouncing** helps you limit requests and avoid processing non-necessary ones by only sending requests once users have stopped typing.
+
+import Network from '/snippets/instantsearch/network-api.mdx';
+import Vue from '/snippets/instantsearch/vue2.mdx';
+
+<Tabs>
+  <Tab title="InstantSearch.js">
+    Implement debouncing at the `searchBox` level with the `queryHook` option.
+    For example:
+
+    ```js JavaScript
+    const search = instantsearch({
+    indexName: 'instant_search',
+    searchClient,
+    });
+
+    let timerId;
+    let timeout = 0;
+
+    search.addWidgets([
+    instantsearch.widgets.searchBox({
+        container: document.querySelector('#searchBox'),
+        placeholder: 'Search for products',
+        queryHook(query, refine) {
+        clearTimeout(timerId);
+        timerId = setTimeout(() => refine(query), timeout);
+        },
+    }),
+    ]);
+    ```
+
+    This function uses the option `queryHook` and is called on every keystroke.
+    In the example, the code debounces the call to `refine`.
+
+    <Network />
+
+    ```js JavaScript
+    const search = instantsearch({
+    indexName: 'instant_search',
+    searchClient,
+    });
+
+    let timerId;
+    let timeout = 0;
+
+    search.addWidgets([
+    instantsearch.widgets.searchBox({
+        container: document.querySelector('#searchBox'),
+        placeholder: 'Search for products',
+        queryHook(query, refine) {
+        clearTimeout(timerId);
+        timerId = setTimeout(() => refine(query), timeout);
+        },
+    }),
+    ]);
+
+    const connection = navigator.connection;
+    if (connection) {
+    connection.addEventListener('change', function updateTimeout() {
+        timeout = ['slow-2g', '2g'].includes(connection?.effectiveType) ? 400 : 0;
+    });
+    }
+    ```
+
+  </Tab>
+  <Tab title="React InstantSearch">
+    Implement debouncing at the `search-box` level with the `queryHook` prop.
+    For example:
+
+    ```jsx JSX
+    import React from 'react';
+    import { liteClient as algoliasearch } from 'algoliasearch/lite';
+    import { Hits, InstantSearch, SearchBox } from 'react-instantsearch';
+
+    const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+    let timerId = undefined;
+    let timeout = 200;
+
+    function App() {
+    return (
+        <InstantSearch indexName="instant_search" searchClient={searchClient}>
+        <SearchBox
+            queryHook={queryHook}
+        />
+        <Hits />
+        </InstantSearch>
+    );
+    }
+
+    function queryHook(query, search) {
+    if (timerId) {
+        clearTimeout(timerId);
+    }
+
+    timerId = setTimeout(() => search(query), timeout);
+    }
+    ```
+
+    <Network />
+
+    ```jsx JSX
+    import React, { useEffect } from 'react';
+    import { liteClient as algoliasearch } from 'algoliasearch/lite';
+    import { Hits, InstantSearch, SearchBox } from 'react-instantsearch';
+
+    const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+    const connection = navigator.connection;
+    let timerId = undefined;
+    let timeout = 0;
+
+    updateTimeout();
+
+    function App() {
+    useEffect(() => {
+        connection.addEventListener('change', updateTimeout);
+
+        return () => connection.removeEventListener('change', updateTimeout);
+    });
+
+    return (
+        <InstantSearch indexName="instant_search" searchClient={searchClient}>
+        <SearchBox queryHook={queryHook} />
+        <Hits />
+        </InstantSearch>
+    );
+    }
+
+    function queryHook(query, search) {
+    if (timerId) {
+        clearTimeout(timerId);
+    }
+
+    timerId = setTimeout(() => search(query), timeout);
+    }
+
+    function updateTimeout() {
+    timeout = ['slow-2g', '2g'].includes(connection?.effectiveType) ? 200 : 0;
+    }
+    ```
+
+    <Tabs>
+    <Tab title="Source code">
+        <CardGroup cols={4}>
+            <Card title="Source code" icon="github" href="https://github.com/algolia/doc-code-samples/tree/master/react-instantsearch/conditional-debouncing" horizontal="true" />
+        </CardGroup>
+    </Tab>
+    <Tab title="Demo">
+        <CardGroup cols={4}>
+            <Card title="Demo" icon="eye" href="https://codesandbox.io/s/github/algolia/doc-code-samples/tree/master/react-instantsearch/conditional-debouncing" horizontal="true" />
+        </CardGroup>
+    </Tab>
+    </Tabs>
+  </Tab>
+  <Tab title="Vue InstantSearch">
+    Implement debouncing at the `ais-search-box` level with the `search-box` connector.
+    For example:
+
+    <CodeGroup>
+        ```js Vue 3
+        <template>
+        <input type="search" v-model="query" />
+        </template>
+
+        <script>
+        import { connectSearchBox } from 'instantsearch.js/es/connectors';
+        import { createWidgetMixin } from 'vue-instantsearch/vue3/es';
+
+        export default {
+        mixins: [createWidgetMixin({ connector: connectSearchBox })],
+        props: {
+            delay: {
+            type: Number,
+            default: 200,
+            required: false,
+            },
+        },
+        data() {
+            return {
+            timerId: null,
+            localQuery: '',
+            };
+        },
+        destroyed() {
+            if (this.timerId) {
+            clearTimeout(this.timerId);
+            }
+        },
+        computed: {
+            query: {
+            get() {
+                return this.localQuery;
+            },
+            set(val) {
+                this.localQuery = val;
+                if (this.timerId) {
+                clearTimeout(this.timerId);
+                }
+                this.timerId = setTimeout(() => {
+                this.state.refine(this.localQuery);
+                }, this.delay);
+            },
+            },
+        },
+        };
+        </script>
+        ```
+
+        ```js Vue 2
+        <template>
+        <input type="search" v-model="query" />
+        </template>
+
+        <script>
+        import { connectSearchBox } from 'instantsearch.js/es/connectors';
+        import { createWidgetMixin } from 'vue-instantsearch';
+
+        export default {
+        mixins: [createWidgetMixin({ connector: connectSearchBox })],
+        props: {
+            delay: {
+            type: Number,
+            default: 200,
+            required: false,
+            },
+        },
+        data() {
+            return {
+            timerId: null,
+            localQuery: '',
+            };
+        },
+        destroyed() {
+            if (this.timerId) {
+            clearTimeout(this.timerId);
+            }
+        },
+        computed: {
+            query: {
+            get() {
+                return this.localQuery;
+            },
+            set(val) {
+                this.localQuery = val;
+                if (this.timerId) {
+                clearTimeout(this.timerId);
+                }
+                this.timerId = setTimeout(() => {
+                this.state.refine(this.localQuery);
+                }, this.delay);
+            },
+            },
+        },
+        };
+        </script>
+        ```
+    </CodeGroup>
+
+    ```js Vue
+    <template>
+    <ais-search-box index-name="instant_search" :search-client="searchClient">
+        <app-debounced-search-box :delay="200" />
+    </ais-search-box>
+    </template>
+
+    <script>
+    import AppDebouncedSearchBox from './components/DebouncedSearchBox.js'
+
+    export default {
+    components: {
+        AppDebouncedSearchBox,
+    },
+    }
+    </script>
+    ```
+
+    Find the complete source code on [GitHub](https://github.com/algolia/doc-code-samples/tree/master/vue-instantsearch/debounced-search-box).
+
+    <Vue />
+  </Tab>
+</Tabs>
+
+import Speed from '/snippets/typing-speeds.mdx';
+
+<Speed />
+
+import SSR from '/snippets/instantsearch/react-ssr.mdx';
+
+<SSR />
+
+## Optimize build size
+
+InstantSearch supports [dead code elimination through tree shaking](https://webpack.js.org/guides/tree-shaking/), but you must follow a few rules for it to work:
+
+- Bundle your code using a module bundler that supports tree shaking with the `sideEffects` property in `package.json`, such as [Rollup](https://rollupjs.org/) or [webpack 4+](https://webpack.js.org).
+- Ensure you pick the ES module build of InstantSearch by targeting the `module` field in `package.json` ([`resolve.mainFields` option in webpack](https://webpack.js.org/configuration/resolve/#resolvemainfields), [`mainFields` option in `@rollup/plugin-node-resolve`](https://github.com/rollup/plugins/tree/master/packages/node-resolve#mainfields)). This is the default configuration in most popular bundlers: you only need to change something if you have a custom configuration.
+- Keep [Babel](https://babeljs.io) or other transpilers from transpiling ES6 modules to CommonJS modules. Tree shaking is much less optimal on CommonJS modules, so it's better to let your bundler handle modules itself.
+
+<Tabs>
+  <Tab title="Babel">
+    If you're using Babel, you can configure [`babel-preset-env`](https://babeljs.io/docs/en/babel-preset-env) not to process ES6 modules:
+
+    ```js JavaScript
+    // babel.config.js
+    module.exports = {
+    presets: [
+        [
+        'env',
+        {
+            modules: false,
+        },
+        ],
+    ],
+    }
+    ```
+  </Tab>
+  <Tab title="tsc">
+    If you're using the [TypeScript compiler (`tsc`)](https://www.typescriptlang.org/docs/handbook/2/basic-types.html#tsc-the-typescript-compiler):
+
+    ```js JavaScript
+    // tsconfig.json
+    {
+    "compilerOptions": {
+        "module": "esnext",
+    }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+import Minimal from '/snippets/instantsearch/minimal.mdx';
+
+<Minimal />
+
+### Troubleshooting
+
+To check if tree shaking works, try to import InstantSearch into your project without using it.
+
+<Tabs>
+  <Tab title="InstantSearch.js">
+    ```js JavaScript
+    import 'instantsearch.js/es' // Unused import
+    ```
+  </Tab>
+  <Tab title="React InstantSearch">
+    ```js JavaScript
+    import { InstantSearch } from 'react-instantsearch'; // Unused import
+    ```
+  </Tab>
+  <Tab title="Vue InstantSearch">
+    ```js JavaScript
+    import 'vue-instantsearch' // Unused import
+    ```
+  </Tab>
+</Tabs>
+
+Build your app, then look for the unused code in your final bundle (for example, "InstantSearch").
+If tree shaking works, you shouldn't find anything.
+
+import Caching from '/snippets/instantsearch/minimal.mdx';
+
+<Caching />
+
+## Queries per second (QPS)
+
+Search operations aren't limited by a fixed "search quota".
+Instead, they're limited by your plan's [maximum QPS](https://support.algolia.com/hc/en-us/articles/4406975224721) and
+[operations limit](https://support.algolia.com/hc/en-us/articles/18138875086865).
+
+Every keystroke in InstantSearch using the search box counts as one operation.
+Then, depending on the widgets you add to your search interface,
+you may have more operations being counted on each keystroke.
+For example, you have a search interface with a search box, a hierarchical menu, and a refinement list.
+An operation is triggered for each:
+
+- Keystroke in the search box
+- User change to the hierarchical menu or refinement list`.
+
+If you experience QPS limitations, consider implementing [a debounced search box](#turn-off-search-as-you-type).
