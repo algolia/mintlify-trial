@@ -691,7 +691,7 @@
             ]
         },
         {
-            "group": "InstantSeacrh",
+            "group": "InstantSearch",
             "pages": [
                 "ui-libraries/instantsearch",
                 {
@@ -1179,4 +1179,3 @@
         "discord": "https://alg.li/discord"
     }
 }
-
