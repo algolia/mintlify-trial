@@ -674,7 +674,8 @@
         {
             "group": "UI libraries",
             "pages": [
-                "ui-libraries/ui-libraries"
+                "ui-libraries/ui-libraries",
+                "ui-libraries/autocomplete"
             ]
         },
         {
@@ -690,10 +691,23 @@
             ]
         },
         {
-            "group": "Libraries",
+            "group": "InstantSeacrh",
             "pages": [
-                "ui-libraries/autocomplete",
                 "ui-libraries/instantsearch",
+                {
+                    "group": "Guides",
+                    "pages": [
+                        "ui-libraries/instantsearch/guides/advanced",
+                        
+                        {
+                            "group": "Improve performance",
+                            "pages": [
+                                "ui-libraries/instantsearch/guides/improve-performance/web",
+                                "ui-libraries/instantsearch/guides/improve-performance/mobile"
+                            ]
+                        }
+                    ]
+                },
                 {
                     "group": "Widgets",
                     "pages": [
