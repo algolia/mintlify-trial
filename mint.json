@@ -695,10 +695,8 @@
             "pages": [
                 "ui-libraries/instantsearch",
                 {
-                    "group": "Guides",
+                    "group": "Advanced",
                     "pages": [
-                        "ui-libraries/instantsearch/guides/advanced",
-                        
                         {
                             "group": "Improve performance",
                             "pages": [
