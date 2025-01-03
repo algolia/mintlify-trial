@@ -1,345 +1,348 @@
-import Vue from '/snippets/instantsearch/vue2.mdx';
+<Accordion title="Caching with InstantSearch.js and Vue InstantSearch">
+  ## Caching
 
-<Accordion title="Caching with InstantSerarch.js and Vue InstantSearch">
-    ## Caching
+  ### Caching by default (and how to turn it off)
 
-    ### Caching by default (and how to turn it off)
+  By default, Algolia caches the search results of the queries, storing them locally in the cache.
+  This cache only persists during the current page session, and as soon as the page reloads, the cache clears.
 
-    By default, Algolia caches the search results of the queries, storing them locally in the cache.
-    This cache only persists during the current page session, and as soon as the page reloads, the cache clears.
+  If users type a search (or part of it) that's already been entered, the results will be retrieved from the cache instead of requesting them from Algolia, making the app much faster.
 
-    If users type a search (or part of it) that's already been entered, the results will be retrieved from the cache instead of requesting them from Algolia, making the app much faster.
+  While it's a convenient feature, sometimes you may want to clear the cache and make a new request to Algolia.
+  For instance, when changes are made to some records in your index, you should update your app's frontend to reflect that change (and avoid displaying stale results retrieved from the cache).
 
-    While it's a convenient feature, sometimes you may want to clear the cache and make a new request to Algolia.
-    For instance, when changes are made to some records in your index, you should update your app's frontend to reflect that change (and avoid displaying stale results retrieved from the cache).
+  ### When to discard the cache
 
-    ### When to discard the cache
+  Consider discarding the cache when your app's data is updated by:
 
-    Consider discarding the cache when your app's data is updated by:
+  * Your users (for example, in a dashboard). In this case, refresh the cache based on an app state, such as the last user modification.
 
-    - Your users (for example, in a dashboard). In this case, refresh the cache based on an app state, such as the last user modification.
-    - Another process you don't manage (for example, a cron job that updates users inside Algolia). In this case, you should refresh your app's cache periodically.
+  * Another process you don't manage (for example, a cron job that updates users inside Algolia). In this case, you should refresh your app's cache periodically.
 
-    ### Refresh the cache triggered by a user action
+  ### Refresh the cache triggered by a user action
 
-    The following triggers a refresh based on a user action (such as adding a new product or clicking a button).
+  The following triggers a refresh based on a user action (such as adding a new product or clicking a button).
 
-    <Tabs>
-        <Tab title="InstantSearch.js">
-            The `refresh()` method on the `instantsearch` instance lets you clear the cache and trigger a new search.
+  <Tabs>
+    <Tab title="InstantSearch.js">
+      The `refresh()` method on the `instantsearch` instance lets you clear the cache and trigger a new search.
 
-            <Tabs>
-            <Tab title="Source code">
-                <CardGroup cols={4}>
-                    <Card title="Source code" icon="github" href="https://github.com/algolia/doc-code-samples/tree/master/instantsearch.js/refresh-cache-user-action" horizontal="true" />
-                </CardGroup>
-            </Tab>
-            <Tab title="Demo">
-                <CardGroup cols={4}>
-                    <Card title="Demo" icon="eye" href="https://codesandbox.io/s/github/algolia/doc-code-samples/tree/master/instantsearch.js/" horizontal="true" />
-                </CardGroup>
-            </Tab>
-            </Tabs>
-
-            ```js JavaScript
-            const search = instantsearch({
-            indexName: 'demo_ecommerce',
-            searchClient,
-            })
-
-            search.addWidgets([
-            instantsearch.widgets.searchBox({
-                container: '#searchbox',
-            }),
-            ])
-
-            search.addWidgets([
-            instantsearch.widgets.hits({
-                container: '#hits',
-            }),
-            ])
-
-            document.querySelector('button').addEventListener('click', () => {
-            search.refresh()
-            })
-
-            search.start()
-            ```
+      <Tabs>
+        <Tab title="Source code">
+          <CardGroup cols={4}>
+            <Card title="Source code" icon="github" href="https://github.com/algolia/doc-code-samples/tree/master/instantsearch.js/refresh-cache-user-action" horizontal="true" />
+          </CardGroup>
         </Tab>
-        <Tab title="Vue InstantSearch">
-            The `refresh` function, available for custom connectors, lets you clear the cache and trigger a new search.
 
-            <CodeGroup>
-                ```js Vue 3
-                <template>
-                <button @click="refresh">refresh</button>
-                </template>
+        <Tab title="Demo">
+          <CardGroup cols={4}>
+            <Card title="Demo" icon="eye" href="https://codesandbox.io/s/github/algolia/doc-code-samples/tree/master/instantsearch.js/" horizontal="true" />
+          </CardGroup>
+        </Tab>
+      </Tabs>
 
-                <script>
-                import { createWidgetMixin } from 'vue-instantsearch/vue3/es';
+      ```js JavaScript
+      const search = instantsearch({
+      indexName: 'demo_ecommerce',
+      searchClient,
+      })
 
-                const connectRefresh =
-                (renderFn, unmountFn) =>
-                (widgetParams = {}) => ({
-                    init() {
-                    renderFn({ refresh() {} }, true);
-                    },
+      search.addWidgets([
+      instantsearch.widgets.searchBox({
+          container: '#searchbox',
+      }),
+      ])
 
-                    render({ instantSearchInstance }) {
-                    const refresh = instantSearchInstance.refresh.bind(instantSearchInstance);
+      search.addWidgets([
+      instantsearch.widgets.hits({
+          container: '#hits',
+      }),
+      ])
 
-                    renderFn({ refresh }, false);
-                    },
+      document.querySelector('button').addEventListener('click', () => {
+      search.refresh()
+      })
 
-                    dispose() {
-                    unmountFn();
-                    },
-                });
+      search.start()
+      ```
+    </Tab>
 
-                export default {
-                name: 'AisStateResults',
-                mixins: [createWidgetMixin({ connector: connectRefresh })],
-                methods: {
-                    refresh() {
-                    this.state.refresh();
-                    },
-                },
-                };
-                </script>
-                ```
+    <Tab title="Vue InstantSearch">
+      The `refresh` function, available for custom connectors, lets you clear the cache and trigger a new search.
 
-                ```js Vue 2
-                <template>
-                <button @click="refresh">refresh</button>
-                </template>
+      <CodeGroup>
+        ```js Vue 3
+        <template>
+        <button @click="refresh">refresh</button>
+        </template>
 
-                <script>
-                import { createWidgetMixin } from 'vue-instantsearch';
+        <script>
+        import { createWidgetMixin } from 'vue-instantsearch/vue3/es';
 
-                const connectRefresh =
-                (renderFn, unmountFn) =>
-                (widgetParams = {}) => ({
-                    init() {
-                    renderFn({ refresh() {} }, true);
-                    },
-
-                    render({ instantSearchInstance }) {
-                    const refresh = instantSearchInstance.refresh.bind(instantSearchInstance);
-
-                    renderFn({ refresh }, false);
-                    },
-
-                    dispose() {
-                    unmountFn();
-                    },
-                });
-
-                export default {
-                name: 'AisStateResults',
-                mixins: [createWidgetMixin({ connector: connectRefresh })],
-                methods: {
-                    refresh() {
-                    this.state.refresh();
-                    },
-                },
-                };
-                </script>
-                ```
-            </CodeGroup>
-
-            Use it within your app as follows:
-
-            ```js Vue
-            <template>
-            <ais-instant-search
-                index-name="instant_search"
-                :search-client="searchClient"
-                :stalled-search-delay="200"
-            >
-                <ais-search-box />
-                <app-refresh />
-                <ais-hits />
-            </ais-instant-search>
-            </template>
-
-            <script>
-            import AppRefresh from './components/Refresh.js'
-
-            export default {
-            components: {
-                AppRefresh,
+        const connectRefresh =
+        (renderFn, unmountFn) =>
+        (widgetParams = {}) => ({
+            init() {
+            renderFn({ refresh() {} }, true);
             },
+
+            render({ instantSearchInstance }) {
+            const refresh = instantSearchInstance.refresh.bind(instantSearchInstance);
+
+            renderFn({ refresh }, false);
+            },
+
+            dispose() {
+            unmountFn();
+            },
+        });
+
+        export default {
+        name: 'AisStateResults',
+        mixins: [createWidgetMixin({ connector: connectRefresh })],
+        methods: {
+            refresh() {
+            this.state.refresh();
+            },
+        },
+        };
+        </script>
+        ```
+
+        ```js Vue 2
+        <template>
+        <button @click="refresh">refresh</button>
+        </template>
+
+        <script>
+        import { createWidgetMixin } from 'vue-instantsearch';
+
+        const connectRefresh =
+        (renderFn, unmountFn) =>
+        (widgetParams = {}) => ({
+            init() {
+            renderFn({ refresh() {} }, true);
+            },
+
+            render({ instantSearchInstance }) {
+            const refresh = instantSearchInstance.refresh.bind(instantSearchInstance);
+
+            renderFn({ refresh }, false);
+            },
+
+            dispose() {
+            unmountFn();
+            },
+        });
+
+        export default {
+        name: 'AisStateResults',
+        mixins: [createWidgetMixin({ connector: connectRefresh })],
+        methods: {
+            refresh() {
+            this.state.refresh();
+            },
+        },
+        };
+        </script>
+        ```
+      </CodeGroup>
+
+      Use it within your app as follows:
+
+      ```js Vue
+      <template>
+      <ais-instant-search
+          index-name="instant_search"
+          :search-client="searchClient"
+          :stalled-search-delay="200"
+      >
+          <ais-search-box />
+          <app-refresh />
+          <ais-hits />
+      </ais-instant-search>
+      </template>
+
+      <script>
+      import AppRefresh from './components/Refresh.js'
+
+      export default {
+      components: {
+          AppRefresh,
+      },
+      }
+      </script>
+      ```
+
+      Find the complete source code on [GitHub](https://github.com/algolia/doc-code-samples/tree/master/vue-instantsearch/refresh).
+
+      <Vue />
+    </Tab>
+  </Tabs>
+
+  ### Refresh the cache periodically
+
+  You can set an interval to determine how often the app clears the cache.
+  Use this approach if you can't trigger cache clearance based on user actions.
+
+  <Tabs>
+    <Tab title="InstantSearch.js">
+      ```js JavaScript
+      const search = instantsearch({
+      indexName: 'demo_ecommerce',
+      searchClient,
+      })
+
+      search.addWidgets([
+      instantsearch.widgets.searchBox({
+          container: '#searchbox',
+      }),
+
+      instantsearch.widgets.hits({
+          container: '#hits',
+      }),
+      ])
+
+      setInterval(() => {
+      search.refresh()
+      }, 5000)
+
+      search.start()
+      ```
+
+      If you need to wait for an action from Algolia, use `waitTask` to avoid refreshing the cache too early.
+
+      <Tabs>
+        <Tab title="Source code">
+          <CardGroup cols={4}>
+            <Card title="Source code" icon="github" href="https://github.com/algolia/doc-code-samples/tree/master/instantsearch.js/refresh-cache-periodically" horizontal="true" />
+          </CardGroup>
+        </Tab>
+
+        <Tab title="Demo">
+          <CardGroup cols={4}>
+            <Card title="Demo" icon="eye" href="https://codesandbox.io/s/github/algolia/doc-code-samples/tree/master/instantsearch.js/refresh-cache-periodically" horizontal="true" />
+          </CardGroup>
+        </Tab>
+      </Tabs>
+    </Tab>
+
+    <Tab title="Vue InstantSearch">
+      <CodeGroup>
+        ```js Vue 3
+        <template>
+        <button @click="refresh">refresh</button>
+        </template>
+
+        <script>
+        import { createWidgetMixin } from 'vue-instantsearch/vue3/es';
+
+        const connectRefresh =
+        (renderFn, unmountFn) =>
+        (widgetParams = {}) => ({
+            init() {
+            renderFn({ refresh: {} }, true);
+            },
+
+            render({ instantSearchInstance }) {
+            const refresh = instantSearchInstance.refresh.bind(instantSearchInstance);
+            renderFn({ refresh }, false);
+            },
+
+            dispose() {
+            unmountFn();
+            },
+        });
+
+        export default {
+        props: {
+            delay: {
+            type: Number,
+            default: 10000, // (10 seconds)
+            },
+        },
+        name: 'AisStateResults',
+        mixins: [createWidgetMixin({ connector: connectRefresh })],
+        mounted() {
+            this.timerId = setInterval(() => {
+            this.state.refresh();
+            }, this.delay);
+        },
+        destroyed() {
+            if (this.timerId) {
+            clearInterval(this.timerId);
             }
-            </script>
-            ```
+        },
+        };
+        </script>
+        ```
 
-            Find the complete source code on [GitHub](https://github.com/algolia/doc-code-samples/tree/master/vue-instantsearch/refresh).
+        ```js Vue 2
+        <template>
+        <button @click="refresh">refresh</button>
+        </template>
 
-            <Vue />
-        </Tab>
-    </Tabs>
+        <script>
+        import { createWidgetMixin } from 'vue-instantsearch';
 
-    ### Refresh the cache periodically
+        const connectRefresh =
+        (renderFn, unmountFn) =>
+        (widgetParams = {}) => ({
+            init() {
+            renderFn({ refresh: {} }, true);
+            },
 
-    You can set an interval to determine how often the app clears the cache.
-    Use this approach if you can't trigger cache clearance based on user actions.
+            render({ instantSearchInstance }) {
+            const refresh = instantSearchInstance.refresh.bind(instantSearchInstance);
+            renderFn({ refresh }, false);
+            },
 
-    <Tabs>
-        <Tab title="InstantSearch.js">
-            ```js JavaScript
-            const search = instantsearch({
-            indexName: 'demo_ecommerce',
-            searchClient,
-            })
+            dispose() {
+            unmountFn();
+            },
+        });
 
-            search.addWidgets([
-            instantsearch.widgets.searchBox({
-                container: '#searchbox',
-            }),
+        export default {
+        props: {
+            delay: {
+            type: Number,
+            default: 10000, // (10 seconds)
+            },
+        },
+        name: 'AisStateResults',
+        mixins: [createWidgetMixin({ connector: connectRefresh })],
+        mounted() {
+            this.timerId = setInterval(() => {
+            this.state.refresh();
+            }, this.delay);
+        },
+        destroyed() {
+            if (this.timerId) {
+            clearInterval(this.timerId);
+            }
+        },
+        };
+        </script>
+        ```
+      </CodeGroup>
 
-            instantsearch.widgets.hits({
-                container: '#hits',
-            }),
-            ])
+      If you need to wait for an action from Algolia, use `waitTask` method to avoid refreshing the cache too early.
+    </Tab>
+  </Tabs>
 
-            setInterval(() => {
-            search.refresh()
-            }, 5000)
+  ### Disable the cache
 
-            search.start()
-            ```
+  If you need the most current data and the performance impact of this isn't an issue, turn off caching.
 
-            If you need to wait for an action from Algolia, use `waitTask` to avoid refreshing the cache too early.
+  ```js JavaScript
+  import { liteClient as algoliasearch } from 'algoliasearch/lite'
+  import { createNullCache } from '@algolia/cache-common'
 
-            <Tabs>
-            <Tab title="Source code">
-                <CardGroup cols={4}>
-                    <Card title="Source code" icon="github" href="https://github.com/algolia/doc-code-samples/tree/master/instantsearch.js/refresh-cache-periodically" horizontal="true" />
-                </CardGroup>
-            </Tab>
-            <Tab title="Demo">
-                <CardGroup cols={4}>
-                    <Card title="Demo" icon="eye" href="https://codesandbox.io/s/github/algolia/doc-code-samples/tree/master/instantsearch.js/refresh-cache-periodically" horizontal="true" />
-                </CardGroup>
-            </Tab>
-            </Tabs>
-        </Tab>
-        <Tab title="Vue InstantSearch">
-            <CodeGroup>
-                ```js Vue 3
-                <template>
-                <button @click="refresh">refresh</button>
-                </template>
-
-                <script>
-                import { createWidgetMixin } from 'vue-instantsearch/vue3/es';
-
-                const connectRefresh =
-                (renderFn, unmountFn) =>
-                (widgetParams = {}) => ({
-                    init() {
-                    renderFn({ refresh: {} }, true);
-                    },
-
-                    render({ instantSearchInstance }) {
-                    const refresh = instantSearchInstance.refresh.bind(instantSearchInstance);
-                    renderFn({ refresh }, false);
-                    },
-
-                    dispose() {
-                    unmountFn();
-                    },
-                });
-
-                export default {
-                props: {
-                    delay: {
-                    type: Number,
-                    default: 10000, // (10 seconds)
-                    },
-                },
-                name: 'AisStateResults',
-                mixins: [createWidgetMixin({ connector: connectRefresh })],
-                mounted() {
-                    this.timerId = setInterval(() => {
-                    this.state.refresh();
-                    }, this.delay);
-                },
-                destroyed() {
-                    if (this.timerId) {
-                    clearInterval(this.timerId);
-                    }
-                },
-                };
-                </script>
-                ```
-
-                ```js Vue 2
-                <template>
-                <button @click="refresh">refresh</button>
-                </template>
-
-                <script>
-                import { createWidgetMixin } from 'vue-instantsearch';
-
-                const connectRefresh =
-                (renderFn, unmountFn) =>
-                (widgetParams = {}) => ({
-                    init() {
-                    renderFn({ refresh: {} }, true);
-                    },
-
-                    render({ instantSearchInstance }) {
-                    const refresh = instantSearchInstance.refresh.bind(instantSearchInstance);
-                    renderFn({ refresh }, false);
-                    },
-
-                    dispose() {
-                    unmountFn();
-                    },
-                });
-
-                export default {
-                props: {
-                    delay: {
-                    type: Number,
-                    default: 10000, // (10 seconds)
-                    },
-                },
-                name: 'AisStateResults',
-                mixins: [createWidgetMixin({ connector: connectRefresh })],
-                mounted() {
-                    this.timerId = setInterval(() => {
-                    this.state.refresh();
-                    }, this.delay);
-                },
-                destroyed() {
-                    if (this.timerId) {
-                    clearInterval(this.timerId);
-                    }
-                },
-                };
-                </script>
-                ```
-            </CodeGroup>
-
-            If you need to wait for an action from Algolia, use `waitTask` method to avoid refreshing the cache too early.
-        </Tab>
-    </Tabs>
-
-    ### Disable the cache
-
-    If you need the most current data and the performance impact of this isn't an issue, turn off caching.
-
-    ```js JavaScript
-    import { liteClient as algoliasearch } from 'algoliasearch/lite'
-    import { createNullCache } from '@algolia/cache-common'
-
-    const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey', {
-    // Disable caching for completed requests
-    responsesCache: createNullCache(),
-    // Disable caching for in-flight requests
-    requestsCache: createNullCache(),
-    })
-    ```
+  const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey', {
+  // Disable caching for completed requests
+  responsesCache: createNullCache(),
+  // Disable caching for in-flight requests
+  requestsCache: createNullCache(),
+  })
+  ```
 </Accordion>
