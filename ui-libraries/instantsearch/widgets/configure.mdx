@@ -1,14 +1,160 @@
 ---
 title: configure
-description: Provide raw search parameters to the Algolia API.
+description: The widget lets you provide raw search parameters to the Algolia API without rendering anything.
+
 ---
 
-- [InstantSearch.js](/ui-libraries/instantsearch/widgets/configure/js)
-- [React InstantSearch](/ui-libraries/instantsearch/widgets/configure/react)
-- [Vue InstantSearch](/ui-libraries/instantsearch/widgets/configure/vue)
+import { TabsTs } from '/snippets/instantsearch-widget-api-ref-template.mdx';
 
-See also:
+## About this widget 
+The `configure` widget lets you provide raw search parameters to the Algolia API without rendering anything.
 
-- Query (InstantSearch Android)
-- Query (InstantSearch iOS)
-- Search State (Algolia for Flutter)
+Any props you add to this widget is forwarded to Algolia. For more information on the different parameters you can set, have a look at the [search parameters API reference](/doc/api-reference/search-api-parameters/).
+
+
+## Usage
+
+<Tabs>
+  <Tab title="JS" lang="js">
+```js
+import { configure } from 'instantsearch.js/es/widgets';
+
+configure(searchParameters: __object__);
+ ```
+</Tab>
+  <Tab title="React" lang="js">
+```js
+import { Configure } from 'react-instantsearch';
+
+<Configure {...searchParameters} />
+ ```
+</Tab>
+  <Tab title="Vue" lang="js">
+```js
+import { AisConfigure } from 'vue-instantsearch';
+// Use 'vue-instantsearch/vue3/es' for Vue 3
+
+export default {
+  components: {
+     AisConfigure
+  },
+    // ...
+  };
+
+<ais-configure
+  // Optional parameters
+  v-bind="object searchParameters"
+/>
+ ```
+</Tab>
+  </Tabs>
+  
+  
+
+## Examples
+
+<TabsTs>
+  <Tab title="JS" lang="js">
+```js
+configure({
+  hitsPerPage: 8,
+  enablePersonalization: true,
+});
+```
+  
+  </Tab>
+  <Tab title="React (js)" lang="js"> 
+```js
+configure({
+  hitsPerPage: 8,
+  enablePersonalization: true,
+});
+```
+ 
+  </Tab>
+  <Tab title="Vue (js)" lang="js">
+```js
+configure({
+  hitsPerPage: 8,
+  enablePersonalization: true,
+});
+```
+
+  </Tab>
+</TabsTs>
+
+
+ 
+| Options |   d  |
+|---------|-------------|  
+ | searchParameters | A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable when the widget mounts.
+  |
+ 
+
+
+
+## HTML output
+
+
+
+This widget has no HTML output.
+
+
+## Customize the UI
+
+
+If you want to create your own UI of the `configure` widget, you can use connectors.
+
+To use  `connectConfigure`, you can import it with the declaration relevant to how you installed InstantSearch.js.
+
+
+<Steps>
+  <Step title="Create a render function">
+<TabsTs>
+  <Tab title="JS" lang="js">
+```js
+const renderConfigure = (renderOptions, isFirstRender) => {
+  // Rendering logic
+};
+```
+
+  </Tab>
+  <Tab title="React" lang="js"> 
+```js
+const renderConfigure = (renderOptions, isFirstRender) => {
+  // Rendering logic
+};
+```
+
+  </Tab>
+  <Tab title="Vue" lang="js">
+```js
+const renderConfigure = (renderOptions, isFirstRender) => {
+  // Rendering logic
+};
+```
+
+  </Tab>
+</TabsTs>
+  </Step>
+  <Step title="Create the custom widget">
+```js
+import { connectConfigure } from 'instantsearch.js/es/connectors';
+
+const customConfigure = connectConfigure(
+  renderConfigure
+);
+```
+
+  </Step>
+  <Step title="Instantiate">
+```js
+search.addWidgets([
+  customConfigure({
+    // instance params
+  })
+]);
+```
+
+  </Step>
+</Steps>

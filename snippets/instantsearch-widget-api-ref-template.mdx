@@ -1,0 +1,24 @@
+export const TabsTs = ({children}) => {
+  const lang = 'js';
+
+  const onChange = (event) => {
+    console.log(event.target.value)
+  };
+
+  const Selector = () => {
+    return <select name="language" id="language" onChange={onChange}>
+      <option value="ts">Typescript</option>
+      <option value="js">Javascript</option>
+    </select>;
+  };
+
+  const filteredChildren = children.filter(child => child.props.lang === lang);
+
+  return <div>
+    <Tabs>
+      {filteredChildren}
+    </Tabs>
+
+
+  </div>
+};
