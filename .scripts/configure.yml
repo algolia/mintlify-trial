@@ -2,31 +2,63 @@ name: configure
 
 import: configure
 
-usage: |
-  import { configure } from 'instantsearch.js/es/widgets';
-  
-  configure(searchParameters: __object__);
-usage_react: |
-  import { Configure } from 'react-instantsearch';
+usage:
+  js:
+    signature: |
+      ```js
+      configure(searchParameters);
+      ```
+    import:
+      - code: |
+          ```js With a package manager
+          import { configure } from 'instantsearch.js/es/widgets';
+          ```
+      - code: |
+          ```js With a CDN
+          const { configure } = instantsearch.widgets;
+          // or directly use instantsearch.widgets.configure()
+          ```
+  react:
+    signature: |
+      ```jsx
+      <Configure {...searchParameters} />
+      ```
+    import:
+      - code: |
+          ```js
+          import { Configure } from 'react-instantsearch';
+          ```
+  vue:
+    signature: |
+      ```js
+      <ais-configure
+        // Optional parameters
+        v-bind="searchParameters"
+      />
+      ```
+    import:
+      - code: |
+          ```js Component
+          import { AisConfigure } from 'vue-instantsearch'; // Vue 2
+          import { AisConfigure } from 'vue-instantsearch/vue3/es'; // Vue 3
 
-  <Configure {...searchParameters} />
-usage_vue: |
-  import { AisConfigure } from 'vue-instantsearch';
-  // Use 'vue-instantsearch/vue3/es' for Vue 3
-  
-  export default {
-    components: {
-       AisConfigure
-    },
-      // ...
-    };
+          export default {
+            components: {
+              AisConfigure
+            },
+            // ...
+          };
+          ```
+      - code: |
+          ```js Plugin
+          import Vue from 'vue';
+          import InstantSearch from 'vue-instantsearch'; // Vue 2
+          import InstantSearch from 'vue-instantsearch/vue3/es'; // Vue 3
 
-  <ais-configure
-    // Optional parameters
-    v-bind="object searchParameters"
-  />
+          Vue.use(InstantSearch);
+          ```
+
 storybook_link: https://instantsearchjs.netlify.app/stories/js/?path=/story/basics-configure--force-1-hit-per-page
-
 short_description: |
   The widget lets you provide raw search parameters to the Algolia API without rendering anything.
 
@@ -37,13 +69,31 @@ description: |
 
   Any props you add to this widget is forwarded to Algolia. For more information on the different parameters you can set, have a look at the [search parameters API reference](/doc/api-reference/search-api-parameters/).
 
-examples: |
-  ```js
-  configure({
-    hitsPerPage: 8,
-    enablePersonalization: true,
-  });
-  ```
+examples:
+  js: |
+    ```js
+    configure({
+      hitsPerPage: 8,
+      enablePersonalization: true,
+    });
+    ```
+  react: |
+    ```js
+    <Configure
+      analytics={false}
+      filters="free_shipping:true"
+      hitsPerPage={40}
+    />
+    ```
+  vue: |
+    ```js
+    <ais-configure
+      :hits-per-page.camel="4"
+      :distinct="true"
+      :analytics="false"
+      :enable-personalization.camel="true"
+    />
+    ```
 
 widget_parameters_groups:
   - name: 'Options'
@@ -64,73 +114,99 @@ widget_parameters_groups:
             });
             ```
 
-connector_name: connectConfigure
+connector_name:
+  js: connectConfigure
+  react: useConfigure
 
 connector_usage:
-  process_step_1: |
-    ```js
-    const renderConfigure = (renderOptions, isFirstRender) => {
-      // Rendering logic
-    };
-    ```
-  process_step_2: |
-    ```js
-    import { connectConfigure } from 'instantsearch.js/es/connectors';
+  js:
+    process_step_1: |
+      ```js
+      const renderConfigure = (renderOptions, isFirstRender) => {
+        // Rendering logic
+      };
+      ```
+    process_step_2: |
+      ```js
+      import { connectConfigure } from 'instantsearch.js/es/connectors';
 
-    const customConfigure = connectConfigure(
-      renderConfigure
-    );
-    ```
-  process_step_3: |
-    ```js
-    search.addWidgets([
-      customConfigure({
-        // instance params
-      })
-    ]);
-    ```
-  process: |
-    [// 1. Create a render function](#create-a-render-function)
-    const renderConfigure = (renderOptions, isFirstRender) => {
-      // Rendering logic
-    };
+      const customConfigure = connectConfigure(
+        renderConfigure
+      );
+      ```
+    process_step_3: |
+      ```js
+      search.addWidgets([
+        customConfigure({
+          // instance params
+        })
+      ]);
+      ```
+    process: |
+      [// 1. Create a render function](#create-a-render-function)
+      const renderConfigure = (renderOptions, isFirstRender) => {
+        // Rendering logic
+      };
 
-    [// 2. Create the custom widget](#create-and-instantiate-the-custom-widget)
-    const customConfigure = connectConfigure(
-      renderConfigure
-    );
+      [// 2. Create the custom widget](#create-and-instantiate-the-custom-widget)
+      const customConfigure = connectConfigure(
+        renderConfigure
+      );
 
-    [// 3. Instantiate](#create-and-instantiate-the-custom-widget)
-    search.addWidgets([
-      customConfigure({
-        // instance params
-      })
-    ]);
+      [// 3. Instantiate](#create-and-instantiate-the-custom-widget)
+      search.addWidgets([
+        customConfigure({
+          // instance params
+        })
+      ]);
 
-  renderFunction: |
-    const renderConfigure = (renderOptions, isFirstRender) => {
-      const {
-        __function__ #{refine},
-        __object__ #{widgetParams},
-      } = renderOptions;
+    renderFunction: |
+      const renderConfigure = (renderOptions, isFirstRender) => {
+        const {
+          __function__ #{refine},
+          __object__ #{widgetParams},
+        } = renderOptions;
 
-      if (isFirstRender) {
-        // Do some initial rendering and bind events
+        if (isFirstRender) {
+          // Do some initial rendering and bind events
+        }
+
+        // Render the widget
       }
 
-      // Render the widget
-    }
+    initializeWidget: |
+      const customConfigure = connectConfigure(
+        renderConfigure
+      );
 
-  initializeWidget: |
-    const customConfigure = connectConfigure(
-      renderConfigure
-    );
+      search.addWidgets([
+        customConfigure({
+          #{searchParameters}: __object__,
+        })
+      ]);
+  react:
+    process_step_1: |
+      ```js
+      import { useConfigure } from 'react-instantsearch';
 
-    search.addWidgets([
-      customConfigure({
-        #{searchParameters}: __object__,
-      })
-    ]);
+      function CustomConfigure(props) {
+        const { refine } = useConfigure(props);
+
+        return null;
+      }
+      ```
+    process_step_2: |
+      ```js
+      <CustomConfigure {...searchParameters} />
+      ```
+    process_step_3: |
+      ```js
+      search.addWidgets([
+        customConfigure({
+          // instance params
+        })
+      ]);
+      ```
 
 connector_parameters_groups:
   - name: 'Rendering options'

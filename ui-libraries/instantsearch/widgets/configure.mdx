@@ -6,139 +6,162 @@ description: The widget lets you provide raw search parameters to the Algolia AP
 
 import { TabsTs } from '/snippets/instantsearch-widget-api-ref-template.mdx';
 
+<Tabs>
+  <Tab title="JS" lang="js">
+    ## Signature
+    ```js
+configure(searchParameters);
+```
+
+     
+    ## Import
+    <CodeGroup>
+    
+      ```js With a package manager
+import { configure } from 'instantsearch.js/es/widgets';
+```
+
+    
+      ```js With a CDN
+const { configure } = instantsearch.widgets;
+// or directly use instantsearch.widgets.configure()
+```
+
+    
+    </CodeGroup>
+  </Tab>
+  <Tab title="React" lang="jsx">
+    ## Signature
+    ```jsx
+<Configure {...searchParameters} />
+```
+
+     
+    ## Import
+    
+    
+      ```js
+import { Configure } from 'react-instantsearch';
+```
+
+    
+    
+  </Tab>
+  <Tab title="Vue" lang="js">
+    ## Signature
+    ```js
+<ais-configure
+  // Optional parameters
+  v-bind="searchParameters"
+/>
+```
+
+     
+    ## Import
+    <CodeGroup>
+    
+      ```js Component
+import { AisConfigure } from 'vue-instantsearch'; // Vue 2
+import { AisConfigure } from 'vue-instantsearch/vue3/es'; // Vue 3
+
+export default {
+  components: {
+    AisConfigure
+  },
+  // ...
+};
+```
+
+    
+      ```js Plugin
+import Vue from 'vue';
+import InstantSearch from 'vue-instantsearch'; // Vue 2
+import InstantSearch from 'vue-instantsearch/vue3/es'; // Vue 3
+
+Vue.use(InstantSearch);
+```
+
+    
+    </CodeGroup>
+  </Tab>
+</Tabs>
+
 ## About this widget 
+
 The `configure` widget lets you provide raw search parameters to the Algolia API without rendering anything.
 
 Any props you add to this widget is forwarded to Algolia. For more information on the different parameters you can set, have a look at the [search parameters API reference](/doc/api-reference/search-api-parameters/).
 
 
-## Usage
+## Examples
 
 <Tabs>
   <Tab title="JS" lang="js">
-```js
-import { configure } from 'instantsearch.js/es/widgets';
-
-configure(searchParameters: __object__);
- ```
-</Tab>
-  <Tab title="React" lang="js">
-```js
-import { Configure } from 'react-instantsearch';
-
-<Configure {...searchParameters} />
- ```
-</Tab>
-  <Tab title="Vue" lang="js">
-```js
-import { AisConfigure } from 'vue-instantsearch';
-// Use 'vue-instantsearch/vue3/es' for Vue 3
-
-export default {
-  components: {
-     AisConfigure
-  },
-    // ...
-  };
-
-<ais-configure
-  // Optional parameters
-  v-bind="object searchParameters"
+    ```js
+configure({
+  hitsPerPage: 8,
+  enablePersonalization: true,
+});
+```
+  
+  </Tab>
+  <Tab title="React" lang="jsx"> 
+    ```js
+<Configure
+  analytics={false}
+  filters="free_shipping:true"
+  hitsPerPage={40}
 />
- ```
-</Tab>
-  </Tabs>
-  
-  
-
-## Examples
-
-<TabsTs>
-  <Tab title="JS" lang="js">
-```js
-configure({
-  hitsPerPage: 8,
-  enablePersonalization: true,
-});
-```
-  
-  </Tab>
-  <Tab title="React (js)" lang="js"> 
-```js
-configure({
-  hitsPerPage: 8,
-  enablePersonalization: true,
-});
 ```
  
   </Tab>
-  <Tab title="Vue (js)" lang="js">
-```js
-configure({
-  hitsPerPage: 8,
-  enablePersonalization: true,
-});
+  <Tab title="Vue" lang="html">
+    ```js
+<ais-configure
+  :hits-per-page.camel="4"
+  :distinct="true"
+  :analytics="false"
+  :enable-personalization.camel="true"
+/>
 ```
 
   </Tab>
-</TabsTs>
+</Tabs>
 
 
  
-| Options |   d  |
-|---------|-------------|  
- | searchParameters | A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable when the widget mounts.
+| Name                 | Description                  |
+|----------------------|------------------------------|
+   
+| searchParameters | A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable when the widget mounts.
   |
- 
-
+  
 
 
 ## HTML output
-
-
 
 This widget has no HTML output.
 
 
 ## Customize the UI
 
+<Tabs>
+  <Tab title="JS">
+    If you want to create your own UI of the `configure` widget, you can use connectors.
 
-If you want to create your own UI of the `configure` widget, you can use connectors.
-
-To use  `connectConfigure`, you can import it with the declaration relevant to how you installed InstantSearch.js.
-
-
-<Steps>
-  <Step title="Create a render function">
-<TabsTs>
-  <Tab title="JS" lang="js">
-```js
+    To use `connectConfigure`, you can import it with the declaration relevant to how you installed InstantSearch.js.
+    
+    <Steps>
+      <Step title="Create a render function">
+        ```js
 const renderConfigure = (renderOptions, isFirstRender) => {
   // Rendering logic
 };
 ```
 
-  </Tab>
-  <Tab title="React" lang="js"> 
-```js
-const renderConfigure = (renderOptions, isFirstRender) => {
-  // Rendering logic
-};
-```
-
-  </Tab>
-  <Tab title="Vue" lang="js">
-```js
-const renderConfigure = (renderOptions, isFirstRender) => {
-  // Rendering logic
-};
-```
-
-  </Tab>
-</TabsTs>
-  </Step>
-  <Step title="Create the custom widget">
-```js
+      </Step>
+      <Step title="Create the custom widget">
+        ```js
 import { connectConfigure } from 'instantsearch.js/es/connectors';
 
 const customConfigure = connectConfigure(
@@ -146,9 +169,9 @@ const customConfigure = connectConfigure(
 );
 ```
 
-  </Step>
-  <Step title="Instantiate">
-```js
+      </Step>
+      <Step title="Instantiate">
+        ```js
 search.addWidgets([
   customConfigure({
     // instance params
@@ -156,5 +179,46 @@ search.addWidgets([
 ]);
 ```
 
-  </Step>
-</Steps>
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="React">
+    React InstantSearch let you create your own UI for the `configure` widget with `useConfigure`. Hooks provide APIs to access the widget state and interact with InstantSearch.
+
+    The `useConfigure` Hook accepts parameters and returns APIs. It must be used inside the `<InstantSearch>` component.
+    
+    <Steps>
+      <Step title="Create a render function">
+        ```js
+import { useConfigure } from 'react-instantsearch';
+
+function CustomConfigure(props) {
+  const { refine } = useConfigure(props);
+
+  return null;
+}
+```
+
+      </Step>
+      <Step title="Create the custom widget">
+        ```js
+<CustomConfigure {...searchParameters} />
+```
+
+      </Step>
+      <Step title="Instantiate">
+        ```js
+search.addWidgets([
+  customConfigure({
+    // instance params
+  })
+]);
+```
+
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Vue">
+    If you want to create your own UI of the `configure` widget, you can use slots.
+  </Tab>
+</Tabs>
