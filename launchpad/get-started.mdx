@@ -30,6 +30,23 @@ During the Launchpad, you will:
   </Step>
 </Steps>
 
+## Reusable components
+
+import { Component } from '/snippets/components.mdx'
+import Name from '/snippets/variables.mdx'
+
+### Variable passed to Component snippet
+
+<Component variable={'Hello world'} />
+
+### Variable imported from variables.mdx
+
+This is the imported variable: {Name}
+
+### Imported variable passed to Component snippet
+
+<Component variable={Name} />
+
 ## Accordion with snippet
 
 import Events from '/snippets/insights/events.mdx';
@@ -48,9 +65,6 @@ import Events from '/snippets/insights/events.mdx';
 
   </Accordion>
 
-  <Accordion title="No snippet: just some text" icon="alien-8bit">
-    Check out the [Accordion](/content/components/accordions) docs for all the supported props.
-  </Accordion>
 
   <Accordion title="Snippet">
 
