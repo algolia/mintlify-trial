@@ -5,25 +5,37 @@ import nunjucks from 'nunjucks';
 
 const directory = '.scripts/widgets/';
 
-const files = fs.readdirSync('.scripts/widgets/').flatMap((widget) => {
-  return fs.readdirSync(path.join(directory, widget)).map((flavor) => {
-    return {
-      flavor: flavor.replace('.yml', ''),
-      widget,
-      file: fs.readFileSync(path.join(directory, widget, flavor), 'utf8'),
-    };
-  });
-});
+const files = fs.readdirSync('.scripts/widgets/').reduce((widgets, widget) => {
+  return {
+    ...widgets,
+    [widget]: fs.readdirSync(path.join(directory, widget)).map((flavor) => {
+      return {
+        flavor: flavor.replace('.yml', ''),
+        widget,
+        file: fs.readFileSync(path.join(directory, widget, flavor), 'utf8'),
+      };
+    }),
+  };
+}, {});
 
 nunjucks.configure({ autoescape: false });
 
-files.forEach(({ flavor, widget, file }) => {
-  const data = YAML.parse(file);
+Object.values(files)
+  .flat()
+  .forEach(({ flavor, widget, file }) => {
+    const data = YAML.parse(file);
+    const flavors = files[widget].map(({ flavor }) => flavor);
 
-  const template = `---
+    const template = `---
 title: {{ name }}
 description: {{ short_description }}
 ---
+
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<FlavorSelect flavors={'${flavors}'} selected={'${flavor}'} onSelect={(newFlavor) => {
+  window.location.href = \`/ui-libraries/instantsearch/widgets/\${newFlavor}/${widget}\`;
+}} />
 
 ## Signature
 
@@ -220,15 +232,15 @@ If you want to create your own UI of the \`{{ name }}\` widget, you can use slot
 {{ html_output }}
 `;
 
-  const str = nunjucks.renderString(template, { ...data, flavor });
+    const str = nunjucks.renderString(template, { ...data, flavor });
 
-  fs.writeFile(
-    `ui-libraries/instantsearch/widgets/${flavor}/${widget}.mdx`,
-    str,
-    (err) => {
-      if (err) {
-        console.error(err);
+    fs.writeFile(
+      `ui-libraries/instantsearch/widgets/${flavor}/${widget}.mdx`,
+      str,
+      (err) => {
+        if (err) {
+          console.error(err);
+        }
       }
-    }
-  );
-});
+    );
+  });

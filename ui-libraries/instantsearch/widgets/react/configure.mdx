@@ -3,6 +3,12 @@ title: <Configure>
 description: A widget to forward search parameters to Algolia.
 ---
 
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<FlavorSelect flavors={'js,react,vue'} selected={'react'} onSelect={(newFlavor) => {
+  window.location.href = `/ui-libraries/instantsearch/widgets/${newFlavor}/configure`;
+}} />
+
 ## Signature
 
 ```jsx

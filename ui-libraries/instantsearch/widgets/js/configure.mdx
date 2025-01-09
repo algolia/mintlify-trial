@@ -4,6 +4,12 @@ description: The widget lets you provide raw search parameters to the Algolia AP
 
 ---
 
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<FlavorSelect flavors={'js,react,vue'} selected={'js'} onSelect={(newFlavor) => {
+  window.location.href = `/ui-libraries/instantsearch/widgets/${newFlavor}/configure`;
+}} />
+
 ## Signature
 
 ```js
