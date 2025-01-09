@@ -30,22 +30,16 @@ During the Launchpad, you will:
   </Step>
 </Steps>
 
-## Reusable components
+## Tab with snippet
 
-import { Component } from '/snippets/components.mdx'
-import Name from '/snippets/variables.mdx'
-
-### Variable passed to Component snippet
-
-<Component variable={'Hello world'} />
-
-### Variable imported from variables.mdx
-
-This is the imported variable: {Name}
-
-### Imported variable passed to Component snippet
-
-<Component variable={Name} />
+<Tabs>
+  <Tab title="No snippet: just some text">
+    Ensure you place the snippet import outside the component.
+  </Tab>
+  <Tab title="Snippet">
+    <Events />
+  </Tab>
+</Tabs>
 
 ## Accordion with snippet
 
@@ -72,13 +66,32 @@ import Events from '/snippets/insights/events.mdx';
   </Accordion>
 </AccordionGroup>
 
-## Tab with snippet
+## Reusable components
 
-<Tabs>
-  <Tab title="No snippet: just some text">
-    Ensure you place the snippet import outside the component.
-  </Tab>
-  <Tab title="Snippet">
-    <Events />
-  </Tab>
-</Tabs>
+import { Component } from '/snippets/components.mdx'
+import Name from '/snippets/variables.mdx'
+
+### Variable passed to Component snippet
+
+<Component variable={'Hello world'} />
+
+### Variable imported from variables.mdx
+
+This is the imported variable: {Name}
+
+### Imported variable passed to Component snippet
+
+<Component variable={Name} />
+
+## Service limits
+
+import serviceLimits from '/snippets/service-limits.mdx';
+
+<serviceLimits/>
+
+| Limit                                 | Value               |
+|:------------------------------------- |:------------------- |
+| [{index_size.name}](index_size.url)   | {index_size.limit}  |
+| [{app_size.name}](app_size.url)       | {app_size.limit}    |
+| [{record_size.name}](record_size.url) | {record_size.limit} |
+
