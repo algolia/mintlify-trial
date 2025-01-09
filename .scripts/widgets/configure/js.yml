@@ -1,0 +1,202 @@
+name: configure
+
+import: configure
+
+usage: |
+  ```js
+  configure(searchParameters);
+  ```
+
+storybook_link: https://instantsearchjs.netlify.app/stories/js/?path=/story/basics-configure--force-1-hit-per-page
+
+short_description: |
+  The widget lets you provide raw search parameters to the Algolia API without rendering anything.
+
+meta_description: A widget for InstantSearch.js to provide search parameters to Algolia.
+
+description: |
+  The `configure` widget lets you provide raw search parameters to the Algolia API without rendering anything.
+
+  Any props you add to this widget is forwarded to Algolia. For more information on the different parameters you can set, have a look at the [search parameters API reference](/doc/api-reference/search-api-parameters/).
+
+examples: |
+  ```js
+  configure({
+    hitsPerPage: 8,
+    enablePersonalization: true,
+  });
+  ```
+
+widget_parameters_groups:
+  - name: 'Options'
+    parameters:
+      - name: searchParameters
+        type: object
+        required: true
+        description: |
+          A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable when the widget mounts.
+        snippets: |
+          ```js
+          configure({
+            hitsPerPage: 8,
+            distinct: true,
+            clickAnalytics: true,
+            enablePersonalization: true,
+          });
+          ```
+
+customize:
+  title: Customize the UI
+  connector:
+    name: connectConfigure
+    usage:
+      renderFunction: |
+        ```js
+        const renderConfigure = (renderOptions, isFirstRender) => {
+          const {
+            refine,
+            widgetParams,
+          } = renderOptions;
+
+          if (isFirstRender) {
+            // Do some initial rendering and bind events
+          }
+
+          // Render the widget
+        }
+        ```
+      initializeWidget: |
+        ```js
+        const customConfigure = connectConfigure(
+          renderConfigure
+        );
+
+        search.addWidgets([
+          customConfigure({
+            searchParameters,
+          })
+        ]);
+        ```
+    params:
+      - name: 'Rendering options'
+        parameters:
+          - name: refine
+            type: function
+            description: |
+              Removes the provided `searchParameters` and applies the one provided to the function.
+            snippets: |
+              ```js
+              const renderConfigure = (renderOptions, isFirstRender) => {
+                const { refine } = renderOptions;
+
+                if (isFirstRender) {
+                  const button = document.createElement('button');
+                  button.textContent = 'Sets "hitsPerPage" to 4';
+
+                  button.addEventListener('click', () => {
+                    refine({ hitsPerPage: 4 });
+                  });
+
+                  document.querySelector('#configure').appendChild(button);
+                }
+              };
+              ```
+          - name: widgetParams
+            type: object
+            description: |
+              All original widget options forwarded to the render function.
+            snippets: |
+              ```js
+              const renderConfigure = (renderOptions, isFirstRender) => {
+                const { widgetParams } = renderOptions;
+
+                widgetParams.container.innerHTML = `
+                  <pre>${JSON.stringify(widgetParams.searchParameters, null, 2)}</pre>
+                `;
+              };
+
+              // ...
+
+              search.addWidgets([
+                customConfigure({
+                  container: document.querySelector('#configure'),
+                  searchParameters: {
+                    hitsPerPage: 8,
+                  },
+                })
+              ]);
+              ```
+      - name: 'Instance options'
+        parameters:
+          - name: searchParameters
+            type: object
+            required: true
+            description: |
+              A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable when this widget renders.
+            snippets: |
+              ```js
+              customConfigure({
+                searchParameters: {
+                  hitsPerPage: 8,
+                  distinct: true,
+                  clickAnalytics: true,
+                },
+              });
+              ```
+    full_example:
+      - code: |
+          ```js JavaScript
+          // Create the render function
+          const renderConfigure = (renderOptions, isFirstRender) => {
+            const { refine, widgetParams } = renderOptions;
+
+            if (isFirstRender) {
+              const button = document.createElement('button');
+              const pre = document.createElement('pre');
+
+              button.addEventListener('click', () => {
+                refine({
+                  hitsPerPage: widgetParams.searchParameters.hitsPerPage === 8 ? 4 : 8,
+                });
+              });
+
+              widgetParams.container.appendChild(button);
+              widgetParams.container.appendChild(pre);
+            }
+
+            widgetParams.container.querySelector(
+              'button'
+            ).textContent = `Sets "hitsPerPage" to ${
+              widgetParams.searchParameters.hitsPerPage === 8 ? 4 : 8
+            }`;
+
+            widgetParams.container.querySelector('pre').innerHTML = JSON.stringify(
+              widgetParams.searchParameters,
+              null,
+              2
+            );
+          };
+
+          // Create the custom widget
+          const customConfigure = connectConfigure(
+            renderConfigure,
+            () => {}
+          );
+
+          // Instantiate the custom widget
+          search.addWidgets([
+            customConfigure({
+              container: document.querySelector('#configure'),
+              searchParameters: {
+                hitsPerPage: 8,
+              },
+            })
+          ]);
+          ```
+      - code: |
+          ```html HTML
+          <div id="configure"></div>
+          ```
+
+html_output: |
+  This widget has no HTML output.

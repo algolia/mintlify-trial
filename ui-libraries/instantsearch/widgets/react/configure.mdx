@@ -1,0 +1,192 @@
+---
+title: <Configure>
+description: A widget to forward search parameters to Algolia.
+---
+
+## Signature
+
+```jsx
+<Configure {...searchParameters} />
+```
+
+ 
+## Import
+
+
+```jsx
+import { Configure } from 'react-instantsearch';
+```
+
+
+- [See code examples](#examples)
+- [See live example](https://instantsearchjs.netlify.app/stories/?path=/story/basics-configure--force-1-hit-per-page)
+
+## About this widget
+
+`<Configure>` is a renderless component that lets you forward [search parameters](/doc/api-reference/search-api-parameters/) to Algolia.
+
+Any prop you pass to this component is forwarded as a [search parameter](/doc/api-reference/search-api-parameters/) to Algolia.
+
+<Warning>
+Don't make the widget itself conditional, for example, in a ternary statement.
+Doing so creates an infinite loop.
+</Warning>
+
+ 
+## Examples
+
+```jsx
+import React from 'react';
+import { liteClient as algoliasearch } from 'algoliasearch/lite';
+import { InstantSearch, Configure } from 'react-instantsearch';
+
+const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+function App() {
+  return (
+    <InstantSearch indexName="instant_search" searchClient={searchClient}>
+      <Configure
+        analytics={false}
+        filters="free_shipping:true"
+        hitsPerPage={40}
+      />
+    </InstantSearch>
+  );
+}
+```
+
+
+
+## Props
+
+
+<ParamField path="...searchParameters" type="SearchParameters" required="">
+A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable.
+
+```jsx
+<Configure
+  analytics={false}
+  filters="free_shipping:true"
+  hitsPerPage={40}
+/>
+```
+
+</ParamField>
+
+
+
+## Hook
+
+
+
+The library let you create your own UI for the `<Configure>` widget with `useConfigure()`. Hooks provide APIs to access the widget state and interact with InstantSearch.
+
+The `useConfigure()` Hook accepts parameters and returns APIs. It must be used inside the `<InstantSearch>` component.
+
+### Usage
+
+First, create your React component:
+
+```jsx
+import { useConfigure } from 'react-instantsearch';
+
+function CustomConfigure(props) {
+  const { refine } = useConfigure(props);
+
+  return null;
+}
+```
+
+
+Then, render the widget:
+
+```jsx
+<CustomConfigure {...searchParameters} />
+```
+
+ 
+### Parameters
+
+Hooks accept parameters. You can pass them manually, or forward the props from your custom component.
+
+<Note>
+When you provide a function to Hooks, make sure to pass a stable reference to avoid rendering endlessly (for example, with [`useCallback()`](https://reactjs.org/docs/hooks-reference.html#usecallback)). Objects and arrays are memoized; you don’t need to stabilize them.
+</Note>
+
+
+<ParamField path="refine" type="(value: SearchParameters) => void" required="">
+Replaces the provided search parameters with new ones.
+
+```jsx
+const { refine } = useConfigure({
+  hitsPerPage: 4,
+});
+
+return (
+  <button onClick={() => refine({ hitsPerPage: 8 })}>
+    Show 8 hits per page
+  </button>
+);
+```
+
+</ParamField>
+
+
+### APIs
+
+Hooks return APIs, such as state and functions. You can use them to build your UI and interact with React InstantSearch.
+
+
+<ParamField path="...searchParameters" type="SearchParameters" required="">
+A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable. It returns an object with a [`refine`](#hook-api-refine) function that you can use to replace the provided search parameters with new ones.
+
+```js
+const configureApi = useConfigure({
+  hitsPerPage: 4,
+  analytics: false,
+  distinct: true,
+});
+```
+
+</ParamField>
+
+ 
+
+
+
+
+### Full example
+
+<CodeGroup>
+
+```jsx JavaScript
+import React from 'react';
+import { useConfigure } from 'react-instantsearch';
+
+function CustomConfigure(props) {
+  useConfigure(props);
+
+  return null;
+}
+```
+
+
+```ts TypeScript
+import React from 'react';
+import { useConfigure, UseConfigureProps } from 'react-instantsearch';
+
+function CustomConfigure(props: UseConfigureProps) {
+  useConfigure(props);
+
+  return null;
+}
+```
+
+
+</CodeGroup>
+
+
+
+## HTML Output
+
+

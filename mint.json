@@ -1,1168 +1,1155 @@
 {
-    "$schema": "https://mintlify.com/schema.json",
-    "name": "Algolia docs",
-    "logo": {
-        "dark": "/logo/logo-dark.svg",
-        "light": "/logo/logo.svg"
-    },
-    "favicon": "/favicon.svg",
-    "colors": {
-        "primary": "#003dff",
-        "light": "#457aff",
-        "dark": "#022eb9",
-        "anchors": {
-            "from": "#009bcb",
-            "to": "#0db7eb"
-        }
-    },
-    "topbarLinks": [
-        {
-            "name": "Support",
-            "url": "https://support.algolia.com/hc/en-us"
-        },
-        {
-            "name": "Community",
-            "url": "https://www.algolia.com"
-        }
-    ],
-    "topbarCtaButton": {
-        "name": "Dashboard",
-        "url": "https://dashboard.algolia.com"
-    },
-    "topAnchor": {
-        "name": "Home",
-        "icon": "book-open"
-    },
-    "primaryTab": {
-        "name": "Guides"
-    },
-    "tabs": [
-        {
-            "name": "Integrations",
-            "url": "integrations"
-        },
-        {
-            "name": "API clients",
-            "url": "libraries"
-        },
-        {
-            "name": "UI libraries",
-            "url": "ui-libraries"
-        },
-        {
-            "name": "API reference",
-            "url": "api-reference"
-        },
-        {
-            "name": "Tools",
-            "url": "tools"
-        }
-    ],
-    "navigation": [
-        {
-            "group": "Home",
-            "pages": [
-                "home",
-                "trial/contributors"
-            ]
-        },
-        {
-            "group": "Launchpad",
-            "pages": [
-              "launchpad/get-started",
-              "launchpad/import-data",
-              "launchpad/design-results",
-              "launchpad/searchable-attributes",
-              "launchpad/relevancy",
-              "launchpad/implement-search"
-            ]
-        },
-        {
-            "group": "Get started",
-            "pages": [
-                "guides/getting-started/what-is-algolia",
-                "guides/getting-started/neuralsearch",
-                "guides/getting-started/how-algolia-works",
-                "guides/getting-started/ecosystem",
-                "guides/getting-started/features",
-                {
-                    "group": "Quick start",
-                    "pages": [
-                        "guides/getting-started/quick-start",
-                        "guides/getting-started/quick-start/get-started-with-the-dashboard",
-                        "guides/getting-started/quick-start/track-usage-and-performance-in-the-dashboard"
-                    ]
-                },
-                "guides/getting-started/glossary"
-            ]
-        },
-        {
-            "group": "Send events",
-            "pages": [
-                "guides/send-events/get-started",
-                {
-                    "group": "Concepts",
-                    "pages": [
-                        "guides/send-events/concepts/event-types",
-                        "guides/send-events/concepts/user-token"
-                    ]
-                },
-                {
-                    "group": "Guides",
-                    "pages": [
-                        "guides/send-events/guides/plan",
-                        "guides/send-events/guides/queryid",
-                        "guides/send-events/guides/validate"
-                    ]
-                },
-                {
-                    "group": "API client",
-                    "pages": [
-                        "guides/send-events/api-client/send-ecommerce-events",
-                        "guides/send-events/api-client/send-media-events",
-                        "guides/send-events/api-client/send-events"
-                    ]
-                },
-                {
-                    "group": "InstantSearch",
-                    "pages": [
-                        "guides/send-events/instantsearch/send-ecommerce-events",
-                        "guides/send-events/instantsearch/send-media-events",
-                        "guides/send-events/instantsearch/send-events"
-                    ]
-                },
-                {
-                    "group": "Connectors",
-                    "pages": [
-                        "guides/send-events/connectors/google-tag-manager",
-                        "guides/send-events/connectors/google-analytics-big-query-export",
-                        "guides/send-events/connectors/segment",
-                        "guides/send-events/connectors/tealium"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Send and manage data",
-            "pages": [
-                {
-                    "group": "Prepare your data",
-                    "pages": [
-                        "guides/sending-and-managing-data/prepare-your-data",
-                        {
-                            "group": "How to",
-                            "pages": [
-                                "guides/sending-and-managing-data/prepare-your-data/how-to/ecommerce-records",
-                                "guides/sending-and-managing-data/prepare-your-data/how-to/handling-data-relationships",
-                                "guides/sending-and-managing-data/prepare-your-data/how-to/reducing-object-size",
-                                "guides/sending-and-managing-data/prepare-your-data/how-to/creating-and-using-nested-attributes",
-                                "guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents",
-                                "guides/sending-and-managing-data/prepare-your-data/how-to/parent-child-relationships"
-                            ]
-                        },
-                        {
-                            "group": "In depth",
-                            "pages": [
-                                "guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations",
-                                "guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record",
-                                "guides/sending-and-managing-data/prepare-your-data/in-depth/prepare-data-in-depth",
-                                "guides/sending-and-managing-data/prepare-your-data/in-depth/data-sanitization"
-                            ]
-                        }
-                    ]
-                },
-                "guides/sending-and-managing-data/send-and-update-your-data",
-                {
-                    "group": "Send and update your data",
-                    "pages": [
-                        {
-                            "group": "Connectors",
-                            "pages": [
-                                "guides/sending-and-managing-data/send-and-update-your-data/connectors/overview",
-                                "guides/sending-and-managing-data/send-and-update-your-data/connectors/json",
-                                "guides/sending-and-managing-data/send-and-update-your-data/connectors/elasticsearch",
-                                "guides/sending-and-managing-data/send-and-update-your-data/connectors/csv",
-                                "guides/sending-and-managing-data/send-and-update-your-data/connectors/transformations",
-                                "guides/sending-and-managing-data/send-and-update-your-data/connectors/bigquery",
-                                "guides/sending-and-managing-data/send-and-update-your-data/connectors/mysql"
-                            ]
-                        },
-                        {
-                            "group": "How to",
-                            "pages": [
-                                "guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-with-the-api",
-                                "guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard",
-                                "guides/sending-and-managing-data/send-and-update-your-data/how-to/incremental-updates",
-                                "guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches"
-                            ]
-                        },
-                        {
-                            "group": "In depth",
-                            "pages": [
-                                "guides/sending-and-managing-data/send-and-update-your-data/in-depth/index-operations-are-asynchronous",
-                                "guides/sending-and-managing-data/send-and-update-your-data/in-depth/the-different-synchronization-strategies",
-                                "guides/sending-and-managing-data/send-and-update-your-data/in-depth/handling-concurrency-with-versioning"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "group": "Manage indices and apps",
-                    "pages": [
-                        {
-                            "group": "Manage indices",
-                            "pages": [
-                                "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices",
-                                {
-                                    "group": "Tutorial",
-                                    "pages": [
-                                        "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/tutorial/generate-sitemap-from-index"
-                                    ]
-                                },
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/delete-indices",
-                                        "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/export-import-indices",
-                                        "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/copy-indices",
-                                        "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/move-indices"
-                                    ]
-                                },
-                                {
-                                    "group": "Concepts",
-                                    "pages": [
-                                        "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/concepts/one-or-more-indices",
-                                        "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/concepts/indices-analytics"
-                                    ]
-                                }
-                            ]
-                        },
-                        "guides/sending-and-managing-data/manage-indices-and-apps/manage-your-apps"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Manage results",
-            "pages": [
-                {
-                    "group": "Refine results",
-                    "pages": [
-                        "guides/managing-results/refine-results/grouping",
-                        "guides/managing-results/refine-results/sorting",
-                        {
-                            "group": "Faceting",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting",
-                                        "guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting-with-dashboard"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "group": "Filtering",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/refine-results/filtering/how-to/filter-by-attributes"
-                                    ]
-                                },
-                                {
-                                    "group": "In depth",
-                                    "pages": [
-                                        "guides/managing-results/refine-results/filtering/in-depth/combining-boolean-operators",
-                                        "guides/managing-results/refine-results/filtering/in-depth/filter-scoring",
-                                        "guides/managing-results/refine-results/filtering/in-depth/filters-and-facetfilters"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "group": "Grouping",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/refine-results/grouping/how-to/grouping-by-attribute",
-                                        "guides/managing-results/refine-results/grouping/how-to/item-variations"
-                                    ]
-                                }
-                            ]
-                        },
-                        "guides/managing-results/refine-results/faceting",
-                        "guides/managing-results/refine-results/filtering",
-                        {
-                            "group": "Geolocation",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/refine-results/geolocation/how-to/filter-results-inside-a-rectangle-area",
-                                        "guides/managing-results/refine-results/geolocation/how-to/geo-ranking-info",
-                                        "guides/managing-results/refine-results/geolocation/how-to/filter-results-around-a-location",
-                                        "guides/managing-results/refine-results/geolocation/how-to/filter-results-inside-a-polygonal-area",
-                                        "guides/managing-results/refine-results/geolocation/how-to/how-to-resolve-180-meridian-issue"
-                                    ]
-                                },
-                                {
-                                    "group": "In depth",
-                                    "pages": [
-                                        "guides/managing-results/refine-results/geolocation/in-depth/geo-ranking-precision"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "group": "Sorting",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/refine-results/sorting/how-to/sort-an-index-alphabetically",
-                                        "guides/managing-results/refine-results/sorting/how-to/sort-an-index-by-date",
-                                        "guides/managing-results/refine-results/sorting/how-to/set-settings-and-forward-to-replicas",
-                                        "guides/managing-results/refine-results/sorting/how-to/use-sorting-ui-widget",
-                                        "guides/managing-results/refine-results/sorting/how-to/deleting-replicas",
-                                        "guides/managing-results/refine-results/sorting/how-to/creating-replicas",
-                                        "guides/managing-results/refine-results/sorting/how-to/sort-by-attribute",
-                                        "guides/managing-results/refine-results/sorting/how-to/rename-a-replica-index",
-                                        "guides/managing-results/refine-results/sorting/how-to/search-in-a-replica-index"
-                                    ]
-                                },
-                                {
-                                    "group": "In depth",
-                                    "pages": [
-                                        "guides/managing-results/refine-results/sorting/in-depth/replicas",
-                                        "guides/managing-results/refine-results/sorting/in-depth/relevant-sort",
-                                        "guides/managing-results/refine-results/sorting/in-depth/replicas-impact-on-pricing",
-                                        "guides/managing-results/refine-results/sorting/in-depth/exhaustive-sort"
-                                    ]
-                                }
-                            ]
-                        },
-                        "guides/managing-results/refine-results/geolocation"
-                    ]
-                },
-                {
-                    "group": "Troubleshooting",
-                    "pages": [
-                        "guides/managing-results/troubleshooting/troubleshooting-search",
-                        "guides/managing-results/troubleshooting/troubleshooting-relevance"
-                    ]
-                },
-                {
-                    "group": "Must do",
-                    "pages": [
-                        "guides/managing-results/must-do/custom-ranking",
-                        "guides/managing-results/must-do/searchable-attributes",
-                        {
-                            "group": "Custom ranking",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/must-do/custom-ranking/how-to/bayesian-average",
-                                        "guides/managing-results/must-do/custom-ranking/how-to/enrich-your-records-with-google-analytics-data",
-                                        "guides/managing-results/must-do/custom-ranking/how-to/controlling-custom-ranking-metrics-precision",
-                                        "guides/managing-results/must-do/custom-ranking/how-to/boost-or-penalize-some-records",
-                                        "guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking",
-                                        "guides/managing-results/must-do/custom-ranking/how-to/custom-ranking-per-category"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "group": "Searchable attributes",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/must-do/searchable-attributes/how-to/configuring-searchable-attributes-the-right-way"
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "group": "Relevance overview",
-                    "pages": [
-                        {
-                            "group": "In depth",
-                            "pages": [
-                                "guides/managing-results/relevance-overview/in-depth/textual-matching",
-                                "guides/managing-results/relevance-overview/in-depth/ranking-criteria",
-                                "guides/managing-results/relevance-overview/in-depth/defining-relevance"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "group": "Rules",
-                    "pages": [
-                        "guides/managing-results/rules/merchandising-and-promoting",
-                        {
-                            "group": "Merchandising and promoting",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages",
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-hide-hits",
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/merchandise-on-empty-query",
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/rules-query-parameters",
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/redirects",
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/promote-hits",
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/combining-multiple-consequences",
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-promote-with-optional-filters",
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/add-banners",
-                                        "guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-facets"
-                                    ]
-                                },
-                                {
-                                    "group": "In depth",
-                                    "pages": [
-                                        "guides/managing-results/rules/merchandising-and-promoting/in-depth/optional-filters"
-                                    ]
-                                }
-                            ]
-                        },
-                        "guides/managing-results/rules/detecting-intent",
-                        "guides/managing-results/rules/rules-overview",
-                        {
-                            "group": "Rules overview",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/rules/rules-overview/how-to/customize-search-results-by-platform",
-                                        "guides/managing-results/rules/rules-overview/how-to/use-conditionless-rules",
-                                        "guides/managing-results/rules/rules-overview/how-to/add-default-search-parameters-with-rules"
-                                    ]
-                                },
-                                {
-                                    "group": "In depth",
-                                    "pages": [
-                                        "guides/managing-results/rules/rules-overview/in-depth/debugging-rules",
-                                        "guides/managing-results/rules/rules-overview/in-depth/rule-matching-algorithm",
-                                        "guides/managing-results/rules/rules-overview/in-depth/implementing-rules"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "group": "Detecting intent",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/rules/detecting-intent/how-to/detecting-keywords",
-                                        "guides/managing-results/rules/detecting-intent/how-to/applying-a-filter-if-the-query-match-a-facet-value",
-                                        "guides/managing-results/rules/detecting-intent/how-to/applying-a-custom-filter-for-a-specific-query",
-                                        "guides/managing-results/rules/detecting-intent/how-to/applying-search-parameters-for-a-specific-query"
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "group": "Optimize search results",
-                    "pages": [
-                        {
-                            "group": "Handling natural languages nlp",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-stop-words",
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-plurals-and-other-declensions",
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/how-to-set-an-index-query-language",
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-segmentation",
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/multilingual-search"
-                                    ]
-                                },
-                                {
-                                    "group": "In depth",
-                                    "pages": [
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization",
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/language-specific-configurations",
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages",
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/normalization",
-                                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "group": "Typo tolerance",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/optimize-search-results/typo-tolerance/how-to/how-to-search-in-hyphenated-attributes",
-                                        "guides/managing-results/optimize-search-results/typo-tolerance/how-to/how-to-prevent-typosquatting"
-                                    ]
-                                },
-                                {
-                                    "group": "In depth",
-                                    "pages": [
-                                        "guides/managing-results/optimize-search-results/typo-tolerance/in-depth/configuring-typo-tolerance"
-                                    ]
-                                }
-                            ]
-                        },
-                        "guides/managing-results/optimize-search-results/handling-natural-languages-nlp",
-                        "guides/managing-results/optimize-search-results/empty-or-insufficient-results",
-                        {
-                            "group": "Adding synonyms",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/optimize-search-results/adding-synonyms/how-to/managing-synonyms-from-the-dashboard"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "group": "Empty or insufficient results",
-                            "pages": [
-                                {
-                                    "group": "In depth",
-                                    "pages": [
-                                        "guides/managing-results/optimize-search-results/empty-or-insufficient-results/in-depth/why-use-remove-words-if-no-results"
-                                    ]
-                                }
-                            ]
-                        },
-                        "guides/managing-results/optimize-search-results/override-search-engine-defaults",
-                        "guides/managing-results/optimize-search-results/typo-tolerance",
-                        {
-                            "group": "Override search engine defaults",
-                            "pages": [
-                                {
-                                    "group": "How to",
-                                    "pages": [
-                                        "guides/managing-results/optimize-search-results/override-search-engine-defaults/how-to/how-can-i-make-queries-within-the-middle-of-a-word"
-                                    ]
-                                },
-                                {
-                                    "group": "In depth",
-                                    "pages": [
-                                        "guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/adjust-exact-settings",
-                                        "guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/prefix-searching"
-                                    ]
-                                }
-                            ]
-                        },
-                        "guides/managing-results/optimize-search-results/adding-synonyms"
-                    ]
-                },
-                "guides/managing-results/relevance-overview"
-            ]
-        },
-        {
-            "group": "Personalization",
-            "pages": [
-                {
-                    "group": "AI Personalization",
-                    "pages": [
-                        "guides/personalization/ai-personalization/what-is-ai-personalization",
-                        "guides/personalization/ai-personalization/how-does-ai-personalization-work",
-                        "guides/personalization/ai-personalization/user-profiles",
-                        "guides/personalization/ai-personalization/migrate-from-classic-personalization",
-                        {
-                            "group": "Configure",
-                            "pages": [
-                                "guides/personalization/ai-personalization/configure",
-                                "guides/personalization/ai-personalization/configure/index-structure",
-                                "guides/personalization/ai-personalization/configure/event-implementation",
-                                "guides/personalization/ai-personalization/configure/search-implementation",
-                                "guides/personalization/ai-personalization/configure/indices",
-                                "guides/personalization/ai-personalization/configure/events",
-                                "guides/personalization/ai-personalization/configure/personalization-reranking"
-                            ]
-                        },
-                        {
-                            "group": "Monitor",
-                            "pages": [
-                                "guides/personalization/ai-personalization/monitor/ab-test",
-                                "guides/personalization/ai-personalization/monitor/troubleshoot",
-                                "guides/personalization/ai-personalization/monitor/inspect-a-user-profile",
-                                "guides/personalization/ai-personalization/monitor/delete-a-user-profile",
-                                "guides/personalization/ai-personalization/monitor/error-codes"
-                            ]
-                        },
-                        {
-                            "group": "Implement",
-                            "pages": [
-                                "guides/personalization/ai-personalization/guides/segment-users-with-rule-contexts",
-                                "guides/personalization/ai-personalization/guides/applying-contextual-affinities",
-                                "guides/personalization/ai-personalization/guides/fetching-a-user-profile",
-                                "guides/personalization/ai-personalization/guides/personalizing-search-facets",
-                                "guides/personalization/ai-personalization/guides/inline-segmentation",
-                                "guides/personalization/ai-personalization/guides/label-and-boost-purchased-items",
-                                "guides/personalization/ai-personalization/guides/export-audience",
-                                "guides/personalization/ai-personalization/guides/personalize-product-display"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "group": "Classic Personalization",
-                    "pages": [
-                        "guides/personalization/classic-personalization/what-is-personalization",
-                        "guides/personalization/classic-personalization/how-personalization-works",
-                        "guides/personalization/classic-personalization/personalizing-results",
-                        "guides/personalization/classic-personalization/configuring-personalization",
-                        {
-                            "group": "Going to production",
-                            "pages": [
-                                "guides/personalization/classic-personalization/going-to-production",
-                                "guides/personalization/classic-personalization/going-to-production/ab-testing-personalization",
-                                "guides/personalization/classic-personalization/going-to-production/enabling-personalization",
-                                "guides/personalization/classic-personalization/going-to-production/implementation-checklist"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Algolia Recommend",
-            "pages": [
-                "guides/algolia-recommend/overview",
-                {
-                    "group": "Upgrade",
-                    "pages": [
-                        "guides/algolia-recommend/upgrade/recommend-js",
-                        "guides/algolia-recommend/upgrade/recommend-react"
-                    ]
-                },
-                {
-                    "group": "How to",
-                    "pages": [
-                        "guides/algolia-recommend/how-to/csv-upload",
-                        "guides/algolia-recommend/how-to/set-up",
-                        "guides/algolia-recommend/how-to/looking-similar",
-                        "guides/algolia-recommend/how-to/recommend-rules",
-                        "guides/algolia-recommend/how-to/deduplication"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Algolia AI",
-            "pages": [
-              "guides/algolia-ai/dynamic-synonym-suggestions",
-              "guides/algolia-ai/query-categorization",
-              "guides/algolia-ai/dynamic-re-ranking",
-              "guides/algolia-ai/dynamic-re-ranking/re-rank-category-pages"
-            ]
-        },
-        {
-            "group": "API clients",
-            "pages": [
-                "libraries/python"
-            ]
-        },
-        {
-            "group": "UI libraries",
-            "pages": [
-                "ui-libraries/ui-libraries"
-            ]
-        },
-        {
-            "group": "Integrations",
-            "pages": [
-                "integrations/overview"
-            ]
-        },
-        {
-            "group": "Tools",
-            "pages": [
-                "tools/overview"
-            ]
-        },
-        {
-            "group": "Libraries",
-            "pages": [
-                "ui-libraries/autocomplete",
-                "ui-libraries/instantsearch",
-                {
-                    "group": "Widgets",
-                    "pages": [
-                        "ui-libraries/instantsearch/widgets",
-                        {
-                            "group": "configure",
-                            "pages": [
-                                "ui-libraries/instantsearch/widgets/configure/js",
-                                "ui-libraries/instantsearch/widgets/configure/react",
-                                "ui-libraries/instantsearch/widgets/configure/vue"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-
-        {
-            "group": "Crawler",
-            "pages": [
-                "tools/crawler/getting-started",
-                {
-                    "group": "REST API",
-                    "pages": [
-                        {
-                            "group": "Actions",
-                            "pages": [
-                                "tools/crawler/api/actions/crawl",
-                                "tools/crawler/api/actions/pause",
-                                "tools/crawler/api/actions/start",
-                                "tools/crawler/api/actions/test"
-                            ]
-                        },
-                        {
-                            "group": "Configuration",
-                            "pages": [
-                                "tools/crawler/api/configuration/list",
-                                "tools/crawler/api/configuration/retrieve",
-                                "tools/crawler/api/configuration/update"
-                            ]
-                        },
-                        {
-                            "group": "Crawler",
-                            "pages": [
-                                "tools/crawler/api/crawler/create",
-                                "tools/crawler/api/crawler/list",
-                                "tools/crawler/api/crawler/retrieve",
-                                "tools/crawler/api/crawler/stats",
-                                "tools/crawler/api/crawler/update"
-                            ]
-                        },
-                        {
-                            "group": "Domains",
-                            "pages": [
-                                "tools/crawler/api/domains/list"
-                            ]
-                        },
-                        {
-                            "group": "Tasks",
-                            "pages": [
-                                "tools/crawler/api/tasks/cancel",
-                                "tools/crawler/api/tasks/retrieve"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Shopify",
-            "pages": [
-                {
-                    "group": "Get started",
-                    "pages": [
-                        "integrations/shopify/getting-started/quick-start",
-                        "integrations/shopify/getting-started/configuration",
-                        "integrations/shopify/getting-started/upgrade"
-                    ]
-                },
-                {
-                    "group": "Send and manage data",
-                    "pages": [
-                        "integrations/shopify/sending-and-managing-data/introduction-to-shopify-indexing",
-                        "integrations/shopify/sending-and-managing-data/schemas",
-                        "integrations/shopify/sending-and-managing-data/named-tags",
-                        "integrations/shopify/sending-and-managing-data/metafields",
-                        "integrations/shopify/sending-and-managing-data/locations",
-                        "integrations/shopify/sending-and-managing-data/markets",
-                        "integrations/shopify/sending-and-managing-data/algolia-config"
-                    ]
-                },
-                {
-                    "group": "Search UI",
-                    "pages": [
-                        "integrations/shopify/building-search-ui/front-end-choices",
-                        "integrations/shopify/building-search-ui/autocomplete",
-                        "integrations/shopify/building-search-ui/instant-search",
-                        "integrations/shopify/building-search-ui/recommend",
-                        "integrations/shopify/building-search-ui/events",
-                        "integrations/shopify/building-search-ui/frontend-custom-events",
-                        "integrations/shopify/building-search-ui/global-events"
-                    ]
-                },
-                {
-                    "group": "Collections and customization",
-                    "pages": [
-                        "integrations/shopify/advanced-customization/collection-search-page",
-                        "integrations/shopify/advanced-customization/collection-customisation",
-                        "integrations/shopify/advanced-customization/add-query-suggestions-to-autocomplete",
-                        "integrations/shopify/advanced-customization/add-custom-plugin-to-autocomplete",
-                        "integrations/shopify/advanced-customization/update-facet-config-in-instantsearch"
-                    ]
-                },
-                {
-                    "group": "Troubleshooting",
-                    "pages": [
-                        "integrations/shopify/troubleshooting/frequent-issues"
-                    ]
-                },
-                {
-                    "group": "Going further",
-                    "pages": [
-                        "integrations/shopify/going-further/out-of-stock-products",
-                        "integrations/shopify/going-further/merchandising-tool",
-                        "integrations/shopify/going-further/shopify-flow"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Salesforce B2C Commerce",
-            "pages": [
-                {
-                    "group": "Get started",
-                    "pages": [
-                        "integrations/salesforce-commerce-cloud-b2c/getting-started/introduction",
-                        "integrations/salesforce-commerce-cloud-b2c/getting-started/set-up-the-algolia-cartridge",
-                        "integrations/salesforce-commerce-cloud-b2c/getting-started/start-indexing-your-data",
-                        "integrations/salesforce-commerce-cloud-b2c/getting-started/configure-your-search",
-                        "integrations/salesforce-commerce-cloud-b2c/getting-started/custom-preferences"
-                    ]
-                },
-                {
-                    "group": "Indexing",
-                    "pages": [
-                        "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview",
-                        "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing",
-                        "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing",
-                        "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes",
-                        "integrations/salesforce-commerce-cloud-b2c/indexing/content-indexing/fundamentals",
-                        "integrations/salesforce-commerce-cloud-b2c/indexing/content-indexing/configuration"
-                    ]
-                },
-                {
-                    "group": "Search UI",
-                    "pages": [
-                        "integrations/salesforce-commerce-cloud-b2c/building-the-search-ui/front-end",
-                        "integrations/salesforce-commerce-cloud-b2c/building-the-search-ui/events"
-                    ]
-                },
-                {
-                    "group": "Guides",
-                    "pages": [
-                        "integrations/salesforce-commerce-cloud-b2c/guides/headless",
-                        "integrations/salesforce-commerce-cloud-b2c/guides/migrating-to-23-5-0",
-                        "integrations/salesforce-commerce-cloud-b2c/guides/pwa-kit",
-                        "integrations/salesforce-commerce-cloud-b2c/guides/custom-react-frontend",
-                        "integrations/salesforce-commerce-cloud-b2c/guides/storefront-sample-app",
-                        "integrations/salesforce-commerce-cloud-b2c/guides/algolia-recommend",
-                        "integrations/salesforce-commerce-cloud-b2c/guides/ssr-caching",
-                        "integrations/salesforce-commerce-cloud-b2c/guides/facet-bucketing",
-                        "integrations/salesforce-commerce-cloud-b2c/guides/multi-instance-indexing",
-                        "integrations/salesforce-commerce-cloud-b2c/guides/performance-considerations"
-                    ]
-                },
-                {
-                    "group": "Troubleshooting",
-                    "pages": [
-                        "integrations/salesforce-commerce-cloud-b2c/troubleshooting/monitoring"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Magento/Adobe Commerce",
-            "pages": [
-                {
-                    "group": "Get started",
-                    "pages": [
-                        "integrations/magento-2/getting-started/quick-start",
-                        "integrations/magento-2/getting-started/moving-to-production",
-                        "integrations/magento-2/getting-started/upgrading",
-                        "integrations/magento-2/getting-started/hogan-support"
-                    ]
-                },
-                {
-                    "group": "How it works",
-                    "pages": [
-                        "integrations/magento-2/how-it-works/front-end",
-                        "integrations/magento-2/how-it-works/events",
-                        "integrations/magento-2/how-it-works/indexing",
-                        "integrations/magento-2/how-it-works/indexing-queue",
-                        "integrations/magento-2/how-it-works/sku-reindexing-form",
-                        "integrations/magento-2/how-it-works/analytics-overview",
-                        "integrations/magento-2/how-it-works/google-analytics",
-                        "integrations/magento-2/how-it-works/recommend",
-                        "integrations/magento-2/how-it-works/personalization",
-                        "integrations/magento-2/how-it-works/help-and-support-page",
-                        "integrations/magento-2/how-it-works/magento-feature-compatibility",
-                        "integrations/magento-2/how-it-works/cookie-law-compliance"
-                    ]
-                },
-                {
-                    "group": "Merchandising",
-                    "pages": [
-                        "integrations/magento-2/merchandising/visual-merchandising",
-                        "integrations/magento-2/merchandising/query-merchandiser",
-                        "integrations/magento-2/merchandising/category-merchandising",
-                        "integrations/magento-2/merchandising/landing-page-builder",
-                        "integrations/magento-2/merchandising/merchandising-studio"
-                    ]
-                },
-                {
-                    "group": "Customization",
-                    "pages": [
-                        "integrations/magento-2/customize/autocomplete-menu",
-                        "integrations/magento-2/customize/instant-search-page",
-                        "integrations/magento-2/customize/custom-front-end-events",
-                        "integrations/magento-2/customize/custom-back-end-events",
-                        "integrations/magento-2/customize/logging-and-debugging"
-                    ]
-                },
-                {
-                    "group": "Guides",
-                    "pages": [
-                        "integrations/magento-2/guides/create-a-custom-extension",
-                        "integrations/magento-2/guides/transform-indexed-attribute",
-                        "integrations/magento-2/guides/multi-language-search",
-                        "integrations/magento-2/guides/algolia-query-suggestions",
-                        "integrations/magento-2/guides/category-pages"
-                    ]
-                },
-                {
-                    "group": "Troubleshooting",
-                    "pages": [
-                        "integrations/magento-2/troubleshooting/data-indexes-queues",
-                        "integrations/magento-2/troubleshooting/in-depth/data-indexes-queues",
-                        "integrations/magento-2/troubleshooting/technical-troubleshooting",
-                        "integrations/magento-2/troubleshooting/back-end-issues",
-                        "integrations/magento-2/troubleshooting/front-end-issues"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Commercetools",
-            "pages": [
-                {
-                    "group": "Get started",
-                    "pages": [
-                        "integrations/commercetools/get-started/installation",
-                        "integrations/commercetools/get-started/configuration"
-                    ]
-                },
-                {
-                    "group": "Indexing",
-                    "pages": [
-                        "integrations/commercetools/indexing/monitoring-commercetools-indexing",
-                        "integrations/commercetools/indexing/product-schema"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "Bigcommerce",
-            "pages": [
-                {
-                    "group": "Get started",
-                    "pages": [
-                        "integrations/bigcommerce/get-started/installation",
-                        "integrations/bigcommerce/get-started/configuration"
-                    ]
-                },
-                {
-                    "group": "Search settings",
-                    "pages": [
-                        "integrations/bigcommerce/search-settings/autocomplete",
-                        "integrations/bigcommerce/search-settings/instantsearch",
-                        "integrations/bigcommerce/search-settings/events",
-                        "integrations/bigcommerce/search-settings/customization",
-                        "integrations/bigcommerce/search-settings/custom-hooks",
-                        "integrations/bigcommerce/search-settings/recommend"
-                    ]
-                },
-                {
-                    "group": "Indexing",
-                    "pages": [
-                        "integrations/bigcommerce/indexing/product-schema",
-                        "integrations/bigcommerce/indexing/monitoring-bigcommerce-indexing"
-                    ]
-                },
-                {
-                    "group": "Uninstall",
-                    "pages": [
-                        "integrations/bigcommerce/uninstalling/bigcommerce-uninstall-checklist"
-                    ]
-                }
-            ]
-        },
-        {
-            "group": "API reference",
-            "pages": [
-                "api-reference/overview",
-                {
-                    "group": "API parameters",
-                    "pages": [
-                        "api-reference/api-parameters",
-                        "api-reference/parameters/query"
-                    ]
-                },
-                {
-                    "group": "Insights API",
-                    "pages": [
-                        "api-reference/insights-api/events/send-events",
-                        "api-reference/insights-api/usertokens/delete-user-token"
-                    ]
-                },
-                {
-                    "group": "Recommend API",
-                    "pages": [
-                        {
-                            "group": "Recommendations",
-                            "pages": [
-                                "api-reference/recommend-api/recommendations/retrieve-recommendations"
-                            ]
-                        },
-                        {
-                            "group": "Recommend rules",
-                            "pages": [
-                                "api-reference/recommend-api/rules/check-task-status",
-                                "api-reference/recommend-api/rules/create-or-update-a-batch-of-recommend-rules",
-                                "api-reference/recommend-api/rules/delete-a-rule",
-                                "api-reference/recommend-api/rules/retrieve-a-rule",
-                                "api-reference/recommend-api/rules/search-for-rules"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "group": "Search API",
-                    "pages": [
-                        {
-                            "group": "Search operations",
-                            "pages": [
-                                "api-reference/search-api/search/search-an-index",
-                                "api-reference/search-api/search/search-multiple-indices",
-                                "api-reference/search-api/search/search-for-facet-values",
-                                "api-reference/search-api/search/browse-for-records"
-                            ]
-                        },
-                        {
-                            "group": "Records operations",
-                            "pages": [
-                                "api-reference/search-api/records/add-or-replace-a-record",
-                                "api-reference/search-api/records/retrieve-a-record",
-                                "api-reference/search-api/records/delete-a-record",
-                                "api-reference/search-api/records/delete-all-records-from-an-index",
-                                "api-reference/search-api/records/add-or-update-attributes",
-                                "api-reference/search-api/records/batch-indexing-operations-on-one-index",
-                                "api-reference/search-api/records/batch-indexing-operations-on-multiple-indices",
-                                "api-reference/search-api/records/retrieve-records"
-                            ]
-                        },
-                        {
-                            "group": "Indices operations",
-                            "pages": [
-                                "api-reference/search-api/indices/delete-an-index",
-                                "api-reference/search-api/indices/retrieve-index-settings",
-                                "api-reference/search-api/indices/update-index-settings",
-                                "api-reference/search-api/indices/check-task-status",
-                                "api-reference/search-api/indices/copy-or-move-an-index",
-                                "api-reference/search-api/indices/list-indices"
-                            ]
-                        },
-                        {
-                            "group": "Synonyms operations",
-                            "pages": [
-                                "api-reference/search-api/synonyms/retrieve-a-synonym",
-                                "api-reference/search-api/synonyms/create-or-replace-a-synonym",
-                                "api-reference/search-api/synonyms/delete-a-synonym",
-                                "api-reference/search-api/synonyms/create-or-replace-synonyms",
-                                "api-reference/search-api/synonyms/delete-all-synonyms",
-                                "api-reference/search-api/synonyms/search-for-synonyms"
-                            ]
-                        },
-                        {
-                            "group": "API keys operations",
-                            "pages": [
-                                "api-reference/search-api/api-keys/list-api-keys",
-                                "api-reference/search-api/api-keys/create-an-api-key",
-                                "api-reference/search-api/api-keys/retrieve-api-key-permissions",
-                                "api-reference/search-api/api-keys/update-an-api-key",
-                                "api-reference/search-api/api-keys/delete-an-api-key",
-                                "api-reference/search-api/api-keys/restore-an-api-key"
-                            ]
-                        },
-                        {
-                            "group": "Rules operations",
-                            "pages": [
-                                "api-reference/search-api/rules/retrieve-a-rule",
-                                "api-reference/search-api/rules/create-or-replace-a-rule",
-                                "api-reference/search-api/rules/delete-a-rule",
-                                "api-reference/search-api/rules/create-or-update-rules",
-                                "api-reference/search-api/rules/delete-all-rules",
-                                "api-reference/search-api/rules/search-for-rules"
-                            ]
-                        },
-                        {
-                            "group": "Dictionaries operations",
-                            "pages": [
-                                "api-reference/search-api/dictionaries/add-or-delete-dictionary-entries",
-                                "api-reference/search-api/dictionaries/search-dictionary-entries",
-                                "api-reference/search-api/dictionaries/retrieve-dictionary-settings",
-                                "api-reference/search-api/dictionaries/update-dictionary-settings",
-                                "api-reference/search-api/dictionaries/list-available-languages"
-                            ]
-                        },
-                        {
-                            "group": "Clusters operations",
-                            "pages": [
-                                "api-reference/search-api/clusters/list-user-ids",
-                                "api-reference/search-api/clusters/assign-or-move-a-user-id",
-                                "api-reference/search-api/clusters/assign-multiple-userids",
-                                "api-reference/search-api/clusters/get-top-user-ids",
-                                "api-reference/search-api/clusters/retrieve-user-id",
-                                "api-reference/search-api/clusters/delete-user-id",
-                                "api-reference/search-api/clusters/list-clusters",
-                                "api-reference/search-api/clusters/search-for-user-ids",
-                                "api-reference/search-api/clusters/get-migration-and-user-mapping-status"
-                            ]
-                        },
-                        {
-                            "group": "Vaults operations",
-                            "pages": [
-                                "api-reference/search-api/vaults/list-allowed-sources",
-                                "api-reference/search-api/vaults/replace-allowed-sources",
-                                "api-reference/search-api/vaults/add-a-source",
-                                "api-reference/search-api/vaults/delete-a-source"
-                            ]
-                        },
-                        {
-                            "group": "Advanced operations",
-                            "pages": [
-                                "api-reference/search-api/advanced/retrieve-log-entries",
-                                "api-reference/search-api/advanced/check-application-task-status"
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-    ],
-    "feedback": {
-        "thumbsRating": true
-    },
-    "footerSocials": {
-        "website": "https://www.algolia.com/",
-        "x": "https://x.com/algolia",
-        "discord": "https://alg.li/discord"
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Algolia docs",
+  "logo": {
+    "dark": "/logo/logo-dark.svg",
+    "light": "/logo/logo.svg"
+  },
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#003dff",
+    "light": "#457aff",
+    "dark": "#022eb9",
+    "anchors": {
+      "from": "#009bcb",
+      "to": "#0db7eb"
     }
-}
+  },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "https://support.algolia.com/hc/en-us"
+    },
+    {
+      "name": "Community",
+      "url": "https://www.algolia.com"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Dashboard",
+    "url": "https://dashboard.algolia.com"
+  },
+  "topAnchor": {
+    "name": "Home",
+    "icon": "book-open"
+  },
+  "primaryTab": {
+    "name": "Guides"
+  },
+  "tabs": [
+    {
+      "name": "Integrations",
+      "url": "integrations"
+    },
+    {
+      "name": "API clients",
+      "url": "libraries"
+    },
+    {
+      "name": "UI libraries",
+      "url": "ui-libraries"
+    },
+    {
+      "name": "API reference",
+      "url": "api-reference"
+    },
+    {
+      "name": "Tools",
+      "url": "tools"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Home",
+      "pages": ["home", "trial/contributors"]
+    },
+    {
+      "group": "Launchpad",
+      "pages": [
+        "launchpad/get-started",
+        "launchpad/import-data",
+        "launchpad/design-results",
+        "launchpad/searchable-attributes",
+        "launchpad/relevancy",
+        "launchpad/implement-search"
+      ]
+    },
+    {
+      "group": "Get started",
+      "pages": [
+        "guides/getting-started/what-is-algolia",
+        "guides/getting-started/neuralsearch",
+        "guides/getting-started/how-algolia-works",
+        "guides/getting-started/ecosystem",
+        "guides/getting-started/features",
+        {
+          "group": "Quick start",
+          "pages": [
+            "guides/getting-started/quick-start",
+            "guides/getting-started/quick-start/get-started-with-the-dashboard",
+            "guides/getting-started/quick-start/track-usage-and-performance-in-the-dashboard"
+          ]
+        },
+        "guides/getting-started/glossary"
+      ]
+    },
+    {
+      "group": "Send events",
+      "pages": [
+        "guides/send-events/get-started",
+        {
+          "group": "Concepts",
+          "pages": [
+            "guides/send-events/concepts/event-types",
+            "guides/send-events/concepts/user-token"
+          ]
+        },
+        {
+          "group": "Guides",
+          "pages": [
+            "guides/send-events/guides/plan",
+            "guides/send-events/guides/queryid",
+            "guides/send-events/guides/validate"
+          ]
+        },
+        {
+          "group": "API client",
+          "pages": [
+            "guides/send-events/api-client/send-ecommerce-events",
+            "guides/send-events/api-client/send-media-events",
+            "guides/send-events/api-client/send-events"
+          ]
+        },
+        {
+          "group": "InstantSearch",
+          "pages": [
+            "guides/send-events/instantsearch/send-ecommerce-events",
+            "guides/send-events/instantsearch/send-media-events",
+            "guides/send-events/instantsearch/send-events"
+          ]
+        },
+        {
+          "group": "Connectors",
+          "pages": [
+            "guides/send-events/connectors/google-tag-manager",
+            "guides/send-events/connectors/google-analytics-big-query-export",
+            "guides/send-events/connectors/segment",
+            "guides/send-events/connectors/tealium"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Send and manage data",
+      "pages": [
+        {
+          "group": "Prepare your data",
+          "pages": [
+            "guides/sending-and-managing-data/prepare-your-data",
+            {
+              "group": "How to",
+              "pages": [
+                "guides/sending-and-managing-data/prepare-your-data/how-to/ecommerce-records",
+                "guides/sending-and-managing-data/prepare-your-data/how-to/handling-data-relationships",
+                "guides/sending-and-managing-data/prepare-your-data/how-to/reducing-object-size",
+                "guides/sending-and-managing-data/prepare-your-data/how-to/creating-and-using-nested-attributes",
+                "guides/sending-and-managing-data/prepare-your-data/how-to/indexing-long-documents",
+                "guides/sending-and-managing-data/prepare-your-data/how-to/parent-child-relationships"
+              ]
+            },
+            {
+              "group": "In depth",
+              "pages": [
+                "guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations",
+                "guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record",
+                "guides/sending-and-managing-data/prepare-your-data/in-depth/prepare-data-in-depth",
+                "guides/sending-and-managing-data/prepare-your-data/in-depth/data-sanitization"
+              ]
+            }
+          ]
+        },
+        "guides/sending-and-managing-data/send-and-update-your-data",
+        {
+          "group": "Send and update your data",
+          "pages": [
+            {
+              "group": "Connectors",
+              "pages": [
+                "guides/sending-and-managing-data/send-and-update-your-data/connectors/overview",
+                "guides/sending-and-managing-data/send-and-update-your-data/connectors/json",
+                "guides/sending-and-managing-data/send-and-update-your-data/connectors/elasticsearch",
+                "guides/sending-and-managing-data/send-and-update-your-data/connectors/csv",
+                "guides/sending-and-managing-data/send-and-update-your-data/connectors/transformations",
+                "guides/sending-and-managing-data/send-and-update-your-data/connectors/bigquery",
+                "guides/sending-and-managing-data/send-and-update-your-data/connectors/mysql"
+              ]
+            },
+            {
+              "group": "How to",
+              "pages": [
+                "guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-with-the-api",
+                "guides/sending-and-managing-data/send-and-update-your-data/how-to/importing-from-the-dashboard",
+                "guides/sending-and-managing-data/send-and-update-your-data/how-to/incremental-updates",
+                "guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches"
+              ]
+            },
+            {
+              "group": "In depth",
+              "pages": [
+                "guides/sending-and-managing-data/send-and-update-your-data/in-depth/index-operations-are-asynchronous",
+                "guides/sending-and-managing-data/send-and-update-your-data/in-depth/the-different-synchronization-strategies",
+                "guides/sending-and-managing-data/send-and-update-your-data/in-depth/handling-concurrency-with-versioning"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Manage indices and apps",
+          "pages": [
+            {
+              "group": "Manage indices",
+              "pages": [
+                "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices",
+                {
+                  "group": "Tutorial",
+                  "pages": [
+                    "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/tutorial/generate-sitemap-from-index"
+                  ]
+                },
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/delete-indices",
+                    "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/export-import-indices",
+                    "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/copy-indices",
+                    "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/how-to/move-indices"
+                  ]
+                },
+                {
+                  "group": "Concepts",
+                  "pages": [
+                    "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/concepts/one-or-more-indices",
+                    "guides/sending-and-managing-data/manage-indices-and-apps/manage-indices/concepts/indices-analytics"
+                  ]
+                }
+              ]
+            },
+            "guides/sending-and-managing-data/manage-indices-and-apps/manage-your-apps"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Manage results",
+      "pages": [
+        {
+          "group": "Refine results",
+          "pages": [
+            "guides/managing-results/refine-results/grouping",
+            "guides/managing-results/refine-results/sorting",
+            {
+              "group": "Faceting",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting",
+                    "guides/managing-results/refine-results/faceting/how-to/declaring-attributes-for-faceting-with-dashboard"
+                  ]
+                }
+              ]
+            },
+            {
+              "group": "Filtering",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/refine-results/filtering/how-to/filter-by-attributes"
+                  ]
+                },
+                {
+                  "group": "In depth",
+                  "pages": [
+                    "guides/managing-results/refine-results/filtering/in-depth/combining-boolean-operators",
+                    "guides/managing-results/refine-results/filtering/in-depth/filter-scoring",
+                    "guides/managing-results/refine-results/filtering/in-depth/filters-and-facetfilters"
+                  ]
+                }
+              ]
+            },
+            {
+              "group": "Grouping",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/refine-results/grouping/how-to/grouping-by-attribute",
+                    "guides/managing-results/refine-results/grouping/how-to/item-variations"
+                  ]
+                }
+              ]
+            },
+            "guides/managing-results/refine-results/faceting",
+            "guides/managing-results/refine-results/filtering",
+            {
+              "group": "Geolocation",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/refine-results/geolocation/how-to/filter-results-inside-a-rectangle-area",
+                    "guides/managing-results/refine-results/geolocation/how-to/geo-ranking-info",
+                    "guides/managing-results/refine-results/geolocation/how-to/filter-results-around-a-location",
+                    "guides/managing-results/refine-results/geolocation/how-to/filter-results-inside-a-polygonal-area",
+                    "guides/managing-results/refine-results/geolocation/how-to/how-to-resolve-180-meridian-issue"
+                  ]
+                },
+                {
+                  "group": "In depth",
+                  "pages": [
+                    "guides/managing-results/refine-results/geolocation/in-depth/geo-ranking-precision"
+                  ]
+                }
+              ]
+            },
+            {
+              "group": "Sorting",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/refine-results/sorting/how-to/sort-an-index-alphabetically",
+                    "guides/managing-results/refine-results/sorting/how-to/sort-an-index-by-date",
+                    "guides/managing-results/refine-results/sorting/how-to/set-settings-and-forward-to-replicas",
+                    "guides/managing-results/refine-results/sorting/how-to/use-sorting-ui-widget",
+                    "guides/managing-results/refine-results/sorting/how-to/deleting-replicas",
+                    "guides/managing-results/refine-results/sorting/how-to/creating-replicas",
+                    "guides/managing-results/refine-results/sorting/how-to/sort-by-attribute",
+                    "guides/managing-results/refine-results/sorting/how-to/rename-a-replica-index",
+                    "guides/managing-results/refine-results/sorting/how-to/search-in-a-replica-index"
+                  ]
+                },
+                {
+                  "group": "In depth",
+                  "pages": [
+                    "guides/managing-results/refine-results/sorting/in-depth/replicas",
+                    "guides/managing-results/refine-results/sorting/in-depth/relevant-sort",
+                    "guides/managing-results/refine-results/sorting/in-depth/replicas-impact-on-pricing",
+                    "guides/managing-results/refine-results/sorting/in-depth/exhaustive-sort"
+                  ]
+                }
+              ]
+            },
+            "guides/managing-results/refine-results/geolocation"
+          ]
+        },
+        {
+          "group": "Troubleshooting",
+          "pages": [
+            "guides/managing-results/troubleshooting/troubleshooting-search",
+            "guides/managing-results/troubleshooting/troubleshooting-relevance"
+          ]
+        },
+        {
+          "group": "Must do",
+          "pages": [
+            "guides/managing-results/must-do/custom-ranking",
+            "guides/managing-results/must-do/searchable-attributes",
+            {
+              "group": "Custom ranking",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/must-do/custom-ranking/how-to/bayesian-average",
+                    "guides/managing-results/must-do/custom-ranking/how-to/enrich-your-records-with-google-analytics-data",
+                    "guides/managing-results/must-do/custom-ranking/how-to/controlling-custom-ranking-metrics-precision",
+                    "guides/managing-results/must-do/custom-ranking/how-to/boost-or-penalize-some-records",
+                    "guides/managing-results/must-do/custom-ranking/how-to/configure-custom-ranking",
+                    "guides/managing-results/must-do/custom-ranking/how-to/custom-ranking-per-category"
+                  ]
+                }
+              ]
+            },
+            {
+              "group": "Searchable attributes",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/must-do/searchable-attributes/how-to/configuring-searchable-attributes-the-right-way"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Relevance overview",
+          "pages": [
+            {
+              "group": "In depth",
+              "pages": [
+                "guides/managing-results/relevance-overview/in-depth/textual-matching",
+                "guides/managing-results/relevance-overview/in-depth/ranking-criteria",
+                "guides/managing-results/relevance-overview/in-depth/defining-relevance"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Rules",
+          "pages": [
+            "guides/managing-results/rules/merchandising-and-promoting",
+            {
+              "group": "Merchandising and promoting",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-category-pages",
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-hide-hits",
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/merchandise-on-empty-query",
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/rules-query-parameters",
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/redirects",
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/promote-hits",
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/combining-multiple-consequences",
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/how-to-promote-with-optional-filters",
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/add-banners",
+                    "guides/managing-results/rules/merchandising-and-promoting/how-to/merchandising-facets"
+                  ]
+                },
+                {
+                  "group": "In depth",
+                  "pages": [
+                    "guides/managing-results/rules/merchandising-and-promoting/in-depth/optional-filters"
+                  ]
+                }
+              ]
+            },
+            "guides/managing-results/rules/detecting-intent",
+            "guides/managing-results/rules/rules-overview",
+            {
+              "group": "Rules overview",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/rules/rules-overview/how-to/customize-search-results-by-platform",
+                    "guides/managing-results/rules/rules-overview/how-to/use-conditionless-rules",
+                    "guides/managing-results/rules/rules-overview/how-to/add-default-search-parameters-with-rules"
+                  ]
+                },
+                {
+                  "group": "In depth",
+                  "pages": [
+                    "guides/managing-results/rules/rules-overview/in-depth/debugging-rules",
+                    "guides/managing-results/rules/rules-overview/in-depth/rule-matching-algorithm",
+                    "guides/managing-results/rules/rules-overview/in-depth/implementing-rules"
+                  ]
+                }
+              ]
+            },
+            {
+              "group": "Detecting intent",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/rules/detecting-intent/how-to/detecting-keywords",
+                    "guides/managing-results/rules/detecting-intent/how-to/applying-a-filter-if-the-query-match-a-facet-value",
+                    "guides/managing-results/rules/detecting-intent/how-to/applying-a-custom-filter-for-a-specific-query",
+                    "guides/managing-results/rules/detecting-intent/how-to/applying-search-parameters-for-a-specific-query"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Optimize search results",
+          "pages": [
+            {
+              "group": "Handling natural languages nlp",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-stop-words",
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-plurals-and-other-declensions",
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/how-to-set-an-index-query-language",
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/customize-segmentation",
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/how-to/multilingual-search"
+                  ]
+                },
+                {
+                  "group": "In depth",
+                  "pages": [
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/tokenization",
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/language-specific-configurations",
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/supported-languages",
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/normalization",
+                    "guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/splitting-and-concatenation"
+                  ]
+                }
+              ]
+            },
+            {
+              "group": "Typo tolerance",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/optimize-search-results/typo-tolerance/how-to/how-to-search-in-hyphenated-attributes",
+                    "guides/managing-results/optimize-search-results/typo-tolerance/how-to/how-to-prevent-typosquatting"
+                  ]
+                },
+                {
+                  "group": "In depth",
+                  "pages": [
+                    "guides/managing-results/optimize-search-results/typo-tolerance/in-depth/configuring-typo-tolerance"
+                  ]
+                }
+              ]
+            },
+            "guides/managing-results/optimize-search-results/handling-natural-languages-nlp",
+            "guides/managing-results/optimize-search-results/empty-or-insufficient-results",
+            {
+              "group": "Adding synonyms",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/optimize-search-results/adding-synonyms/how-to/managing-synonyms-from-the-dashboard"
+                  ]
+                }
+              ]
+            },
+            {
+              "group": "Empty or insufficient results",
+              "pages": [
+                {
+                  "group": "In depth",
+                  "pages": [
+                    "guides/managing-results/optimize-search-results/empty-or-insufficient-results/in-depth/why-use-remove-words-if-no-results"
+                  ]
+                }
+              ]
+            },
+            "guides/managing-results/optimize-search-results/override-search-engine-defaults",
+            "guides/managing-results/optimize-search-results/typo-tolerance",
+            {
+              "group": "Override search engine defaults",
+              "pages": [
+                {
+                  "group": "How to",
+                  "pages": [
+                    "guides/managing-results/optimize-search-results/override-search-engine-defaults/how-to/how-can-i-make-queries-within-the-middle-of-a-word"
+                  ]
+                },
+                {
+                  "group": "In depth",
+                  "pages": [
+                    "guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/adjust-exact-settings",
+                    "guides/managing-results/optimize-search-results/override-search-engine-defaults/in-depth/prefix-searching"
+                  ]
+                }
+              ]
+            },
+            "guides/managing-results/optimize-search-results/adding-synonyms"
+          ]
+        },
+        "guides/managing-results/relevance-overview"
+      ]
+    },
+    {
+      "group": "Personalization",
+      "pages": [
+        {
+          "group": "AI Personalization",
+          "pages": [
+            "guides/personalization/ai-personalization/what-is-ai-personalization",
+            "guides/personalization/ai-personalization/how-does-ai-personalization-work",
+            "guides/personalization/ai-personalization/user-profiles",
+            "guides/personalization/ai-personalization/migrate-from-classic-personalization",
+            {
+              "group": "Configure",
+              "pages": [
+                "guides/personalization/ai-personalization/configure",
+                "guides/personalization/ai-personalization/configure/index-structure",
+                "guides/personalization/ai-personalization/configure/event-implementation",
+                "guides/personalization/ai-personalization/configure/search-implementation",
+                "guides/personalization/ai-personalization/configure/indices",
+                "guides/personalization/ai-personalization/configure/events",
+                "guides/personalization/ai-personalization/configure/personalization-reranking"
+              ]
+            },
+            {
+              "group": "Monitor",
+              "pages": [
+                "guides/personalization/ai-personalization/monitor/ab-test",
+                "guides/personalization/ai-personalization/monitor/troubleshoot",
+                "guides/personalization/ai-personalization/monitor/inspect-a-user-profile",
+                "guides/personalization/ai-personalization/monitor/delete-a-user-profile",
+                "guides/personalization/ai-personalization/monitor/error-codes"
+              ]
+            },
+            {
+              "group": "Implement",
+              "pages": [
+                "guides/personalization/ai-personalization/guides/segment-users-with-rule-contexts",
+                "guides/personalization/ai-personalization/guides/applying-contextual-affinities",
+                "guides/personalization/ai-personalization/guides/fetching-a-user-profile",
+                "guides/personalization/ai-personalization/guides/personalizing-search-facets",
+                "guides/personalization/ai-personalization/guides/inline-segmentation",
+                "guides/personalization/ai-personalization/guides/label-and-boost-purchased-items",
+                "guides/personalization/ai-personalization/guides/export-audience",
+                "guides/personalization/ai-personalization/guides/personalize-product-display"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Classic Personalization",
+          "pages": [
+            "guides/personalization/classic-personalization/what-is-personalization",
+            "guides/personalization/classic-personalization/how-personalization-works",
+            "guides/personalization/classic-personalization/personalizing-results",
+            "guides/personalization/classic-personalization/configuring-personalization",
+            {
+              "group": "Going to production",
+              "pages": [
+                "guides/personalization/classic-personalization/going-to-production",
+                "guides/personalization/classic-personalization/going-to-production/ab-testing-personalization",
+                "guides/personalization/classic-personalization/going-to-production/enabling-personalization",
+                "guides/personalization/classic-personalization/going-to-production/implementation-checklist"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Algolia Recommend",
+      "pages": [
+        "guides/algolia-recommend/overview",
+        {
+          "group": "Upgrade",
+          "pages": [
+            "guides/algolia-recommend/upgrade/recommend-js",
+            "guides/algolia-recommend/upgrade/recommend-react"
+          ]
+        },
+        {
+          "group": "How to",
+          "pages": [
+            "guides/algolia-recommend/how-to/csv-upload",
+            "guides/algolia-recommend/how-to/set-up",
+            "guides/algolia-recommend/how-to/looking-similar",
+            "guides/algolia-recommend/how-to/recommend-rules",
+            "guides/algolia-recommend/how-to/deduplication"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Algolia AI",
+      "pages": [
+        "guides/algolia-ai/dynamic-synonym-suggestions",
+        "guides/algolia-ai/query-categorization",
+        "guides/algolia-ai/dynamic-re-ranking",
+        "guides/algolia-ai/dynamic-re-ranking/re-rank-category-pages"
+      ]
+    },
+    {
+      "group": "API clients",
+      "pages": ["libraries/python"]
+    },
+    {
+      "group": "UI libraries",
+      "pages": ["ui-libraries/ui-libraries"]
+    },
+    {
+      "group": "Integrations",
+      "pages": ["integrations/overview"]
+    },
+    {
+      "group": "Tools",
+      "pages": ["tools/overview"]
+    },
+    {
+      "group": "Libraries",
+      "pages": [
+        "ui-libraries/autocomplete",
+        "ui-libraries/instantsearch",
+        {
+          "group": "Widgets",
+          "pages": [
+            {
+              "group": "InstantSearch.js",
+              "pages": ["ui-libraries/instantsearch/widgets/js/configure"]
+            },
+            {
+              "group": "React InstantSearch",
+              "pages": ["ui-libraries/instantsearch/widgets/react/configure"]
+            },
+            {
+              "group": "Vue InstantSearch",
+              "pages": ["ui-libraries/instantsearch/widgets/vue/configure"]
+            }
+          ]
+        }
+      ]
+    },
 
+    {
+      "group": "Crawler",
+      "pages": [
+        "tools/crawler/getting-started",
+        {
+          "group": "REST API",
+          "pages": [
+            {
+              "group": "Actions",
+              "pages": [
+                "tools/crawler/api/actions/crawl",
+                "tools/crawler/api/actions/pause",
+                "tools/crawler/api/actions/start",
+                "tools/crawler/api/actions/test"
+              ]
+            },
+            {
+              "group": "Configuration",
+              "pages": [
+                "tools/crawler/api/configuration/list",
+                "tools/crawler/api/configuration/retrieve",
+                "tools/crawler/api/configuration/update"
+              ]
+            },
+            {
+              "group": "Crawler",
+              "pages": [
+                "tools/crawler/api/crawler/create",
+                "tools/crawler/api/crawler/list",
+                "tools/crawler/api/crawler/retrieve",
+                "tools/crawler/api/crawler/stats",
+                "tools/crawler/api/crawler/update"
+              ]
+            },
+            {
+              "group": "Domains",
+              "pages": ["tools/crawler/api/domains/list"]
+            },
+            {
+              "group": "Tasks",
+              "pages": [
+                "tools/crawler/api/tasks/cancel",
+                "tools/crawler/api/tasks/retrieve"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Shopify",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/shopify/getting-started/quick-start",
+            "integrations/shopify/getting-started/configuration",
+            "integrations/shopify/getting-started/upgrade"
+          ]
+        },
+        {
+          "group": "Send and manage data",
+          "pages": [
+            "integrations/shopify/sending-and-managing-data/introduction-to-shopify-indexing",
+            "integrations/shopify/sending-and-managing-data/schemas",
+            "integrations/shopify/sending-and-managing-data/named-tags",
+            "integrations/shopify/sending-and-managing-data/metafields",
+            "integrations/shopify/sending-and-managing-data/locations",
+            "integrations/shopify/sending-and-managing-data/markets",
+            "integrations/shopify/sending-and-managing-data/algolia-config"
+          ]
+        },
+        {
+          "group": "Search UI",
+          "pages": [
+            "integrations/shopify/building-search-ui/front-end-choices",
+            "integrations/shopify/building-search-ui/autocomplete",
+            "integrations/shopify/building-search-ui/instant-search",
+            "integrations/shopify/building-search-ui/recommend",
+            "integrations/shopify/building-search-ui/events",
+            "integrations/shopify/building-search-ui/frontend-custom-events",
+            "integrations/shopify/building-search-ui/global-events"
+          ]
+        },
+        {
+          "group": "Collections and customization",
+          "pages": [
+            "integrations/shopify/advanced-customization/collection-search-page",
+            "integrations/shopify/advanced-customization/collection-customisation",
+            "integrations/shopify/advanced-customization/add-query-suggestions-to-autocomplete",
+            "integrations/shopify/advanced-customization/add-custom-plugin-to-autocomplete",
+            "integrations/shopify/advanced-customization/update-facet-config-in-instantsearch"
+          ]
+        },
+        {
+          "group": "Troubleshooting",
+          "pages": ["integrations/shopify/troubleshooting/frequent-issues"]
+        },
+        {
+          "group": "Going further",
+          "pages": [
+            "integrations/shopify/going-further/out-of-stock-products",
+            "integrations/shopify/going-further/merchandising-tool",
+            "integrations/shopify/going-further/shopify-flow"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Salesforce B2C Commerce",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/introduction",
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/set-up-the-algolia-cartridge",
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/start-indexing-your-data",
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/configure-your-search",
+            "integrations/salesforce-commerce-cloud-b2c/getting-started/custom-preferences"
+          ]
+        },
+        {
+          "group": "Indexing",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/overview",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/full-indexing",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/ongoing-indexing",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/product-indexing/indexing-attributes",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/content-indexing/fundamentals",
+            "integrations/salesforce-commerce-cloud-b2c/indexing/content-indexing/configuration"
+          ]
+        },
+        {
+          "group": "Search UI",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/building-the-search-ui/front-end",
+            "integrations/salesforce-commerce-cloud-b2c/building-the-search-ui/events"
+          ]
+        },
+        {
+          "group": "Guides",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/guides/headless",
+            "integrations/salesforce-commerce-cloud-b2c/guides/migrating-to-23-5-0",
+            "integrations/salesforce-commerce-cloud-b2c/guides/pwa-kit",
+            "integrations/salesforce-commerce-cloud-b2c/guides/custom-react-frontend",
+            "integrations/salesforce-commerce-cloud-b2c/guides/storefront-sample-app",
+            "integrations/salesforce-commerce-cloud-b2c/guides/algolia-recommend",
+            "integrations/salesforce-commerce-cloud-b2c/guides/ssr-caching",
+            "integrations/salesforce-commerce-cloud-b2c/guides/facet-bucketing",
+            "integrations/salesforce-commerce-cloud-b2c/guides/multi-instance-indexing",
+            "integrations/salesforce-commerce-cloud-b2c/guides/performance-considerations"
+          ]
+        },
+        {
+          "group": "Troubleshooting",
+          "pages": [
+            "integrations/salesforce-commerce-cloud-b2c/troubleshooting/monitoring"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Magento/Adobe Commerce",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/magento-2/getting-started/quick-start",
+            "integrations/magento-2/getting-started/moving-to-production",
+            "integrations/magento-2/getting-started/upgrading",
+            "integrations/magento-2/getting-started/hogan-support"
+          ]
+        },
+        {
+          "group": "How it works",
+          "pages": [
+            "integrations/magento-2/how-it-works/front-end",
+            "integrations/magento-2/how-it-works/events",
+            "integrations/magento-2/how-it-works/indexing",
+            "integrations/magento-2/how-it-works/indexing-queue",
+            "integrations/magento-2/how-it-works/sku-reindexing-form",
+            "integrations/magento-2/how-it-works/analytics-overview",
+            "integrations/magento-2/how-it-works/google-analytics",
+            "integrations/magento-2/how-it-works/recommend",
+            "integrations/magento-2/how-it-works/personalization",
+            "integrations/magento-2/how-it-works/help-and-support-page",
+            "integrations/magento-2/how-it-works/magento-feature-compatibility",
+            "integrations/magento-2/how-it-works/cookie-law-compliance"
+          ]
+        },
+        {
+          "group": "Merchandising",
+          "pages": [
+            "integrations/magento-2/merchandising/visual-merchandising",
+            "integrations/magento-2/merchandising/query-merchandiser",
+            "integrations/magento-2/merchandising/category-merchandising",
+            "integrations/magento-2/merchandising/landing-page-builder",
+            "integrations/magento-2/merchandising/merchandising-studio"
+          ]
+        },
+        {
+          "group": "Customization",
+          "pages": [
+            "integrations/magento-2/customize/autocomplete-menu",
+            "integrations/magento-2/customize/instant-search-page",
+            "integrations/magento-2/customize/custom-front-end-events",
+            "integrations/magento-2/customize/custom-back-end-events",
+            "integrations/magento-2/customize/logging-and-debugging"
+          ]
+        },
+        {
+          "group": "Guides",
+          "pages": [
+            "integrations/magento-2/guides/create-a-custom-extension",
+            "integrations/magento-2/guides/transform-indexed-attribute",
+            "integrations/magento-2/guides/multi-language-search",
+            "integrations/magento-2/guides/algolia-query-suggestions",
+            "integrations/magento-2/guides/category-pages"
+          ]
+        },
+        {
+          "group": "Troubleshooting",
+          "pages": [
+            "integrations/magento-2/troubleshooting/data-indexes-queues",
+            "integrations/magento-2/troubleshooting/in-depth/data-indexes-queues",
+            "integrations/magento-2/troubleshooting/technical-troubleshooting",
+            "integrations/magento-2/troubleshooting/back-end-issues",
+            "integrations/magento-2/troubleshooting/front-end-issues"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Commercetools",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/commercetools/get-started/installation",
+            "integrations/commercetools/get-started/configuration"
+          ]
+        },
+        {
+          "group": "Indexing",
+          "pages": [
+            "integrations/commercetools/indexing/monitoring-commercetools-indexing",
+            "integrations/commercetools/indexing/product-schema"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "Bigcommerce",
+      "pages": [
+        {
+          "group": "Get started",
+          "pages": [
+            "integrations/bigcommerce/get-started/installation",
+            "integrations/bigcommerce/get-started/configuration"
+          ]
+        },
+        {
+          "group": "Search settings",
+          "pages": [
+            "integrations/bigcommerce/search-settings/autocomplete",
+            "integrations/bigcommerce/search-settings/instantsearch",
+            "integrations/bigcommerce/search-settings/events",
+            "integrations/bigcommerce/search-settings/customization",
+            "integrations/bigcommerce/search-settings/custom-hooks",
+            "integrations/bigcommerce/search-settings/recommend"
+          ]
+        },
+        {
+          "group": "Indexing",
+          "pages": [
+            "integrations/bigcommerce/indexing/product-schema",
+            "integrations/bigcommerce/indexing/monitoring-bigcommerce-indexing"
+          ]
+        },
+        {
+          "group": "Uninstall",
+          "pages": [
+            "integrations/bigcommerce/uninstalling/bigcommerce-uninstall-checklist"
+          ]
+        }
+      ]
+    },
+    {
+      "group": "API reference",
+      "pages": [
+        "api-reference/overview",
+        {
+          "group": "API parameters",
+          "pages": [
+            "api-reference/api-parameters",
+            "api-reference/parameters/query"
+          ]
+        },
+        {
+          "group": "Insights API",
+          "pages": [
+            "api-reference/insights-api/events/send-events",
+            "api-reference/insights-api/usertokens/delete-user-token"
+          ]
+        },
+        {
+          "group": "Recommend API",
+          "pages": [
+            {
+              "group": "Recommendations",
+              "pages": [
+                "api-reference/recommend-api/recommendations/retrieve-recommendations"
+              ]
+            },
+            {
+              "group": "Recommend rules",
+              "pages": [
+                "api-reference/recommend-api/rules/check-task-status",
+                "api-reference/recommend-api/rules/create-or-update-a-batch-of-recommend-rules",
+                "api-reference/recommend-api/rules/delete-a-rule",
+                "api-reference/recommend-api/rules/retrieve-a-rule",
+                "api-reference/recommend-api/rules/search-for-rules"
+              ]
+            }
+          ]
+        },
+        {
+          "group": "Search API",
+          "pages": [
+            {
+              "group": "Search operations",
+              "pages": [
+                "api-reference/search-api/search/search-an-index",
+                "api-reference/search-api/search/search-multiple-indices",
+                "api-reference/search-api/search/search-for-facet-values",
+                "api-reference/search-api/search/browse-for-records"
+              ]
+            },
+            {
+              "group": "Records operations",
+              "pages": [
+                "api-reference/search-api/records/add-or-replace-a-record",
+                "api-reference/search-api/records/retrieve-a-record",
+                "api-reference/search-api/records/delete-a-record",
+                "api-reference/search-api/records/delete-all-records-from-an-index",
+                "api-reference/search-api/records/add-or-update-attributes",
+                "api-reference/search-api/records/batch-indexing-operations-on-one-index",
+                "api-reference/search-api/records/batch-indexing-operations-on-multiple-indices",
+                "api-reference/search-api/records/retrieve-records"
+              ]
+            },
+            {
+              "group": "Indices operations",
+              "pages": [
+                "api-reference/search-api/indices/delete-an-index",
+                "api-reference/search-api/indices/retrieve-index-settings",
+                "api-reference/search-api/indices/update-index-settings",
+                "api-reference/search-api/indices/check-task-status",
+                "api-reference/search-api/indices/copy-or-move-an-index",
+                "api-reference/search-api/indices/list-indices"
+              ]
+            },
+            {
+              "group": "Synonyms operations",
+              "pages": [
+                "api-reference/search-api/synonyms/retrieve-a-synonym",
+                "api-reference/search-api/synonyms/create-or-replace-a-synonym",
+                "api-reference/search-api/synonyms/delete-a-synonym",
+                "api-reference/search-api/synonyms/create-or-replace-synonyms",
+                "api-reference/search-api/synonyms/delete-all-synonyms",
+                "api-reference/search-api/synonyms/search-for-synonyms"
+              ]
+            },
+            {
+              "group": "API keys operations",
+              "pages": [
+                "api-reference/search-api/api-keys/list-api-keys",
+                "api-reference/search-api/api-keys/create-an-api-key",
+                "api-reference/search-api/api-keys/retrieve-api-key-permissions",
+                "api-reference/search-api/api-keys/update-an-api-key",
+                "api-reference/search-api/api-keys/delete-an-api-key",
+                "api-reference/search-api/api-keys/restore-an-api-key"
+              ]
+            },
+            {
+              "group": "Rules operations",
+              "pages": [
+                "api-reference/search-api/rules/retrieve-a-rule",
+                "api-reference/search-api/rules/create-or-replace-a-rule",
+                "api-reference/search-api/rules/delete-a-rule",
+                "api-reference/search-api/rules/create-or-update-rules",
+                "api-reference/search-api/rules/delete-all-rules",
+                "api-reference/search-api/rules/search-for-rules"
+              ]
+            },
+            {
+              "group": "Dictionaries operations",
+              "pages": [
+                "api-reference/search-api/dictionaries/add-or-delete-dictionary-entries",
+                "api-reference/search-api/dictionaries/search-dictionary-entries",
+                "api-reference/search-api/dictionaries/retrieve-dictionary-settings",
+                "api-reference/search-api/dictionaries/update-dictionary-settings",
+                "api-reference/search-api/dictionaries/list-available-languages"
+              ]
+            },
+            {
+              "group": "Clusters operations",
+              "pages": [
+                "api-reference/search-api/clusters/list-user-ids",
+                "api-reference/search-api/clusters/assign-or-move-a-user-id",
+                "api-reference/search-api/clusters/assign-multiple-userids",
+                "api-reference/search-api/clusters/get-top-user-ids",
+                "api-reference/search-api/clusters/retrieve-user-id",
+                "api-reference/search-api/clusters/delete-user-id",
+                "api-reference/search-api/clusters/list-clusters",
+                "api-reference/search-api/clusters/search-for-user-ids",
+                "api-reference/search-api/clusters/get-migration-and-user-mapping-status"
+              ]
+            },
+            {
+              "group": "Vaults operations",
+              "pages": [
+                "api-reference/search-api/vaults/list-allowed-sources",
+                "api-reference/search-api/vaults/replace-allowed-sources",
+                "api-reference/search-api/vaults/add-a-source",
+                "api-reference/search-api/vaults/delete-a-source"
+              ]
+            },
+            {
+              "group": "Advanced operations",
+              "pages": [
+                "api-reference/search-api/advanced/retrieve-log-entries",
+                "api-reference/search-api/advanced/check-application-task-status"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "feedback": {
+    "thumbsRating": true
+  },
+  "footerSocials": {
+    "website": "https://www.algolia.com/",
+    "x": "https://x.com/algolia",
+    "discord": "https://alg.li/discord"
+  }
+}

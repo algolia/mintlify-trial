@@ -1,0 +1,271 @@
+---
+title: configure
+description: The widget lets you provide raw search parameters to the Algolia API without rendering anything.
+
+---
+
+## Signature
+
+```js
+configure(searchParameters);
+```
+
+ 
+## Import
+
+
+<CodeGroup>
+```js With a package manager
+import { configure } from 'instantsearch.js/es/widgets';
+```
+
+```js With a CDN
+const { configure } = instantsearch.widgets;
+// or directly use instantsearch.widgets.configure()
+```
+</CodeGroup>
+
+
+- [See code examples](#examples)
+- [See live example](https://instantsearchjs.netlify.app/stories/js/?path=/story/basics-configure--force-1-hit-per-page)
+
+## About this widget
+
+The `configure` widget lets you provide raw search parameters to the Algolia API without rendering anything.
+
+Any props you add to this widget is forwarded to Algolia. For more information on the different parameters you can set, have a look at the [search parameters API reference](/doc/api-reference/search-api-parameters/).
+
+ 
+## Examples
+
+```js
+configure({
+  hitsPerPage: 8,
+  enablePersonalization: true,
+});
+```
+
+
+
+## Options
+
+
+<ParamField path="searchParameters" type="object" required="true">
+A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable when the widget mounts.
+
+```js
+configure({
+  hitsPerPage: 8,
+  distinct: true,
+  clickAnalytics: true,
+  enablePersonalization: true,
+});
+```
+
+</ParamField>
+
+
+
+## Customize the UI
+
+
+
+If you want to create your own UI of the configure widget, you can use connectors.
+
+To use `connectConfigure`, you can import it with the declaration relevant to how you installed the library.
+
+<CodeGroup>
+```js With a package manager
+import { connectConfigure } from 'instantsearch.js/es/connectors';
+```
+
+```js With a CDN
+const { connectConfigure } = instantsearch.widgets;
+// or directly use instantsearch.widgets.connectConfigure()
+```
+</CodeGroup>
+
+### Create a render function
+
+This rendering function is called before the first search (`init` lifecycle step) and each time results come back from Algolia (`render` lifecycle step).
+
+```js
+const renderConfigure = (renderOptions, isFirstRender) => {
+  const {
+    refine,
+    widgetParams,
+  } = renderOptions;
+
+  if (isFirstRender) {
+    // Do some initial rendering and bind events
+  }
+
+  // Render the widget
+}
+```
+
+ 
+#### Rendering options
+
+
+<ParamField path="refine" type="function" required="">
+Removes the provided `searchParameters` and applies the one provided to the function.
+
+```js
+const renderConfigure = (renderOptions, isFirstRender) => {
+  const { refine } = renderOptions;
+
+  if (isFirstRender) {
+    const button = document.createElement('button');
+    button.textContent = 'Sets "hitsPerPage" to 4';
+
+    button.addEventListener('click', () => {
+      refine({ hitsPerPage: 4 });
+    });
+
+    document.querySelector('#configure').appendChild(button);
+  }
+};
+```
+
+</ParamField>
+
+<ParamField path="widgetParams" type="object" required="">
+All original widget options forwarded to the render function.
+
+```js
+const renderConfigure = (renderOptions, isFirstRender) => {
+  const { widgetParams } = renderOptions;
+
+  widgetParams.container.innerHTML = `
+    <pre>${JSON.stringify(widgetParams.searchParameters, null, 2)}</pre>
+  `;
+};
+
+// ...
+
+search.addWidgets([
+  customConfigure({
+    container: document.querySelector('#configure'),
+    searchParameters: {
+      hitsPerPage: 8,
+    },
+  })
+]);
+```
+
+</ParamField>
+
+
+### Create and instantiate the custom widget
+
+We first create custom widgets from our rendering function, then we instantiate them. When doing that, there are two types of parameters you can give:
+
+- Instance parameters: they are predefined parameters that you can use to configure the behavior of Algolia.
+- Your own parameters: to make the custom widget generic.
+
+Both instance and custom parameters are available in `connector.widgetParams`, inside the `renderFunction`.
+
+```js
+const customConfigure = connectConfigure(
+  renderConfigure
+);
+
+search.addWidgets([
+  customConfigure({
+    searchParameters,
+  })
+]);
+```
+
+ 
+#### Instance options
+
+
+<ParamField path="searchParameters" type="object" required="true">
+A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable when this widget renders.
+
+```js
+customConfigure({
+  searchParameters: {
+    hitsPerPage: 8,
+    distinct: true,
+    clickAnalytics: true,
+  },
+});
+```
+
+</ParamField>
+
+
+
+
+
+
+### Full example
+
+<CodeGroup>
+
+```js JavaScript
+// Create the render function
+const renderConfigure = (renderOptions, isFirstRender) => {
+  const { refine, widgetParams } = renderOptions;
+
+  if (isFirstRender) {
+    const button = document.createElement('button');
+    const pre = document.createElement('pre');
+
+    button.addEventListener('click', () => {
+      refine({
+        hitsPerPage: widgetParams.searchParameters.hitsPerPage === 8 ? 4 : 8,
+      });
+    });
+
+    widgetParams.container.appendChild(button);
+    widgetParams.container.appendChild(pre);
+  }
+
+  widgetParams.container.querySelector(
+    'button'
+  ).textContent = `Sets "hitsPerPage" to ${
+    widgetParams.searchParameters.hitsPerPage === 8 ? 4 : 8
+  }`;
+
+  widgetParams.container.querySelector('pre').innerHTML = JSON.stringify(
+    widgetParams.searchParameters,
+    null,
+    2
+  );
+};
+
+// Create the custom widget
+const customConfigure = connectConfigure(
+  renderConfigure,
+  () => {}
+);
+
+// Instantiate the custom widget
+search.addWidgets([
+  customConfigure({
+    container: document.querySelector('#configure'),
+    searchParameters: {
+      hitsPerPage: 8,
+    },
+  })
+]);
+```
+
+
+```html HTML
+<div id="configure"></div>
+```
+
+
+</CodeGroup>
+
+
+
+## HTML Output
+
+This widget has no HTML output.
+

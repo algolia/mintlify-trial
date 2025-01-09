@@ -1,0 +1,136 @@
+name: <Configure>
+
+import: Configure
+
+# <!-- vale off -->
+usage: |
+  ```jsx
+  <Configure {...searchParameters} />
+  ```
+# <!-- vale on -->
+storybook_link: https://instantsearchjs.netlify.app/stories/?path=/story/basics-configure--force-1-hit-per-page
+
+short_description: A widget to forward search parameters to Algolia.
+
+description: |
+  `<Configure>` is a renderless component that lets you forward [search parameters](/doc/api-reference/search-api-parameters/) to Algolia.
+
+  Any prop you pass to this component is forwarded as a [search parameter](/doc/api-reference/search-api-parameters/) to Algolia.
+
+  <Warning>
+  Don't make the widget itself conditional, for example, in a ternary statement.
+  Doing so creates an infinite loop.
+  </Warning>
+
+examples: |
+  ```jsx
+  import React from 'react';
+  import { liteClient as algoliasearch } from 'algoliasearch/lite';
+  import { InstantSearch, Configure } from 'react-instantsearch';
+
+  const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+
+  function App() {
+    return (
+      <InstantSearch indexName="instant_search" searchClient={searchClient}>
+        <Configure
+          analytics={false}
+          filters="free_shipping:true"
+          hitsPerPage={40}
+        />
+      </InstantSearch>
+    );
+  }
+  ```
+
+widget_parameters_groups:
+  - name: Props
+    parameters:
+      - name: '...searchParameters'
+        type: 'SearchParameters'
+        description: |
+          A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable.
+        snippets: |
+          ```jsx
+          <Configure
+            analytics={false}
+            filters="free_shipping:true"
+            hitsPerPage={40}
+          />
+          ```
+
+customize:
+  title: Hook
+  connector:
+    name: useConfigure()
+    usage:
+      renderFunction: |
+        ```jsx
+        import { useConfigure } from 'react-instantsearch';
+
+        function CustomConfigure(props) {
+          const { refine } = useConfigure(props);
+
+          return null;
+        }
+        ```
+      initializeWidget: |
+        ```jsx
+        <CustomConfigure {...searchParameters} />
+        ```
+    params:
+      - name: ''
+        parameters:
+          - name: refine
+            type: '(value: SearchParameters) => void'
+            description: |
+              Replaces the provided search parameters with new ones.
+            snippets: |
+              ```jsx
+              const { refine } = useConfigure({
+                hitsPerPage: 4,
+              });
+
+              return (
+                <button onClick={() => refine({ hitsPerPage: 8 })}>
+                  Show 8 hits per page
+                </button>
+              );
+              ```
+      - name: ''
+        parameters:
+          - name: '...searchParameters'
+            type: 'SearchParameters'
+            description: |
+              A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable. It returns an object with a [`refine`](#hook-api-refine) function that you can use to replace the provided search parameters with new ones.
+            snippets: |
+              ```js
+              const configureApi = useConfigure({
+                hitsPerPage: 4,
+                analytics: false,
+                distinct: true,
+              });
+              ```
+    full_example:
+      - code: |
+          ```jsx JavaScript
+          import React from 'react';
+          import { useConfigure } from 'react-instantsearch';
+
+          function CustomConfigure(props) {
+            useConfigure(props);
+
+            return null;
+          }
+          ```
+      - code: |
+          ```ts TypeScript
+          import React from 'react';
+          import { useConfigure, UseConfigureProps } from 'react-instantsearch';
+
+          function CustomConfigure(props: UseConfigureProps) {
+            useConfigure(props);
+
+            return null;
+          }
+          ```

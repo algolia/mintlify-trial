@@ -1,0 +1,90 @@
+name: ais-configure
+
+import: AisConfigure
+
+usage: |
+  ```js
+  <ais-configure
+    // Optional parameters
+    v-bind="searchParameters"
+  />
+  ```
+
+storybook_link: https://instantsearchjs.netlify.app/stories/vue/?selectedKind=ais-configure
+
+short_description: |
+  A widget that lets you provide raw search parameters to the Algolia API without rendering anything.
+
+meta_description: A widget for Vue InstantSearch to provide search parameters to Algolia.
+
+description: |
+  The `ais-configure` widget lets you provide raw search parameters to the Algolia API without rendering anything.
+
+  Any props you add to this widget is forwarded to Algolia. For more information on the different parameters you can set, have a look at the [search parameters API reference](/doc/api-reference/search-api-parameters/).
+
+examples: |
+  ```html
+  <ais-configure
+    :hits-per-page.camel="4"
+    :distinct="true"
+    :analytics="false"
+    :enable-personalization.camel="true"
+  />
+  ```
+
+widget_parameters_groups:
+  - name: 'Props'
+    parameters:
+      - name: searchParameters
+        type: 'object'
+        description: |
+          A list of [search parameters](/doc/api-reference/search-api-parameters/) to enable when the widget mounts. Note that **the props have to use camel case** since they're directly forwarded to the Algolia API. In HTML or string templates, you can do this by adding [`.camel`](https://vuejs.org/v2/api/#v-bind) before the value of the prop.
+        snippets: |
+          ```html
+          <ais-configure
+            :hits-per-page.camel="4"
+            :distinct="true"
+            :enable-personalization.camel="true"
+          />
+          ```
+
+customize:
+  title: Customize the UI
+  connector:
+    params:
+      - name: ''
+        parameters:
+          - name: default
+            description: |
+              The slot to override the DOM output
+
+              Note that when you implement this slot, none of the other slots will change the output, as the default slot surrounds them.
+
+              #### Scope
+
+              <ParamField path="searchParameters" type="object">
+                The current search parameters applied to the search.
+              </ParamField>
+
+              <ParamField path="refine" type="(object) => void">
+                The function to change the search parameters applied to the search.
+              </ParamField>
+
+            snippets: |
+              ```html
+              <ais-configure :enable-rules.camel="false" :hits-per-page.camel="5">
+                <template v-slot="{ searchParameters, refine }">
+                  <button
+                    @click="refine({
+                      ...searchParameters,
+                      enableRules: !searchParameters.enableRules,
+                    })"
+                  >Toggle only query rules</button>
+                  Currently applied filters:
+                  <pre>{{ searchParameters }}</pre>
+                </template>
+              </ais-configure>
+              ```
+
+html_output: |
+  This widget has no HTML output.
