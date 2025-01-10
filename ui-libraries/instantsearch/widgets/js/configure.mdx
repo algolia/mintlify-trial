@@ -4,6 +4,14 @@ sidebarTitle: configure (JavaScript)
 description: A widget for InstantSearch.js to provide search parameters to Algolia.
 ---
 
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<Frame>
+  <FlavorSelect flavors={'js,react,vue'} selected={'js'} onSelect={(newFlavor) => {
+    window.location.href = `/ui-libraries/instantsearch/widgets/${newFlavor}/configure`;
+  }} />
+</Frame>
+
 The `configure` widget lets you provide raw search parameters to the Algolia API without rendering anything.
 
 Any props you pass to this widget are forwarded to Algolia.
@@ -16,8 +24,9 @@ Any props you pass to this widget are forwarded to Algolia.
 
     Options:
 
-    - [`searchParameters`](#searchParameters)
-    
+    | Option                                  | Type   | Required?             |
+    | :-------------------------------------- | :----- | --------------------- |
+    | [`searchParameters`](#searchParameters) | Object | <Icon icon="check" /> |
   </Tab>
   <Tab title="Example">
     ```js
@@ -38,10 +47,6 @@ Any props you pass to this widget are forwarded to Algolia.
 
 ## Options
 
-| Option                                  | Type   | Required?             |
-| :-------------------------------------- | :----- | --------------------- |
-| [`searchParameters`](#searchParameters) | Object | <Icon icon="check" /> |
-
 ### `searchParameters`
 
 A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
@@ -50,23 +55,9 @@ A list of [search parameters](https://www.algolia.com/doc/api-reference/search-a
 
 To create your own UI for the `configure` widget, use the `connectConfigure` comnector.
 
-Import it with a package manager or with a CDN.
+import Connector from '/snippets/instantsearch/connector.mdx';
 
-<Tabs>
-  <Tab title="Package manager">
-    ```js
-    import { connectConfigure } from 'instantsearch.js/es/connectors';
-    ```
-  </Tab>
-  <Tab title="CDN">
-    ```js
-    const { connectConfigure } = instantsearch.connectors;
-    // Or use instantsearch.connectors.connectConfigure()
-    ```
-  </Tab>
-</Tabs>
-
-After importing:
+<Connector />
 
 <Steps>
   <Step title="Create a render function">

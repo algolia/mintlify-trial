@@ -1,0 +1,24 @@
+export const FlavorSelect = ({ flavors, selected, onSelect }) => {
+  const names = {
+    js: 'InstantSearch.js',
+    react: 'React InstantSearch',
+    vue: 'Vue InstantSearch',
+  }
+  
+  const options = flavors.split(',').map((value) => ({
+    name: names[value],
+    value,
+  }));
+  
+  return (
+    <select name="flavor" id="flavor" onChange={(event) => {
+      onSelect(event.target.value);
+    }}>
+      {options.map(({ name, value }) => (
+        <option key={value} value={value} selected={value === selected}>
+          {name}
+        </option>
+      ))}
+    </select>
+  );
+}

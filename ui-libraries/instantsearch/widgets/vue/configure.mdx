@@ -4,6 +4,14 @@ sidebarTitle: ais-configure (Vue)
 description: A widget for Vue InstantSearch to provide search parameters to Algolia.
 ---
 
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<Frame>
+  <FlavorSelect flavors={'js,react,vue'} selected={'vue'} onSelect={(newFlavor) => {
+    window.location.href = `/ui-libraries/instantsearch/widgets/${newFlavor}/configure`;
+  }} />
+</Frame>
+
 The `ais-configure` widget lets you provide raw search parameters to the Algolia API without rendering anything.
 
 Any props you pass to this widget are forwarded to Algolia.
@@ -19,8 +27,9 @@ Any props you pass to this widget are forwarded to Algolia.
 
     Props:
 
-    - [`searchParameters`](#searchparameters)
-    
+    | Prop                                    | Type   | Required?             |
+    | :-------------------------------------- | :----- | --------------------- |
+    | [`searchParameters`](#searchparameters) | Object | <Icon icon="check" /> |
   </Tab>
   <Tab title="Example">
     ```vue
@@ -77,10 +86,6 @@ Import `ais-configure` as a component or with a plugin.
 </Tabs>
 
 ## Props
-
-| Prop                                    | Type   | Required?             |
-| :-------------------------------------- | :----- | --------------------- |
-| [`searchParameters`](#searchparameters) | Object | <Icon icon="check" /> |
 
 ### `searchParameters`
 
