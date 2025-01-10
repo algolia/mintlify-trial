@@ -4,6 +4,14 @@ sidebarTitle: <Configure> (React)
 description: A component for React InstantSearch. to provide search parameters to Algolia.
 ---
 
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<Frame>
+  <FlavorSelect flavors={'js,react,vue'} selected={'react'} onSelect={(newFlavor) => {
+    window.location.href = `/ui-libraries/instantsearch/widgets/${newFlavor}/configure`;
+  }} />
+</Frame>
+
 The `<Configure>` component lets you provide raw search parameters to the Algolia API without rendering anything.
 
 Any props you pass to this component are forwarded to Algolia.
@@ -21,8 +29,9 @@ Any props you pass to this component are forwarded to Algolia.
 
     Props:
 
-    - [`searchParameters`](#searchparameters)
-    
+    | Prop                                       | Type   | Required?             |
+    | :----------------------------------------- | :----- | --------------------- |
+    | [`...searchParameters`](#searchparameters) | Object | <Icon icon="check" /> |
   </Tab>
   <Tab title="Example">
     ```jsx JSX
@@ -53,10 +62,6 @@ Any props you pass to this component are forwarded to Algolia.
 </Tabs>
 
 ## Options
-
-| Prop                                       | Type   | Required?             |
-| :----------------------------------------- | :----- | --------------------- |
-| [`...searchParameters`](#searchparameters) | Object | <Icon icon="check" /> |
 
 ### `searchParameters`
 

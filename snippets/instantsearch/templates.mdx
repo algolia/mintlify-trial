@@ -1,0 +1,101 @@
+
+You can customize parts of the widget's UI with templates.
+
+Every template provides an `html` function you can use as a [tagged template](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates).
+Using `html` lets you safely provide templates as an HTML string.
+It works directly in the browser without a build step.
+See more information, see [**Templating your UI**](https://www.algolia.com/doc/guides/building-search-ui/widgets/customize-an-existing-widget/js/#templating-your-ui).
+
+<Note>
+    The `html` function is available from InstantSearch v4.46.0.
+</Note>
+
+Parameters:
+
+| Parameter                               | Type                            |
+|:--------------------------------------- |:------------------------------- |
+| [`submit`](#submit)                     | String (deprecated) or function |
+| [`reset`](#reset)                       | String (deprecated) or function | 
+| [`loadingIndicator`](#loadingindicator) | String (deprecated) or function | 
+
+#### `submit`
+
+The template used for displaying the submit button.
+
+<CodeGroup>
+```js Function
+searchBox({
+    // ...
+    templates: {
+    submit({ cssClasses }, { html }) {
+        return html`<span class="${cssClasses.submit}">submit</span>`;
+    },
+    },
+});
+```
+
+```js String
+searchBox({
+    // ...
+    templates: {
+    submit: 'submit',
+    },
+});
+```
+</CodeGroup>
+
+#### `reset`
+
+The template used for displaying the reset button.
+
+<CodeGroup>
+
+```js Function
+searchBox({
+    // ...
+    templates: {
+    reset({ cssClasses }, { html }) {
+        return html`<span class="${cssClasses.reset}">reset</span>`;
+    },
+    },
+});
+```
+
+```js String
+searchBox({
+    // ...
+    templates: {
+    reset: 'reset',
+    },
+});
+```
+</CodeGroup>
+
+#### `loadingIndicator`
+
+ The template used for displaying the loading indicator.
+
+ <CodeGroup>
+```js Function
+searchBox({
+    // ...
+    templates: {
+    loadingIndicator({ cssClasses }, { html }) {
+        return html`<span class="${cssClasses.loadingIndicator}">loading</span>`;
+    },
+    },
+});
+```
+
+```js String
+searchBox({
+    // ...
+    templates: {
+    loadingIndicator: 'loading',
+    },
+});
+```
+</CodeGroup>
+
+
+

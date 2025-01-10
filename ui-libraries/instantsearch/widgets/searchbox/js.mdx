@@ -1,0 +1,313 @@
+---
+title: searchBox (InstantSearch.js v4)
+sidebarTitle: searchBox (JavaScript)
+description: A widget for InstantSearch.js that lets users enter a search query.
+---
+
+<Tabs>
+  <Tab title="Usage">
+    ```js
+    searchBox({
+        container,
+        // Optional parameters
+        placeholder,
+        autofocus,
+        ignoreCompositionEvents,
+        searchAsYouType,
+        showReset,
+        showSubmit,
+        showLoadingIndicator,
+        queryHook,
+        templates,
+        cssClasses
+    });
+    ```
+
+    Options:
+
+    | Option                                                | Type     | Required?             |
+    |:----------------------------------------------------- |:-------- | --------------------- |
+    | [`container`](#container)                             | String   | <Icon icon="check" /> |
+    | [`placeholder`](#placeholder)                         | String   |                       |
+    | [`autofocus`](#autofocus)                             | Boolean  |                       |
+    | [`ignoreCompositionEvents`](#ignorecompositionevents) | Boolean  |                       |
+    | [`searchAsYouType`](#searchasyoutype)                 | Boolean  |                       |
+    | [`showReset`](#showreset)                             | Boolean  |                       |
+    | [`showSubmit`](#showsubmit)                           | Boolean  |                       |
+    | [`showLoadingIndicator`](#showloadingindicator)       | Boolean  |                       |
+    | [`queryHook`](#queryhook)                             | Function |                       |
+    | [`templates`](#templates)                             | Object   |                       |
+    | [`cssClasses`](#cssclasses)                           | Object   |                       |
+  </Tab>
+  <Tab title="Example">
+    ```js
+    searchBox({
+        container: '#searchbox',
+    });
+    ```
+  </Tab>
+  <Tab title="Demo">
+    <CardGroup cols={4}>
+        <Card title="Demo" icon="eye" href="https://instantsearchjs.netlify.app/stories/js/?path=/story/basics-searchbox--default" horizontal="true" />
+    </CardGroup>
+  </Tab>
+</Tabs>
+
+## Options
+
+### `container`
+
+The CSS selector or HTML element to insert the widget into.
+
+<CodeGroup>
+    ```js CSS selector
+    searchBox({
+        container: '#searchbox',
+    });
+    ```
+
+    ```js HTML element
+    searchBox({
+        container: document.querySelector('#searchbox'),
+    });
+    ```
+</CodeGroup>
+
+### `placeholder`
+
+The placeholder text of the input.
+
+```js
+searchBox({
+    // ...
+    placeholder: 'Search for products',
+});
+
+### `autofocus`
+
+Default: `true`
+
+ Whether the input should be autofocused.
+
+```js
+searchBox({
+    // ...
+    autofocus: true,
+});
+```
+
+### `ignoreCompositionEvents`
+
+Default: `false`
+
+Whether to update the search state in the middle of a composition session.
+This is useful when users need to search using non-Latin characters.
+
+```js
+searchBox({
+    // ...
+    ignoreCompositionEvents: true,
+});
+```
+
+<Note>
+    Available from v4.64.2.
+</Note>
+
+### `searchAsYouType`
+
+Default: `true`
+
+If `false`, triggers the search only on [submit](#showsubmit).
+
+```js
+searchBox({
+    // ...
+    searchAsYouType: false,
+});
+
+### `showSubmit`
+
+Default: `false`
+
+Whether to show the submit button.
+
+```js
+searchBox({
+    // ...
+    showSubmit: false,
+});
+```
+
+### `showReset`
+
+Default: `false`
+
+Whether to show the reset button.
+
+```js
+searchBox({
+    // ...
+    showReset: false,
+});
+
+### `showLoadingIndicator`
+
+Default: `true`
+
+ Whether to show the loading indicator (replaces the [submit](#showsubmit) button if the search is stalled).
+
+```js
+searchBox({
+    // ...
+    showLoadingIndicator: false,
+});
+```
+
+### `queryHook`
+
+A function that's called just before the search is triggered.
+It takes two parameters:
+
+- `query: string`: the current query string
+- `search: function`: a function to trigger the search.
+
+If the `search` method isn't called, no search is made to Algolia and the UI doesn't refresh.
+If the `search` method is called, the widget is rendered.
+
+This can be useful if you need to:
+
+- Debounce the number of searches done from the `searchBox`
+- Programmatically alter the query.
+
+```js
+searchBox({
+    // ...
+    queryHook(query, search) {
+    search(query);
+    },
+});
+```
+
+### `templates`
+
+The [templates](#templates) to use for the widget.
+
+```js
+searchBox({
+    // ...
+    templates: {
+    // ...
+    },
+});
+```
+
+import Templates from '/snippets/instantsearch/templates.mdx';
+
+<Templates />
+
+### `cssClasses`
+
+The CSS classes you can override:
+
+- `root`: the root element of the widget.
+- `form`: the form element.
+- `input`: the input element.
+- `reset`: the reset button element.
+- `resetIcon`: the reset button icon.
+- `loadingIndicator`: the loading indicator element.
+- `loadingIcon`: the loading indicator icon.
+- `submit`: the submit button element.
+- `submitIcon`: the submit button icon.
+
+
+```js
+searchBox({
+    // ...
+    cssClasses: {
+    root: 'MyCustomSearchBox',
+    form: [
+        'MyCustomSearchBoxForm',
+        'MyCustomSearchBoxForm--subclass',
+    ],
+    },
+});
+```
+
+## HTML output
+
+```html HTML
+<div class="ais-SearchBox">
+<form class="ais-SearchBox-form" novalidate>
+    <input class="ais-SearchBox-input" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Search for products" spellcheck="false" maxlength="512" type="search" value="" />
+    <button class="ais-SearchBox-submit" type="submit" title="Submit the search query.">
+    <svg class="ais-SearchBox-submitIcon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 40 40">
+        ...
+    </svg>
+    </button>
+    <button class="ais-SearchBox-reset" type="reset" title="Clear the search query." hidden>
+    <svg class="ais-SearchBox-resetIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="10" height="10">
+        ...
+    </svg>
+    </button>
+    <span class="ais-SearchBox-loadingIndicator" hidden>
+    <svg width="16" height="16" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="#444" class="ais-SearchBox-loadingIcon">
+        ...
+    </svg>
+    </span>
+</form>
+</div>
+```
+
+## Connector
+
+To create your own UI for the `searchBox` widget, use the `connectSearchBox` comnector.
+
+import Connector from '/snippets/instantsearch/connector.mdx';
+
+<Connector />
+
+<Steps>
+  <Step title="Create a render function">
+    This rendering function is called before the first search (`init` lifecycle step) and each time results come back from Algolia (`render` lifecycle step).
+
+    ```js
+    const renderSearchBox = (renderOptions, isFirstRender) => {
+        // Rendering logic
+    };
+    ```
+
+    Render options:
+
+    | Option                                | Type     |
+    |:------------------------------------- |:-------- |
+    | [`query`](#query)                     | String   |
+    | [`refine`](#refine)                   | Function | 
+    | [`clear`](#clear)                     | Function |
+    | [`isSearchStalled`](#issearchstalled) | Boolean  |
+    | [`widgetParams`](#widgetparams)       | Object   |
+
+    ### `query`
+    ### `refine`
+    ### `clear`
+    ### `isSearchStalled`
+    ### `widgetParams`
+
+  </Step>
+  <Step title="Create the custom widget">
+    ```js
+    const customSearchBox = connectSearchBox(
+        renderSearchBox
+    );
+    ```
+  </Step>
+  <Step title="Inatantiate">
+    ```js
+    search.addWidgets([
+    customSearchBox({
+        // instance params
+    })
+    ]);
+    ```
+  </Step>
+</Steps>

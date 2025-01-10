@@ -713,9 +713,9 @@
                         {
                             "group": "configure",
                             "pages": [
-                                "ui-libraries/instantsearch/widgets/configure/js",
-                                "ui-libraries/instantsearch/widgets/configure/react",
-                                "ui-libraries/instantsearch/widgets/configure/vue"
+                                "ui-libraries/instantsearch/widgets/js/configure",
+                                "ui-libraries/instantsearch/widgets/react/configure",
+                                "ui-libraries/instantsearch/widgets/vue/configure"
                             ]
                         }
                     ]
