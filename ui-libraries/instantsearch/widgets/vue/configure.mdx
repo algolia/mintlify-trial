@@ -96,10 +96,18 @@ In HTML or string templates, you can do this by adding [`.camel`](https://vuejs.
 
 ## Customize the UI
 
+Slots:
+
+| Slot                  | Scopes                       |
+| :-------------------- | :--------------------------- |
+| [`default`](#default) | `searchParameters`, `refine` |
+
+### `default`
+
 Use the `default` slot to override the DOM output.
 When you implement this slot, none of the other slots will change the output, as the default slot surrounds them.
 
-### Scope
+#### Scopes
 
 - `searchParameters: object`: the current search parameters applied to the search.
 - `refine: (object) => void`: the function to change the search parameters applied to the search.

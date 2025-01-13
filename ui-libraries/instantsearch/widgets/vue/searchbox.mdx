@@ -1,0 +1,275 @@
+---
+title: ais-search-box (Vue InstantSearch)
+sidebarTitle: ais-search-box (Vue)
+description: A widget for Vue InstantSearch that lets users enter a search query.
+---
+
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<Frame>
+  <FlavorSelect flavors={'js,react,vue,android,ios'} selected={'vue'} onSelect={(newFlavor) => {
+    window.location.href = `/ui-libraries/instantsearch/widgets/${newFlavor}/searchbox`;
+  }} />
+</Frame>
+
+The `ais-search-box` widget lets users perform a text-based query.
+
+TThe search box is usually the main entry point to start the search on an InstantSearch page.
+It's usually placed at the top of a search experience, so users can start searching right away.
+
+<Tabs>
+  <Tab title="Usage">
+    ```js
+    <ais-search-box
+        // Optional parameters
+        placeholder,
+        autofocus,
+        ignore-composition-events,
+        submit-title,
+        reset-title,
+        show-loading-indicator,
+        class-names
+    />
+    ```
+
+    Props:
+
+    | Prop                                                      | Type     | Required?             |
+    |:--------------------------------------------------------- |:-------- | --------------------- |
+    | [`placeholder`](#placeholder)                             | String   |                       |
+    | [`autofocus`](#autofocus)                                 | Boolean  |                       |
+    | [`ignore-composition-events`](#ignore-composition-events) | Boolean  |                       |
+    | [`submit-title`](#submit-title)                           | String   |                       |
+    | [`reset-title`](#reset-title)                             | String   |                       |
+    | [`show-loading-indicator`](#show-loading-indicator)       | Boolean  |                       |
+    | [`class-names`](#class-names)                             | Object   |                       |
+  </Tab>
+  <Tab title="Example">
+    ```js
+    <ais-search-box />
+    ```
+  </Tab>
+  <Tab title="Demo">
+    <CardGroup cols={4}>
+        <Card title="Demo" icon="eye" href="https://instantsearchjs.netlify.app/stories/vue/?selectedKind=ais-searchbox" horizontal="true" />
+    </CardGroup>
+  </Tab>
+</Tabs>
+
+## Import
+
+Import `ais-configure` as a component or with a plugin.
+
+<Tabs>
+  <Tab title="Component">
+    ```vue
+    import { AisSearchBox } from 'vue-instantsearch';
+    // Use 'vue-instantsearch/vue3/es' for Vue 3
+
+    export default {
+    components: {
+        AisSearchBox
+    },
+    // ...
+    };
+    ```
+
+    <Note>
+        To ensure your code is correctly bundled, see [Optimize build size](https://www.algolia.com/doc/guides/building-search-ui/going-further/improve-performance/vue/#optimize-build-size).
+    </Note>
+  </Tab>
+  <Tab title="Plugin">
+    ```vue
+    import Vue from 'vue';
+    import InstantSearch from 'vue-instantsearch';
+    // Use 'vue-instantsearch/vue3/es' for Vue 3
+
+    Vue.use(InstantSearch);
+    ```
+
+    <Note>
+        This imports all the widgets, even the ones you don't use. For more information, see [Getting started with Vue InstantSearch](https://www.algolia.com/doc/guides/building-search-ui/getting-started/vue/#initialization).
+    </Note>
+  </Tab>
+</Tabs>
+
+## Props
+
+### `placeholder`
+
+The placeholder text of the input.
+
+```js
+<ais-search-box placeholder="Search for products..." />
+```
+
+### `autofocus`
+
+Default: `true`
+
+Whether to automatically focus on the input when rendered.
+
+```js
+<ais-search-box autofocus />
+```
+
+### `ignore-composition-events`
+
+Default: `false`
+
+Whether to update the search state in the middle of a composition session.
+This is useful when users need to search using non-Latin characters.
+
+```js
+<ais-search-box ignore-composition-events />
+```
+
+<Note>
+    Available from v4.13.6.
+</Note>
+
+### `submit-title`
+
+Default: `search`
+
+The submit button text.
+
+```js
+<ais-search-box submit-title="Submit the query" />
+```
+
+### `reset-title`
+
+Default: `clear`
+
+The clear button text.
+
+```js
+<ais-search-box reset-title="Remove the query" />
+```
+
+### `show-loading-indicator`
+
+Default: `false`
+
+Whether to show the loading indicator (replaces the submit button if the search is stalled).
+
+```js
+<ais-search-box show-loading-indicator />
+```
+
+### `class-names`
+
+Default: `{}`
+
+The CSS classes you can override:
+
+- `ais-SearchBox`: the root element of the widget.
+- `ais-SearchBox-form`: the form element.
+- `ais-SearchBox-input`: the input element.
+- `ais-SearchBox-submit`: the submit button element.
+- `ais-SearchBox-submitIcon`: Magnifier icon used with the search input.
+- `ais-SearchBox-reset`: the reset button element.
+- `ais-SearchBox-resetIcon`: the reset button icon.
+- `ais-SearchBox-loadingIndicator`: the loading indicator element.
+- `ais-SearchBox-loadingIcon`: the loading indicator icon.
+
+```js
+<ais-search-box
+    :class-names="{
+        'ais-SearchBox': 'MySearchBox',
+        'ais-SearchBox-form': 'MySearchBoxForm',
+        // ...
+    }"
+/>
+```
+
+## HTML output
+
+```html HTML
+<div class="ais-SearchBox">
+<form class="ais-SearchBox-form" novalidate>
+    <input class="ais-SearchBox-input" autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Search for products" spellcheck="false" maxlength="512" type="search" value="" />
+    <button class="ais-SearchBox-submit" type="submit" title="Submit the search query.">
+    <svg class="ais-SearchBox-submitIcon" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 40 40">
+        ...
+    </svg>
+    </button>
+    <button class="ais-SearchBox-reset" type="reset" title="Clear the search query." hidden>
+    <svg class="ais-SearchBox-resetIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" width="10" height="10">
+        ...
+    </svg>
+    </button>
+    <span class="ais-SearchBox-loadingIndicator" hidden>
+    <svg width="16" height="16" viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg" stroke="#444" class="ais-SearchBox-loadingIcon">
+        ...
+    </svg>
+    </span>
+</form>
+</div>
+```
+
+## Customize the UI
+
+Slots:
+
+| Slot                                      | Scopes                                           |
+| :---------------------------------------- | :----------------------------------------------- |
+| [`default`](#default)                     | `currentRefinement`, `isSearchStalled`, `refine` |
+| [`submit-icon`](#submit-icon)             | None                                             |
+| [`reset-icon`](#reset-icon)               | None                                             |
+| [`loading-indicator`](#loading-indicator) | None                                             |
+
+### `default`
+
+Use the `default` slot to override the DOM output.
+When you implement this slot, none of the other slots will change the output, as the default slot surrounds them.
+
+```js
+<ais-search-box>
+<template v-slot="{ currentRefinement, isSearchStalled, refine }">
+    <input
+    type="search"
+    :value="currentRefinement"
+    @input="refine($event.currentTarget.value)"
+    >
+    <span :hidden="!isSearchStalled">Loading...</span>
+</template>
+</ais-search-box>
+```
+
+#### Scopes
+
+- `currentRefinement: string`: the current query used for the search.
+- `isSearchStalled: boolean`: whether InstantSearch has detected that searches are stalled.
+- `refine: (string) => void`: the function to change the query.
+
+### `submit-icon`
+
+The slot to override the DOM output of the submit icon.
+
+```js
+<ais-search-box>
+    <template v-slot:submit-icon>🔎</template>
+</ais-search-box>
+```
+
+### `reset-icon`
+
+The slot to override the DOM output of the reset icon.
+
+```js
+<ais-search-box>
+    <template v-slot:reset-icon>🚫</template>
+</ais-search-box>
+```
+
+### `loading-indicator`
+
+The slot to override the DOM output of the loading indicator.
+
+```vue
+<ais-search-box>
+    <template v-slot:loading-indicator>⏳</template>
+</ais-search-box>
+```
