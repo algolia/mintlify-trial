@@ -717,6 +717,16 @@
                                 "ui-libraries/instantsearch/widgets/react/configure",
                                 "ui-libraries/instantsearch/widgets/vue/configure"
                             ]
+                        },
+                        {
+                            "group": "searchBox",
+                            "pages": [
+                                "ui-libraries/instantsearch/widgets/js/searchbox",
+                                "ui-libraries/instantsearch/widgets/react/searchbox",
+                                "ui-libraries/instantsearch/widgets/vue/searchbox",
+                                "ui-libraries/instantsearch/widgets/android/searchbox",
+                                "ui-libraries/instantsearch/widgets/ios/searchbox"
+                            ]
                         }
                     ]
                 }

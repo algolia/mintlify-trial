@@ -1,0 +1,191 @@
+---
+title: SearchBox (InstantSearch iOS)
+sidebarTitle: SearchBox (iOS)
+description: A widget for InstantSearch iOS that lets users enter a search query.
+---
+
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<Frame>
+  <FlavorSelect flavors={'js,react,vue,android,ios'} selected={'ios'} onSelect={(newFlavor) => {
+    window.location.href = `/ui-libraries/instantsearch/widgets/${newFlavor}/searchbox`;
+  }} />
+</Frame>
+
+<Tabs>
+  <Tab title="Usage">
+    ```swift
+    SearchBoxConnector(
+        searcher,
+        interactor,
+        searchTriggeringMode,
+        controller
+    )
+    ```
+
+    Parameters:
+
+    | Parameter                                       | Type                   | Required?             |
+    |:----------------------------------------------- |:---------------------- | --------------------- |
+    | [`searcher`](#searcher)                         | `Searcher`             | <Icon icon="check" /> |
+    | [`interactor`](#interactor)                     | `SearchBoxInteractor`  |                       |
+    | [`searchTriggeringMode`](#searchtriggeringmode) | `SearchTriggeringMode` |                       |
+    | [`controller`](#controller)                     | `SearchBoxController`  |                       |
+
+  </Tab>
+  <Tab title="Example">
+    Instantiate a `SearchBoxConnector`:
+
+    ```swift
+    let searcher = HitsSearcher(appID: "NIN726RTTK",
+                                apiKey: "02ad64b3d0a1f6ea65ecbddf6aa250f2",
+                                indexName: "YourIndexName")
+    let searchBarController: SearchBarController = .init(searchBar: UISearchBar())
+    // If your project targets iOS 13+, you should use TextFieldController(searchBar: UISearchBar()) instead:
+    // let searchBarController: TextFieldController(searchBar: UISearchBar())
+    let searchBoxConnector: SearchBoxConnector = .init(searcher: searcher,
+                                                    searchTriggeringMode: .searchAsYouType,
+                                                    controller: searchBarController)
+
+        }
+    ```
+  </Tab>
+  <Tab title="Demo">
+    <CardGroup cols={4}>
+        <Card title="GitHub" icon="github" href="https://github.com/algolia/instantsearch-ios/tree/master/Examples/Showcase" horizontal="true" />
+    </CardGroup>
+  </Tab>
+</Tabs>
+
+## Parameters
+
+### `searcher`
+
+The Searcher that handles your searches.
+
+### `interactor`
+
+Default: `.init()`
+
+The logic applied to `SearchBox`.
+
+### `searchTriggeringMode`
+
+Default: `.searchAsYouType`
+
+Defines the event triggering a new search.
+It can either be `.searchAsYouType` or `.searchOnSubmit`.
+
+### `controller`
+
+Default: nil
+
+Controller interfacing with a concrete search box view.
+
+## Low-level API
+
+If you want to fully control the `SearchBox` components and connect them manually, you can use the following components:
+
+- `Searcher`: the `Searcher` that handles your searches.
+- `SearchBoxInteractor`: the logic that handles new search inputs.
+- `SearchBoxController`: the controller interfacing with a concrete input view.
+
+```swift
+let searcher = HitsSearcher(appID: "YourApplicationID",
+                            apiKey: "YourSearchOnlyAPIKey",
+                            indexName: "YourIndexName")
+let searchBoxInteractor: SearchBoxInteractor = .init()
+let searchBarController: SearchBarController = .init(searchBar: UISearchBar())
+// if your project targets iOS 13+, the usage of TextFieldController(searchBar: UISearchBar()) is recommended
+
+searchBoxInteractor.connectSearcher(searcher, searchTriggeringMode: .searchAsYouType)
+searchBoxInteractor.connectController(searchBarController)
+```
+
+## Customizing your view
+
+The default controllers, `TextFieldController` and `SearchBarController`, work well with [UIKit](https://developer.apple.com/documentation/uikit).
+
+If you want to use another component, such as a third-party input view, or introduce custom behaviors to UIKit components, you can create a controller that conforms to the `SearchBoxController` protocol.
+
+### Protocol
+
+`var onQueryChanged: ((String?) -> Void)?`:
+
+Closure you should call when the query is modified. 
+
+`var onQuerySubmitted: ((String?) -> Void)?`
+
+Closure you should call when the query is submitted.
+
+`func setQuery(_ query: String?)`
+
+Function called when the query is modified from the outside.
+
+### Implementation example
+
+```swift
+public class TextFieldController: NSObject, SearchBoxController {
+
+public var onQueryChanged: ((String?) -> Void)?
+public var onQuerySubmitted: ((String?) -> Void)?
+
+let textField: UITextField
+
+public init (textField: UITextField) {
+    self.textField = textField
+    super.init()
+    setupTextField()
+}
+
+public func setQuery(_ query: String?) {
+    textField.text = query
+}
+
+@objc func textFieldTextChanged(textField: UITextField) {
+    guard let searchText = textField.text else { return }
+    onQueryChanged?(searchText)
+}
+
+private func setupTextField() {
+    textField.returnKeyType = .search
+    textField.addTarget(self, action: #selector(textFieldTextChanged), for: .editingChanged)
+    textField.delegate = self
+}
+
+}
+
+extension TextFieldController: UITextFieldDelegate {
+
+public func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+    onQuerySubmitted?(textField.text)
+    return true
+}
+
+}
+```
+
+### SwiftUI
+
+InstantSearch provides the `SearchBar` SwiftUI view, which you can embed in your views.
+It uses `SearchBoxObservableController` as a data model, which implements the `SearchBoxController` protocol for SwiftUI.
+`SearchBoxObservableController` must be connected to the `SearchBoxConnector` or `SearchBoxInteractor` like any other `SearchBoxController` implementation.
+
+```swift
+struct ContentView: View {
+
+@ObservedObject var searchBoxObservable: SearchBoxObservableController = .init()
+@State var isEditing = false
+
+var body: some View {
+    SearchBar(text: $searchBoxObservable.query,
+        isEditing: $isEditing,
+        onSubmit: searchBoxObservable.submit)
+}
+
+}
+```
+
+If you prefer to create a custom SwiftUI view that handles the query input, you can directly use the `SearchBoxObservableController` as a data model.
+It provides the `query` property along with the `submit` function to streamline the design process of your custom SwiftUI view.
+

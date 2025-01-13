@@ -4,6 +4,19 @@ sidebarTitle: searchBox (JavaScript)
 description: A widget for InstantSearch.js that lets users enter a search query.
 ---
 
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<Frame>
+  <FlavorSelect flavors={'js,react,vue,android,ios'} selected={'js'} onSelect={(newFlavor) => {
+    window.location.href = `/ui-libraries/instantsearch/widgets/${newFlavor}/searchbox`;
+  }} />
+</Frame>
+
+The `searchBox` widget lets users perform a text-based query.
+
+The search box is usually the main entry point to start the search on an InstantSearch page.
+It's usually placed at the top of a search experience, so users can start searching right away.
+
 <Tabs>
   <Tab title="Usage">
     ```js
@@ -82,12 +95,13 @@ searchBox({
     // ...
     placeholder: 'Search for products',
 });
+```
 
 ### `autofocus`
 
 Default: `true`
 
- Whether the input should be autofocused.
+Whether to automatically focus on the input when rendered.
 
 ```js
 searchBox({
@@ -125,6 +139,7 @@ searchBox({
     // ...
     searchAsYouType: false,
 });
+```
 
 ### `showSubmit`
 
@@ -150,6 +165,7 @@ searchBox({
     // ...
     showReset: false,
 });
+```
 
 ### `showLoadingIndicator`
 
@@ -177,8 +193,8 @@ If the `search` method is called, the widget is rendered.
 
 This can be useful if you need to:
 
-- Debounce the number of searches done from the `searchBox`
-- Programmatically alter the query.
+- Debounce searches to regulate requests.
+- Programmatically alter the query before sending it to Algolia.
 
 ```js
 searchBox({
@@ -288,26 +304,206 @@ import Connector from '/snippets/instantsearch/connector.mdx';
     | [`widgetParams`](#widgetparams)       | Object   |
 
     ### `query`
+
+    The query from the current search.
+
+    ```js
+    const renderSearchBox = (renderOptions, isFirstRender) => {
+    const { query, refine } = renderOptions;
+
+    const container = document.querySelector('#searchbox');
+
+    if (isFirstRender) {
+        const input = document.createElement('input');
+
+        input.addEventListener('input', event => {
+        refine(event.target.value);
+        });
+
+        container.appendChild(input);
+    }
+
+    container.querySelector('input').value = query;
+    };
+
     ### `refine`
+
+    Sets a new query and triggers a new search.
+
+    ```js
+    const renderSearchBox = (renderOptions, isFirstRender) => {
+    const { query, refine } = renderOptions;
+
+    const container = document.querySelector('#searchbox');
+
+    if (isFirstRender) {
+        const input = document.createElement('input');
+
+        input.addEventListener('input', event => {
+        refine(event.target.value);
+        });
+
+        container.appendChild(input);
+    }
+
+    container.querySelector('input').value = query;
+    };
+
     ### `clear`
+
+    Removes the query and triggers a new search.
+
+    ```js
+    const renderSearchBox = (renderOptions, isFirstRender) => {
+    const { query, refine, clear } = renderOptions;
+
+    const container = document.querySelector('#searchbox');
+
+    if (isFirstRender) {
+        const input = document.createElement('input');
+        const button = document.createElement('button');
+        button.textContent = 'X';
+
+        input.addEventListener('input', event => {
+        refine(event.target.value);
+        });
+
+        button.addEventListener('click', () => {
+        clear();
+        });
+
+        container.appendChild(input);
+        container.appendChild(button);
+    }
+
+    container.querySelector('input').value = query;
+    };
+    ```
+
     ### `isSearchStalled`
+
+    Returns `true` if the search results take more than a certain time to come back from Algolia servers.
+    This can be configured on the `instantsearch` constructor with the attribute `stalledSearchDelay`.
+
+    ```js
+    const renderSearchBox = (renderOptions, isFirstRender) => {
+    const { query, refine, isSearchStalled } = renderOptions;
+
+    const container = document.querySelector('#searchbox');
+
+    if (isFirstRender) {
+        const input = document.createElement('input');
+        const loadingIndicator = document.createElement('span');
+        loadingIndicator.textContent = 'Loading...';
+
+        input.addEventListener('input', event => {
+        refine(event.target.value);
+        });
+
+        container.appendChild(input);
+        container.appendChild(loadingIndicator);
+    }
+
+    container.querySelector('input').value = query;
+    container.querySelector('span').hidden = !isSearchStalled;
+    };
+    ```
+
     ### `widgetParams`
+
+    All original widget options forwarded to the render function.
+
+    ```js
+    const renderRangeInput = (renderOptions, isFirstRender) => {
+    const { widgetParams } = renderOptions;
+
+    widgetParams.container.innerHTML = '...';
+    };
+
+    // ...
+
+    search.addWidgets([
+    customRangeInput({
+        container: document.querySelector('#searchbox'),
+    })
+    ]);
+    ```
 
   </Step>
   <Step title="Create the custom widget">
+    When creating and instantiating a custom widget, there are two types of parameters you can give:
+
+    - **Instance parameters:** predefined parameters that you can use to configure the behavior of Algolia.
+    - **Your own parameters:** to make the custom widget generic.
+
+    Both instance and custom parameters are available in `connector.widgetParams`, inside the `renderFunction`.
+
     ```js
     const customSearchBox = connectSearchBox(
         renderSearchBox
     );
     ```
   </Step>
-  <Step title="Inatantiate">
+  <Step title="Instantiate">
     ```js
-    search.addWidgets([
     customSearchBox({
-        // instance params
-    })
-    ]);
+    queryHook(query, search) {
+        search(query);
+    },
+    });
     ```
+
+    Instance options:
+
+    | Option                    | Type     |
+    |:------------------------- |:-------- |
+    | [`queryHook`](#queryhook) | Function |
+
   </Step>
 </Steps>
+
+### Example
+
+```js
+// Create a render function
+const renderSearchBox = (renderOptions, isFirstRender) => {
+    const { query, refine, clear, isSearchStalled, widgetParams } = renderOptions;
+
+    if (isFirstRender) {
+    const input = document.createElement('input');
+
+    const loadingIndicator = document.createElement('span');
+    loadingIndicator.textContent = 'Loading...';
+
+    const button = document.createElement('button');
+    button.textContent = 'X';
+
+    input.addEventListener('input', event => {
+        refine(event.target.value);
+    });
+
+    button.addEventListener('click', () => {
+        clear();
+    });
+
+    widgetParams.container.appendChild(input);
+    widgetParams.container.appendChild(loadingIndicator);
+    widgetParams.container.appendChild(button);
+    }
+
+    widgetParams.container.querySelector('input').value = query;
+    widgetParams.container.querySelector('span').hidden = !isSearchStalled;
+};
+
+// Create custom widget
+const customSearchBox = connectSearchBox(
+    renderSearchBox
+);
+
+// Instantiate custom widget
+search.addWidgets([
+    customSearchBox({
+    container: document.querySelector('#searchbox'),
+    })
+]);
+```

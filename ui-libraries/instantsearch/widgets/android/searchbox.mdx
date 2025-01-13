@@ -1,0 +1,167 @@
+---
+title: SearchBox (InstantSearch Android)
+sidebarTitle: SearchBox (Android)
+description: A widget for InstantSearch Android that lets users enter a search query.
+---
+
+import { FlavorSelect } from '/snippets/flavor-select.mdx';
+
+<Frame>
+  <FlavorSelect flavors={'js,react,vue,android,ios'} selected={'android'} onSelect={(newFlavor) => {
+    window.location.href = `/ui-libraries/instantsearch/widgets/${newFlavor}/searchbox`;
+  }} />
+</Frame>
+
+To add a `SearchBox`, use these components:
+
+<Tabs>
+  <Tab title="Usage">
+    ```kotlin
+    SearchBoxConnector(
+        searcher
+        viewModel
+        searchMode
+        debouncer
+    )
+    ```
+
+    Components:
+
+    | Component                   | Type                 | Required?             |
+    |:--------------------------- |:-------------------- | --------------------- |
+    | [`searcher`](#searcher)     | `Searcher`           | <Icon icon="check" /> |
+    | [`viewModel`](#viewmodel)   | `SearchBoxViewModel` |                       |
+    | [`searchMode`](#searchmode) | `SearchMode`         |                       |
+    | [`debouncer`](#debouncer)   | `Debouncer`          |                       |
+
+  </Tab>
+  <Tab title="Example">
+    ```kotlin
+    class MyActivity : AppCompatActivity() {
+        val searcher = HitsSearcher(
+            applicationID = ApplicationID("NIN726RTTK"),
+            apiKey = APIKey("02ad64b3d0a1f6ea65ecbddf6aa250f2"),
+            indexName = IndexName("YourIndexName")
+        )
+        val searchBox = SearchBoxConnector(searcher)
+        val connection = ConnectionHandler(searchBox)
+
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            val searchView = SearchView(this)
+            val view: SearchBoxView = SearchBoxViewAppCompat(searchView)
+            connection += searchBox.connectView(view)
+            searcher.searchAsync()
+        }
+
+        override fun onDestroy() {
+            super.onDestroy()
+            connection.disconnect()
+            searcher.cancel()
+        }
+    }
+    ```
+  </Tab>
+  <Tab title="Demo">
+    <CardGroup cols={4}>
+        <Card title="GitHub" icon="github" href="https://github.com/algolia/instantsearch-android/blob/master/examples/android/src/main/kotlin/com/algolia/instantsearch/examples/android/showcase/androidview/search/SearchAsYouTypeShowcase.kt" horizontal="true" />
+    </CardGroup>
+  </Tab>
+</Tabs>
+
+## Components
+
+### `searcher`
+
+The Searcher that handles your searches.
+
+### `viewModel`
+
+Default: `SearchBoxViewModel()`
+
+The business logic that handles new search inputs.
+
+### `searchMode`
+
+Default: SearchMode.AsYouType`
+
+- `SearchMode.AsYouType` triggers a search on each keystroke.
+- `SearchMode.OnSubmit` trigger a search on submitting the query.
+
+### `debouncer`
+
+Default: `Debouncer(debounceLoadingInMillis)`
+
+Delays searcher operations by a specified time.
+
+## Views
+
+| View                              | Type          | Required?             |
+|:--------------------------------- |:------------- | --------------------- |
+| [`searchBoxView`](#searchboxview) | SearchBoxView | <Icon icon="check" /> |
+
+### `searchBoxView`
+
+The view that handles the input.
+
+```kotlin
+val searchView = SearchView(this)
+val view: SearchBoxView = SearchBoxViewAppCompat(searchView)
+searchBox.connectView(view)
+```
+
+### Compose UI
+
+InstantSearch provides `SearchBoxState` as a state model, which is an implementation of the `SearchBoxView` interface.
+You need to connect `SearchBoxState` to the `SearchBoxConnector` or `SearchBoxViewModel` like any other `SearchBoxView` implementation, and create a Compose UI view that handles the query input, you can directly use the `SearchBoxState` as a state model.
+It provides the query property along with the `setText` function to streamline the design process of your custom Compose UI view.
+
+```kotlin
+class MyActivity : AppCompatActivity() {
+    val searcher = HitsSearcher(
+        applicationID = ApplicationID("NIN726RTTK"),
+        apiKey = APIKey("02ad64b3d0a1f6ea65ecbddf6aa250f2"),
+        indexName = IndexName("YourIndexName")
+    )
+    val searchBoxState = SearchBoxState()
+    val searchBox = SearchBoxConnector(searcher)
+    val connections = ConnectionHandler(searchBox)
+
+    init {
+        connections += searchBox.connectView(searchBoxState)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            TextField(
+                // set query as text value
+                value = searchBoxState.query,
+                // update text on value change
+                onValueChange = { searchBoxState.setText(it) },
+                // set ime action to "search"
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                // set text as query submit on search action
+                keyboardActions = KeyboardActions(
+                    onSearch = { searchBoxState.setText(searchBoxState.query, true)}
+                )
+            )
+        }
+        searcher.searchAsync()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        connections.disconnect()
+        searcher.cancel()
+    }
+}
+```
+
+## See also
+
+<CardGroup cols={2}>
+  <Card title="Guide" icon="book" href="https://www.algolia.com/doc/guides/building-search-ui/getting-started/how-to/programmatically/android/" horizontal="true">
+    Getting started with imperative UI
+  </Card>
+</CardGroup>
