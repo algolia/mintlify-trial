@@ -22,16 +22,6 @@ import { FlavorSelect } from '/snippets/flavor-select.mdx';
         controller
     )
     ```
-
-    Parameters:
-
-    | Parameter                                       | Type                   | Required?             |
-    |:----------------------------------------------- |:---------------------- | --------------------- |
-    | [`searcher`](#searcher)                         | `Searcher`             | <Icon icon="check" /> |
-    | [`interactor`](#interactor)                     | `SearchBoxInteractor`  |                       |
-    | [`searchTriggeringMode`](#searchtriggeringmode) | `SearchTriggeringMode` |                       |
-    | [`controller`](#controller)                     | `SearchBoxController`  |                       |
-
   </Tab>
   <Tab title="Example">
     Instantiate a `SearchBoxConnector`:
@@ -59,28 +49,22 @@ import { FlavorSelect } from '/snippets/flavor-select.mdx';
 
 ## Parameters
 
-### `searcher`
+<ParamField path="searcher" type="Searcher" required>
+  The Searcher that handles your searches.
+</ParamField>
 
-The Searcher that handles your searches.
+<ParamField path="interactor" type="SearchBoxInteractor" default=".init()">
+  The logic applied to `SearchBox`.
+</ParamField>
 
-### `interactor`
+<ParamField path="searchTriggeringMode" type="SearchTriggeringMode" default=".searchAsYouType">
+  Defines the event triggering a new search.
+  It can either be `.searchAsYouType` or `.searchOnSubmit`.
+</ParamField>
 
-Default: `.init()`
-
-The logic applied to `SearchBox`.
-
-### `searchTriggeringMode`
-
-Default: `.searchAsYouType`
-
-Defines the event triggering a new search.
-It can either be `.searchAsYouType` or `.searchOnSubmit`.
-
-### `controller`
-
-Default: nil
-
-Controller interfacing with a concrete search box view.
+<ParamField path="controller" type="SearchBoxController" default="nil">
+  Controller interfacing with a concrete search box view.
+</ParamField>
 
 ## Low-level API
 

@@ -31,18 +31,6 @@ It's usually placed at the top of a search experience, so users can start search
         class-names
     />
     ```
-
-    Props:
-
-    | Prop                                                      | Type     | Required?             |
-    |:--------------------------------------------------------- |:-------- | --------------------- |
-    | [`placeholder`](#placeholder)                             | String   |                       |
-    | [`autofocus`](#autofocus)                                 | Boolean  |                       |
-    | [`ignore-composition-events`](#ignore-composition-events) | Boolean  |                       |
-    | [`submit-title`](#submit-title)                           | String   |                       |
-    | [`reset-title`](#reset-title)                             | String   |                       |
-    | [`show-loading-indicator`](#show-loading-indicator)       | Boolean  |                       |
-    | [`class-names`](#class-names)                             | Object   |                       |
   </Tab>
   <Tab title="Example">
     ```js
@@ -95,94 +83,83 @@ Import `ais-configure` as a component or with a plugin.
 
 ## Props
 
-### `placeholder`
+<ParamField path="placeholder" type="string">
+    The placeholder text of the input.
 
-The placeholder text of the input.
+  ```js
+  <ais-search-box placeholder="Search for products..." />
+  ```
+</ParamField>
 
-```js
-<ais-search-box placeholder="Search for products..." />
-```
+<ParamField path="autofocus" type="boolean" default="true">
+    Whether to automatically focus on the input when rendered.
 
-### `autofocus`
+  ```js
+  <ais-search-box autofocus />
+  ```
+</ParamField>
 
-Default: `true`
+<ParamField path="ignore-composition-events" type="boolean" default="false">
+    Whether to update the search state in the middle of a composition session.
+    This is useful when users need to search using non-Latin characters.
 
-Whether to automatically focus on the input when rendered.
+  ```js
+  <ais-search-box ignore-composition-events />
+  ```
 
-```js
-<ais-search-box autofocus />
-```
+  <Note>
+      Available from v4.13.6.
+  </Note>
+</ParamField>
 
-### `ignore-composition-events`
+<ParamField path="submit-title" type="string" default="search">
+  The submit button text.
 
-Default: `false`
+  ```js
+  <ais-search-box submit-title="Submit the query" />
+  ```
+</ParamField>
 
-Whether to update the search state in the middle of a composition session.
-This is useful when users need to search using non-Latin characters.
+<ParamField path="reset-title" type="string" default="clear">
+  The clear button text.
 
-```js
-<ais-search-box ignore-composition-events />
-```
+  ```js
+  <ais-search-box reset-title="Remove the query" />
+  ```
+</ParamField>
 
-<Note>
-    Available from v4.13.6.
-</Note>
+<ParamField path="show-loading-indicator" type="boolean" default="false">
+  Whether to show the loading indicator (replaces the submit button if the search is stalled).
 
-### `submit-title`
+  ```js
+  <ais-search-box show-loading-indicator />
+  ```
+</ParamField>
 
-Default: `search`
 
-The submit button text.
+<ParamField path="class-names" type="boolean" default="{}">
+  The CSS classes you can override:
 
-```js
-<ais-search-box submit-title="Submit the query" />
-```
+  - `ais-SearchBox`: the root element of the widget.
+  - `ais-SearchBox-form`: the form element.
+  - `ais-SearchBox-input`: the input element.
+  - `ais-SearchBox-submit`: the submit button element.
+  - `ais-SearchBox-submitIcon`: Magnifier icon used with the search input.
+  - `ais-SearchBox-reset`: the reset button element.
+  - `ais-SearchBox-resetIcon`: the reset button icon.
+  - `ais-SearchBox-loadingIndicator`: the loading indicator element.
+  - `ais-SearchBox-loadingIcon`: the loading indicator icon.
 
-### `reset-title`
-
-Default: `clear`
-
-The clear button text.
-
-```js
-<ais-search-box reset-title="Remove the query" />
-```
-
-### `show-loading-indicator`
-
-Default: `false`
-
-Whether to show the loading indicator (replaces the submit button if the search is stalled).
-
-```js
-<ais-search-box show-loading-indicator />
-```
-
-### `class-names`
-
-Default: `{}`
-
-The CSS classes you can override:
-
-- `ais-SearchBox`: the root element of the widget.
-- `ais-SearchBox-form`: the form element.
-- `ais-SearchBox-input`: the input element.
-- `ais-SearchBox-submit`: the submit button element.
-- `ais-SearchBox-submitIcon`: Magnifier icon used with the search input.
-- `ais-SearchBox-reset`: the reset button element.
-- `ais-SearchBox-resetIcon`: the reset button icon.
-- `ais-SearchBox-loadingIndicator`: the loading indicator element.
-- `ais-SearchBox-loadingIcon`: the loading indicator icon.
-
-```js
-<ais-search-box
-    :class-names="{
-        'ais-SearchBox': 'MySearchBox',
-        'ais-SearchBox-form': 'MySearchBoxForm',
-        // ...
-    }"
-/>
-```
+  ```js
+  <ais-search-box
+      :class-names="{
+          'ais-SearchBox': 'MySearchBox',
+          'ais-SearchBox-form': 'MySearchBoxForm',
+          // ...
+      }"
+  />
+  ```
+</ParamField>
 
 ## HTML output
 
@@ -211,65 +188,60 @@ The CSS classes you can override:
 
 ## Customize the UI
 
-Slots:
+### Slots
 
-| Slot                                      | Scopes                                           |
-| :---------------------------------------- | :----------------------------------------------- |
-| [`default`](#default)                     | `currentRefinement`, `isSearchStalled`, `refine` |
-| [`submit-icon`](#submit-icon)             | None                                             |
-| [`reset-icon`](#reset-icon)               | None                                             |
-| [`loading-indicator`](#loading-indicator) | None                                             |
+<ParamField path="default">
+  Use the `default` slot to override the DOM output.
+  When you implement this slot, none of the other slots will change the output, as the default slot surrounds them.
 
-### `default`
+  ```js
+  <ais-search-box>
+  <template v-slot="{ currentRefinement, isSearchStalled, refine }">
+      <input
+      type="search"
+      :value="currentRefinement"
+      @input="refine($event.currentTarget.value)"
+      >
+      <span :hidden="!isSearchStalled">Loading...</span>
+  </template>
+  </ais-search-box>
+  ```
 
-Use the `default` slot to override the DOM output.
-When you implement this slot, none of the other slots will change the output, as the default slot surrounds them.
+  #### Scopes
 
-```js
-<ais-search-box>
-<template v-slot="{ currentRefinement, isSearchStalled, refine }">
-    <input
-    type="search"
-    :value="currentRefinement"
-    @input="refine($event.currentTarget.value)"
-    >
-    <span :hidden="!isSearchStalled">Loading...</span>
-</template>
-</ais-search-box>
-```
+  - `currentRefinement: string`: the current query used for the search.
+  - `isSearchStalled: boolean`: whether InstantSearch has detected that searches are stalled.
+  - `refine: (string) => void`: the function to change the query.
+</ParamField>
 
-#### Scopes
+<ParamField path="submit-icon">
+  The slot to override the DOM output of the submit icon.
 
-- `currentRefinement: string`: the current query used for the search.
-- `isSearchStalled: boolean`: whether InstantSearch has detected that searches are stalled.
-- `refine: (string) => void`: the function to change the query.
+  ```js
+  <ais-search-box>
+      <template v-slot:submit-icon>🔎</template>
+  </ais-search-box>
+  ```
+</ParamField>
 
-### `submit-icon`
+<ParamField path="reset-icon">
+  The slot to override the DOM output of the reset icon.
 
-The slot to override the DOM output of the submit icon.
+  ```js
+  <ais-search-box>
+      <template v-slot:reset-icon>🚫</template>
+  </ais-search-box>
+  ```
+</ParamField>
 
-```js
-<ais-search-box>
-    <template v-slot:submit-icon>🔎</template>
-</ais-search-box>
-```
+<ParamField path="loading-indicator">
+  The slot to override the DOM output of the loading indicator.
 
-### `reset-icon`
+  ```vue
+  <ais-search-box>
+      <template v-slot:loading-indicator>⏳</template>
+  </ais-search-box>
+  ```
+</ParamField>
 
-The slot to override the DOM output of the reset icon.
 
-```js
-<ais-search-box>
-    <template v-slot:reset-icon>🚫</template>
-</ais-search-box>
-```
-
-### `loading-indicator`
-
-The slot to override the DOM output of the loading indicator.
-
-```vue
-<ais-search-box>
-    <template v-slot:loading-indicator>⏳</template>
-</ais-search-box>
-```

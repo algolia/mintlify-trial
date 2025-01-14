@@ -35,22 +35,6 @@ It's usually placed at the top of a search experience, so users can start search
         cssClasses
     });
     ```
-
-    Options:
-
-    | Option                                                | Type     | Required?             |
-    |:----------------------------------------------------- |:-------- | --------------------- |
-    | [`container`](#container)                             | String   | <Icon icon="check" /> |
-    | [`placeholder`](#placeholder)                         | String   |                       |
-    | [`autofocus`](#autofocus)                             | Boolean  |                       |
-    | [`ignoreCompositionEvents`](#ignorecompositionevents) | Boolean  |                       |
-    | [`searchAsYouType`](#searchasyoutype)                 | Boolean  |                       |
-    | [`showReset`](#showreset)                             | Boolean  |                       |
-    | [`showSubmit`](#showsubmit)                           | Boolean  |                       |
-    | [`showLoadingIndicator`](#showloadingindicator)       | Boolean  |                       |
-    | [`queryHook`](#queryhook)                             | Function |                       |
-    | [`templates`](#templates)                             | Object   |                       |
-    | [`cssClasses`](#cssclasses)                           | Object   |                       |
   </Tab>
   <Tab title="Example">
     ```js
@@ -68,11 +52,10 @@ It's usually placed at the top of a search experience, so users can start search
 
 ## Options
 
-### `container`
+<ParamField path="container" type="string" required>
+    The CSS selector or HTML element to insert the widget into.
 
-The CSS selector or HTML element to insert the widget into.
-
-<CodeGroup>
+    <CodeGroup>
     ```js CSS selector
     searchBox({
         container: '#searchbox',
@@ -84,171 +67,161 @@ The CSS selector or HTML element to insert the widget into.
         container: document.querySelector('#searchbox'),
     });
     ```
-</CodeGroup>
+    </CodeGroup>
+</ParamField>
 
-### `placeholder`
+<ParamField path="placeholder" type="string">
+    The placeholder text of the input.
 
-The placeholder text of the input.
+    ```js
+    searchBox({
+        // ...
+        placeholder: 'Search for products',
+    });
+    ```
+</ParamField>
 
-```js
-searchBox({
-    // ...
-    placeholder: 'Search for products',
-});
-```
+<ParamField path="autofocus" type="boolean" default="false">
+    Whether to automatically focus on the input when rendered.
 
-### `autofocus`
+    ```js
+    searchBox({
+        // ...
+        autofocus: true,
+    });
+    ```
+</ParamField>
 
-Default: `true`
+<ParamField path="ignoreCompositionEvents" type="boolean" default="false">
+    Whether to update the search state in the middle of a composition session.
+    This is useful when users need to search using non-Latin characters.
 
-Whether to automatically focus on the input when rendered.
+    ```js
+    searchBox({
+        // ...
+        ignoreCompositionEvents: true,
+    });
+    ```
 
-```js
-searchBox({
-    // ...
-    autofocus: true,
-});
-```
+    <Note>
+        Available from v4.64.2.   
+    </Note>
+</ParamField>
 
-### `ignoreCompositionEvents`
+<ParamField path="searchAsYouType" type="boolean" default="true">
+    Whether to make a search on every change to the query.
+    If `false`, new searches are only triggered by clicking the submit button or by pressing the `Enter` key in the search box.
 
-Default: `false`
+    ```js
+    searchBox({
+        // ...
+        searchAsYouType: false,
+    });
+    ```
+</ParamField>
 
-Whether to update the search state in the middle of a composition session.
-This is useful when users need to search using non-Latin characters.
+<ParamField path="showSubmit" type="boolean" default="false">
+    Whether to show the submit button.
 
-```js
-searchBox({
-    // ...
-    ignoreCompositionEvents: true,
-});
-```
+    ```js
+    searchBox({
+        // ...
+        showSubmit: false,
+    });
+    ```
+</ParamField>
 
-<Note>
-    Available from v4.64.2.
-</Note>
+<ParamField path="showReset" type="boolean" default="false">
+    Whether to show the reset button.
 
-### `searchAsYouType`
+    ```js
+    searchBox({
+        // ...
+        showReset: false,
+    });
+    ```
+</ParamField>
 
-Default: `true`
+<ParamField path="showLoadingIndicator" type="boolean" default="true">
+    Whether to show the loading indicator (replaces the submit button if the search is stalled).
 
-If `false`, triggers the search only on [submit](#showsubmit).
+    ```js
+    searchBox({
+        // ...
+        showLoadingIndicator: false,
+    });
+    ```
+</ParamField>
 
-```js
-searchBox({
-    // ...
-    searchAsYouType: false,
-});
-```
+<ParamField path="queryHook" type="function">
+    A function that's called just before the search is triggered.
+    It takes two parameters:
 
-### `showSubmit`
+    - `query: string`: the current query string
+    - `search: function`: a function to trigger the search.
 
-Default: `false`
+    If the `search` method isn't called, no search is made to Algolia and the UI doesn't refresh.
+    If the `search` method is called, the widget is rendered.
 
-Whether to show the submit button.
+    This can be useful if you need to:
 
-```js
-searchBox({
-    // ...
-    showSubmit: false,
-});
-```
+    - Debounce searches to regulate requests.
+    - Programmatically alter the query before sending it to Algolia.
 
-### `showReset`
-
-Default: `false`
-
-Whether to show the reset button.
-
-```js
-searchBox({
-    // ...
-    showReset: false,
-});
-```
-
-### `showLoadingIndicator`
-
-Default: `true`
-
- Whether to show the loading indicator (replaces the [submit](#showsubmit) button if the search is stalled).
-
-```js
-searchBox({
-    // ...
-    showLoadingIndicator: false,
-});
-```
-
-### `queryHook`
-
-A function that's called just before the search is triggered.
-It takes two parameters:
-
-- `query: string`: the current query string
-- `search: function`: a function to trigger the search.
-
-If the `search` method isn't called, no search is made to Algolia and the UI doesn't refresh.
-If the `search` method is called, the widget is rendered.
-
-This can be useful if you need to:
-
-- Debounce searches to regulate requests.
-- Programmatically alter the query before sending it to Algolia.
-
-```js
-searchBox({
-    // ...
-    queryHook(query, search) {
-    search(query);
-    },
-});
-```
-
-### `templates`
-
-The [templates](#templates) to use for the widget.
-
-```js
-searchBox({
-    // ...
-    templates: {
-    // ...
-    },
-});
-```
+    ```js
+    searchBox({
+        // ...
+        queryHook(query, search) {
+        search(query);
+        },
+    });
+    ```
+</ParamField>
 
 import Templates from '/snippets/instantsearch/templates.mdx';
 
-<Templates />
+<ParamField path="templates" type="object">
+    The templates to use for the widget.
 
-### `cssClasses`
+    ```js
+    searchBox({
+        // ...
+        templates: {
+        // ...
+        },
+    });
+    ```
 
-The CSS classes you can override:
+    <Templates />
 
-- `root`: the root element of the widget.
-- `form`: the form element.
-- `input`: the input element.
-- `reset`: the reset button element.
-- `resetIcon`: the reset button icon.
-- `loadingIndicator`: the loading indicator element.
-- `loadingIcon`: the loading indicator icon.
-- `submit`: the submit button element.
-- `submitIcon`: the submit button icon.
+</ParamField>
 
+<ParamField path="cssClasses" type="object">
+    The CSS classes you can override:
 
-```js
-searchBox({
-    // ...
-    cssClasses: {
-    root: 'MyCustomSearchBox',
-    form: [
-        'MyCustomSearchBoxForm',
-        'MyCustomSearchBoxForm--subclass',
-    ],
-    },
-});
-```
+    - `root`: the root element of the widget.
+    - `form`: the form element.
+    - `input`: the input element.
+    - `reset`: the reset button element.
+    - `resetIcon`: the reset button icon.
+    - `loadingIndicator`: the loading indicator element.
+    - `loadingIcon`: the loading indicator icon.
+    - `submit`: the submit button element.
+    - `submitIcon`: the submit button icon.
+
+    ```js
+    searchBox({
+        // ...
+        cssClasses: {
+        root: 'MyCustomSearchBox',
+        form: [
+            'MyCustomSearchBoxForm',
+            'MyCustomSearchBoxForm--subclass',
+        ],
+        },
+    });
+    ```
+</ParamField>
 
 ## HTML output
 
@@ -293,141 +266,135 @@ import Connector from '/snippets/instantsearch/connector.mdx';
     };
     ```
 
-    Render options:
+    ### Render options
 
-    | Option                                | Type     |
-    |:------------------------------------- |:-------- |
-    | [`query`](#query)                     | String   |
-    | [`refine`](#refine)                   | Function | 
-    | [`clear`](#clear)                     | Function |
-    | [`isSearchStalled`](#issearchstalled) | Boolean  |
-    | [`widgetParams`](#widgetparams)       | Object   |
+    <ParamField path="query" type="string">
+        The query from the current search.
 
-    ### `query`
+        ```js
+        const renderSearchBox = (renderOptions, isFirstRender) => {
+        const { query, refine } = renderOptions;
 
-    The query from the current search.
+        const container = document.querySelector('#searchbox');
 
-    ```js
-    const renderSearchBox = (renderOptions, isFirstRender) => {
-    const { query, refine } = renderOptions;
+        if (isFirstRender) {
+            const input = document.createElement('input');
 
-    const container = document.querySelector('#searchbox');
+            input.addEventListener('input', event => {
+            refine(event.target.value);
+            });
 
-    if (isFirstRender) {
-        const input = document.createElement('input');
+            container.appendChild(input);
+        }
 
-        input.addEventListener('input', event => {
-        refine(event.target.value);
-        });
-
-        container.appendChild(input);
-    }
-
-    container.querySelector('input').value = query;
-    };
-
-    ### `refine`
-
-    Sets a new query and triggers a new search.
-
-    ```js
-    const renderSearchBox = (renderOptions, isFirstRender) => {
-    const { query, refine } = renderOptions;
-
-    const container = document.querySelector('#searchbox');
-
-    if (isFirstRender) {
-        const input = document.createElement('input');
-
-        input.addEventListener('input', event => {
-        refine(event.target.value);
-        });
-
-        container.appendChild(input);
-    }
-
-    container.querySelector('input').value = query;
-    };
-
-    ### `clear`
-
-    Removes the query and triggers a new search.
-
-    ```js
-    const renderSearchBox = (renderOptions, isFirstRender) => {
-    const { query, refine, clear } = renderOptions;
-
-    const container = document.querySelector('#searchbox');
-
-    if (isFirstRender) {
-        const input = document.createElement('input');
-        const button = document.createElement('button');
-        button.textContent = 'X';
-
-        input.addEventListener('input', event => {
-        refine(event.target.value);
-        });
-
-        button.addEventListener('click', () => {
-        clear();
-        });
-
-        container.appendChild(input);
-        container.appendChild(button);
-    }
-
-    container.querySelector('input').value = query;
-    };
+        container.querySelector('input').value = query;
+        };
     ```
+    </ParamField>
 
-    ### `isSearchStalled`
+    <ParamField path="refine" type="function">
+        Sets a new query and triggers a new search.
 
-    Returns `true` if the search results take more than a certain time to come back from Algolia servers.
-    This can be configured on the `instantsearch` constructor with the attribute `stalledSearchDelay`.
+        ```js
+        const renderSearchBox = (renderOptions, isFirstRender) => {
+        const { query, refine } = renderOptions;
 
-    ```js
-    const renderSearchBox = (renderOptions, isFirstRender) => {
-    const { query, refine, isSearchStalled } = renderOptions;
+        const container = document.querySelector('#searchbox');
 
-    const container = document.querySelector('#searchbox');
+        if (isFirstRender) {
+            const input = document.createElement('input');
 
-    if (isFirstRender) {
-        const input = document.createElement('input');
-        const loadingIndicator = document.createElement('span');
-        loadingIndicator.textContent = 'Loading...';
+            input.addEventListener('input', event => {
+            refine(event.target.value);
+            });
 
-        input.addEventListener('input', event => {
-        refine(event.target.value);
-        });
+            container.appendChild(input);
+        }
 
-        container.appendChild(input);
-        container.appendChild(loadingIndicator);
-    }
+        container.querySelector('input').value = query;
+        };
+        ```
+    </ParamField>
 
-    container.querySelector('input').value = query;
-    container.querySelector('span').hidden = !isSearchStalled;
-    };
-    ```
+    <ParamField path="clear" type="function">
+        Removes the query and triggers a new search.
 
-    ### `widgetParams`
+        ```js
+        const renderSearchBox = (renderOptions, isFirstRender) => {
+        const { query, refine, clear } = renderOptions;
 
-    All original widget options forwarded to the render function.
+        const container = document.querySelector('#searchbox');
 
-    ```js
-    const renderRangeInput = (renderOptions, isFirstRender) => {
-    const { widgetParams } = renderOptions;
+        if (isFirstRender) {
+            const input = document.createElement('input');
+            const button = document.createElement('button');
+            button.textContent = 'X';
 
-    widgetParams.container.innerHTML = '...';
-    };
+            input.addEventListener('input', event => {
+            refine(event.target.value);
+            });
 
-    // ...
+            button.addEventListener('click', () => {
+            clear();
+            });
 
-    search.addWidgets([
-    customRangeInput({
-        container: document.querySelector('#searchbox'),
-    })
-    ]);
-    ```
+            container.appendChild(input);
+            container.appendChild(button);
+        }
+
+        container.querySelector('input').value = query;
+        };
+        ```
+    </ParamField>
+
+    <ParamField path="isSearchStalled" type="boolean">
+        Returns `true` if the search results take more than a certain time to come back from Algolia servers.
+        This can be configured on the `instantsearch` constructor with the attribute `stalledSearchDelay`.
+
+        ```js
+        const renderSearchBox = (renderOptions, isFirstRender) => {
+        const { query, refine, isSearchStalled } = renderOptions;
+
+        const container = document.querySelector('#searchbox');
+
+        if (isFirstRender) {
+            const input = document.createElement('input');
+            const loadingIndicator = document.createElement('span');
+            loadingIndicator.textContent = 'Loading...';
+
+            input.addEventListener('input', event => {
+            refine(event.target.value);
+            });
+
+            container.appendChild(input);
+            container.appendChild(loadingIndicator);
+        }
+
+        container.querySelector('input').value = query;
+        container.querySelector('span').hidden = !isSearchStalled;
+        };
+        ```
+    </ParamField>
+
+    <ParamField path="widgetParams" type="object">
+        All original widget options forwarded to the render function.
+
+        ```js
+        const renderRangeInput = (renderOptions, isFirstRender) => {
+        const { widgetParams } = renderOptions;
+
+        widgetParams.container.innerHTML = '...';
+        };
+
+        // ...
+
+        search.addWidgets([
+        customRangeInput({
+            container: document.querySelector('#searchbox'),
+        })
+        ]);
+        ```
+    </ParamField>
 
   </Step>
   <Step title="Create the custom widget">
@@ -453,16 +420,15 @@ import Connector from '/snippets/instantsearch/connector.mdx';
     });
     ```
 
-    Instance options:
+    ### Instance options
 
-    | Option                    | Type     |
-    |:------------------------- |:-------- |
-    | [`queryHook`](#queryhook) | Function |
-
+    <ParamField path="queryHook" type="function">
+        Use this is the same way as [the `queryHook` option](#options).
+    </ParamField>
   </Step>
 </Steps>
 
-### Example
+### Connector example
 
 ```js
 // Create a render function

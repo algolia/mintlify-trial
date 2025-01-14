@@ -21,12 +21,6 @@ Any props you pass to this widget are forwarded to Algolia.
     ```js
     configure(searchParameters);
     ```
-
-    Options:
-
-    | Option                                  | Type   | Required?             |
-    | :-------------------------------------- | :----- | --------------------- |
-    | [`searchParameters`](#searchParameters) | Object | <Icon icon="check" /> |
   </Tab>
   <Tab title="Example">
     ```js
@@ -47,9 +41,9 @@ Any props you pass to this widget are forwarded to Algolia.
 
 ## Options
 
-### `searchParameters`
-
-A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
+<ParamField path="searchParameters" type="object" required>
+  A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
+</ParamField>
 
 ## Connector
 
@@ -62,10 +56,15 @@ import Connector from '/snippets/instantsearch/connector.mdx';
 <Steps>
   <Step title="Create a render function">
 
-    | Option         | Type     | Description |
-    | :------------- | :------- | :---------- |
-    | `refine`       | Function | This rendering function is called before the first search (`init` lifecycle step) and each time results come back from Algolia (`render` lifecycle step). |
-    | `widgetParams` | Object   | All original widget options forwarded to the render function. |
+    ### Render functions
+
+    <ParamField path="refine" type="function">
+      This rendering function is called before the first search (`init` lifecycle step) and each time results come back from Algolia (`render` lifecycle step).
+    </ParamField>
+
+    <ParamField path="widgetParams" type="object">
+      All original widget options forwarded to the render function.
+    </ParamField>
     
     <CodeGroup>
     ```js refine example
