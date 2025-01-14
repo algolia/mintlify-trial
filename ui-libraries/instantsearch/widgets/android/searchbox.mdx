@@ -24,16 +24,6 @@ To add a `SearchBox`, use these components:
         debouncer
     )
     ```
-
-    Components:
-
-    | Component                   | Type                 | Required?             |
-    |:--------------------------- |:-------------------- | --------------------- |
-    | [`searcher`](#searcher)     | `Searcher`           | <Icon icon="check" /> |
-    | [`viewModel`](#viewmodel)   | `SearchBoxViewModel` |                       |
-    | [`searchMode`](#searchmode) | `SearchMode`         |                       |
-    | [`debouncer`](#debouncer)   | `Debouncer`          |                       |
-
   </Tab>
   <Tab title="Example">
     ```kotlin
@@ -71,44 +61,34 @@ To add a `SearchBox`, use these components:
 
 ## Components
 
-### `searcher`
+<ParamField path="searcher" type="Searcher" required>
+  The Searcher that handles your searches.
+</ParamField>
 
-The Searcher that handles your searches.
+<ParamField path="viewModel" type="SearchBoxViewModel" default="SearchBoxViewModel()">
+  The business logic that handles new search inputs.
+</ParamField>
 
-### `viewModel`
+<ParamField path="searchMode" type="SearchMode" default="SearchMode.AsYouType">
+  - `SearchMode.AsYouType` triggers a search on each keystroke.
+  - `SearchMode.OnSubmit` trigger a search on submitting the query.
+</ParamField>
 
-Default: `SearchBoxViewModel()`
-
-The business logic that handles new search inputs.
-
-### `searchMode`
-
-Default: SearchMode.AsYouType`
-
-- `SearchMode.AsYouType` triggers a search on each keystroke.
-- `SearchMode.OnSubmit` trigger a search on submitting the query.
-
-### `debouncer`
-
-Default: `Debouncer(debounceLoadingInMillis)`
-
-Delays searcher operations by a specified time.
+<ParamField path="debouncer" type="Debouncer" default="Debouncer(debounceLoadingInMillis)">
+  Delays searcher operations by a specified time.
+</ParamField>
 
 ## Views
 
-| View                              | Type          | Required?             |
-|:--------------------------------- |:------------- | --------------------- |
-| [`searchBoxView`](#searchboxview) | SearchBoxView | <Icon icon="check" /> |
+<ParamField path="searchBoxView" type="SearchBoxView" required>
+  The view that handles the input.
 
-### `searchBoxView`
-
-The view that handles the input.
-
-```kotlin
-val searchView = SearchView(this)
-val view: SearchBoxView = SearchBoxViewAppCompat(searchView)
-searchBox.connectView(view)
-```
+  ```kotlin
+  val searchView = SearchView(this)
+  val view: SearchBoxView = SearchBoxViewAppCompat(searchView)
+  searchBox.connectView(view)
+  ```
+</ParamField>
 
 ### Compose UI
 

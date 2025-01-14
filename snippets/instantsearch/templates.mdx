@@ -10,92 +10,87 @@ See more information, see [**Templating your UI**](https://www.algolia.com/doc/g
     The `html` function is available from InstantSearch v4.46.0.
 </Note>
 
-Parameters:
+### Template parameters
 
-| Parameter                               | Type                            |
-|:--------------------------------------- |:------------------------------- |
-| [`submit`](#submit)                     | String (deprecated) or function |
-| [`reset`](#reset)                       | String (deprecated) or function | 
-| [`loadingIndicator`](#loadingindicator) | String (deprecated) or function | 
+<ParamField path="submit" type="string (deprecated) or function" default="true">
+    The template used for displaying the submit button.
 
-#### `submit`
+    <CodeGroup>
+    ```js Function
+    searchBox({
+        // ...
+        templates: {
+        submit({ cssClasses }, { html }) {
+            return html`<span class="${cssClasses.submit}">submit</span>`;
+        },
+        },
+    });
+    ```
 
-The template used for displaying the submit button.
+    ```js String
+    searchBox({
+        // ...
+        templates: {
+        submit: 'submit',
+        },
+    });
+    ```
+    </CodeGroup>
+</ParamField>
 
-<CodeGroup>
-```js Function
-searchBox({
-    // ...
-    templates: {
-    submit({ cssClasses }, { html }) {
-        return html`<span class="${cssClasses.submit}">submit</span>`;
-    },
-    },
-});
-```
+<ParamField path="reset" type="string (deprecated) or function" default="true">
+    The template used for displaying the reset button.
 
-```js String
-searchBox({
-    // ...
-    templates: {
-    submit: 'submit',
-    },
-});
-```
-</CodeGroup>
+    <CodeGroup>
+        ```js Function
+        searchBox({
+            // ...
+            templates: {
+            reset({ cssClasses }, { html }) {
+                return html`<span class="${cssClasses.reset}">reset</span>`;
+            },
+            },
+        });
+        ```
 
-#### `reset`
+        ```js String
+        searchBox({
+            // ...
+            templates: {
+            reset: 'reset',
+            },
+        });
+    ```
+    </CodeGroup>
+</ParamField>
 
-The template used for displaying the reset button.
+<ParamField path="loadingIndicator" type="string (deprecated) or function" default="true">
+    The template used for displaying the loading indicator.
 
-<CodeGroup>
+    <CodeGroup>
+    ```js Function
+    searchBox({
+        // ...
+        templates: {
+        loadingIndicator({ cssClasses }, { html }) {
+            return html`<span class="${cssClasses.loadingIndicator}">loading</span>`;
+        },
+        },
+    });
+    ```
 
-```js Function
-searchBox({
-    // ...
-    templates: {
-    reset({ cssClasses }, { html }) {
-        return html`<span class="${cssClasses.reset}">reset</span>`;
-    },
-    },
-});
-```
+    ```js String
+    searchBox({
+        // ...
+        templates: {
+        loadingIndicator: 'loading',
+        },
+    });
+    ```
+    </CodeGroup>
+</ParamField>
 
-```js String
-searchBox({
-    // ...
-    templates: {
-    reset: 'reset',
-    },
-});
-```
-</CodeGroup>
 
-#### `loadingIndicator`
-
- The template used for displaying the loading indicator.
-
- <CodeGroup>
-```js Function
-searchBox({
-    // ...
-    templates: {
-    loadingIndicator({ cssClasses }, { html }) {
-        return html`<span class="${cssClasses.loadingIndicator}">loading</span>`;
-    },
-    },
-});
-```
-
-```js String
-searchBox({
-    // ...
-    templates: {
-    loadingIndicator: 'loading',
-    },
-});
-```
-</CodeGroup>
 
 
 

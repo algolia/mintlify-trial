@@ -26,12 +26,6 @@ Any props you pass to this component are forwarded to Algolia.
     ```
       import { Configure } from 'react-instantsearch';
     ```
-
-    Props:
-
-    | Prop                                       | Type   | Required?             |
-    | :----------------------------------------- | :----- | --------------------- |
-    | [`...searchParameters`](#searchparameters) | Object | <Icon icon="check" /> |
   </Tab>
   <Tab title="Example">
     ```jsx JSX
@@ -61,18 +55,18 @@ Any props you pass to this component are forwarded to Algolia.
   </Tab>
 </Tabs>
 
-## Options
+## Props
 
-### `searchParameters`
-
-A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
+<ParamField path="searchParameters" type="object">
+  A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
+</ParamField>
 
 ## Hook
 
 To create your own UI for the `<Configure> component, use the `useConfigure` Hook.
 Hooks provide APIs to access the component state and interact with InstantSearch.
 
-The `useConfigure()` Hook accepts [parameters](#parameters) and returns [APIs](#apis).
+The `useConfigure()` Hook accepts [parameters](#hook-parameters) and returns [APIs](#hook-apis).
 
 ### Usage
 
@@ -95,51 +89,52 @@ The `useConfigure()` Hook accepts [parameters](#parameters) and returns [APIs](#
   </Step>
 </Steps>
 
-### Parameters
+### Hook parameters
 
 Hooks accept parameters.
 You can pass them manually, or forward the props from your custom component.
 
-| Parameter | Type | Description |
-| :-------- | :--- | :---------- |
-| `...searchParameters` | searchParameters | A list of [search parameters](/api-reference/search-api-parameters/) to enable. It returns an object with a [`refine`](#apis) function that you can use to replace the provided search parameters with new ones. |
+<ParamField path="...searchParameters" type="searchParameters">
+  A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
+  It returns an object with a [`refine`](#hook-apis) function that you can use to replace the provided search parameters with new ones.
 
-```js JavaScript
-const configureApi = useConfigure({
-  hitsPerPage: 4,
-  analytics: false,
-  distinct: true,
-});
-```
+  ```js JavaScript
+  const configureApi = useConfigure({
+    hitsPerPage: 4,
+    analytics: false,
+    distinct: true,
+  });
+  ```
 
-<Note>
-    When you provide a function to Hooks, make sure to pass a stable reference to avoid rendering endlessly
-    (for example, with [`useCallback()`](https://reactjs.org/docs/hooks-reference.html#usecallback)).
-    Objects and arrays are memoized: you don't need to stabilize them.
-</Note>
+  <Note>
+      When you provide a function to Hooks, make sure to pass a stable reference to avoid rendering endlessly
+      (for example, with [`useCallback()`](https://reactjs.org/docs/hooks-reference.html#usecallback)).
+      Objects and arrays are memoized: you don't need to stabilize them.
+  </Note>
+</ParamField>
 
-### APIs
+### Hook APIs
 
 Hooks return APIs, such as state and functions.
 You can use them to build your UI and interact with React InstantSearch.
 
-| API | Type | Description |
-| :-------- | :--- | :---------- |
-| `refine` | (value: SearchParameters) => void | Replaces the provided [search parameters](/api-reference/search-api-parameters/) with new ones. |
+<ParamField path="refine" type="(value: SearchParameters) => void">
+  Replaces the provided search parameters with new ones.
 
-```jsx JSX
-const { refine } = useConfigure({
-  hitsPerPage: 4,
-});
+  ```jsx JSX
+  const { refine } = useConfigure({
+    hitsPerPage: 4,
+  });
 
-return (
-  <button onClick={() => refine({ hitsPerPage: 8 })}>
-    Show 8 hits per page
-  </button>
-);
-```
+  return (
+    <button onClick={() => refine({ hitsPerPage: 8 })}>
+      Show 8 hits per page
+    </button>
+  );
+  ```
+</ParamField>
 
-### Example
+### Hook example
 
 <CodeGroup>
 ```jsx JSX

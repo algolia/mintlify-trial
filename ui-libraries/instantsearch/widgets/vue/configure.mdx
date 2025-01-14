@@ -24,12 +24,6 @@ Any props you pass to this widget are forwarded to Algolia.
         :searchParameters
       />
     ```
-
-    Props:
-
-    | Prop                                    | Type   | Required?             |
-    | :-------------------------------------- | :----- | --------------------- |
-    | [`searchParameters`](#searchparameters) | Object | <Icon icon="check" /> |
   </Tab>
   <Tab title="Example">
     ```vue
@@ -87,32 +81,28 @@ Import `ais-configure` as a component or with a plugin.
 
 ## Props
 
-### `searchParameters`
+<ParamField path="searchParameters" type="object" required>
+  A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
 
-A list of [search parameters](https://www.algolia.com/doc/api-reference/search-api-parameters/) to enable.
-
-The props must use camel case since they're directly forwarded to the Algolia API.
-In HTML or string templates, you can do this by adding [`.camel`](https://vuejs.org/v2/api/#v-bind) before the value of the prop.
+  The props must use camel case since they're directly forwarded to the Algolia API.
+  In HTML or string templates, you can do this by adding [`.camel`](https://vuejs.org/v2/api/#v-bind) before the value of the prop.
+</ParamField>
 
 ## Customize the UI
 
-Slots:
+### Slots
 
-| Slot                  | Scopes                       |
-| :-------------------- | :--------------------------- |
-| [`default`](#default) | `searchParameters`, `refine` |
+<ParamField path="default">
+  Use the `default` slot to override the DOM output.
+  When you implement this slot, none of the other slots will change the output, as the default slot surrounds them.
 
-### `default`
+  #### Scopes
 
-Use the `default` slot to override the DOM output.
-When you implement this slot, none of the other slots will change the output, as the default slot surrounds them.
+  - `searchParameters: object`: the current search parameters applied to the search.
+  - `refine: (object) => void`: the function to change the search parameters applied to the search.
+</ParamField>
 
-#### Scopes
-
-- `searchParameters: object`: the current search parameters applied to the search.
-- `refine: (object) => void`: the function to change the search parameters applied to the search.
-
-### Example
+### Customization example
 
 ```vue
 <ais-configure :enable-rules.camel="false" :hits-per-page.camel="5">

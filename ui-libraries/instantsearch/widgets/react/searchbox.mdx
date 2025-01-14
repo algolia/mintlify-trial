@@ -35,24 +35,6 @@ It's usually placed at the top of a search experience, so users can start search
         cssClasses
     />
     ```
-
-    Options:
-
-    | Option                                                | Type                                                       | Required?             |
-    |:----------------------------------------------------- |:---------------------------------------------------------- | --------------------- |
-    | [`placeholder`](#placeholder)                         | String                                                     |                       |
-    | [`autofocus`](#autofocus)                             | Boolean                                                    |                       |
-    | [`ignoreCompositionEvents`](#ignorecompositionevents) | Boolean                                                    |                       |
-    | [`searchAsYouType`](#searchasyoutype)                 | Boolean                                                    |                       |
-    | [`onSubmit`](#onsubmit)                               | `(event: React.FormEvent<HTMLFormElement>) => void`        |                       |
-    | [`submitIconComponent`](#submiticoncomponent)         | `(props: IconProps) => JSX.Element`                        |                       |
-    | [`resetIconComponent`](#reseticoncomponent)           | `(props: IconProps) => JSX.Element`                        |                       |
-    | [`loadingIconComponent`](#loadingiconcomponent)       | `(props: IconProps) => JSX.Element`                        |                       |
-    | [`queryHook`](#queryhook)                             | `(query: string, search: (value: string) => void) => void` |                       |
-    | [`classNames`](#classnames)                           | Object                                                     |                       |
-    | [`translations`](#translations)                       | Object                                                     |                       |
-    | [`...props`](#props)                                  | `{ComponentProps<'div'>}`                                  |                       |
-    
   </Tab>
   <Tab title="Example">
     ```jsx
@@ -83,203 +65,197 @@ It's usually placed at the top of a search experience, so users can start search
 import { SearchBox } from 'react-instantsearch';
 ```
 
-## Options
+## Props
 
-### `placeholder`
+<ParamField path="placeholder" type="string">
+    The placeholder text of the input.
 
-The placeholder text of the input.
+    ```jsx
+    <SearchBox placeholder="Search for products" />
+    ```
+</ParamField>
 
-```jsx
-<SearchBox placeholder="Search for products" />
-```
+<ParamField path="autofocus" type="boolean" default="false">
+    Whether to automatically focus on the input when rendered.
 
-### `autofocus`
+    ```jsx
+    <SearchBox autoFocus />
+    ```
+</ParamField>
 
-Default: `false`
+<ParamField path="ignoreCompositionEvents" type="boolean" default="false">
+    Whether to update the search state in the middle of a composition session.
+    This is useful when users need to search using non-Latin characters.
 
-Whether to automatically focus on the input when rendered.
-
-```jsx
-<SearchBox autoFocus />
-```
-
-### `ignoreCompositionEvents`
-
-Default: `false`
-
-Whether to update the search state in the middle of a composition session.
-This is useful when users need to search using non-Latin characters.
-
-```jsx
-<SearchBox ignoreCompositionEvents />
-```
-
-<Note>
-    Available from v7.5.4.
-</Note>
-
-### `searchAsYouType`
-
-Default: `true`
-
-Whether to make a search on every change to the query.
-If `false`, new searches are only triggered by clicking the search button or by pressing the `Enter` key while focusing the search box.
-
-```jsx
-<SearchBox searchAsYouType={false} />
-```
-
-### `onSubmit`
-
-A callback funtion to run when submitting the search box form.
-
-```jsx
-<SearchBox
-  onSubmit={(event) => {
-    // Code to run when the form submits
-  }}
-/>
-```
-
-### `submitIconComponent`
-
-A component to replace the submit button icon.
-
-The component receives the passed [`classNames`](#classnames) prop.
-
-```jsx
-<SearchBox
-    submitIconComponent={({ classNames }) => (
-        <div className={classNames.submitIcon}>Submit</div>
-    )}
-/>
-```
-
-### `resetIconComponent`
-
-A component to replace the reset button icon.
-
-The component receives the passed [`classNames`](#classnames) prop.
-
-```jsx
-<SearchBox
-    resetIconComponent={({ classNames }) => (
-        <div className={classNames.resetIcon}>Reset</div>
-    )}
-/>
-```
-
-### `loadingIconComponent`
-
-A component to replace the loading icon.
-
-The component receives the passed [`classNames`](#classnames) prop.
-
-```jsx
-<SearchBox
-    loadingIconComponent={({ classNames }) => (
-        <div className={classNames.loadingIcon}>Loading</div>
-    )}
-/>
-```
-
-### `queryHook`
-
-A function that's called just before the search is triggered.
-It takes two parameters:
-
-- `query: string`: the current query string
-- `search: function`: a function to trigger the search.
-
-If the `search` method isn't called, no search is made to Algolia and the UI doesn't refresh.
-If the `search` method is called, the widget is rendered.
-
-This can be useful if you need to:
-
-- Debounce searches to regulate requests.
-- Programmatically alter the query before sending it to Algolia.
-
-When using this prop, **you're responsible for triggering the search with `search()`.**
-If you don't call this function, no search is sent to Algolia.
-
-<CodeGroup>
-    ```jsx JavaScript
-    const queryHook = (query, search) => {
-        search(query);
-    };
-
-    function Search() {
-        return <SearchBox queryHook={queryHook} />;
-    }
+    ```jsx
+    <SearchBox ignoreCompositionEvents />
     ```
 
-    ```tsx TypeScript
-    import type { SearchBoxProps } from '';
+    <Note>
+        Available from v7.5.4.
+    </Note>
+</ParamField>
 
-    const queryHook: SearchBoxProps['queryHook'] = (query, search) => {
-        search(query);
-    };
+<ParamField path="searchAsYouType" type="boolean" default="true">
+    Whether to make a search on every change to the query.
+    If `false`, new searches are only triggered by clicking the search button or by pressing the `Enter` key in the search box.
 
-    function Search() {
-        return <SearchBox queryHook={queryHook} />;
-    }
+    ```jsx
+    <SearchBox searchAsYouType={false} />
     ```
-</CodeGroup>
+</ParamField>
 
-### `classNames`
+<ParamField path="onSubmit" type="(event: React.FormEvent<HTMLFormElement>) => void">
+    A callback function to run when submitting the search box form.
 
-The [CSS classes you can override and pass to the widget's elements.
-It's useful to style widgets with class-based CSS frameworks like [Bootstrap](https://getbootstrap.com/) or [Tailwind CSS](https://tailwindcss.com/).
-
-- `root`: the root element of the widget.
-- `form`: the form element.
-- `input`: the input element.
-- `submit`: the submit button.
-- `reset`: the reset button.
-- `loadingIndicator`: the loading indicator element.
-- `submitIcon`: the submit icon.
-- `resetIcon`: the reset icon.
-- `loadingIcon`: the loading icon.
-
-```jsx
-<SearchBox
-    classNames={{
-        root: 'MyCustomSearchBox',
-        form: 'MyCustomSearchBoxForm MyCustomSearchBoxForm--subclass',
+    ```jsx
+    <SearchBox
+    onSubmit={(event) => {
+        // Code to run when the form submits
     }}
-/>
-```
+    />
+    ```
+</ParamField>
 
-### `translations`
+<ParamField path="submitIconComponent" type="(props: IconProps) => JSX.Element">
+    A component to replace the submit button icon.
 
-A dictionary of translations to customize the UI text and support internationalization.
+    The component receives the passed [`classNames`](#classnames) prop.
 
-- `submitButtonTitle`: the submit button's title.
-- `resetButtonTitle`: the reset button's title.
+    ```jsx
+    <SearchBox
+        submitIconComponent={({ classNames }) => (
+            <div className={classNames.submitIcon}>Submit</div>
+        )}
+    />
+    ```
+</ParamField>
 
-```jsx
-<SearchBox
-    translations={{
-        submitButtonTitle: 'Search',
-        resetButtonTitle: 'Reset',
-    }}
-/>
-```
+<ParamField path="resetIconComponent" type="(props: IconProps) => JSX.Element">
+    A component to replace the reset button icon.
 
-### `...props`
+    The component receives the passed [`classNames`](#classnames) prop.
 
-Any `<div>` prop to forward to the root element of the widget.
+    ```jsx
+    <SearchBox
+        resetIconComponent={({ classNames }) => (
+            <div className={classNames.resetIcon}>Reset</div>
+        )}
+    />
+    ```
+</ParamField>
 
-```jsx
-<SearchBox className="MyCustomSearchBox" title="My custom title" />
-```
+<ParamField path="loadingIconComponent" type="(props: IconProps) => JSX.Element">
+    A component to replace the loading icon.
+
+    The component receives the passed `classNames` prop.
+
+    ```jsx
+    <SearchBox
+        loadingIconComponent={({ classNames }) => (
+            <div className={classNames.loadingIcon}>Loading</div>
+        )}
+    />
+    ```
+</ParamField>
+
+<ParamField path="queryHook" type="(query: string, search: (value: string) => void) => void">
+    A function that's called just before the search is triggered.
+    It takes two parameters:
+
+    - `query: string`: the current query string
+    - `search: function`: a function to trigger the search.
+
+    If the `search` method isn't called, no search is made to Algolia and the UI doesn't refresh.
+    If the `search` method is called, the widget is rendered.
+
+    This can be useful if you need to:
+
+    - Debounce searches to regulate requests.
+    - Programmatically alter the query before sending it to Algolia.
+
+    When using this prop, **you're responsible for triggering the search with `search()`.**
+    If you don't call this function, no search is sent to Algolia.
+
+    <CodeGroup>
+        ```jsx JavaScript
+        const queryHook = (query, search) => {
+            search(query);
+        };
+
+        function Search() {
+            return <SearchBox queryHook={queryHook} />;
+        }
+        ```
+
+        ```tsx TypeScript
+        import type { SearchBoxProps } from '';
+
+        const queryHook: SearchBoxProps['queryHook'] = (query, search) => {
+            search(query);
+        };
+
+        function Search() {
+            return <SearchBox queryHook={queryHook} />;
+        }
+        ```
+    </CodeGroup>
+</ParamField>
+
+<ParamField path="classNames" type="Partial<SearchBoxClassNames>">
+    The CSS classes you can override and pass to the widget's elements.
+    It's useful to style widgets with class-based CSS frameworks like [Bootstrap](https://getbootstrap.com/) or [Tailwind CSS](https://tailwindcss.com/).
+
+    - `root`: the root element of the widget.
+    - `form`: the form element.
+    - `input`: the input element.
+    - `submit`: the submit button.
+    - `reset`: the reset button.
+    - `loadingIndicator`: the loading indicator element.
+    - `submitIcon`: the submit icon.
+    - `resetIcon`: the reset icon.
+    - `loadingIcon`: the loading icon.
+
+    ```jsx
+    <SearchBox
+        classNames={{
+            root: 'MyCustomSearchBox',
+            form: 'MyCustomSearchBoxForm MyCustomSearchBoxForm--subclass',
+        }}
+    />
+    ```
+</ParamField>
+
+<ParamField path="translations" type="Partial<SearchBoxTranslations>">
+    A dictionary of translations to customize the UI text and support internationalization.
+
+    - `submitButtonTitle`: the submit button's title.
+    - `resetButtonTitle`: the reset button's title.
+
+    ```jsx
+    <SearchBox
+        translations={{
+            submitButtonTitle: 'Search',
+            resetButtonTitle: 'Reset',
+        }}
+    />
+    ```
+</ParamField>
+
+<ParamField path="...props" type="React.ComponentProps<'div'>">
+    Any `<div>` prop to forward to the root element of the widget.
+
+    ```jsx
+    <SearchBox className="MyCustomSearchBox" title="My custom title" />
+    ```
+</ParamField>
 
 ## Hook
 
 React InstantSearch lets you create your own UI for the `<SearchBox>` widget with `useSearchBox()`.
 Hooks provide APIs to access the widget state and interact with InstantSearch.
 
-The `useSearchBox()` Hook accepts [parameters](#parameters) and returns [APIs](#apis).
+The `useSearchBox()` Hook accepts [parameters](#hook-parameters) and returns [APIs](#hook-apis).
 It must be used inside the `<InstantSearch>` component.
 
 <Steps>
@@ -307,7 +283,7 @@ It must be used inside the `<InstantSearch>` component.
     </Step>
 </Steps>
 
-### Parameters
+### Hook parameters
 
 Hooks accept parameters.
 You can pass them manually or forward the props from your custom component.
@@ -317,86 +293,75 @@ You can pass them manually or forward the props from your custom component.
     Objects and arrays are memoized; you don't need to stabilize them.
 </Note>
 
-| Parameter                  | Type                                                     |
-|:-------------------------- |:-------------------------------------------------------- |
-| [`queryHook`](#queryhook1) | (query: string, search: (value: string) => void) => void |
+<ParamField path="queryHook" type="(query: string, search: (value: string) => void) => void">
+    Function called every time the query changes.
 
-#### `queryHook`
+    For more information, see the [`queryHook` prop](#props).
 
-Function called every time the query changes.
+    <CodeGroup>
+        ```jsx JavaScript
+        const queryHook = (query, search) => {
+        search(query);
+        };
 
-See [`queryHook`](#queryhook) for details.
+        function SearchBox() {
+        const searchBoxApi = useSearchBox({
+            // ...
+            queryHook,
+        });
 
-<CodeGroup>
-    ```jsx JavaScript
-    const queryHook = (query, search) => {
-    search(query);
-    };
+        return <>{/* Your JSX */}</>;
+        }
+        ```
 
-    function SearchBox() {
-    const searchBoxApi = useSearchBox({
-        // ...
-        queryHook,
-    });
+        ```tsx TypeScript
+        import type { UseSearchBoxProps } from 'react-instantsearch';
 
-    return <>{/* Your JSX */}</>;
-    }
-    ```
+        const queryHook: UseSearchBoxProps['queryHook'] = (query, search) => {
+        search(query);
+        };
 
-    ```tsx TypeScript
-    import type { UseSearchBoxProps } from 'react-instantsearch';
+        function SearchBox() {
+        const searchBoxApi = useSearchBox({
+            // ...
+            queryHook,
+        });
 
-    const queryHook: UseSearchBoxProps['queryHook'] = (query, search) => {
-    search(query);
-    };
+        return <>{/* Your JSX */}</>;
+        }
+        ```
+    </CodeGroup>
+</ParamField>
 
-    function SearchBox() {
-    const searchBoxApi = useSearchBox({
-        // ...
-        queryHook,
-    });
-
-    return <>{/* Your JSX */}</>;
-    }
-    ```
-</CodeGroup>
-
-### APIs
+### Hook APIs
 
 Hooks return APIs, such as state and functions.
 You can use them to build your UI and interact with React InstantSearch.
 
-| API                                   | Type                    |
-|:------------------------------------- |:----------------------- |
-| [`query`](#query)                     | String                  |
-| [`refine`](#refine)                   | (value: string) => void |
-| [`clear`](#query)                     | () => void              |
-| [`isSearchStalled`](#issearchstalled) | Boolean (deprecated)    |
+<ParamField path="query" type="string">
+    The query from the last search.
+</ParamField>
 
-#### `query`
+<ParamField path="refine" type="(value: string) => void">
+    Sets a new query and searches.
+</ParamField>
 
-The query from the last search.
+<ParamField path="clear" type="() => void  ">
+    Clears the query and searches.
+</ParamField>
 
-#### `refine`
+<ParamField path="isSearchStalled" type="boolean" deprecated>
+    Whether the search results take more than a certain time to come back from Algolia servers.
 
-Sets a new query and searches.
+    This can be configured on `<InstantSearch>` with the `stalledSearchDelay` prop which defaults to 200&nbsp;ms.
 
-#### `clear`
+    <Info>
+        This API is deprecated.
+        Use `status` from `useInstantSearch()` instead.
+    </Info>
+</ParamField>
 
-Clears the query and searches.
-
-#### `isSearchStalled`
-
-<Info>
-    This API is deprecated.
-    Use `status` from `useInstantSearch()` instead.
-</Info>
-
-Whether the search results take more than a certain time to come back from Algolia servers.
-
-This can be configured on `<InstantSearch>` with the `stalledSearchDelay` prop which defaults to 200&nbsp;ms.
-
-### Example
+### Hook example
 
 <CodeGroup>
     ```jsx JavaScript
