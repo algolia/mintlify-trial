@@ -1,0 +1,167 @@
+---
+title: Product comparison table build process
+sidebarTitle: 'Steps'
+mode: "wide"
+description: |-
+  How to build a product comparison table
+---
+
+<Steps titleSize="h2">
+  <Step title="What you will build">
+
+    One way to deliver a better customer experience and boost conversions is by adding a product comparison table in your discovery experiences.
+    With Algolia Recommend you can let your users to compare similar products and help them find the right fit.
+
+    Usually found on a product description page, the product comparison table is a great user experience for specification-driven products, allowing your users to quickly and conveniently compare their selected product with popular related ones.
+
+    By creating a product comparison table that highlights the differences between similar products you can speed up the sales process and guide your users to make the right choice for them.
+
+    | | | | |
+    |-|-|-|-|
+    | | <img width="96px" noZoom src="/images/recommend/jbl.jpg" /> | <img width="96px" noZoom src="/images/recommend/bose.jpg" /> | <img width="96px" noZoom src="/images/recommend/steelseries.jpg" /> |
+    | Title | JBL headset | Bose headset | SteelSeries headset |
+    | Price | $180        | $350         | $200                |
+    | Battery life | 30 hours | 40 hours | Doesn't apply       |
+    | Charging time | 2 hours | 1 hour  | Doesn't apply        |
+    | Noise cancelling | <Icon icon="check" iconType="solid" /> | <Icon icon="check" iconType="solid" /> | <Icon icon="check" iconType="solid" /> |
+    | Wireless | <Icon icon="check" iconType="solid" /> | <Icon icon="check" iconType="solid" /> | <Icon icon="xmark" iconType="solid" />            |
+    | Fit | Over the ear | Over the ear | Over the ear |
+
+    **Alternative items**
+
+    [This Recommend model](/guides/algolia-recommend/onboard/related-products/overview/) helps you display a block of products that are related to the selected product.
+    It looks at user interactions, such as clicks, to determine which products are similar to the selected ones.
+
+  </Step>
+  <Step title="How to add a product comparison table to your app">
+    The building block for this custom layout is the `useRelatedProducts()` Hook from the React InstantSearch library.
+    In a nutshell, you can quickly integrate a product comparison table in your product details page, by following a few steps.
+
+    It is easier to render the list of attributes and the retrieved recommendations by column.
+    Keep in mind a few tips, like also sending the selected product to the custom widget and limiting the retrieved recommendations to 2 or 3, for comparison.
+
+    <Steps>
+      <Step title="React InstantSearch">
+        To shape the **Related Products** model in the product comparison table,
+        you will have to create a custom widget based on `useRelatedProducts()`, and provide it with a custom item component in the `itemComponent` prop.
+
+        You should also provide the currently selected product to the custom widget,
+        as well as limit the retrieved recommendation to two (or more, depending on your use case) by setting `limit={2}`, as shown in the code example.
+
+        ```jsx JSX
+        <InstantSearch searchClient={searchClient} indexName={indexName}>
+          <ComparisonTableView
+            objectIDs={[selectedProduct.objectID]}
+            limit={2}
+            currentItem={selectedProduct}
+            itemComponent={({ item }) => (
+              <ComparisonTableItem item={item} />
+            )}
+          />
+        </InstantSearch>
+        ```
+
+      </Step>
+      <Step title="Create the custom widget">
+        Retrieve the recommendations with `useRelatedProducts()`,
+        then extract and format the attributes' names that you will like to display in the table.
+        Ensure you exclude the image attribute.
+        In this example, most of the attributes have been exracted and each name capitalized.
+
+        ```jsx JSX
+        const ComparisonTableView = ({ 
+          currentItem, 
+          itemComponent, 
+          ...props,
+        }) => {
+          [...]
+          // Create a new array containing the selected 
+          // product and the retrieved recommendations
+          const { items } = useRelatedProducts(props);
+          const allItems = Array.from(new Set([currentItem, ...items]));
+          const properties = extractAndFormatProperties(Object.keys(first(items)));
+          [...]
+        }
+        ```
+      </Step>
+      <Step title="Render the extracted attributes">
+        Render these extracted and formatted attributes as a column.
+
+        ```jsx JSX
+        <div className="propertiesContainer">
+          <div className="propertiesHeading">
+            <div>Overview</div>
+          </div>
+          <div className="propertiesContainer">
+            {properties.map((property) => (
+              <div className="propertyContainer">
+                <div className="propertyContent">{property}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        ```
+      </Step>
+      <Step title="Display each item by column">
+        Display only the item attributes that are part of the comparison
+        Do this by rendering the custom `itemComponent` prop for each item, as shown in the code below.
+
+        ```jsx JSX
+        {allItems.map((item) => (
+          <div key={item.objectID}>
+            <itemComponent item={item} />
+          </div>
+        ))}
+        ```
+      </Step>
+      <Step title="Create the custom item component">
+        You will have to create the custom item component view.
+        You will have to display each of the selected item attributes as a column,
+        making sure that the column heights are the same as the ones from the attributes (left-most) column.
+
+        ```jsx JSX
+        <div className="itemsContainer">
+          <div className="itemImgContainer">
+            <img
+              className="imageContent"
+              src={item.image}
+              alt="placeholder img"
+            />
+          </div>
+          <div className="itemAttributeContainer">
+            <div className="itemAttributeContent">{item.title}</div>
+          </div>
+          <div className="itemAttributeContainer">
+            <div className="itemAttributeContent">{item.price}</div>
+          </div>
+        </div>
+        ```
+      </Step>
+      <Step title="Customise how the item attributes should be displayed">
+        In this example, a check or X icon is displayed for boolean attributes,
+        but you can add more custom views, such as star rating for reviews.
+
+        ```jsx JSX
+        <div className="itemAttributeContainer">
+          {item.noiseCancelling ? <Check size={20} /> : <X size={20} />}
+        </div>
+        ```
+      </Step>
+    </Steps>
+      </Step>
+      <Step title="Next steps">
+        You've just built a product comparison table layout with Algolia Recommend.
+
+        Now you can start [training your own Related Products model](https://dashboard.algolia.com/recommend/models) and build a product comparison table for your own app.
+      </Step>
+
+    </Steps>
+
+## Further reading
+
+- [How to set up recommend](/guides/algolia-recommend/how-to/set-up/)
+- Recommend overview: [Algolia documentation](/guides/algolia-recommend/overview/) |[Algolia Academy](https://academy.algolia.com/training/aa41a464-e7fd-11ec-a26c-027c588d9553/overview?utm_medium=page_link&utm_source=doc-recommend-onboarding)
+
+
+
+

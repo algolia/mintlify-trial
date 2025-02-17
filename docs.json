@@ -599,6 +599,13 @@
                 ]
               },
               {
+                "group": "Onboarding",
+                "pages": [
+                  "guides/algolia-recommend/onboard/overview",
+                  "guides/algolia-recommend/onboard/concepts"
+                ]
+              },
+              {
                 "group": "How to",
                 "pages": [
                   "guides/algolia-recommend/how-to/csv-upload",
