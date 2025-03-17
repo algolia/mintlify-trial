@@ -1,0 +1,326 @@
+---
+title: helpers
+description: Helpers extract information from crawled pages and format it as Algolia records.
+---
+
+Use helpers in your [`recordExtractor`](/tools/crawler/api/configuration/actions/recordextractor) to make it easier to extract relevant content from your page.
+
+Algolia has a selection of helpers:
+
+- `product`
+- `article`
+- `page`
+- `splitContentIntoRecords`
+- `codeSnippets`
+- `docsearch`.
+
+## `product`
+
+This helper extracts content from product pages.
+A "product page" is an HTML page with a [JSON-LD schema type](https://www.algolia.com/doc/tools/crawler/extracting-data/finding-and-extracting-data/#helpers) of:
+`Product`, `DietarySupplement`, `Drug`, `IndividualProduct`, `ProductCollection`, `ProductGroup`, `ProductModel`, `SomeProducts`, or `Vehicle`.
+
+```js JavaScript
+recordExtractor: ({ url, $, helpers }) => {
+  return helpers.product({ url, $ });
+}
+```
+
+### Response
+
+The helper returns an object with the following properties:
+
+<ParamField path="objectID" type="string">
+  The product page's URL.
+</ParamField>
+<ParamField path="url" type="string">
+  The product page's URL (without parameters or hashes).
+</ParamField>
+<ParamField path="lang?" type="string">
+  The language the page content is written in (from the `name` field of the JSON-LD product object).
+</ParamField>
+<ParamField path="sku" type="string">
+  The `sku` field of the JSON-LD product object.
+</ParamField>
+<ParamField path="description?" type="string">
+  The `description` field of the JSON-LD product object.
+</ParamField>
+<ParamField path="image?" type="string">
+  The `image` field of the JSON-LD product object.
+</ParamField>
+<ParamField path="price?" type="string">
+  The product's price, selected from one of these JSON-LD product fields, in the order:
+  
+  1. `offers.price`
+  1. `offers.highPrice`
+  1. `offers.lowPrice`.
+</ParamField>
+<ParamField path="currency?" type="string">
+  The `offers.priceCurrency` field of the JSON-LD product object.
+</ParamField>
+<ParamField path="category?" type="string">
+  The `category` field of the JSON-LD product object.
+</ParamField>
+
+## `article`
+
+This helper extracts content from article pages.
+An "article page" is an HTML page with an appropriate JSON-LD schema or meta tag:
+
+<Tabs>
+  <Tab title="JSON-LD schema">
+    These [JSON-LD schema types](https://www.algolia.com/doc/tools/crawler/extracting-data/finding-and-extracting-data/#helpers): `Article`, `NewsArticle`, `Report`, or `BlogPosting`
+
+    ```js JavaScript
+    recordExtractor: ({ url, $, helpers }) => {
+      return helpers.article({ url, $ });
+    }
+    ```
+  </Tab>
+  <Tab title="Meta tag">
+    An `og:type` HTML meta tag with the value `article`:
+
+    ```html HTML
+    <meta property="og:type" content="article"/>
+    ```
+  </Tab>
+</Tabs>
+
+### Response
+
+The helper returns an object with the following properties:
+
+<ParamField path="objectID" type="string">
+  The article's URL.
+</ParamField>
+<ParamField path="url" type="string">
+  The article's URL (without parameters or hashes).
+</ParamField>
+<ParamField path="lang?" type="string">
+  The language the article is written in (from the [HTML `lang` attribute](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/lang))
+</ParamField>
+<ParamField path="headline" type="string">
+  The article's headline, selected from one of these, in the order:
+  
+  1. `meta[property="og:title"]`
+  1. `meta[name="twitter:title"]`
+  1. `head > title`
+  1. First `<h1>`.
+</ParamField>
+<ParamField path="description?" type="string">
+  The article's description, selected from one of these, in the order:
+  
+  1. `meta[name="description"]`
+  1. `meta[property="og:description"]`
+  1. `meta[name="twitter:description"]`.
+</ParamField>
+<ParamField path="keywords" type="string array">
+  The `keywords` field of the JSON-LD article object.
+</ParamField>
+<ParamField path="tags" type="string array">
+  Article tags: `meta[property="article:tag"]`.
+</ParamField>
+<ParamField path="image?" type="string">
+  The image associated with the article, selected from one of these, in the order:
+  
+  1. `meta[property="og:image"]`
+  1. `meta[name="twitter:image"]`.
+</ParamField>
+<ParamField path="authors?" type="string array">
+  The `author` field of the JSON-LD article object.
+</ParamField>
+<ParamField path="datePublished?" type="string">
+  The `datePublished` field of the JSON-LD article object.
+</ParamField>
+<ParamField path="dateModified?" type="string">
+  The `dateModified` field of the JSON-LD article object.
+</ParamField>
+<ParamField path="category?" type="string">
+  The `category` field of the JSON-LD product object.
+</ParamField>
+<ParamField path="content" type="string">
+  The article's content (body copy).
+</ParamField>
+
+## `page`
+
+This helper extracts text from pages regardless of its type or category.
+
+```js
+recordExtractor: ({ url, $, helpers }) => {
+  return helpers.page({
+    url,
+    $,
+    recordProps: {
+      title: 'head title',
+      content: 'body',
+    },
+  });
+}
+```
+
+### Response
+
+The helper returns an object with the following properties:
+
+<ParamField path="objectID" type="string">
+  The object's unique identifier.
+</ParamField>
+<ParamField path="url" type="string">
+  The page's URL.
+</ParamField>
+<ParamField path="hostname" type="string">
+  The URL hostname (for example, `example.com`).
+</ParamField>
+<ParamField path="path" type="string">
+  TThe URL path: everything after the hostname.
+</ParamField>
+<ParamField path="depth" type="number">
+  The URL depth, based on the number of slashes after the domain.
+  For example, `http://example.com/` = 1, `http://example.com/about` = 1, `http://example.com/about/` = 2.
+</ParamField>
+<ParamField path="fileType" type="file type">
+  The page's file type.
+  One of: `html`, `xml`, `json`, `pdf`, `doc`, `xls`, `ppt`, `odt`, `ods`, `odp`, or `email`.
+</ParamField>
+<ParamField path="contentLength" type="number">
+  The page length in bytes.
+</ParamField>
+<ParamField path="title?" type="string">
+  The page title, derived from `head > title`.
+</ParamField>
+<ParamField path="description?" type="string">
+  TThe page's description, derived from `meta[name="description"]`.
+</ParamField>
+<ParamField path="keywords?" type="string array">
+  The page's keywords, derived from `meta[name="keywords"]`.
+</ParamField>
+<ParamField path="image?" type="string">
+  The image associated with the page, derived from `meta[property="og:image"]`.
+</ParamField>
+<ParamField path="headers?" type="string array">
+  The page's section titles, derived from `h1` and `h2`.
+</ParamField>
+<ParamField path="content" type="string">
+  The page's content (body copy).
+</ParamField>
+
+## `splitContentIntoRecords`
+
+This helper extracts text from long HTML pages and splits them into smaller chunks.
+This can help prevent ["Record too big" errors](https://www.algolia.com/doc/tools/crawler/troubleshooting/indexing-issues/#records-exceed-the-maximum-for-your-algolia-plan).
+
+Using this example record extractor on a long page returns an array of records,
+each one smaller than 1,000 bytes.
+
+```js JavaScript
+recordExtractor: ({ url, $, helpers }) => {
+  const baseRecord = {
+    url,
+    title: $('head title').text().trim(),
+  };
+  const records = helpers.splitContentIntoRecords({
+    baseRecord,
+    $elements: $('body'),
+    maxRecordBytes: 1000,
+    textAttributeName: 'text',
+    orderingAttributeName: 'part',
+  });
+  // Produced records can be modified after creation, if necessary.
+  return records;
+}
+```
+
+When splitting pages, some words will appear in records belonging to the same page.
+If you don't want these duplicates to turn up when users search:
+
+- Set [`distinct`](https://www.algolia.com/doc/api-reference/api-parameters/distinct/) to `true` in your index. `distinct: true`
+- Set the [`attributeForDistinct`](https://www.algolia.com/doc/api-reference/api-parameters/attributeForDistinct/) to your page's URL. For example, `attributeForDistinct: 'url'`
+- Set [`searchableAttributes`](https://www.algolia.com/doc/guides/managing-results/must-do/searchable-attributes/)' to be your page title and body content. For example, `[ 'searchableAttributes: [ 'title', 'text' ]`
+- Add a [`customRanking`](https://www.algolia.com/doc/api-reference/api-parameters/customRanking/) to sort from the first split record on your page to the last. For example, `customRanking: [ 'asc(part)' ]` .
+
+### Response
+
+Specify one or more response parameters in your helper to determine what information is returned.
+
+<ParamField path="baseRecord" type="record" default="{}">
+  Takes this record's attributes (and values) and adds them to all the split records.
+</ParamField>
+<ParamField path="$elements" type="string" default="$('body')">
+  A [Cheerio selector](https://cheerio.js.org/) that determines from which elements content will be extracted.
+  For more information, see [Extracting data with Cheerio](https://www.algolia.com/doc/tools/crawler/extracting-data/data-extraction-examples/#split-content).
+</ParamField>
+<ParamField path="maxRecordBytes" type="number" default="10000">
+  Maximum number of bytes allowed per record.
+  To avoid errors, check [your plan's record size limits](https://www.algolia.com/pricing).
+</ParamField>
+<ParamField path="orderingAttributeName" type="string">
+  This attribute stores the sequentially generated number assigned to each record when the helper splits a page.
+</ParamField>
+<ParamField path="textAttributeName" type="string" default="text">
+  Name of the attribute in which to store the text of each split record.
+</ParamField>
+
+## `codeSnippets`
+
+Use this helper to extract code snippets from pages.
+The helper finds code snippets by looking for `<pre>` tags and extracting the content
+and the language class prefix from the tag.
+
+<Note>
+    If the crawler finds several code snippets on a page, this property returns a list of those snippets.
+</Note>
+
+```js JavaScript
+recordExtractor: ({ url, $, helpers }) => {
+  const code = helpers.codeSnippets({ tag, languageClassPrefix })
+  return { code };
+}
+```
+
+### Response
+
+The helper returns an array of code objects with the following properties:
+
+<ParamField path="content" type="string">
+  The code snippet.
+</ParamField>
+<ParamField path="languageClassPrefix?" type="string">
+  The code snippet's language (if found).
+</ParamField>
+<ParamField path="codeUrl?`" type="string">
+  The URL of the nearest sibling `<a>` tag.
+</ParamField>
+<ParamField path="fragmentUrl?" type="string">
+  [Text fragment](https://developer.mozilla.org/en-US/docs/Web/URI/Fragment/Text_fragments) URL with the code snippet.
+  This is a selection of text within a page that's linked to another page.
+</ParamField>
+
+## `docsearch`
+
+This helper extracts content and formats it to be compatible with [DocSearch](https://docsearch.algolia.com/).
+It creates an optimized number of records for relevancy and hierarchy.
+
+You can also use it without DocSearch or to index non-documentation content.
+For more information, see the [DocSearch documentation](https://docsearch.algolia.com/docs/record-extractor/).
+
+```js JavaScript
+recordExtractor: ({ url, $, helpers }) => {
+  return helpers.docsearch({
+    aggregateContent: true,
+    indexHeadings: true,
+    recordVersion: 'v3',
+    recordProps: {
+      lvl0: {
+        selectors: "header h1",
+      },
+      lvl1: "article h2",
+      lvl2: "article h3",
+      lvl3: "article h4",
+      lvl4: "article h5",
+      lvl5: "article h6",
+      content: "main p, main li",
+    },
+  });
+}
+```

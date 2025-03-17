@@ -1,0 +1,49 @@
+---
+title: recordExtractor
+description: What to extract from crawled pages and how to format it as Algolia records.
+---
+
+The `recordExtractor` [action](/tools/crawler/api/configuration/update-crawler-configuration#body-actions) is a function that takes an object as an input parameter and returns a list of records.
+
+```js JavaScript
+recordExtractor: ({ url, $, contentLength, fileType})  => {
+return [
+    {
+    url: url.href,
+    text: $('p').html()
+    ... /* Anything you want */
+    }
+];
+// return []; skips the page
+}
+```
+
+## Parameters
+
+Specify one or more response parameters in your `recordExtractor` to determine what information is returned.
+
+<ParamField path="$" type="object">
+  A [Cheerio instance](https://cheerio.js.org/) with the HTML of the crawled page.
+  For more information, see [Extracting data with Cheerio](https://www.algolia.com/doc/tools/crawler/extracting-data/data-extraction-examples/).
+</ParamField>
+<ParamField path="url" type="object">
+  A [`Location`](https://developer.mozilla.org/en-US/docs/Web/API/Location) object that contains the URL.
+</ParamField>
+<ParamField path="filetype" type="string">
+  The [file type](https://www.algolia.com/doc/tools/crawler/extracting-data/non-html-documents/#enable-document-extraction) of the crawled page or document.
+</ParamField>
+<ParamField path="contentLength" type="number">
+  The size of the crawled page in bytes.
+</ParamField>
+<ParamField path="contentLength" type="number">
+  The [external data sources](https://www.algolia.com/doc/tools/crawler/enriching-data/overview/) of the current URL.
+</ParamField>
+<ParamField path="helpers" type="function">
+  [Helpers](/tools/crawler/api/configuration/actions/helpers) are functions that help extract content and generate records.
+  This can help simplify your record extractor.
+</ParamField>
+
+## Returns
+
+The record extractor returns an array of [records with attributes](/guides/sending-and-managing-data/prepare-your-data) or an empty array.
+If it returns an empty array, the page is skipped (isn't crawled).
