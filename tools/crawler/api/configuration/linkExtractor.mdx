@@ -1,0 +1,56 @@
+---
+title: linkExtractor
+description: Function for extracting URLs for links found on crawled pages.
+---
+
+By default, Algolia queues all URLs that comply with the [`pathsToMatch` and `fileTypesToMatch`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions) actions,
+and the [`exclusionPatterns` parameter](tools/crawler/api/configuration/update-crawler-configuration#body-exclusion-patterns).
+You can override this default logic by providing a [`linkExtractor`](/tools/crawler/api/configuration/update-crawler-configuration#body-link-extractor) function that overrides this default logic and returns its own list of URLs to queue.
+
+## Parameters
+
+<ParamField path="$" type="object">
+    A [Cheerio instance](https://cheerio.js.org/) with the HTML of the crawled page.
+    For more information, see [Extracting data with Cheerio](https://www.algolia.com/doc/tools/crawler/extracting-data/data-extraction-examples/).
+</ParamField>
+<ParamField path="defaultExtractor" type="function">
+    A [Cheerio instance](https://cheerio.js.org/) with the HTML of the crawled page.
+    The Crawler's default URL discovery function
+    It returns an array of strings,
+    each representing a URL on the page that matches the crawler's configuration.
+</ParamField>
+<ParamField path="url" type="URL">
+    URL of the page that was just crawled.
+</ParamField>
+
+## Examples
+
+```js JavaScript
+{
+    linkExtractor: ({ $, url, defaultExtractor }) => {
+    if (/example.com\/doc\//.test(url.href)) {
+        // For all pages under /doc, only queue the first found link
+        return defaultExtractor().slice(0,1);
+    }
+    // Otherwise, use the default logic (queue all found links)
+    return defaultExtractor();
+    },
+}
+```
+
+```js JavaScript
+{
+linkExtractor: ({ $, url, defaultExtractor }) => {
+    // This turns off link discovery, except for URLs listed in sitemap.xml
+    return /sitemap.xml/.test(url.href) ? defaultExtractor() : [];
+},
+}
+```
+
+```js JavaScript
+{
+linkExtractor: ({ $ }) => {
+    // Access the DOM and extract what you specify
+    return [$('.my-link').attr('href')]
+},
+}

@@ -1,0 +1,63 @@
+---
+title: Actions
+sidebarTitle: Overview
+description: Specifies how the crawler converts web pages into Algolia records.
+---
+
+[actions](/tools/crawler/api/configuration/update-crawler-configuration#body-actions) are a list of up to 30 separate instructions in your [configuration](https://www.algolia.com/doc/tools/crawler/getting-started/crawler-configuration/) that tell the crawler what information to extract from matching URLs and copyinto Algolia records.
+
+## Example action
+
+```json JSON
+actions: [
+  {
+    indexName: "algolia-docs",
+    pathsToMatch: ["https://www.algolia.com/doc/**"],
+    recordExtractor: ({ helpers }) => {
+      return helpers.docsearch({
+        recordProps: {
+          lvl1: ["header h1", "article h1", "main h1", "h1", "head > title"],
+          content: ["article p, article li", "main p, main li", "p", "li"],
+          lvl0: {
+            selectors: "",
+            defaultValue: "Documentation",
+          },
+          lvl2: ["article h2", "main h2", "h2"],
+          lvl3: ["article h3", "main h3", "h3"], 
+          lvl4: ["article h4", "main h4", "h4"], 
+          lvl5: ["article h5", "main h5", "h5"], 
+          lvl6: ["article h6", "main h6", "h6"], 
+        },
+        aggregateContent: true,
+        recordVersion: "v3",
+      });
+    },
+  },
+],
+```
+
+For complete configurations, see the [examples repository on GitHub](https://github.com/algolia/crawler-configurations-examples).
+
+## Parameters
+
+**[`indexName`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-index-name) (required).** Reference to the index used to store the action's extracted records.
+
+**[`pathsToMatch`](#body-actions-paths-to-match) (required).** URLs to which this action should apply.
+
+**[`recordExtractor`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-record-extractor) (required).** Function for extracting information from a crawled page and transforming it into Algolia records for indexing.
+
+**[`autoGenerateObjectIDs`](#body-actions-auto-generate-object-ids).** Whether to generate an `objectID` for records that don't have one.
+
+**[`cache`](#body-actions-cache).** Whether the crawler should cache crawled pages.
+
+**[`discoveryPatterns`](#body-actions-discovery-patterns).** Which _intermediary_ web pages the crawler should visit.
+
+**[`fileTypesToMatch`](#body-actions-file-types-to-match).** File types for crawling non-HTML documents.
+
+**[`hostnameAliases`](#body-actions-hostname-aliases).** Key-value pairs to replace matching hostnames found in a sitemap, on a page, in canonical links, or redirects.
+
+**[`name`](#body-actions-name)**. Unique identifier for the action. Required if [`schedule`](#body-schedule) is set.
+
+**[`pathAliases`](#body-actions-path-aliases).** Key-value pairs to replace matching paths with new values.
+
+**[`selectorsToMatch`](#body-actions-selectors-to-match).** DOM selectors for nodes that must be present on the page to be processed.

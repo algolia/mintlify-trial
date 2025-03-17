@@ -1,0 +1,56 @@
+---
+openapi: patch /1/crawlers/{id}/config
+sidebarTitle: Configuration
+---
+
+## Parameters
+
+**[`actions`](#body-actions) (required).** Determine which web pages are translated into Algolia records and in what way.
+
+**[`appId`](#body-app-id) (required).** Algolia application ID where the crawler creates and updates indices
+
+**[`rateLimit`](#body-rate-limit) (required).** Number of concurrent tasks per second.
+
+**[`apiKey`](#body-api-key).** Algolia API key for indexing the records.
+
+**[`exclusionPatterns`](#body-exclusion-patterns).** URLs to exclude from crawling.
+
+**[`externalData`](#body-external-data).** References to external data sources for enriching the extracted records.
+
+**[`extraUrls`](#body-extra-urls).** Specify `extraUrls` if you want to differentiate between URLs you manually added to fix site crawling from those you initially specified in `startUrls`.
+
+**[`ignoreCanonicalTo`](#body-ignore-canonical-to).** Whether the crawler should extract records from a page that has a canonical URL specified.
+
+**[`ignoreNoFollowTo`](#body-ignore-no-follow-to).** Whether to ignore the `nofollow` meta tag or link attribute.
+
+**[`ignoreNoIndex`](#body-ignore-no-index).** Whether to ignore the `noindex` robots meta tag.
+
+**[`ignoreQueryParams`](#body-ignore-query-params).** Query parameters to ignore while crawling.
+
+**[`ignoreRobotsTxtRules`](#body-ignore-robots-txt-rules).** Whether to ignore rules defined in your `robots.txt` file.
+
+**[`indexPrefix`](#body-index-prefix).** A prefix for all indices created by this crawler. It's combined with the `indexName` for each `action` to form the complete index name.
+
+**[`initialIndexSettings`](#body-initial-index-settings).** Crawler index settings.
+
+**[`linkExtractor`](#body-link-extractor).** Function for extracting URLs from links on crawled pages.
+
+**[`login`](#body-login).** Authorization method and credentials for crawling protected content.
+
+**[`maxDepth`](#body-max-depth).** Maximum path depth of crawled URLs.
+
+**[`maxUrls`](#body-max-urls).** Limits the number of URLs your crawler processes.
+
+**[`renderJavaScript`](#body-render-java-script).** Whether to use a Chrome headless browser to crawl pages.
+
+**[`requestOptions`](#body-request-options).** Lets you add options to HTTP requests made by the crawler.
+
+**[`safetyChecks`](#body-safety-checks).** Checks to ensure the crawl was successful.
+
+**[`saveBackup`](#body-save-backup).** Whether to back up your index before the crawler overwrites it with new records.
+
+**[`schedule`](#body-schedule).** Schedule for running the crawl.	
+
+**[`sitemaps`](#body-sitemaps).** Sitemaps with URLs from where to start crawling.
+
+**[`startUrls`](#body-start-urls).** URLs from where to start crawling.
