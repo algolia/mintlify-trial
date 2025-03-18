@@ -1114,7 +1114,58 @@
           {
             "group": "Crawler",
             "pages": [
-              "tools/crawler/getting-started"
+              "tools/crawler/getting-started",
+              {
+                "group": "API",
+                "pages": [
+                  "tools/crawler/api/api",
+                    {
+                      "group": "Configuration",
+                      "pages": [
+                        "tools/crawler/api/configuration/update-crawler-configuration",
+                        "tools/crawler/api/configuration/list-configuration-versions",
+                        "tools/crawler/api/configuration/retrieve-a-configuration-version",
+                        {
+                          "group": "Actions",
+                          "pages": [
+                            "tools/crawler/api/configuration/actions",
+                            "tools/crawler/api/configuration/actions/recordExtractor",
+                            "tools/crawler/api/configuration/actions/helpers"
+                          ]
+                        },
+                        "tools/crawler/api/configuration/linkExtractor"
+                      ]
+                    },
+                    {
+                      "group": "State",
+                      "pages": [
+                        "tools/crawler/api/state/start-a-crawl",
+                        "tools/crawler/api/state/pause-a-crawler",
+                        "tools/crawler/api/state/unpause-a-crawler",
+                        "tools/crawler/api/state/test-crawl-a-url"
+                      ]
+                    },
+                    {
+                      "group": "Manage",
+                      "pages": [
+                        "tools/crawler/api/manage/create-a-crawler",
+                        "tools/crawler/api/manage/retrieve-crawler-details",
+                        "tools/crawler/api/manage/list-crawlers",
+                        "tools/crawler/api/manage/change-crawler-name",
+                        "tools/crawler/api/manage/delete-a-crawler",
+                        "tools/crawler/api/manage/retrieve-crawler-stats"
+                      ]
+                    },
+                    {
+                      "group": "Tasks",
+                      "pages": [
+                        "tools/crawler/api/tasks/retrieve-task-status",
+                        "tools/crawler/api/tasks/cancel-a-blocking-task"
+                      ]
+                    },
+                    "tools/crawler/api/domains/list-registered-domains"
+                ]
+              }
             ]
           }
         ]
