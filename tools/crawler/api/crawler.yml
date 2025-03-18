@@ -1003,7 +1003,7 @@ components:
 
 
             For details, consult the [`recordExtractor`
-            documentation](/tools/crawler/api/configuration/actions/recordextractor).
+            documentation](/tools/crawler/api/configuration/actions/recordExtractor).
           properties:
             __type:
               $ref: '#/components/schemas/configurationRecordExtractorType'
@@ -3315,7 +3315,7 @@ components:
 
 
             For more information, see the [`linkExtractor`
-            documentation](/tools/crawler/api/configuration/linkextractor).
+            documentation](/tools/crawler/api/configuration/linkExtractor).
           properties:
             __type:
               $ref: '#/components/schemas/configurationRecordExtractorType'
