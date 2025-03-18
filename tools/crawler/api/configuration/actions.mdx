@@ -42,22 +42,22 @@ For complete configurations, see the [examples repository on GitHub](https://git
 
 **[`indexName`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-index-name) (required).** Reference to the index used to store the action's extracted records.
 
-**[`pathsToMatch`](#body-actions-paths-to-match) (required).** URLs to which this action should apply.
+**[`pathsToMatch`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-paths-to-match) (required).** URLs to which this action should apply.
 
 **[`recordExtractor`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-record-extractor) (required).** Function for extracting information from a crawled page and transforming it into Algolia records for indexing.
 
-**[`autoGenerateObjectIDs`](#body-actions-auto-generate-object-ids).** Whether to generate an `objectID` for records that don't have one.
+**[`autoGenerateObjectIDs`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-auto-generate-object-ids).** Whether to generate an `objectID` for records that don't have one.
 
-**[`cache`](#body-actions-cache).** Whether the crawler should cache crawled pages.
+**[`cache`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-cache).** Whether the crawler should cache crawled pages.
 
-**[`discoveryPatterns`](#body-actions-discovery-patterns).** Which _intermediary_ web pages the crawler should visit.
+**[`discoveryPatterns`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-discovery-patterns).** Which _intermediary_ web pages the crawler should visit.
 
-**[`fileTypesToMatch`](#body-actions-file-types-to-match).** File types for crawling non-HTML documents.
+**[`fileTypesToMatch`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-file-types-to-match).** File types for crawling non-HTML documents.
 
-**[`hostnameAliases`](#body-actions-hostname-aliases).** Key-value pairs to replace matching hostnames found in a sitemap, on a page, in canonical links, or redirects.
+**[`hostnameAliases`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-hostname-aliases).** Key-value pairs to replace matching hostnames found in a sitemap, on a page, in canonical links, or redirects.
 
-**[`name`](#body-actions-name)**. Unique identifier for the action. Required if [`schedule`](#body-schedule) is set.
+**[`name`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-name)**. Unique identifier for the action. Required if [`schedule`](#body-schedule) is set.
 
-**[`pathAliases`](#body-actions-path-aliases).** Key-value pairs to replace matching paths with new values.
+**[`pathAliases`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-path-aliases).** Key-value pairs to replace matching paths with new values.
 
-**[`selectorsToMatch`](#body-actions-selectors-to-match).** DOM selectors for nodes that must be present on the page to be processed.
+**[`selectorsToMatch`](/tools/crawler/api/configuration/update-crawler-configuration#body-actions-selectors-to-match).** DOM selectors for nodes that must be present on the page to be processed.
