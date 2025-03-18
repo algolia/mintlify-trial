@@ -2955,41 +2955,11 @@ components:
 
         - **HTTP request authentication** (`fetchRequest`). The Crawler sends a direct request with your credentials to the login endpoint, similar to a `curl` command.
 
-
-          ```
-          {
-          login: {
-              fetchRequest: {
-              url: 'https://example.com/secure/login-with-post',
-              requestOptions: {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                  body: 'id=my-id&password=my-password',
-                  timeout: 5000 // in milliseconds
-              }
-              }
-          }
-          }
-          ```
-
-
         - **Browser-based authentication** (`browserRequest`). The Crawler emulates a web browser by loading the login page, entering the credentials, and submitting the login form as a real user would.
 
 
-          ```
-          {
-              login: {
-              browserRequest: {
-                  url: 'https://example.com/secure/login-page',
-                  username: 'my-id',
-                  password: 'my-password',
-              }
-              }
-          }
-          ```
-
-
         **OAuth 2.0**
+        
 
         The crawler supports [OAuth 2.0 client credentials grant flow](https://datatracker.ietf.org/doc/html/rfc6749#section-4.4):
 
@@ -3009,25 +2979,6 @@ components:
 
 
         The [Azure AD v1.0](https://learn.microsoft.com/en-us/previous-versions/azure/active-directory/azuread-dev/v1-oauth2-client-creds-grant-flow) provider is supported.
-
-
-        ```
-        {
-            login: {
-            oauthRequest: {
-                accessTokenRequest: {
-                url: 'https://example.com/oauth2/token',
-                grant_type: 'client_credentials',
-                client_id: 'my-client-id',
-                client_secret: 'my-client-secret',
-                extraParameters: {
-                    resource: 'https://protected.example.com/'
-                }
-                }
-            }
-            }
-        }
-        ```
       oneOf:
         - $ref: '#/components/schemas/fetchRequest'
         - $ref: '#/components/schemas/browserRequest'
