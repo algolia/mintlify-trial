@@ -3256,6 +3256,15 @@ components:
           description: |
             Whether to ignore the `noindex` robots meta tag.
             If `true` pages with this meta tag _will_ be crawled.
+        ignorePaginationAttributes:
+          type: boolean
+          description: |
+            Whether the crawler should follow `rel="prev"` and `rel="next"` pagination links in your `<head>` HTML.
+
+
+            If `true`, the crawler ignores the pagination links.
+            If `false`, the crawler follows the pagination links.
+          default: true
         ignoreQueryParams:
           type: array
           description: >
