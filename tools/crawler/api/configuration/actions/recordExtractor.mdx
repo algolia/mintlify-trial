@@ -26,21 +26,32 @@ Specify one or more response parameters in your `recordExtractor` to determine w
   A [Cheerio instance](https://cheerio.js.org/) with the HTML of the crawled page.
   For more information, see [Extracting data with Cheerio](https://www.algolia.com/doc/tools/crawler/extracting-data/data-extraction-examples/).
 </ParamField>
-<ParamField path="url" type="object">
-  A [`Location`](https://developer.mozilla.org/en-US/docs/Web/API/Location) object that contains the URL.
+<ParamField path="contentLength" type="number">
+  The size of the crawled page in bytes.
+</ParamField>
+<ParamField path="dataSources" type="object">
+  The external data sources of the current URL.
+  Each key of this object corresponds to an [`externalData`](/tools/crawler/api/configuration/update-crawler-configuration#body-external-data) object.
+  For example:
+
+  ```js JavaScript
+  {
+    dataSources: {
+      dataSourceId1: { data1: 'val1', data2: 'val2' },
+      dataSourceId2: { data1: 'val1', data2: 'val2' },
+    }
+  }
+  ```
 </ParamField>
 <ParamField path="filetype" type="string">
   The [file type](https://www.algolia.com/doc/tools/crawler/extracting-data/non-html-documents/#enable-document-extraction) of the crawled page or document.
 </ParamField>
-<ParamField path="contentLength" type="number">
-  The size of the crawled page in bytes.
-</ParamField>
-<ParamField path="contentLength" type="number">
-  The [external data sources](https://www.algolia.com/doc/tools/crawler/enriching-data/overview/) of the current URL.
-</ParamField>
 <ParamField path="helpers" type="function">
   [Helpers](/tools/crawler/api/configuration/actions/helpers) are functions that help extract content and generate records.
   This can help simplify your record extractor.
+</ParamField>
+<ParamField path="url" type="object">
+  A [`Location`](https://developer.mozilla.org/en-US/docs/Web/API/Location) object that contains the URL.
 </ParamField>
 
 ## Returns
