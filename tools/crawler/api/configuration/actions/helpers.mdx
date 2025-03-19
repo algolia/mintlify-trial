@@ -136,7 +136,7 @@ The helper returns an object with the following properties:
   The `dateModified` field of the JSON-LD article object.
 </ParamField>
 <ParamField path="category?" type="string">
-  The `category` field of the JSON-LD product object.
+  The `category` field of the JSON-LD article object.
 </ParamField>
 <ParamField path="content" type="string">
   The article's content (body copy).
@@ -173,7 +173,7 @@ The helper returns an object with the following properties:
   The URL hostname (for example, `example.com`).
 </ParamField>
 <ParamField path="path" type="string">
-  TThe URL path: everything after the hostname.
+  The URL path: everything after the hostname.
 </ParamField>
 <ParamField path="depth" type="number">
   The URL depth, based on the number of slashes after the domain.
@@ -190,7 +190,7 @@ The helper returns an object with the following properties:
   The page title, derived from `head > title`.
 </ParamField>
 <ParamField path="description?" type="string">
-  TThe page's description, derived from `meta[name="description"]`.
+  The page's description, derived from `meta[name="description"]`.
 </ParamField>
 <ParamField path="keywords?" type="string array">
   The page's keywords, derived from `meta[name="keywords"]`.
@@ -235,9 +235,20 @@ When splitting pages, some words will appear in records belonging to the same pa
 If you don't want these duplicates to turn up when users search:
 
 - Set [`distinct`](https://www.algolia.com/doc/api-reference/api-parameters/distinct/) to `true` in your index. `distinct: true`
-- Set the [`attributeForDistinct`](https://www.algolia.com/doc/api-reference/api-parameters/attributeForDistinct/) to your page's URL. For example, `attributeForDistinct: 'url'`
-- Set [`searchableAttributes`](https://www.algolia.com/doc/guides/managing-results/must-do/searchable-attributes/)' to be your page title and body content. For example, `[ 'searchableAttributes: [ 'title', 'text' ]`
-- Add a [`customRanking`](https://www.algolia.com/doc/api-reference/api-parameters/customRanking/) to sort from the first split record on your page to the last. For example, `customRanking: [ 'asc(part)' ]` .
+- Set the [`attributeForDistinct`](https://www.algolia.com/doc/api-reference/api-parameters/attributeForDistinct/) to your page's URL. For example, `attributeForDistinct: 'url'`.
+- Set [`searchableAttributes`](https://www.algolia.com/doc/guides/managing-results/must-do/searchable-attributes/)' to be your page title and body content. For example, `[ 'searchableAttributes: [ 'title', 'text' ]`.
+- Add a [`customRanking`](https://www.algolia.com/doc/api-reference/api-parameters/customRanking/) to sort from the first split record on your page to the last. For example, `customRanking: [ 'asc(part)' ]`.
+
+```js JavaScript
+initialIndexSettings: {
+  'my-index': {
+    distinct: true,
+    attributeForDistinct: 'url'
+    searchableAttributes: [ 'title', 'text' ],
+    customRanking: [ 'asc(part)' ],
+  }
+}
+```
 
 ### Response
 
@@ -268,7 +279,7 @@ The helper finds code snippets by looking for `<pre>` tags and extracting the co
 and the language class prefix from the tag.
 
 <Note>
-    If the crawler finds several code snippets on a page, this property returns a list of those snippets.
+    If the crawler finds several code snippets on a page, the helper returns a list of those snippets.
 </Note>
 
 ```js JavaScript
