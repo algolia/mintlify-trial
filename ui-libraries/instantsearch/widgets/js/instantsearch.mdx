@@ -1,0 +1,680 @@
+---
+title: instantsearch
+description: The instantsearch object is the root wrapper component for all widgets.
+---
+
+The `instantsearch` object requires two parameters:
+
+- `indexName`: your search UI's main index
+- `searchClient`: the [search client](https://github.com/algolia/algoliasearch-client-javascript) for InstantSearch.js. `searchClient` needs an `appId` and an `apiKey`: find those credentials in your [Algolia dashboard](https://dashboard.algolia.com/account/api-keys/).
+
+<Note>
+  This is the documentation for InstantSearch.js v4.
+  Read the migration guide to learn [how to upgrade from v3 to v4](https://www.algolia.com/doc/guides/building-search-ui/upgrade-guides/js/#upgrade-from-v3-to-v4).
+  You can still access the [V3 documentation for this page](https://www.algolia.com/doc/deprecated/instantsearch/js/v3/api-reference/instantsearch/).
+</Note>
+
+## Example
+
+```js JavaScript
+const search = instantsearch({
+  indexName: "INDEX_NAME",
+  searchClient: algoliasearch("YourApplicationID", "YourSearchOnlyAPIKey"),
+});
+
+// Add widgets
+// ...
+
+search.start();
+```
+
+## Before you begin
+
+Import the InstantSearch library with a package manager or a CDN.
+
+<Tabs>
+  <Tab title="Package manager">
+    ```js JavaScript\
+    import instantsearch from 'instantsearch.js';
+    ```
+  </Tab>
+  <Tab title="CDN">
+    ```js JavaScript
+    window.instantsearch;
+    ```
+  </Tab>
+</Tabs>
+
+## Options
+
+### `indexName`
+
+<ResponseField name="indexName" type="string" required>
+The main index to search into.
+
+```js
+const search = instantsearch({
+  // ...
+  indexName: "INDEX_NAME",
+});
+```
+
+</ResponseField>
+
+### `searchClient`
+
+<ResponseField name="searchClient" type="object" required>
+  Provides a search client to `instantsearch`.
+  Read [the custom backend guidance](https://www.algolia.com/doc/guides/building-search-ui/going-further/backend-search/js/) on implementing a custom search client.
+
+```js
+const search = instantsearch({
+  // ...
+  searchClient: algoliasearch("YourApplicationID", "YourSearchOnlyAPIKey"),
+});
+```
+
+</ResponseField>
+
+### `numberLocale`
+
+<ResponseField name="numberLocale" type="string">
+
+The locale used to display numbers. This is passed to [`Number.prototype.toLocaleString()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toLocaleString).
+
+```js
+const search = instantsearch({
+  // ...
+  numberLocale: "fr",
+});
+```
+
+</ResponseField>
+
+### `searchFunction`
+
+<ResponseField name="searchFunction" type="function" deprecated>
+
+Use [`onStateChange`](#widget-param-onstatechange) instead.
+
+This option allows you to take control of search behavior. For example, to avoid doing searches at page load.
+
+When this option is set, `search.helper` won't emit events. Instead, use [`onStateChange`](#widget-param-onstatechange) or widgets to handle search behavior.
+
+A hook is called each time a search is requested (with [Algolia's search helper](https://www.algolia.com/doc/guides/building-search-ui/upgrade-guides/js/#algolia-search-helper) as a parameter).
+Begin searching by calling [`helper.search()`](https://instantsearchjs.netlify.app/algoliasearch-helper-js/reference.html#AlgoliaSearchHelper#search).
+
+When modifying the state of the helper within `search-function`, the helper resets the page to 0.
+To keep the current page, store the page information, modify the state, and reapply pagination.
+
+```js
+const search = instantsearch({
+  // ...
+  searchFunction(helper) {
+    if (helper.state.query) {
+      helper.search();
+    }
+  },
+});
+
+// Example which avoids the page resetting to 0
+const search = instantsearch({
+  // ...
+  searchFunction(helper) {
+    const page = helper.getPage(); // Retrieve the current page
+
+    helper
+      .setQuery("Hello") // this call resets the page
+      .setPage(page) // we re-apply the previous page
+      .search();
+  },
+});
+```
+
+</ResponseField>
+
+### `initialUIState`
+
+<ResponseField name="initialUiState" type="object">
+
+Adds a [`uiState`](https://www.algolia.com/api-reference/widgets/ui-state/js/) to your `instantsearch` instance, which provides an initial state to your widgets.
+
+Replace `YourIndexName` with the name of your Algolia index.
+
+```js
+const search = instantsearch({
+  // ...
+  initialUiState: {
+    YourIndexName: {
+      query: "phone",
+      page: 5,
+    },
+  },
+});
+```
+
+</ResponseField>
+
+### `onStateChange`
+
+<ResponseField name="onStateChange" type="function">
+
+Triggered when the state changes.
+This can be helpful for performing custom logic on a state change.
+
+When using `onStateChange`, the instance is under your control. You’re responsible for updating the UI state (with `setUiState`).
+
+```js
+const search = instantsearch({
+  // ...
+  onStateChange({ uiState, setUiState }) {
+    // Custom logic
+
+    setUiState(uiState);
+  },
+});
+```
+
+</ResponseField>
+
+### `stalledSearchDelay`
+
+<ResponseField name="stalledSearchDelay" type="number" post={["default: 200"]}>
+
+A time period (in ms) after which the search is considered to have stalled.
+Read the [slow network guide](https://www.algolia.com/doc/guides/building-search-ui/going-further/improve-performance/js/) for more information.
+
+```js
+const search = instantsearch({
+  // ...
+  stalledSearchDelay: 500,
+});
+```
+
+</ResponseField>
+
+### `routing`
+
+<ResponseField name="routing" type="boolean|object" post={["default: false"]}>
+
+The router configuration used to save the UI state into the URL or any client-side persistence.
+It's either a `router` or a `stateMapping` object.
+
+- `router: object`: this object stores the UI state. By default, it uses an instance of the [`history`](https://www.algolia.com/doc/api-reference/widgets/history-router/js/) with the default parameters. It accepts:
+  - `onUpdate: function`: adds an event listener that makes InstantSearch aware of external changes to the storage medium (such as the URL). Typically you'll set up a listener for `popstate`, which triggers a callback with the current `routeState`.
+  - `read: function`: reads the routing storage and gets `routeState`. It does'’t take any parameters but returns an object.
+  - `write: function`: pushes `routeState` into routing storage.
+  - `createURL: function`: transforms `routeState` into a URL. It receives an object and returns a string (which may be empty).
+  - `dispose: function`: cleans up all event listeners.
+- `stateMapping: object`: transforms the [`uiState`](https://www.algolia.com/doc/api-reference/widgets/ui-state/js/) into the object saved by the router. The default value is provided by [`simple`](https://www.algolia.com/doc/api-reference/widgets/simple-state-mapping/js/). It accepts:
+  - `stateToRoute: function`: transforms a `ui-state` representation into `routeState`. It receives an object that contains the UI state of all the widgets on the page. It can return any object that is readable by `routeToState`.
+  - `routeToState: function`: transforms `routeState` into a `ui-state` representation. It receives an object that contains the UI state stored by the router. It can return any object that is readable by `stateToRoute`.
+
+For more information, see [Sync your URLs](https://www.algolia.com/doc/guides/building-search-ui/going-further/routing-urls/js/).
+
+You can't use [`initialUiState`](#initialuistate) with routing as the two options override each other.
+
+- Use `initialUiState` for simple and static use cases
+- Use `routing` for anything complex or dynamic.
+
+<CodeGroup>
+```js boolean
+const search = instantsearch({
+  // ...
+  routing: true,
+});
+```
+
+```js object
+const search = instantsearch({
+  // ...
+  routing: {
+    router: instantsearch.routers.history(),
+    stateMapping: instantsearch.stateMappings.simple(),
+  },
+});
+```
+
+</CodeGroup>
+
+</ResponseField>
+
+### `insights`
+
+<ResponseField name="insights" type="boolean|object" post={["since: 4.55.0", "default: false"]}>
+
+Enables the Insights middleware and loads the [`search-insights`](https://github.com/algolia/search-insights.js) library (if not already loaded).
+The Insights middleware sends view and click events automatically, and lets you set up your own [click and conversion events](https://www.algolia.com/doc/guides/building-search-ui/events/js/).
+
+To use this option with an object, refer to the [Insights middleware options](https://www.algolia.com/doc/api-reference/widgets/insights/js/#options).
+
+<CodeGroup>
+```js boolean
+const search = instantsearch({
+  // ...
+  insights: true,
+});
+```
+
+```js object
+const search = instantsearch({
+  // ...
+  insights: {
+    insightsClient: window.aa,
+    insightsInitParams: {
+      useCookie: false,
+      // …
+    },
+    // …
+  },
+});
+```
+
+</CodeGroup>
+
+</ResponseField>
+
+### `insightsClient`
+
+<ResponseField name="insightsClient" type="function" deprecated>
+
+Use [`insights`](#widget-param-insights) instead.
+
+This function is exposed by the `search-insights` library (usually `window.aa`) and is required for [sending click and conversion events](https://www.algolia.com/doc/guides/building-search-ui/events/js/) with the [`insights`](https://www.algolia.com/doc/api-reference/widgets/insights/js/) middleware.
+
+```js
+const search = instantsearch({
+  // ...
+  insightsClient: window.aa,
+});
+```
+
+</ResponseField>
+
+### `future`
+
+<ResponseField name="future" type="object">
+
+Test these new InstantSearch features without affecting others:
+
+- `preserveSharedStateOnUnmount`
+- `persistHierarchicalRootCount`
+
+</ResponseField>
+
+### `preserveSharedStateOnUnmount`
+
+<ResponseField name="preserveSharedStateOnUnmount" type="boolean" post={["since: v4.58.0", "default: false"]}>
+
+Changes the way `dispose` is used in the InstantSearch lifecycle.
+
+If `false` (the default), each widget unmounting will also remove its state, even if multiple widgets read that UI state.
+
+If `true`, each widget unmounting will only remove its state if it’s the last of its type. This allows you to dynamically add and remove widgets without losing their state.
+
+```js
+const search = instantsearch({
+  // ...
+  future: {
+    preserveSharedStateOnUnmount: true,
+  },
+});
+```
+
+</ResponseField>
+
+### `persistHierarchicalRootCount`
+
+<ResponseField name="persistHierarchicalRootCount" type="boolean" post={["since: v4.62.0", "default: false"]}>
+
+Whether to display a constant facet value count at the root of a hierarchical menu with active refinements.
+
+If `false` (default), the facet value count at the root level shows the facet value count of the refined (child) facet’s parent.
+
+If `true`, the facet value count at the root level shows the sum of the facet value counts of all its children, with or without refined children.
+
+```js
+const search = instantsearch({
+  // ...
+  future: {
+    persistHierarchicalRootCount: true,
+  },
+});
+```
+
+</ResponseField>
+
+## Methods
+
+### `addWidgets`
+
+<ResponseField name="addWidgets" type="function">
+
+Adds widgets to the `instantsearch` instance.
+
+You can add widgets to `instantsearch` before and after you start it.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+const searchBox = instantsearch.widgets.searchBox({
+  // ...
+});
+
+const hits = instantsearch.widgets.hits({
+  // ...
+});
+
+search.addWidgets([searchBox, hits]);
+```
+
+</ResponseField>
+
+### `addWidget`
+
+<ResponseField name="addWidget" deprecated>
+
+Use [`addWidgets([widget])`](#widget-param-addwidgets) instead.
+
+Adds a widget to the `instantsearch` instance.
+
+You can add widgets to `instantsearch` before and after you start it.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+const searchBox = instantsearch.widgets.searchBox({
+  // ...
+});
+
+search.addWidget(searchBox);
+```
+
+</ResponseField>
+
+### `start`
+
+<ResponseField name="start" type="function">
+
+Finalizes the setup of `instantsearch` and triggers the first search.
+
+Call this method after you have added all your required widgets to `instantsearch`. You can also add widgets after `instantsearch` has started, but these widgets aren’t considered during searches made before you add them.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+search.start();
+```
+
+</ResponseField>
+
+### `removeWidgets`
+
+<ResponseField name="removeWidgets">
+
+Removes widgets from the `instantsearch` instance. You can only do this after you [start `instantsearch`](#widget-param-start).
+
+The widgets you remove from `instantsearch` must implement a `dispose()` method to reset the search parameters they manage.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+const searchBox = instantsearch.widgets.searchBox({
+  // ...
+});
+
+const hits = instantsearch.widgets.hits({
+  // ...
+});
+
+search.removeWidgets([searchBox, hits]);
+```
+
+</ResponseField>
+
+### `removeWidget`
+
+<ResponseField name="removeWidget" deprecated>
+
+Use [`removeWidgets([widget])`](#widget-param-removewidgets) instead.
+
+Removes a widget from the `instantsearch` instance. You can only do this after you [start `instantsearch`](#widget-param-start).
+
+The widget you remove from `instantsearch` must implement a `dispose()` method to reset the search parameters they manage.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+const searchBox = instantsearch.widgets.searchBox({
+  // ...
+});
+
+search.removeWidget(searchBox);
+```
+
+</ResponseField>
+
+### `dispose`
+
+<ResponseField name="dispose">
+
+Removes all widgets from the instance. This method doesn’t trigger a search.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+search.dispose();
+```
+
+</ResponseField>
+
+### `setUiState`
+
+<ResponseField name="setUiState">
+
+Injects a [`uiState`](https://www.algolia.com/doc/api-reference/widgets/ui-state/js/) into the instance without relying on internal events (such as connectors' `refine` or widget interactions).
+
+For this option to work, the widgets responsible for each UI state attribute must be mounted.
+For example, a [`searchBox`](https://www.algolia.com/doc/api-reference/widgets/search-box/js/) is necessary to provide a `query`.
+
+<CodeGroup>
+```js object
+const search = instantsearch({
+  // ...
+});
+
+search.start();
+
+search.setUiState({
+// Replace INDEX_NAME with your index name
+INDEX_NAME: {
+query: 'phone'
+}
+});
+
+````
+
+```js function
+const search = instantsearch({
+  // ...
+});
+
+search.start();
+
+search.setUiState(uiState => {
+  return {
+    ...uiState,
+    // Replace INDEX_NAME with your index name
+    INDEX_NAME: {
+      ...uiState.INDEX_NAME,
+      query: 'phone'
+    }
+  }
+});
+````
+
+</CodeGroup>
+
+</ResponseField>
+
+### `refresh`
+
+<ResponseField name="refresh">
+
+Clears the Algolia responses cache and triggers a new search.
+For more information, read the [InstantSearch caching guide](https://www.algolia.com/doc/guides/building-search-ui/going-further/improve-performance/js/#caching).
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+search.refresh();
+```
+
+</ResponseField>
+
+## Properties
+
+### `status`
+
+<ResponseField name="status" type="string">
+
+"idle" | "loading" | "stalled" | "error"
+
+The status of the in-progress search.
+
+Possible values are:
+
+- `'idle'`: no search is in progress.
+- `'loading'`: the search is loading. Use `loading` for immediate feedback on an action. For loading indicators, use `'stalled'` instead.
+- `'stalled'`: the search is stalled. This is triggered after [`stalledSearchDelay`](https://www.algolia.com/doc/api-reference/widgets/instantsearch/js/#widget-param-stalledsearchdelay) expires.
+- `'error'`: the search failed. The error is available in the `error` property.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+search.start();
+
+search.on("render", () => {
+  console.log(search.status);
+});
+```
+
+</ResponseField>
+
+### `error`
+
+<ResponseField name="error" type="Error | undefined">
+
+The error that occurred during the search. This is only defined when `status` is `'error'`.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+search.start();
+
+// Error handler prevents uncaught errors
+search.on("error", () => {});
+
+search.on("render", () => {
+  console.log(search.status === "error" && search.error);
+});
+```
+
+</ResponseField>
+
+### `renderState`
+
+<ResponseField name="renderState" type="RenderState | undefined">
+
+The `renderState` provides access to all the data to render the widgets, including the methods to refine the search. More information can be found in the [`renderState`](https://www.algolia.com/doc/api-reference/widgets/render-state/js/) page.
+
+```js
+const indexName = "<index-name>";
+const search = instantsearch({
+  indexName,
+  // ...
+});
+search.addWidgets([
+  searchBox({
+    container: "<your-container>",
+  }),
+]);
+search.start();
+
+console.log(search.renderState[indexName].searchBox);
+/*
+  {
+    query: string;
+    refine: Function;
+    clear: Function;
+    isSearchStalled: boolean;
+    widgetParams: object;
+  }
+*/
+```
+
+</ResponseField>
+
+## Events
+
+### `render`
+
+<ResponseField name="render">
+
+Triggered when all widgets are rendered.
+This happens after every search request.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+search.on("render", () => {
+  // Do something on render
+});
+```
+
+</ResponseField>
+
+### `error`
+
+<ResponseField name="error">
+
+Triggered when calling the API reports an error.
+
+```js
+const search = instantsearch({
+  // ...
+});
+
+search.on("error", ({ error }) => {
+  // Do something on error
+});
+```
+
+</ResponseField>
+
+## Middleware
+
+InstantSearch.js provides middleware to help you connect to other systems:
+
+- **Insights.** Use the [`insights`](https://www.algolia.com/doc/api-reference/widgets/insights/js/) middleware to [send click and conversion events](https://www.algolia.com/doc/guides/building-search-ui/events/js/)
+- **Generic.** With the [`middleware`](https://www.algolia.com/doc/api-reference/widgets/middleware/js/) API, you can inject functionality into InstantSearch.js. For example, to [send events to Google Analytics](https://www.algolia.com/doc/guides/building-search-ui/going-further/integrate-google-analytics/js/).
