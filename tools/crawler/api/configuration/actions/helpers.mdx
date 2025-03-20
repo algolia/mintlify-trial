@@ -17,8 +17,17 @@ Algolia has a selection of helpers:
 ## `product`
 
 This helper extracts content from product pages.
-A "product page" is an HTML page with a [JSON-LD schema type](https://www.algolia.com/doc/tools/crawler/extracting-data/finding-and-extracting-data/#helpers) of:
-`Product`, `DietarySupplement`, `Drug`, `IndividualProduct`, `ProductCollection`, `ProductGroup`, `ProductModel`, `SomeProducts`, or `Vehicle`.
+A "product page" is an HTML page with one of thes [JSON-LD schema types](https://www.algolia.com/doc/tools/crawler/extracting-data/finding-and-extracting-data/#helpers):
+
+- [`Product`](https://schema.org/Product)
+- [`DietarySupplement`](https://schema.org/DietarySupplement)
+- [`Drug`](https://schema.org/DietarySupplement)
+- [`IndividualProduct`](https://schema.org/IndividualProduct)
+- [`ProductCollection`](https://schema.org/ProductCollection)
+- [`ProductGroup`](https://schema.org/ProductGroup)
+- [`ProductModel`](https://schema.org/ProductModel)
+- [`SomeProducts`](https://schema.org/SomeProducts)
+- [`Vehicle`](https://schema.org/Vehicle).
 
 ```js JavaScript
 recordExtractor: ({ url, $, helpers }) => {
@@ -37,29 +46,29 @@ The helper returns an object with the following properties:
   The product page's URL (without parameters or hashes).
 </ParamField>
 <ParamField path="lang?" type="string">
-  The language the page content is written in (from the `name` field of the JSON-LD product object).
+  The language the page content is written in (from the `name` field of the [JSON-LD product schema](https://schema.org/Product)).
 </ParamField>
 <ParamField path="sku" type="string">
-  The `sku` field of the JSON-LD product object.
+  The `sku` field of the JSON-LD schema.
 </ParamField>
 <ParamField path="description?" type="string">
-  The `description` field of the JSON-LD product object.
+  The `description` field of the JSON-LD schema.
 </ParamField>
 <ParamField path="image?" type="string">
-  The `image` field of the JSON-LD product object.
+  The `image` field of the JSON-LD schema.
 </ParamField>
 <ParamField path="price?" type="string">
-  The product's price, selected from one of these JSON-LD product fields, in the order:
+  The product's price, selected from one of these JSON-LD schema fields, in the order:
   
   1. `offers.price`
   1. `offers.highPrice`
   1. `offers.lowPrice`.
 </ParamField>
 <ParamField path="currency?" type="string">
-  The `offers.priceCurrency` field of the JSON-LD product object.
+  The `offers.priceCurrency` field of the JSON-LD schema.
 </ParamField>
 <ParamField path="category?" type="string">
-  The `category` field of the JSON-LD product object.
+  The `category` field of the JSON-LD schema.
 </ParamField>
 
 ## `article`
@@ -69,7 +78,12 @@ An "article page" is an HTML page with an appropriate JSON-LD schema or meta tag
 
 <Tabs>
   <Tab title="JSON-LD schema">
-    These [JSON-LD schema types](https://www.algolia.com/doc/tools/crawler/extracting-data/finding-and-extracting-data/#helpers): `Article`, `NewsArticle`, `Report`, or `BlogPosting`
+    One of these JSON-LD schema types:
+    
+    - [`Article`](https://schema.org/Article)
+    - [`BlogPosting`](https://schema.org/BlogPosting)
+    - [`NewsArticle`](https://schema.org/NewsArticle)
+    - [`Report`](https://schema.org/Report).
 
     ```js JavaScript
     recordExtractor: ({ url, $, helpers }) => {
@@ -115,7 +129,7 @@ The helper returns an object with the following properties:
   1. `meta[name="twitter:description"]`.
 </ParamField>
 <ParamField path="keywords" type="string array">
-  The `keywords` field of the JSON-LD article object.
+  The `keywords` field of the JSON-LD schem.
 </ParamField>
 <ParamField path="tags" type="string array">
   Article tags: `meta[property="article:tag"]`.
@@ -127,16 +141,16 @@ The helper returns an object with the following properties:
   1. `meta[name="twitter:image"]`.
 </ParamField>
 <ParamField path="authors?" type="string array">
-  The `author` field of the JSON-LD article object.
+  The `author` field of the JSON-LD schema.
 </ParamField>
 <ParamField path="datePublished?" type="string">
-  The `datePublished` field of the JSON-LD article object.
+  The `datePublished` field of the JSON-LD schema.
 </ParamField>
 <ParamField path="dateModified?" type="string">
-  The `dateModified` field of the JSON-LD article object.
+  The `dateModified` field of the JSON-LD schema.
 </ParamField>
 <ParamField path="category?" type="string">
-  The `category` field of the JSON-LD article object.
+  The `category` field of the JSON-LD schema.
 </ParamField>
 <ParamField path="content" type="string">
   The article's content (body copy).
