@@ -1,0 +1,8 @@
+extends: substitution
+message: "Capitalize React Hooks."
+level: suggestion
+action:
+  name: replace
+swap:
+  hook: Hook
+  hooks: Hooks

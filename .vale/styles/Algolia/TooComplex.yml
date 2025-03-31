@@ -1,0 +1,10 @@
+# This only triggers for readability levels that are higher than 10.
+extends: metric
+message: 'The reading level is %s. Aim for 10 or lower by using shorter words and sentences.'
+link: https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests
+level: warning
+
+formula: |
+  (0.39 * (words / sentences)) + (11.8 * (syllables / words)) - 15.59
+
+condition: '> 10'

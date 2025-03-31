@@ -1,0 +1,8 @@
+extends: substitution
+message: "Use %s instead of %s."
+nonword: true
+level: error
+action:
+  name: replace
+swap:
+  '&': and

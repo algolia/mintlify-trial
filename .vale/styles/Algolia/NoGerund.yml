@@ -1,0 +1,11 @@
+extends: substitution
+message: "Use %s instead of '%s' in headings."
+level: warning
+ignorecase: true
+scope: heading
+swap:
+  (?:^[a-z]+)ing: the imperative form
+exceptions:
+  - ranking
+  - String
+  - string

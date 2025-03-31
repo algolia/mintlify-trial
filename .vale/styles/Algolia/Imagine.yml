@@ -1,0 +1,6 @@
+extends: existence
+message: "Avoid using 'imagine'. Try 'consider' or rephrase."
+ignorecase: true
+level: warning
+tokens:
+  - imagine

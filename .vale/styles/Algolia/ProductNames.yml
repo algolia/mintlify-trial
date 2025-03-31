@@ -1,0 +1,17 @@
+extends: substitution
+message: Use '%s' instead of '%s'
+level: error
+ignorecase: true
+action:
+  name: replace
+swap:
+  # Algolia specific
+  android instantsearch: InstantSearch Android
+  ios instantsearch: InstantSearch iOS
+  instantsearch react: React InstantSearch
+  instantsearch angular: Angular InstantSearch
+  instantsearch vue: Vue InstantSearch
+  instantsearch js: InstantSearch.js
+  js instantsearch: InstantSearch.js
+  '[^"]iphone[^s"]': iPhone # Allows for lowercase "iphone" when in double quotes (for using "iphone" as an example query), but requires the correct capitalization in other cases.
+  '[^"]iphones[^''"]': iPhones # Allows for lowercase "iphone" when in double quotes (for using "iphone" as an example query), but requires the correct capitalization in other cases.

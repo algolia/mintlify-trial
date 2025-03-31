@@ -1,0 +1,76 @@
+extends: capitalization
+message: "'%s' should use sentence-style capitalization."
+link: 'https://developers.google.com/style/capitalization#capitalization-in-titles-and-headings'
+level: warning
+scope: heading
+match: $sentence
+indicators:
+  - ':'
+exceptions:
+  - Adobe Analytics
+  - Algolia
+  - Algolia Academy
+  - Algolia AI Search & Discovery
+  - Android
+  - Angular
+  - Autocomplete
+  - AWS Marketplace
+  - Azure
+  - BigCommerce
+  - BigQuery
+  - CLI
+  - CSS
+  - Code
+  - Cosmos
+  - Docker
+  - Dynamic Re-Ranking
+  - Dynamic Synonym Suggestions
+  - Elasticsearch
+  - Emmet
+  - Frequently Bought Together
+  - Funnel Stage
+  - GenAI Toolkit
+  - Google
+  - Google Analytics
+  - Google Drive
+  - Google Tag Manager
+  - HTML
+  - HTTP
+  - Insights
+  - InstantSearch
+  - JSON
+  - JSON-LD
+  - JavaScript
+  - Kubernetes
+  - Linux
+  - Looking Similar
+  - Manual Editor
+  - Marketplace
+  - MongoDB
+  - NeuralSearch
+  - Next Order Value
+  - Node.js
+  - Path Explorer
+  - Personalization
+  - PowerShell
+  - Query Categorization
+  - Query Suggestions
+  - REPL
+  - React
+  - Recommend
+  - Recommend Rules
+  - Related Items
+  - SQL
+  - SSL
+  - Segment
+  - Studio
+  - TypeScript
+  - URL
+  - URLs
+  - VS
+  - Visual
+  - Visual Editor
+  - Vue
+  - Windows
+  - gRPC
+  - macOS

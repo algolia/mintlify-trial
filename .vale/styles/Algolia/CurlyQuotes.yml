@@ -1,0 +1,11 @@
+extends: substitution
+message: 'Use straight (%s) instead of curly (%s) quotation marks.'
+level: error
+ignorecase: true
+action:
+  name: replace
+swap:
+  '“': '"'
+  '”': '"'
+  '‘': "'"
+  '’': "'"

@@ -1,0 +1,7 @@
+extends: occurrence
+message: "Use one sentence per line for better diffs."
+link: "https://algolia.atlassian.net/wiki/spaces/DOC/pages/4349886626/Markdown+guide#Paragraphs-and-text-width"
+level: suggestion
+scope: paragraph
+max: 1
+token: '[.!?](?: |$)'

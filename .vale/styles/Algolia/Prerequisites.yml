@@ -1,0 +1,10 @@
+extends: substitution
+message: "Use '%s' instead of '%s' in headings."
+level: error
+ignorecase: true
+scope: heading
+action:
+  name: replace
+swap:
+  prerequisites?: before you begin
+  'before you start': before you begin
