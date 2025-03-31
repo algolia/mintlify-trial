@@ -1,0 +1,9 @@
+extends: substitution
+message: "Use 'later' instead of 'higher' for a range of version numbers."
+link: 'https://developers.google.com/style/word-list'
+ignorecase: true
+level: error
+action:
+  name: replace
+swap:
+  '(?<=\d and|or )higher': later

@@ -1,0 +1,5 @@
+extends: existence
+message: "Try 'X and Y', 'X or Y', or 'X, Y, or both' instead of 'X and/or Y'"
+level: error
+tokens:
+  - 'and/or'

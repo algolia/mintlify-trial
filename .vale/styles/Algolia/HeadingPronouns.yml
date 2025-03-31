@@ -1,0 +1,11 @@
+extends: existence
+message: "Don't use '%s' in headings."
+ignorecase: true
+scope: heading
+level: error
+tokens:
+  - it
+  - these
+  - those
+  - that
+  - this

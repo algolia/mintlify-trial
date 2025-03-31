@@ -1,0 +1,27 @@
+extends: substitution
+message: "Use '%s' instead of '%s'."
+level: error
+ignorecase: true
+action:
+  name: replace
+swap:
+  Algolia Dashboard: Algolia dashboard
+  'black(?:[- ])list(?:ed|ing)?': 'denylist|to deny'
+  allows? you to: let(s) you
+  boilerplate: 'template code|setup code|starter code'
+  customers: users
+  customer (?!data platform): user
+  de-duplicate: deduplicate
+  de-duplication: deduplication
+  de-duplicated: deduplicated
+  "don't forget to": the action verb itself
+  drag and drop: drag
+  execute: run
+  'navigate to': go to
+  remember to: the action verb itself
+  in order to: to
+  information on: information about
+  it is recommended: you should
+  "it's recommended": you should
+  'white(?:[- ])?list(?:ed|ing)?': 'allowlist|to allow'
+  cURL: curl

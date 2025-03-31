@@ -1,0 +1,9 @@
+extends: existence
+message: "Don't use introductory headings like '%s'. Introductory content directly follows the front matter without heading."
+nonword: true
+scope: heading
+ignorecase: true
+level: error
+tokens:
+  - '(?:^introduction$)'
+  - '(?:^overview$)'

@@ -1,0 +1,8 @@
+extends: existence
+message: "Don't use rich text in headings (%s)."
+nonword: true
+scope: raw
+level: error
+raw:
+  - '#+ [\w ]*?\*\*?.*\*?'
+  - '#+ [\w ]*?_.*_'

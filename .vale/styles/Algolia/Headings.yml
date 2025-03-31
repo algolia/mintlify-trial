@@ -1,0 +1,9 @@
+extends: existence
+message: "Don't use '%s' in headings."
+nonword: true
+ignorecase: true
+scope: heading
+level: error
+tokens:
+  - '&'
+  - '\+'

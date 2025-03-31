@@ -1,0 +1,8 @@
+extends: existence
+message: "Avoid using first-person plural like '%s'."
+link: 'https://developers.google.com/style/pronouns#personal-pronouns'
+level: warning
+ignorecase: true
+tokens:
+  - us
+  - let's

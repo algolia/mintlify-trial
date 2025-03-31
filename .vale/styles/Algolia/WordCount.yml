@@ -1,0 +1,7 @@
+extends: metric
+message: '[Report]: %s words.'
+level: suggestion
+
+formula: words
+
+condition: '> 1'

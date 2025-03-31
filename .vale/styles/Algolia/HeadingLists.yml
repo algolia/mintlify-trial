@@ -1,0 +1,7 @@
+extends: existence
+message: "Don't use list items ('%s') as headings."
+nonword: false
+level: error
+scope: heading
+tokens:
+  - '^[0-9]+ ?[-.)][\w ]'
