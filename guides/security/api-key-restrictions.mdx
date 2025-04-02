@@ -1,0 +1,106 @@
+---
+title: API key restrictions
+description: Use API keys to control access and restrict the scope and behavior of your Algolia app.
+---
+
+API keys can help you control and limit the scope and behavior of your APIs.
+For example, you can exclude some users, group others, put limits on the duration of a user's access, and more.
+
+Every key can have one or more of the following restrictions:
+
+import Restrictions from '/snippets/security/restrictions.mdx';
+
+<Restrictions />
+
+## Indices
+
+You can specify a list of indices that an API key can access.
+When unspecified, the key can access _all_ indices.
+You can also specify groups of indices by matching a prefix or a suffix with a wildcard (`*`) character.
+
+{/* vale Vale.Spelling = NO */}
+
+For example:
+
+- `dev_*` restricts access to indices _starting_ with **dev_**
+- `*_dev` restricts access to indices _ending_ with **_dev**
+- `*_dev_*` restricts access to indices _containing_ **\_dev\_**
+- `products` restricts access to the **products** index. 
+
+{/* vale Vale.Spelling = YES */}
+
+## Rate limit
+
+You can set a maximum number of API calls per hour for each IP address.
+The default setting is 0, meaning there is no rate limit.
+This helps protect your system from external attempts to crawl your entire index with bulk querying.
+
+When using a rate-limited API key,
+if the number of API calls from an IP address exceeds the limit during the past hour Algolia returns a `429` (Too Many Requests) HTTP status code.
+
+Rate limits are applied based on a combination of:
+
+- IP address or [`userToken`](https://www.algolia.com/doc/api-reference/api-parameters/userToken/)
+- The API key used for the search or to create a [secured API key](https://www.algolia.com/doc/guides/security/api-keys/#secured-api-keys)
+- The Algolia application ID.
+
+For example, if you enforce rate limits on two `userToken`s with two secured API keys, each combination of `userToken` and secured API key will have its own rate limit.
+
+### How to rate limit an API key
+
+You can rate limit a key using the API (with the [`addApiKey`](https://www.algolia.com/doc/api-reference/api-methods/add-api-key/) or [`updateApiKey`](https://www.algolia.com/doc/api-reference/api-methods/update-api-key/) method to specify `maxQueriesPerIPPerHour`) or the dashboard:
+
+1. Go to your dashboard's [API Keys](https://dashboard.algolia.com/account/api-keys/) section.
+1. Click **All API Keys**.
+1. Create a **New API Key** or select an existing one to update.
+1. Enter a value for **Max API calls/IP/hour**.
+1. Click **Create** or **Update**.
+
+## Number of retrieved records
+
+Beyond rate limiting, you can limit the maximum number of hits an API key can retrieve in one call.
+The default value is `0` ([up to 1,000 hits](https://www.algolia.com/doc/api-reference/api-parameters/length/)).
+As with rate limiting, this parameter can protect you from external attempts to crawl your entire index by bulk querying.
+
+## Validity
+
+You can set the validity duration of a key (in seconds).
+Short-lived API keys are useful to grant temporary access to your data, for example, during demos.
+The default value is `0` (never expires).
+
+## HTTP referrers
+
+You can define a list of referrers authorized to query the API with a given key.
+If unspecified or empty, it defaults to any referrer.
+
+{/* vale Vale.Terms = NO */}
+
+Specify referrers with the wildcard (`*`) character.
+For example:
+
+- `https://algolia.com/*` restricts access to referrers _starting_ with **https://algolia.com**.
+- `*.algolia.com` restricts access to referrers _ending_ with **.algolia.com**.
+- To allow access to the full **algolia.com** domain, use `*algolia.com/*`.
+
+{/* vale Vale.Terms = NO */}
+
+<Note>
+    Like all HTTP headers, referrers can be spoofed, so you shouldn't rely on them to secure your data.
+    For more information, see [HTTP referrers restrictions](https://www.algolia.com/doc/guides/security/security-best-practices/#http-referrers-restrictions).
+</Note>
+
+## Query parameters
+
+When generating an API key, you can use any set of [search parameters](https://www.algolia.com/doc/api-reference/api-parameters/).
+
+For example, [`filters`](https://www.algolia.com/doc/api-reference/api-parameters/filters/) will restrict access to a subset of your data.
+All search parameters are available for this purpose, letting you define granular levels of API access.
+
+<CardGroup cols={2}>
+  <Card title="API reference" icon="gear" href="https://www.algolia.com/doc/api-reference/api-methods/add-api-key/" horizontal="true">
+    Add an API key
+  </Card>
+  <Card title="API reference" icon="gear" href="https://www.algolia.com/doc/api-reference/api-methods/generate-secured-api-key/" horizontal="true">
+    Generate a secure API key
+  </Card>
+</CardGroup>

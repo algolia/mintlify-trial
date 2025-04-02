@@ -1,7 +1,0 @@
-extends: existence
-message: "Don't use semicolons. Write two sentences instead."
-nonword: true
-scope: sentence
-level: error
-tokens:
-  - ';'
