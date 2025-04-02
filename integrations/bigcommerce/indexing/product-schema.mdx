@@ -1,7 +1,6 @@
 ---
-title: Product schema
-description: |-
-  Understand the format of your product records in Algolia for BigCommerce.
+title: "Product schema"
+description: "Understand the format of your product records in Algolia for BigCommerce."
 ---
 
 Algolia's BigCommerce integration stores your product data in an extensible format that's optimal for search.
@@ -12,7 +11,7 @@ Product-level indices have variants embedded in the entity, while variant-level 
 
 Algolia stores [BigCommerce products](https://developer.bigcommerce.com/docs/rest-catalog/products) in the following format:
 
-```json json
+```json JSON
 {
   "brand_id": 37,
   "brand_name": "My Brand",
@@ -88,7 +87,7 @@ Algolia stores [BigCommerce products](https://developer.bigcommerce.com/docs/res
 
 Algolia stores [BigCommerce product variants](https://developer.bigcommerce.com/docs/rest-catalog/products) in the following format:
 
-```json json
+```json JSON [expandable]
 {
   "brand_id": 37,
   "brand_name": "My Brand",
@@ -139,7 +138,7 @@ Algolia stores [BigCommerce product variants](https://developer.bigcommerce.com/
 
 ## Changes to your BigCommerce inventory
 
-Algolia's BigCommerce integration monitors inventory changes and sets the isInStock value for each affected SKU.
+Algolia's BigCommerce integration monitors inventory changes & sets the `isInStock` value for each affected SKU.
 
 `isInStock` is set to `true` if `inventory_level` is greater than zero for that SKU.
 
