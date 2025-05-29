@@ -1,13 +1,28 @@
 ---
-title: 'Design Your Results'
-sidebarTitle: 'Design Your Results'
-description: 'Build your search interface using the data you recently pushed to your Algolia index.'
+title: "Design Your Results"
+sidebarTitle: "Design Your Results"
+description: "Build your search interface using the data you recently pushed to your Algolia index."
 icon: "paintbrush"
 iconType: "thin"
 ---
-<Frame type="glass">
-  <img src="https://files.readme.io/47734a7-image.png"/>
-</Frame>
+
+```mermaid
+flowchart TD
+ChooseStrategy{"Strategy"} --> AF["Algolia first"] & RF["RMP first"] & P["Parallel"]
+AF --> AF_Search["User searches for "running shoes""]
+RF --> RF_Search["User searches for "running shoes""]
+P --> P_Search["User searches for "running shoes""]
+AF_Search --> AF1["Query Algolia for regular results"]
+AF1 --> AF2["Query RMP for sponsored results"]
+AF2 --> Merge["Merge and deduplicate results"]
+RF_Search --> RF1["Query RMP for sponsored results"]
+RF1 --> RF2["Query Algolia for regular results"]
+RF2 --> Merge
+P_Search --> P1["Query Algolia and RMP in parallel"]
+P1 --> P2["Wait for both responses"]
+P2 --> Merge
+Merge --> Display["Display final product list"]
+```
 
 During the second step of the Launchpad, you will design a very simplistic example of a search experience. This design will pull attributes from the data you recently pushed to Algolia. There are four attributes you can map:
 
@@ -23,6 +38,6 @@ During the second step of the Launchpad, you will design a very simplistic examp
 
 Once you've designed your interface, you can immediately begin searching the content on the right side in real-time. This will help you see how quick Algolia search results are. At first, this will return results based on _any attribute within your record_. We will help you narrow down the attributes you want users to be able to search for in the following section.
 
-<Frame type="glass">
-  <img src="https://files.readme.io/6ee6bd9-image.png"/>
+<Frame>
+  ![](https://files.readme.io/6ee6bd9-image.png)
 </Frame>
