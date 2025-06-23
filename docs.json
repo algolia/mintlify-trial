@@ -1,13 +1,40 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Algolia docs",
+  "theme": "willow",
+  "name": "Algolia",
   "colors": {
-    "primary": "#003dff",
-    "light": "#457aff",
-    "dark": "#022eb9"
+    "primary": "#3970ff",
+    "light": "#3970ff",
+    "dark": "#003DFF"
   },
-  "favicon": "/favicon.svg",
+  "icons": {
+    "library": "lucide"
+  },
+  "banner": {
+    "content": "DevBit: Summer Edition | June 25 — Live demos. Real code. Practical insights for developers. **[Register now](https://events.ringcentral.com/events/algolia-devbit-summer)**"
+  },
+  "api": {
+    "examples": {
+      "languages": [
+        "curl",
+        "csharp",
+        "dart",
+        "go",
+        "java",
+        "javascript",
+        "kotlin",
+        "php",
+        "python",
+        "ruby",
+        "scala",
+        "swift"
+      ]
+    },
+    "playground": {
+      "display": "simple"
+    }
+  },
+  "favicon": "/favicon.png",
   "navigation": {
     "tabs": [
       {
@@ -824,25 +851,6 @@
             ]
           },
           {
-            "group": "Commercetools",
-            "pages": [
-              {
-                "group": "Get started",
-                "pages": [
-                  "integrations/commercetools/get-started/installation",
-                  "integrations/commercetools/get-started/configuration"
-                ]
-              },
-              {
-                "group": "Indexing",
-                "pages": [
-                  "integrations/commercetools/indexing/monitoring-commercetools-indexing",
-                  "integrations/commercetools/indexing/product-schema"
-                ]
-              }
-            ]
-          },
-          {
             "group": "Bigcommerce",
             "pages": [
               {
@@ -1106,64 +1114,60 @@
         "tab": "Tools",
         "groups": [
           {
-            "group": "Tools",
-            "pages": [
-              "tools/overview"
-            ]
-          },
-          {
             "group": "Crawler",
             "pages": [
               "tools/crawler/getting-started",
               {
-                "group": "API",
+                "group": "Ask AI",
                 "pages": [
-                  "tools/crawler/api/api",
-                    {
-                      "group": "Configuration",
-                      "pages": [
-                        "tools/crawler/api/configuration/update-crawler-configuration",
-                        "tools/crawler/api/configuration/list-configuration-versions",
-                        "tools/crawler/api/configuration/retrieve-a-configuration-version",
-                        {
-                          "group": "Actions",
-                          "pages": [
-                            "tools/crawler/api/configuration/actions",
-                            "tools/crawler/api/configuration/actions/recordExtractor",
-                            "tools/crawler/api/configuration/actions/helpers"
-                          ]
-                        },
-                        "tools/crawler/api/configuration/linkExtractor"
-                      ]
-                    },
-                    {
-                      "group": "State",
-                      "pages": [
-                        "tools/crawler/api/state/start-a-crawl",
-                        "tools/crawler/api/state/pause-a-crawler",
-                        "tools/crawler/api/state/unpause-a-crawler",
-                        "tools/crawler/api/state/test-crawl-a-url"
-                      ]
-                    },
-                    {
-                      "group": "Manage",
-                      "pages": [
-                        "tools/crawler/api/manage/create-a-crawler",
-                        "tools/crawler/api/manage/retrieve-crawler-details",
-                        "tools/crawler/api/manage/list-crawlers",
-                        "tools/crawler/api/manage/change-crawler-name",
-                        "tools/crawler/api/manage/delete-a-crawler",
-                        "tools/crawler/api/manage/retrieve-crawler-stats"
-                      ]
-                    },
-                    {
-                      "group": "Tasks",
-                      "pages": [
-                        "tools/crawler/api/tasks/retrieve-task-status",
-                        "tools/crawler/api/tasks/cancel-a-blocking-task"
-                      ]
-                    },
-                    "tools/crawler/api/domains/list-registered-domains"
+    
+                  "tools/crawler/askai/overview",
+                  "tools/crawler/askai/setup",
+                  "tools/crawler/askai/test",
+                  "tools/crawler/askai/metrics",
+                  {
+                    "group": "API reference",
+                    "pages": [
+                      {
+                        "group": "Public",
+                        "pages": [
+                          "tools/crawler/askai/public/generate-an-ai-powered-response",
+                          "tools/crawler/askai/public/submit-feedback-on-a-response",
+                          "tools/crawler/askai/public/generate-a-short-lived-signed-token"
+                        ]
+                      },
+                      {
+                        "group": "Configuration",
+                        "pages": [
+                          "tools/crawler/askai/internal/list-all-configurations",
+                          "tools/crawler/askai/internal/create-a-new-configuration",
+                          "tools/crawler/askai/internal/get-a-specific-configuration",
+                          "tools/crawler/askai/internal/delete-a-configuration",
+                          "tools/crawler/askai/internal/update-an-existing-configuration"
+                        ]
+                      },
+                      {
+                        "group": "Domains",
+                        "pages": [
+                          "tools/crawler/askai/internal/list-all-domains",
+                          "tools/crawler/askai/internal/create-a-new-domain",
+                          "tools/crawler/askai/internal/get-a-specific-domain",
+                          "tools/crawler/askai/internal/delete-a-domain",
+                          "tools/crawler/askai/internal/update-an-existing-domain"
+                        ]
+                      },
+                      {
+                        "group": "Prompts",
+                        "pages": [
+                          "tools/crawler/askai/internal/list-all-prompts",
+                          "tools/crawler/askai/internal/create-a-new-prompt",
+                          "tools/crawler/askai/internal/get-a-specific-prompt",
+                          "tools/crawler/askai/internal/delete-a-prompt",
+                          "tools/crawler/askai/internal/update-an-existing-prompt"
+                        ]
+                      }
+                    ]
+                  }
                 ]
               }
             ]
