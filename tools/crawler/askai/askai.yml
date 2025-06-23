@@ -1,4 +1,5 @@
 openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
 info:
   title: Ask AI API
   description: |
@@ -7,15 +8,6 @@ info:
   version: "1.0.0"
 servers:
   - url: https://api.askai.algolia.com
-tags:
-  - name: Configuration
-    description: Manage Ask AI configurations.
-  - name: Domains
-    description: Manage the domains allowed to use Ask AI.
-  - name: Prompts
-    description: Mangage Ask AI LLM prompts
-  - name: Public
-    description: Pubicly-accessible endpoints.
 
 paths:
   /chat:
@@ -31,14 +23,11 @@ paths:
               type: object
               properties:
                 configId:
-                  type: string
-                  description: Configuration ID to use for generating the response.
+                  $ref: '#/components/schemas/ConfigId'
                 question:
-                  type: string
-                  description: The user's question or prompt for the AI.
+                  $ref: '#/components/schemas/Question'
                 headers:
-                  type: object
-                  description: Optional headers to include in the request.
+                  $ref: '#/components/schemas/Headers'
               required: [configId, question]
       responses:
         "200":
@@ -49,27 +38,15 @@ paths:
                 type: object
                 properties:
                   answer:
-                    type: string
-                    description: AI-generated response to the question.
+                    $ref: '#/components/schemas/Answer'
         "401":
           description: Configuration not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Configuration not found"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request POST \
-              --url https://api.askai.algolia.com/chat \
-              --header 'Content-Type: application/json' \
-              --data '{
-              "configId": "<string>",
-              "question": "<string>",
-              "headers": {}
-            }'
+              example:
+                error: "Configuration not found"
 
   /feedback:
     post:
@@ -84,18 +61,13 @@ paths:
               type: object
               properties:
                 configId:
-                  type: string
-                  description: Configuration ID associated with the response.
+                  $ref: '#/components/schemas/ConfigId'
                 responseId:
-                  type: string
-                  description: ID of the AI-generated response being rated.
+                  $ref: '#/components/schemas/ResponseId'
                 feedback:
-                  type: string
-                  description: Type of feedback provided (`thumbs_up` or `thumbs_down`).
-                  enum: ["thumbs_up", "thumbs_down"]
+                  $ref: '#/components/schemas/Feedback'
                 comment:
-                  type: string
-                  description: Comments about the feedback.
+                  $ref: '#/components/schemas/Comment'
               required: [configId, responseId, feedback]
       responses:
         "200":
@@ -104,20 +76,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Feedback successfully accepted and recorded"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request POST \
-              --url https://api.askai.algolia.com/feedback \
-              --header 'Content-Type: application/json' \
-              --data '{
-              "configId": "<string>",
-              "responseId": "<string>",
-              "feedback": "thumbs_up",
-              "comment": "<string>"
-            }'
+              example:
+                error: "Feedback successfully accepted and recorded"
 
   /token:
     post:
@@ -132,18 +92,13 @@ paths:
               type: object
               properties:
                 configId:
-                  type: string
-                  description: Configuration ID for which to generate the token.
+                  $ref: '#/components/schemas/ConfigId'
                 appId:
-                  type: string
-                  description: Application ID.
+                  $ref: '#/components/schemas/AppId'
                 apiKey:
-                  type: string
-                  description: API key for authentication.
+                  $ref: '#/components/schemas/ApiKey'
                 domain:
-                  type: string
-                  description: Domain associated with the token.
-                  example: "help.example.com"
+                  $ref: '#/components/schemas/Domain'
               required: [configId, appId, apiKey, domain]
       responses:
         "200":
@@ -154,27 +109,13 @@ paths:
                 type: object
                 properties:
                   token:
-                    type: string
-                    description: The newly-generated JWT token.
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request POST \
-              --url https://api.askai.algolia.com/token \
-              --header 'Content-Type: application/json' \
-              --data '{
-              "configId": "<string>",
-              "appId": "<string>",
-              "apiKey": "<string>",
-              "domain": "help.example.com"
-            }'
-
+                    $ref: '#/components/schemas/Token'
+              example:
+                token: "<jwt-token>"
   /config:
     get:
       operationId: getConfigurations
-      summary: List all configurations
-      description: Retrieves a list of all available AI configurations.
+      summary: List configurations
       tags: [Configuration]
       responses:
         "200":
@@ -185,45 +126,27 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: Configuration object.
                   properties:
                     id:
-                      type: string
-                      description: Unique identifier for the configuration.
+                      $ref: '#/components/schemas/Id'
                     model:
-                      type: string
-                      description: AI model used in this configuration.
-                      example: "gpt-4"
+                      $ref: '#/components/schemas/Model'
                     provider:
-                      type: string
-                      description: AI model provider.
-                      example: "openai"
+                      $ref: '#/components/schemas/Provider'
                     prompts:
                       type: array
                       items:
-                        type: string
-                        description: ID of a prompt associated with this configuration.
-                      description: List of prompt IDs used by this configuration.
+                        $ref: '#/components/schemas/PromptId'
                     domains:
                       type: array
                       items:
-                        type: string
-                        description: ID of a domain associated with this configuration.
-                      description: List of domain IDs linked to this configuration.
+                        $ref: '#/components/schemas/DomainId'
                     keys:
-                      type: object
-                      description: Key-value pairs for API keys or other credentials required by the provider.
-                      additionalProperties: true
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request GET \
-              --url https://api.askai.algolia.com/config
+                      $ref: '#/components/schemas/Keys'
+
     post:
       operationId: postConfiguration
       summary: Create a configuration
-      description: Creates a new Ask AI configuration with specified model, provider, prompts, domains, and API keys.
       tags: [Configuration]
       requestBody:
         content:
@@ -232,29 +155,19 @@ paths:
               type: object
               properties:
                 model:
-                  type: string
-                  description: AI model used for this configuration (such as "gpt-4", "claude-3").
-                  example: "gpt-4"
+                  $ref: '#/components/schemas/Model'
                 provider:
-                  type: string
-                  description: AI model provider (such as "openai", "anthropic").
-                  example: "openai"
+                  $ref: '#/components/schemas/Provider'
                 prompts:
                   type: array
                   items:
-                    type: string
-                    description: ID of a prompt associates with this configuration.
-                  description: List of prompt IDs to link to this configuration.
+                    $ref: '#/components/schemas/PromptId'
                 domains:
                   type: array
                   items:
-                    type: string
-                    description: Domain ID associates with this configuration.
-                  description: List of domain IDs to link to this configuration.
+                    $ref: '#/components/schemas/DomainId'
                 keys:
-                  type: object
-                  description: Key-value pairs containing necessary API keys or credentials for the LLM provider.
-                  additionalProperties: true
+                  $ref: '#/components/schemas/Keys'
               required: [model, provider]
       responses:
         "201":
@@ -265,26 +178,9 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    description: ID for the newly-created configuration.
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request POST \
-              --url https://api.askai.algolia.com/config \
-              --header 'Content-Type: application/json' \
-              --data '{
-              "model": "gpt-4",
-              "provider": "openai",
-              "prompts": [
-                "<string>"
-              ],
-              "domains": [
-                "<string>"
-              ],
-              "keys": {}
-            }'
+                    $ref: '#/components/schemas/Id'
+              example:
+                id: "12345"
 
   /config/{id}:
     parameters:
@@ -292,12 +188,11 @@ paths:
         name: id
         required: true
         schema:
-          type: string
+          $ref: '#/components/schemas/Id'
         description: Unique identifier for the configuration.
     get:
       operationId: getConfiguration
       summary: Retrieve a configuration
-      description: Retrieves the details of an Ask AI configuration.
       tags: [Configuration]
       responses:
         "200":
@@ -308,49 +203,32 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    description: Unique identifier for the configuration.
+                    $ref: '#/components/schemas/Id'
                   model:
-                    type: string
-                    description: AI model used in this configuration.
-                    example: "gpt-4"
+                    $ref: '#/components/schemas/Model'
                   provider:
-                    type: string
-                    description: AI model provider.
-                    example: "openai"
+                    $ref: '#/components/schemas/Provider'
                   prompts:
                     type: array
                     items:
-                      type: string
-                      description: ID of a prompt associated with this configuration.
-                    description: List of prompt IDs used by this configuration.
+                      $ref: '#/components/schemas/PromptId'
                   domains:
                     type: array
                     items:
-                      type: string
-                      description: ID of a domain associated with this configuration.
-                    description: List of domain IDs linked to this configuration.
+                      $ref: '#/components/schemas/DomainId'
                   keys:
-                    type: object
-                    description: Key-value pairs for API keys or other credentials.
-                    additionalProperties: true
+                    $ref: '#/components/schemas/Keys'
         "404":
           description: Configuration not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Configuration not found"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request GET \
-              --url https://api.askai.algolia.com/config/{id}
+              example:
+                error: "Configuration not found"
     patch:
       operationId: patchConfiguration
-      summary: Update a configuration
-      description: Update an Ask AI configuration.
+      summary: Change a configuration
       tags: [Configuration]
       requestBody:
         content:
@@ -359,29 +237,19 @@ paths:
               type: object
               properties:
                 model:
-                  type: string
-                  description: AI model used for this configuration.
-                  example: "gpt-4"
+                  $ref: '#/components/schemas/Model'
                 provider:
-                  type: string
-                  description: AI model provider.
-                  example: "openai"
+                  $ref: '#/components/schemas/Provider'
                 prompts:
                   type: array
                   items:
-                    type: string
-                    description: ID of a prompt associated with this configuration.
-                  description: List of prompt IDs linked to this configuration.
+                    $ref: '#/components/schemas/PromptId'
                 domains:
                   type: array
                   items:
-                    type: string
-                    description: ID of a domain associated with this configuration.
-                  description: List of domain IDs linked to this configuration.
+                    $ref: '#/components/schemas/DomainId'
                 keys:
-                  type: object
-                  description: Key-value pairs for API keys or other credentials.
-                  additionalProperties: true
+                  $ref: '#/components/schemas/Keys'
       responses:
         "200":
           description: Configuration successfully updated.
@@ -391,45 +259,22 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    description: Configuration ID.
+                    $ref: '#/components/schemas/Id'
                   model:
-                    type: string
-                    description: AI model for the configuration.
-                    example: "gpt-4"
+                    $ref: '#/components/schemas/Model'
                   provider:
-                    type: string
-                    description: AI model provider.
-                    example: "openai"
+                    $ref: '#/components/schemas/Provider'
         "404":
           description: Configuration not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Configuration not found"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request PATCH \
-              --url https://api.askai.algolia.com/config/{id} \
-              --header 'Content-Type: application/json' \
-              --data '{
-              "model": "gpt-4",
-              "provider": "openai",
-              "prompts": [
-                "<string>"
-              ],
-              "domains": [
-                "<string>"
-              ],
-              "keys": {}
-            }'
+              example:
+                error: "Configuration not found"
     delete:
       operationId: deleteConfiguration
       summary: Delete a configuration
-      description: Delete an Ask AI configuration by its ID.
       tags: [Configuration]
       responses:
         "204":
@@ -438,26 +283,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Configuration successfully deleted"
+              example:
+                error: "Configuration successfully deleted"
         "404":
           description: Configuration not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Configuration not found"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request DELETE \
-              --url https://api.askai.algolia.com/config/{id}
-
+              example:
+                error: "Configuration not found"
   /prompt:
     get:
       operationId: getPrompts
-      summary: List all prompts
-      description: Lists all available AI prompts.
+      summary: List prompts
       tags: [Prompts]
       responses:
         "200":
@@ -468,27 +307,17 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: Prompt object.
                   properties:
                     id:
-                      type: string
-                      description: Unique identifier for the prompt.
+                      $ref: '#/components/schemas/Id'
                     name:
-                      type: string
-                      description: Prompt name.
+                      $ref: '#/components/schemas/Name'
                     content:
-                      type: string
-                      description: Prompt text.
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request GET \
-              --url https://api.askai.algolia.com/prompt
+                      $ref: '#/components/schemas/Content'
+
     post:
       operationId: postPrompt
       summary: Create a prompt
-      description: Create an LLM prompt.
       tags: [Prompts]
       requestBody:
         content:
@@ -497,11 +326,9 @@ paths:
               type: object
               properties:
                 name:
-                  type: string
-                  description: Prompt name.
+                  $ref: '#/components/schemas/Name'
                 content:
-                  type: string
-                  description: Prompt text.
+                  $ref: '#/components/schemas/Content'
               required: [name, content]
       responses:
         "201":
@@ -512,31 +339,21 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    description: ID for the newly-created prompt.
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request POST \
-              --url https://api.askai.algolia.com/prompt \
-              --header 'Content-Type: application/json' \
-              --data '{
-              "name": "<string>",
-              "content": "<string>"
-            }'
+                    $ref: '#/components/schemas/Id'
+              example:
+                id: "67890"
+
   /prompt/{id}:
     parameters:
       - in: path
         name: id
         required: true
         schema:
-          type: string
+          $ref: '#/components/schemas/Id'
         description: Unique identifier for the prompt.
     get:
       operationId: getPrompt
       summary: Retrieve a prompt
-      description: Retrieves the prompt details.
       tags: [Prompts]
       responses:
         "200":
@@ -547,31 +364,22 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    description: Unique identifier for the prompt.
+                    $ref: '#/components/schemas/Id'
                   name:
-                    type: string
-                    description: Prompt name.
+                    $ref: '#/components/schemas/Name'
                   content:
-                    type: string
-                    description: Prompt text.
+                    $ref: '#/components/schemas/Content'
         "404":
           description: Prompt not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Prompt not found"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request GET \
-              --url https://api.askai.algolia.com/prompt/{id}
+              example:
+                error: "Prompt not found"
     patch:
       operationId: patchPrompt
-      summary: Update a prompt
-      description: Update an LLM prompt.
+      summary: Change a prompt
       tags: [Prompts]
       requestBody:
         content:
@@ -580,11 +388,9 @@ paths:
               type: object
               properties:
                 name:
-                  type: string
-                  description: Prompt name.
+                  $ref: '#/components/schemas/Name'
                 content:
-                  type: string
-                  description: Prompt text.
+                  $ref: '#/components/schemas/Content'
       responses:
         "200":
           description: Prompt successfully updated.
@@ -594,36 +400,22 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    description: Prompt ID.
+                    $ref: '#/components/schemas/Id'
                   name:
-                    type: string
-                    description: Prompt name.
+                    $ref: '#/components/schemas/Name'
                   content:
-                    type: string
-                    description: Prompt text.
+                    $ref: '#/components/schemas/Content'
         "404":
           description: Prompt not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Prompt not found"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request PATCH \
-              --url https://api.askai.algolia.com/prompt/{id} \
-              --header 'Content-Type: application/json' \
-              --data '{
-              "name": "<string>",
-              "content": "<string>"
-            }'
+              example:
+                error: "Prompt not found"
     delete:
       operationId: deletePrompt
       summary: Delete a prompt
-      description: Delete an LLM prompt.
       tags: [Prompts]
       responses:
         "204":
@@ -632,25 +424,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Prompt successfully deleted."
+              example:
+                error: "Prompt successfully deleted."
         "404":
           description: Prompt not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Prompt not found."
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request DELETE \
-              --url https://api.askai.algolia.com/prompt/{id}
+              example:
+                error: "Prompt not found."
+
   /domain:
     get:
       operationId: getDomains
-      summary: List all domains
-      description: Lists all domains allowed to use Ask AI.
+      summary: List allowed domains
       tags: [Domains]
       responses:
         "200":
@@ -661,25 +449,15 @@ paths:
                 type: array
                 items:
                   type: object
-                  description: A domain object.
                   properties:
                     id:
-                      type: string
-                      description: Unique identifier for the domain.
+                      $ref: '#/components/schemas/Id'
                     domain:
-                      type: string
-                      description: Domain name (such as "help.example.com").
-                      example: "help.example.com"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request GET \
-              --url https://api.askai.algolia.com/domain
+                      $ref: '#/components/schemas/Domain'
+
     post:
       operationId: postDomain
       summary: Allow a domain
-      description: Gives a domain access to Ask AI.
       tags: [Domains]
       requestBody:
         content:
@@ -688,9 +466,7 @@ paths:
               type: object
               properties:
                 domain:
-                  type: string
-                  description: Domain name (such as "help.example.com").
-                  example: "help.example.com"
+                  $ref: '#/components/schemas/Domain'
               required: [domain]
       responses:
         "201":
@@ -701,30 +477,21 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    description: ID for the newly-created domain.
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request POST \
-              --url https://api.askai.algolia.com/domain \
-              --header 'Content-Type: application/json' \
-              --data '{
-              "domain": "help.example.com"
-            }'
+                    $ref: '#/components/schemas/Id'
+              example:
+                id: "abc123"
+
   /domain/{id}:
     parameters:
       - in: path
         name: id
         required: true
         schema:
-          type: string
+          $ref: '#/components/schemas/Id'
         description: Unique identifier for the domain.
     get:
       operationId: getDomain
-      summary: Retrieve a domain
-      description: Retrieves domain details.
+      summary: Retrieve domain details
       tags: [Domains]
       responses:
         "200":
@@ -735,29 +502,20 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    description: Unique identifier for the domain.
+                    $ref: '#/components/schemas/Id'
                   domain:
-                    type: string
-                    description: Domain name.
-                    example: "help.example.com"
+                    $ref: '#/components/schemas/Domain'
         "404":
           description: Domain not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Domain not found"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request GET \
-              --url https://api.askai.algolia.com/domain/{id}
+              example:
+                error: "Domain not found"
     patch:
       operationId: patchDomain
-      summary: Update a domain
-      description: Change domain name.
+      summary: Change domain name
       tags: [Domains]
       requestBody:
         content:
@@ -766,9 +524,7 @@ paths:
               type: object
               properties:
                 domain:
-                  type: string
-                  description: Domain name.
-                  example: "help.example.com"
+                  $ref: '#/components/schemas/Domain'
       responses:
         "200":
           description: Domain successfully updated.
@@ -778,33 +534,20 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: string
-                    description: Domain ID.
+                    $ref: '#/components/schemas/Id'
                   domain:
-                    type: string
-                    description: Domain name.
-                    example: "help.example.com"
+                    $ref: '#/components/schemas/Domain'
         "404":
           description: Domain not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Domain not found"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request PATCH \
-              --url https://api.askai.algolia.com/domain/{id} \
-              --header 'Content-Type: application/json' \
-              --data '{
-              "domain": "help.example.com"
-            }'
+              example:
+                error: "Domain not found"
     delete:
       operationId: deleteDomain
-      summary: Remove a domain
-      description: Remove a domain from the list of those allowed to use Ask AI.
+      summary: Remove a domain from the allow list
       tags: [Domains]
       responses:
         "204":
@@ -813,21 +556,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Domain successfully deleted"
+              example:
+                error: "Domain successfully deleted"
         "404":
           description: Domain not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-                example: "Domain not found"
-      x-codeSamples:
-        - lang: cURL
-          label: curl
-          source: |-
-            curl --request DELETE \
-              --url https://api.askai.algolia.com/domain/{id}
-
+              example:
+                error: "Domain not found"
 components:
   schemas:
     ErrorResponse:
@@ -837,3 +575,84 @@ components:
           type: string
           description: Response message.
       required: [error]
+
+    ConfigId:
+      type: string
+      description: Configuration ID.
+
+    ResponseId:
+      type: string
+      description: ID of the AI-generated response.
+
+    Feedback:
+      type: string
+      description: Type of feedback provided (`thumbs_up` or `thumbs_down`).
+      enum: ["thumbs_up", "thumbs_down"]
+
+    Comment:
+      type: string
+      description: Comments about the feedback.
+
+    Question:
+      type: string
+      description: The user's question or prompt for the AI.
+
+    Headers:
+      type: object
+      description: Optional headers to include in the request.
+
+    AppId:
+      type: string
+      description: Application ID.
+
+    ApiKey:
+      type: string
+      description: API key for authentication.
+
+    Domain:
+      type: string
+      description: Domain associated with the token.
+      example: "help.example.com"
+
+    Token:
+      type: string
+      description: The newly-generated JWT token.
+
+    Answer:
+      type: string
+      description: AI-generated response to the question.
+
+    PromptId:
+      type: string
+      description: ID of a prompt associated with this configuration.
+
+    DomainId:
+      type: string
+      description: ID of a domain associated with this configuration.
+
+    Keys:
+      type: object
+      description: Key-value pairs for API keys or other credentials.
+      additionalProperties: true
+
+    Model:
+      type: string
+      description: AI model used in this configuration.
+      example: "gpt-4"
+
+    Provider:
+      type: string
+      description: AI model provider.
+      example: "openai"
+
+    Name:
+      type: string
+      description: Prompt name.
+
+    Content:
+      type: string
+      description: Prompt text.
+
+    Id:
+      type: string
+      description: Unique identifier.
