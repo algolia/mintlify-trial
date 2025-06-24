@@ -8,13 +8,22 @@ info:
   version: "1.0.0"
 servers:
   - url: https://api.askai.algolia.com
+tags:
+  - name: Configuration
+    description: Manage Ask AI configurations.
+  - name: Domains
+    description: Manage domains allowed to use Ask AI.
+  - name: Prompts
+    description: Manage Ask AI LLM prompt templates.
+  - name: Public
+    description: Publicly-accessible endpoints for end users.
 
 paths:
   /chat:
     post:
       operationId: postResponse
       summary: Generate a response
-      description: Generates a response using the configured LLM and prompt template.
+      description: Uses the configured LLM and prompt template to generate a response.
       tags: [Public]
       requestBody:
         content:
@@ -31,7 +40,7 @@ paths:
               required: [configId, question]
       responses:
         "200":
-          description: Successfully generated a response.
+          description: Generated a response.
           content:
             application/json:
               schema:
@@ -46,13 +55,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Configuration not found"
+                message: "The specified configuration doesn't exist"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request POST \
+              --url https://api.askai.algolia.com/chat \
+              --header 'Content-Type: application/json' \
+              --data '{
+              "configId": "config_abc123",
+              "question": "How do I reset my password?",
+              "headers": {
+                "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                "X-AskAI-Session-Id": "session_7a2b9f84"
+              }
+            }'
 
   /feedback:
     post:
       operationId: postFeedback
-      summary: Submit feedback on a response
-      description: Allows users to submit feedback (thumbs up or down) for an AI-generated response.
+      summary: Submit feedback for a response
+      description: Lets users submit feedback (thumbs up or down) for an AI-generated response.
       tags: [Public]
       requestBody:
         content:
@@ -71,13 +95,26 @@ paths:
               required: [configId, responseId, feedback]
       responses:
         "200":
-          description: Feedback successfully accepted and recorded.
+          description: Feedback recorded.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Feedback successfully accepted and recorded"
+                message: "Feedback recorded"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request POST \
+              --url https://api.askai.algolia.com/feedback \
+              --header 'Content-Type: application/json' \
+              --data '{
+              "configId": "config_abc123",
+              "responseId": "response_xyz789",
+              "feedback": "thumbs_up",
+              "comment": "Great answer, very helpful!"
+            }'
 
   /token:
     post:
@@ -102,7 +139,7 @@ paths:
               required: [configId, appId, apiKey, domain]
       responses:
         "200":
-          description: JWT token successfully issued.
+          description: JWT issued.
           content:
             application/json:
               schema:
@@ -110,8 +147,19 @@ paths:
                 properties:
                   token:
                     $ref: '#/components/schemas/Token'
-              example:
-                token: "<jwt-token>"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request POST \
+              --url https://api.askai.algolia.com/token \
+              --header 'Content-Type: application/json' \
+              --data '{
+              "configId": "config_abc123",
+              "appId": "<YourLLMAppID>",
+              "apiKey": "<YourLLMAPIKey>",
+              "domain": "help.example.com"
+            }'
   /config:
     get:
       operationId: getConfigurations
@@ -143,6 +191,12 @@ paths:
                         $ref: '#/components/schemas/DomainId'
                     keys:
                       $ref: '#/components/schemas/Keys'
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request GET \
+              --url https://api.askai.algolia.com/config
 
     post:
       operationId: postConfiguration
@@ -171,7 +225,7 @@ paths:
               required: [model, provider]
       responses:
         "201":
-          description: Configuration successfully created.
+          description: Configuration created.
           content:
             application/json:
               schema:
@@ -179,8 +233,27 @@ paths:
                 properties:
                   id:
                     $ref: '#/components/schemas/Id'
-              example:
-                id: "12345"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request POST \
+              --url https://api.askai.algolia.com/config \
+              --header 'Content-Type: application/json' \
+              --data '{
+              "model": "gpt-4",
+              "provider": "openai",
+              "prompts": [
+                "prompt_123abc"
+              ],
+              "domains": [
+                "domain_456def"
+              ],
+              "keys": {
+                "api_key": "sk-test-abc123",
+                "secret": "xyz987"
+              }
+            }'
 
   /config/{id}:
     parameters:
@@ -196,7 +269,7 @@ paths:
       tags: [Configuration]
       responses:
         "200":
-          description: Configuration details retrieved successfully.
+          description: Configuration details retrieved.
           content:
             application/json:
               schema:
@@ -225,7 +298,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Configuration not found"
+                message: "The specified configuration doesn't exist"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request GET \
+              --url https://api.askai.algolia.com/config/{id}
     patch:
       operationId: patchConfiguration
       summary: Change a configuration
@@ -252,7 +331,7 @@ paths:
                   $ref: '#/components/schemas/Keys'
       responses:
         "200":
-          description: Configuration successfully updated.
+          description: Configuration updated.
           content:
             application/json:
               schema:
@@ -271,20 +350,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Configuration not found"
+                message: "The specified configuration doesn't exist"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request PATCH \
+              --url https://api.askai.algolia.com/config/{id} \
+              --header 'Content-Type: application/json' \
+              --data '{
+              "model": "gpt-4",
+              "provider": "openai",
+              "prompts": [
+                "prompt_123abc"
+              ],
+              "domains": [
+                "domain_456def"
+              ],
+              "keys": {
+                "api_key": "sk-test-abc123",
+                "secret": "xyz987"
+              }
+            }'
     delete:
       operationId: deleteConfiguration
       summary: Delete a configuration
       tags: [Configuration]
       responses:
         "204":
-          description: Configuration successfully deleted.
+          description: Configuration deleted.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Configuration successfully deleted"
+                message: "Configuration deleted"
         "404":
           description: Configuration not found.
           content:
@@ -292,7 +392,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Configuration not found"
+                message: "The specified configuration doesn't exist"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request DELETE \
+              --url https://api.askai.algolia.com/config/{id}
   /prompt:
     get:
       operationId: getPrompts
@@ -314,6 +420,12 @@ paths:
                       $ref: '#/components/schemas/Name'
                     content:
                       $ref: '#/components/schemas/Content'
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request GET \
+              --url https://api.askai.algolia.com/prompt
 
     post:
       operationId: postPrompt
@@ -332,7 +444,7 @@ paths:
               required: [name, content]
       responses:
         "201":
-          description: Prompt successfully created.
+          description: Prompt created.
           content:
             application/json:
               schema:
@@ -340,8 +452,18 @@ paths:
                 properties:
                   id:
                     $ref: '#/components/schemas/Id'
-              example:
-                id: "67890"
+
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request POST \
+              --url https://api.askai.algolia.com/prompt \
+              --header 'Content-Type: application/json' \
+              --data '{
+              "name": "Customer support prompt",
+              "content": "You are a helpful support assistant, who..."
+            }'
 
   /prompt/{id}:
     parameters:
@@ -357,7 +479,7 @@ paths:
       tags: [Prompts]
       responses:
         "200":
-          description: Prompt details retrieved successfully.
+          description: Prompt details retrieved.
           content:
             application/json:
               schema:
@@ -376,7 +498,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Prompt not found"
+                message: "Prompt not found"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request GET \
+              --url https://api.askai.algolia.com/prompt/{id}
     patch:
       operationId: patchPrompt
       summary: Change a prompt
@@ -393,7 +521,7 @@ paths:
                   $ref: '#/components/schemas/Content'
       responses:
         "200":
-          description: Prompt successfully updated.
+          description: Prompt updated.
           content:
             application/json:
               schema:
@@ -412,20 +540,31 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Prompt not found"
+                message: "Prompt not found"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request PATCH \
+              --url https://api.askai.algolia.com/prompt/{id} \
+              --header 'Content-Type: application/json' \
+              --data '{
+              "name": "Customer support prompt",
+              "content": "You are a helpful support assistant, who..."
+            }'
     delete:
       operationId: deletePrompt
       summary: Delete a prompt
       tags: [Prompts]
       responses:
         "204":
-          description: Prompt successfully deleted.
+          description: Prompt deleted.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Prompt successfully deleted."
+                message: "Prompt deleted."
         "404":
           description: Prompt not found.
           content:
@@ -433,7 +572,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Prompt not found."
+                message: "Prompt not found"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request DELETE \
+              --url https://api.askai.algolia.com/prompt/{id}
 
   /domain:
     get:
@@ -454,6 +599,13 @@ paths:
                       $ref: '#/components/schemas/Id'
                     domain:
                       $ref: '#/components/schemas/Domain'
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request GET \
+              --url https://api.askai.algolia.com/domain
+
 
     post:
       operationId: postDomain
@@ -470,7 +622,7 @@ paths:
               required: [domain]
       responses:
         "201":
-          description: Domain successfully allowed access.
+          description: Domain allowed access.
           content:
             application/json:
               schema:
@@ -478,8 +630,18 @@ paths:
                 properties:
                   id:
                     $ref: '#/components/schemas/Id'
-              example:
-                id: "abc123"
+
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request POST \
+              --url https://api.askai.algolia.com/domain \
+              --header 'Content-Type: application/json' \
+              --data '{
+              "domain": "help.example.com"
+            }'
+
 
   /domain/{id}:
     parameters:
@@ -495,7 +657,7 @@ paths:
       tags: [Domains]
       responses:
         "200":
-          description: Domain details retrieved successfully.
+          description: Domain details retrieved.
           content:
             application/json:
               schema:
@@ -512,7 +674,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Domain not found"
+                message: "Domain not found"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request GET \
+              --url https://api.askai.algolia.com/domain/{id}
     patch:
       operationId: patchDomain
       summary: Change domain name
@@ -527,7 +695,7 @@ paths:
                   $ref: '#/components/schemas/Domain'
       responses:
         "200":
-          description: Domain successfully updated.
+          description: Domain updated.
           content:
             application/json:
               schema:
@@ -544,20 +712,30 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Domain not found"
+                message: "Domain not found"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request PATCH \
+              --url https://api.askai.algolia.com/domain/{id} \
+              --header 'Content-Type: application/json' \
+              --data '{
+              "domain": "help.example.com"
+            }'
     delete:
       operationId: deleteDomain
       summary: Remove a domain from the allow list
       tags: [Domains]
       responses:
         "204":
-          description: Domain successfully deleted.
+          description: Domain removed.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Domain successfully deleted"
+                message: "Domain removed"
         "404":
           description: Domain not found.
           content:
@@ -565,24 +743,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                error: "Domain not found"
+                message: "Domain not found"
+      x-codeSamples:
+        - lang: curl
+          label: curl
+          source: |
+            curl --request DELETE \
+              --url https://api.askai.algolia.com/domain/{id}
+
 components:
   schemas:
     ErrorResponse:
       type: object
       properties:
-        error:
+        message:
           type: string
           description: Response message.
-      required: [error]
+      required: [message]
 
     ConfigId:
       type: string
       description: Configuration ID.
+      example: "config_abc123"
 
     ResponseId:
       type: string
       description: ID of the AI-generated response.
+      example: "response_xyz789"
 
     Feedback:
       type: string
@@ -592,48 +779,62 @@ components:
     Comment:
       type: string
       description: Comments about the feedback.
+      example: "Great answer, very helpful!"
 
     Question:
       type: string
       description: The user's question or prompt for the AI.
+      example: "How do I reset my password?"
 
     Headers:
       type: object
       description: Optional headers to include in the request.
+      example:
+        Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        X-AskAI-Session-Id: "session_7a2b9f84"
 
     AppId:
       type: string
-      description: Application ID.
+      description: LLM app ID.
+      example: "<YourLLMAppID>"
 
     ApiKey:
       type: string
-      description: API key for authentication.
+      description: LLM API key.
+      example: "<YourLLMAPIKey>"
 
     Domain:
       type: string
-      description: Domain associated with the token.
+      description: Domain associated with the ID.
       example: "help.example.com"
 
     Token:
       type: string
-      description: The newly-generated JWT token.
+      description: The newly-generated JWT.
+      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
     Answer:
       type: string
       description: AI-generated response to the question.
+      example: "To reset your password, click 'Forgot password' on the login screen."
 
     PromptId:
       type: string
       description: ID of a prompt associated with this configuration.
+      example: "prompt_123abc"
 
     DomainId:
       type: string
       description: ID of a domain associated with this configuration.
+      example: "domain_456def"
 
     Keys:
       type: object
       description: Key-value pairs for API keys or other credentials.
       additionalProperties: true
+      example:
+        api_key: "sk-test-abc123"
+        secret: "xyz987"
 
     Model:
       type: string
@@ -648,11 +849,15 @@ components:
     Name:
       type: string
       description: Prompt name.
+      example: "Customer support prompt"
+
 
     Content:
       type: string
       description: Prompt text.
+      example: "You are a helpful support assistant, who..."
 
     Id:
       type: string
       description: Unique identifier.
+      example: "id_001abc"
