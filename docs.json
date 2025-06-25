@@ -31,7 +31,7 @@
       ]
     },
     "playground": {
-      "display": "simple"
+      "display": "none"
     }
   },
   "favicon": "/favicon.png",
