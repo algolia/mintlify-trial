@@ -14,11 +14,6 @@
     "content": "DevBit: Summer Edition | June 25 — Live demos. Real code. Practical insights for developers. **[Register now](https://events.ringcentral.com/events/algolia-devbit-summer)**"
   },
   "api": {
-    "examples": {
-      "languages": [
-        "curl"
-      ]
-    },
     "playground": {
       "display": "none"
     }
