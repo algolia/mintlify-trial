@@ -16,18 +16,7 @@
   "api": {
     "examples": {
       "languages": [
-        "curl",
-        "csharp",
-        "dart",
-        "go",
-        "java",
-        "javascript",
-        "kotlin",
-        "php",
-        "python",
-        "ruby",
-        "scala",
-        "swift"
+        "curl"
       ]
     },
     "playground": {
